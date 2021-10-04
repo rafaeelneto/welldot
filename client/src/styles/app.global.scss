@@ -1,0 +1,61 @@
+@import './_fonts.scss';
+@import './_colors.scss';
+
+%btn {
+  font-family: $fontPoppins;
+  font-weight: 600;
+  text-transform: none;
+  text-decoration: none;
+}
+
+%btn-secondary {
+  @extend %btn;
+  background-color: $colorSecondary;
+  color: white;
+}
+
+%btn-active {
+  color: $colorSecondaryLight;
+}
+
+%h2-heading {
+  font-family: $fontPoppins;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+%subtitle {
+  font-family: $fontPoppins;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+%body-primary {
+  font-family: $fontOpenSans;
+  color: $gray2;
+}
+
+%link {
+  color: $colorPrimaryDark;
+  text-decoration: underline;
+  font-family: $fontOpenSans;
+  font-weight: 700;
+}
+
+%emptyListSpan {
+  color: $gray1;
+  text-align: center;
+  width: 100%;
+  display: block;
+  padding-bottom: 10px;
+}
+
+:global {
+  .MuiButton-root,
+  .MuiButtonBase-root {
+    @extend %btn;
+    box-shadow: none;
+  }
+}

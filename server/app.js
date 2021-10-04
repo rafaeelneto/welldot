@@ -9,15 +9,14 @@ const xss = require('xss-clean');
 const AppError = require('./utils/appError');
 
 const errorHandler = require('./controllers/errorHandler');
-
-const userRoutes = require('./routes/userRoutes');
+const fgdcTextures = require('./data/fgdc_textures');
 
 const app = express();
 
-//SET SECURITY HEADERS
+// SET SECURITY HEADERS
 app.use(helmet());
 
-//SET THIS IN THE FUTURE TO ACCEPT OTHER DOMAINS
+// SET THIS IN THE FUTURE TO ACCEPT OTHER DOMAINs
 app.use(
   cors({
     origin: 'http://localhost:3000',
@@ -25,25 +24,45 @@ app.use(
   })
 );
 
-//PARSE DATA FROM BODY TO REQ.BODY
+// PARSE DATA FROM BODY TO REQ.BODY
 app.use(express.json());
-//app.use(express.json({limit: '10kb'}));
+// app.use(express.json({limit: '10kb'}));
 app.use(cookieParser());
 
-//DATA SANITIZATION AGAINST XSS
+// DATA SANITIZATION AGAINST XSS
 app.use(xss());
 
-//LIMIT THE QUANTITY OF REQUEST FROM AN IP
+// LIMIT THE QUANTITY OF REQUEST FROM AN IP
 const limiter = rateLimit({
   max: 100,
-  windowMs: 300 * 1000, //5 minutos
+  windowMs: 300 * 1000, // 5 minutos
   message: 'Too many requests by your IP, please try again later',
 });
+
 app.use('/v1/api/user', limiter);
 
 app.use(morgan('dev'));
 
-app.use('/v1/api/user', userRoutes);
+app.post('/v1/api/fgdc-textures', (req, res, next) => {
+  const { textures } = req.body;
+
+  if (!textures) {
+    return next(new AppError('Não foram recebidas texturas', 400));
+  }
+
+  const texturesRes = {};
+
+  textures.forEach((textureCode) => {
+    if (fgdcTextures[textureCode]) {
+      texturesRes[textureCode] = fgdcTextures[textureCode];
+    }
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: texturesRes,
+  });
+});
 
 app.all('*', (req, res, next) => {
   next(
