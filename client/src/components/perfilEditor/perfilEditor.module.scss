@@ -116,7 +116,6 @@
 
 .btnAdd {
   color: $colorPrimary;
-  font-weight: 700 !important;
   :global {
     .MuiListItemIcon-root {
       color: $colorPrimary;
@@ -163,4 +162,15 @@
 .inputContainers {
   height: 100%;
   overflow-y: auto;
+}
+
+.errorSnackBar {
+  border-radius: 10px;
+  * {
+    background-color: $error-main;
+  }
+  color: white;
+  font-family: $fontOpenSans;
+  font-size: 16px;
+  font-weight: 700;
 }

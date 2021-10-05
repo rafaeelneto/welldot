@@ -1,6 +1,26 @@
+@import '../../styles/fonts';
+@import '../../styles/colors';
+@import '../../styles/app.global.scss';
 .root {
   height: 7%;
   background-color: #f2f2f2;
   background-color: white;
   width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 10px;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+}
+
+.title {
+  @extend %titles;
+  color: $gray2;
+  margin-left: 15px;
+  font-weight: 700;
+  font-size: 32px;
 }

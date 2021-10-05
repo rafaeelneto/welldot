@@ -18,18 +18,12 @@
   color: $colorSecondaryLight;
 }
 
-%h2-heading {
-  font-family: $fontPoppins;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-
+%titles,
 %subtitle {
   font-family: $fontPoppins;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+  color: $gray1;
+  text-transform: none;
 }
 
 %body-primary {

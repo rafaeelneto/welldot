@@ -48,7 +48,8 @@ export const GeologicLayer = ({
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
 
-  const { de, ate, color, fgdc_texture, descricao } = component;
+  const { from, to, color, fgdc_texture, description, geologic_unit } =
+    component;
   const updateValues = (newLayer) => {
     onChangeValues(newLayer, index);
   };
@@ -66,10 +67,10 @@ export const GeologicLayer = ({
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={de}
+          value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, de: event.target.value });
+            updateValues({ ...component, from: event.target.value });
           }}
         />
         <TextField
@@ -82,10 +83,10 @@ export const GeologicLayer = ({
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={ate}
+          value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, ate: event.target.value });
+            updateValues({ ...component, to: event.target.value });
           }}
         />
         <Autocomplete
@@ -137,21 +138,39 @@ export const GeologicLayer = ({
         variant="standard"
         className={styles.layerInput}
         id="standard-multiline-flexible"
+        label="Unidade Geológica"
+        style={{ width: '100%' }}
+        multiline
+        value={geologic_unit}
+        onChange={(event) => {
+          // eslint-disable-next-line implicit-arrow-linebreak
+          updateValues({ ...component, geologic_unit: event.target.value });
+        }}
+      />
+      <TextField
+        size="small"
+        variant="standard"
+        className={styles.layerInput}
+        id="standard-multiline-flexible"
         label="Descrição"
         style={{ width: '100%' }}
         multiline
-        value={descricao}
+        value={description}
         onChange={(event) => {
           // eslint-disable-next-line implicit-arrow-linebreak
-          updateValues({ ...component, descricao: event.target.value });
+          updateValues({ ...component, description: event.target.value });
         }}
       />
     </div>
   );
 };
 
-export const EALayer = ({ component, index, onChangeValues }: LayerProps) => {
-  const { de, ate, tipo, diam_pol, descricao } = component;
+export const HoleFillLayer = ({
+  component,
+  index,
+  onChangeValues,
+}: LayerProps) => {
+  const { from, to, type, diam_pol, description } = component;
   const updateValues = (newLayer) => {
     onChangeValues(newLayer, index);
   };
@@ -168,10 +187,10 @@ export const EALayer = ({ component, index, onChangeValues }: LayerProps) => {
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={de}
+          value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, de: event.target.value });
+            updateValues({ ...component, from: event.target.value });
           }}
         />
         <TextField
@@ -184,10 +203,10 @@ export const EALayer = ({ component, index, onChangeValues }: LayerProps) => {
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={ate}
+          value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, ate: event.target.value });
+            updateValues({ ...component, to: event.target.value });
           }}
         />
         <TextField
@@ -207,25 +226,25 @@ export const EALayer = ({ component, index, onChangeValues }: LayerProps) => {
           }}
         />
         <FormControl className={styles.layerInput} component="fieldset">
-          <FormLabel component="legend">Tipo:</FormLabel>
+          <FormLabel component="legend">Tipo</FormLabel>
           <RadioGroup
             className={styles.radioEA}
             aria-label="tipo"
-            defaultValue={tipo}
+            defaultValue={type}
             name="radio-buttons-group"
             row
             onChange={(event) => {
               // eslint-disable-next-line implicit-arrow-linebreak
-              updateValues({ ...component, tipo: event.target.value });
+              updateValues({ ...component, type: event.target.value });
             }}
           >
             <FormControlLabel
-              value="cimento"
+              value="seal"
               control={<Radio />}
               label="Cimentação"
             />
             <FormControlLabel
-              value="pre_filtro"
+              value="gravel_pack"
               control={<Radio />}
               label="Pré-Filtro"
             />
@@ -238,22 +257,25 @@ export const EALayer = ({ component, index, onChangeValues }: LayerProps) => {
         className={styles.layerInput}
         id="standard-multiline-flexible"
         label="Descrição"
-        value={descricao}
+        value={description}
         onChange={(event) => {
           // eslint-disable-next-line implicit-arrow-linebreak
-          updateValues({ ...component, descricao: event.target.value });
+          updateValues({
+            ...component,
+            description: event.target.value,
+          });
         }}
       />
     </div>
   );
 };
 
-export const RevestLayer = ({
+export const WellCaseLayer = ({
   component,
   index,
   onChangeValues,
 }: LayerProps) => {
-  const { de, ate, tipo, diam_pol } = component;
+  const { from, to, type, diam_pol } = component;
   const updateValues = (newLayer) => {
     onChangeValues(newLayer, index);
   };
@@ -270,10 +292,10 @@ export const RevestLayer = ({
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={de}
+          value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, de: event.target.value });
+            updateValues({ ...component, from: event.target.value });
           }}
         />
         <TextField
@@ -286,10 +308,10 @@ export const RevestLayer = ({
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={ate}
+          value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, ate: event.target.value });
+            updateValues({ ...component, to: event.target.value });
           }}
         />
         <TextField
@@ -315,18 +337,22 @@ export const RevestLayer = ({
         className={styles.layerInput}
         id="standard-multiline-flexible"
         label="Tipo"
-        value={tipo}
+        value={type}
         onChange={(event) => {
           // eslint-disable-next-line implicit-arrow-linebreak
-          updateValues({ ...component, tipo: event.target.value });
+          updateValues({ ...component, type: event.target.value });
         }}
       />
     </div>
   );
 };
 
-export const FuroLayer = ({ component, index, onChangeValues }: LayerProps) => {
-  const { de, ate, diam_pol } = component;
+export const BoreHoleLayer = ({
+  component,
+  index,
+  onChangeValues,
+}: LayerProps) => {
+  const { from, to, diam_pol } = component;
   const updateValues = (newLayer) => {
     onChangeValues(newLayer, index);
   };
@@ -343,10 +369,10 @@ export const FuroLayer = ({ component, index, onChangeValues }: LayerProps) => {
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={de}
+          value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, de: event.target.value });
+            updateValues({ ...component, from: event.target.value });
           }}
         />
         <TextField
@@ -359,10 +385,10 @@ export const FuroLayer = ({ component, index, onChangeValues }: LayerProps) => {
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={ate}
+          value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, ate: event.target.value });
+            updateValues({ ...component, to: event.target.value });
           }}
         />
         <TextField
@@ -386,12 +412,12 @@ export const FuroLayer = ({ component, index, onChangeValues }: LayerProps) => {
   );
 };
 
-export const TuboBocaLayer = ({
+export const SurfaceCaseLayer = ({
   component,
   index,
   onChangeValues,
 }: LayerProps) => {
-  const { altura, diam_pol } = component;
+  const { depth, diam_pol } = component;
   const updateValues = (newLayer) => {
     onChangeValues(newLayer, index);
   };
@@ -408,10 +434,10 @@ export const TuboBocaLayer = ({
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={altura}
+          value={depth}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, altura: event.target.value });
+            updateValues({ ...component, depth: event.target.value });
           }}
         />
 
@@ -436,12 +462,12 @@ export const TuboBocaLayer = ({
   );
 };
 
-export const FiltrosLayer = ({
+export const WellScreenLayer = ({
   component,
   index,
   onChangeValues,
 }: LayerProps) => {
-  const { de, ate, tipo, diam_pol, ranhura_mm } = component;
+  const { from, to, type, diam_pol, ranhura_mm } = component;
   const updateValues = (newLayer) => {
     onChangeValues(newLayer, index);
   };
@@ -458,10 +484,10 @@ export const FiltrosLayer = ({
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
           type="number"
-          value={de}
+          value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, de: event.target.value });
+            updateValues({ ...component, from: event.target.value });
           }}
         />
         <TextField
@@ -474,10 +500,10 @@ export const FiltrosLayer = ({
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
           type="number"
-          value={ate}
+          value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, ate: event.target.value });
+            updateValues({ ...component, to: event.target.value });
           }}
         />
         <TextField
@@ -519,10 +545,10 @@ export const FiltrosLayer = ({
         className={styles.layerInput}
         id="standard-multiline-flexible"
         label="Tipo"
-        value={tipo}
+        value={type}
         onChange={(event) => {
           // eslint-disable-next-line implicit-arrow-linebreak
-          updateValues({ ...component, tipo: event.target.value });
+          updateValues({ ...component, type: event.target.value });
         }}
       />
     </div>

@@ -1,21 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Button,
   IconButton,
   Collapse,
-  Divider,
   TextField,
   ListItemSecondaryAction,
-  ListItemText,
   InputAdornment,
+  Snackbar,
 } from '@mui/material';
-import Autocomplete from '@mui/material/Autocomplete';
-import Popover from '@mui/material/Popover';
 
 import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
 import { format } from 'date-fns';
@@ -27,37 +23,21 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
-
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-
 import Checkbox from '@mui/material/Checkbox';
 
-import {
-  ChevronDown,
-  ChevronUp,
-  Trash,
-  PlusCircle,
-  Upload,
-  Download,
-} from 'react-feather';
+import { Trash, PlusCircle, Upload, Download } from 'react-feather';
 
 import download from 'downloadjs';
 
 import PerfilDrawer from '../perfilDrawer/perfilDrawer.component';
 
 import {
-  FuroLayer,
-  EALayer,
-  FiltrosLayer,
+  BoreHoleLayer,
+  HoleFillLayer,
+  WellScreenLayer,
   GeologicLayer,
-  RevestLayer,
-  TuboBocaLayer,
+  WellCaseLayer,
+  SurfaceCaseLayer,
 } from './inputComponents';
 
 import styles from './perfilEditor.module.scss';
@@ -68,65 +48,77 @@ import {
   LayerProps,
 } from '../../types/perfilEditor.types';
 
-type PerfilEditorProps = {
+import {
+  GEOLOGIC_COMPONENT_TYPE,
+  BORE_HOLE_COMPONENT_TYPE,
+  CEMENT_PAD_COMPONENT_TYPE,
+  HOLE_FILL_COMPONENT_TYPE,
+  PROFILE_TYPE,
+  SURFACE_CASE_COMPONENT_TYPE,
+  WELL_CASE_COMPONENT_TYPE,
+  WELL_SCREEN_COMPONENT_TYPE,
+} from '../../types/perfil.types';
+
+type ProfileEditorProps = {
   nomePoco?: string;
 };
 
-const PERFIL_DEFAULT = {
-  geologico: [],
-  construtivo: {
-    furo: [],
-    filtros: [],
-    tubo_boca: [],
-    revestimento: [],
-    espaco_anelar: [],
-    laje: {
-      tipo: '',
-      largura: '',
-      espessura: '',
-      comprimento: '',
+const PROFILE_DEFAULT: PROFILE_TYPE = {
+  geologic: [],
+  constructive: {
+    bole_hole: [],
+    well_screen: [],
+    surface_case: [],
+    well_case: [],
+    hole_fill: [],
+    cement_pad: {
+      type: '',
+      width: 0,
+      thickness: 0,
+      length: 0,
     },
   },
 };
 
-const NULL_VALUE = { value: PERFIL_DEFAULT, label: '' };
+// const NULL_VALUE = { value: PROFILE_DEFAULT, label: '' };
 
-const GEOLOGIC_COMPONENT_DEFAULT = {
-  de: 0,
-  ate: 10,
-  descricao: '',
+const GEOLOGIC_COMPONENT_DEFAULT: GEOLOGIC_COMPONENT_TYPE = {
+  from: 0,
+  to: 10,
+  description: '',
   color: '#ff0000',
   fgdc_texture: '',
+  geologic_unit: '',
 };
 
-const FURO_COMPONENT_DEFAULT = {
-  de: 0,
-  ate: 10,
+const BORE_HOLE_COMPONENT_DEFAULT: BORE_HOLE_COMPONENT_TYPE = {
+  from: 0,
+  to: 10,
   diam_pol: 10,
 };
-const REVESTIMENTO_COMPONENT_DEFAULT = {
-  de: 0,
-  ate: 10,
-  tipo: '',
+const WELL_CASE_COMPONENT_DEFAULT: WELL_CASE_COMPONENT_TYPE = {
+  from: 0,
+  to: 10,
+  type: '',
   diam_pol: 10,
 };
 
-const FILTROS_COMPONENT_DEFAULT = {
-  de: 0,
-  ate: 10,
-  tipo: '',
+const WELL_SCREEN_COMPONENT_DEFAULT: WELL_SCREEN_COMPONENT_TYPE = {
+  from: 0,
+  to: 10,
+  type: '',
   diam_pol: 10,
-  ranhura_mm: 0.75,
+  screen_slot_mm: 0.75,
 };
-const ESP_ANELAR_COMPONENT_DEFAULT = {
-  de: 0,
-  ate: 10,
-  tipo: 'cimento',
+const HOLE_FILL_COMPONENT_DEFAULT: HOLE_FILL_COMPONENT_TYPE = {
+  from: 0,
+  to: 10,
+  type: 'seal',
   diam_pol: 10,
-  descricao: '',
+  description: '',
 };
-const TUBO_BOCA_COMPONENT_DEFAULT = {
-  altura: 20,
+const SURFACE_CASE_COMPONENT_DEFAULT: SURFACE_CASE_COMPONENT_TYPE = {
+  depth: 20,
   diam_pol: 10,
 };
 
@@ -204,7 +196,7 @@ const SortableList = ({
           >
             <PlusCircle />
           </ListItemIcon>
-          <ListItemText primary="Adicionar" />
+          Adicionar
         </ListItem>
       </Container>
     </List>
@@ -236,32 +228,24 @@ function a11yProps(index) {
   };
 }
 
-const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
+const PerfilEditor = ({ nomePoco = '' }: ProfileEditorProps) => {
   const inputFile = useRef(null);
 
   const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 40 };
   const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
   const WIDTH = 200 - MARGINS.LEFT - MARGINS.RIGHT;
 
-  const [perfilState, setPerfilState] = useState<null | any>(PERFIL_DEFAULT);
+  const [profileState, setPerfilState] = useState(PROFILE_DEFAULT);
   const [changesCounter, setChangesCounter] = useState(0);
 
-  const [geologicChecked, setGeologicChecked] = useState(true);
-  const [constructiveChecked, setConstructiveChecked] = useState(true);
-  const [lajeChecked, setLajeChecked] = useState(true);
+  const [openImportErrorS, setOpenImportErrorS] = useState(false);
+
+  const [cementPadChecked, setcementPadChecked] = useState(true);
 
   const [tabValue, setTabValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
-  };
-
-  const handleGeologicCheckedChange = () => {
-    setGeologicChecked(!geologicChecked);
-  };
-
-  const handleConstructiveCheckedChange = () => {
-    setConstructiveChecked(!constructiveChecked);
   };
 
   // SAVE BTN
@@ -274,11 +258,11 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
     let currentDepth: number = 0;
     for (let index = 0; index < newGeologicLayers.length; index++) {
       const newLayer = newGeologicLayers[index];
-      const layerThickness = newLayer.ate - newLayer.de;
-      const newDe = index === 0 ? 0 : currentDepth;
-      const newAte = newDe + layerThickness;
+      const layerThickness = newLayer.to - newLayer.from;
+      const newFrom = index === 0 ? 0 : currentDepth;
+      const newTo = newFrom + layerThickness;
       currentDepth += layerThickness;
-      newLayers.push({ ...newLayer, de: newDe, ate: newAte });
+      newLayers.push({ ...newLayer, from: newFrom, to: newTo });
     }
     return newLayers;
   };
@@ -293,132 +277,141 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
   };
 
   const reorderHandlers = {
-    geologico: (newGeologicLayers) => {
+    geologic: (newGeologicLayers) => {
       const newPerfilState = {
-        ...perfilState,
-        geologico: reorderComponentsDepth(newGeologicLayers),
+        ...profileState,
+        geologic: reorderComponentsDepth(newGeologicLayers),
       };
       onChangePerfilState(newPerfilState);
     },
-    espaco_anelar: (newRevectComp) => {
+    hole_fill: (newRevectComp) => {
       const newEAList = reorderComponentsDepth(newRevectComp);
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, espaco_anelar: newEAList },
+        ...profileState,
+        constructive: { ...profileState.constructive, hole_fill: newEAList },
       };
       onChangePerfilState(newPerfilState);
     },
-    tubo_boca: (newRevectComp) => {
+    surface_case: (newRevectComp) => {
       const newTBList = reorderComponentsDepth(newRevectComp);
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, tubo_boca: newTBList },
+        ...profileState,
+        constructive: { ...profileState.constructive, surface_case: newTBList },
       };
       onChangePerfilState(newPerfilState);
     },
-    furo: (newRevectComp) => {
-      const newFuroList = reorderComponentsDepth(newRevectComp);
+    bole_hole: (newRevectComp) => {
+      const newBoreHoleList = reorderComponentsDepth(newRevectComp);
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, furo: newFuroList },
-      };
-      onChangePerfilState(newPerfilState);
-    },
-    revestimento: (newRevectComp) => {
-      // const newRevestList = reorderComponentsDepth(newRevectComp);
-      const newPerfilState = {
-        ...perfilState,
-        construtivo: {
-          ...perfilState.construtivo,
-          revestimento: newRevectComp,
+        ...profileState,
+        constructive: {
+          ...profileState.constructive,
+          bole_hole: newBoreHoleList,
         },
       };
       onChangePerfilState(newPerfilState);
     },
-    filtros: (newComponents) => {
+    well_case: (newRevectComp) => {
       // const newRevestList = reorderComponentsDepth(newRevectComp);
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, filtros: newComponents },
+        ...profileState,
+        constructive: {
+          ...profileState.constructive,
+          well_case: newRevectComp,
+        },
+      };
+      onChangePerfilState(newPerfilState);
+    },
+    well_screen: (newComponents) => {
+      // const newRevestList = reorderComponentsDepth(newRevectComp);
+      const newPerfilState = {
+        ...profileState,
+        constructive: {
+          ...profileState.constructive,
+          well_screen: newComponents,
+        },
       };
       onChangePerfilState(newPerfilState);
     },
   };
 
   const onChangeHandlers = {
-    geologico: (newLayer, index) => {
-      const newLayers = [...perfilState.geologico];
+    geologic: (newLayer, index) => {
+      const newLayers = [...profileState.geologic];
       newLayers[index] = newLayer;
       const newPerfilState = {
-        ...perfilState,
-        geologico: reorderComponentsDepth(newLayers),
+        ...profileState,
+        geologic: reorderComponentsDepth(newLayers),
       };
       onChangePerfilState(newPerfilState);
     },
-    espaco_anelar: (newEA, index) => {
-      const newLayers = [...perfilState.construtivo.espaco_anelar];
+    hole_fill: (newEA, index) => {
+      const newLayers = [...profileState.constructive.hole_fill];
       newLayers[index] = newEA;
       const newEAList = reorderComponentsDepth(newLayers);
 
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, espaco_anelar: newEAList },
+        ...profileState,
+        constructive: { ...profileState.constructive, hole_fill: newEAList },
       };
       onChangePerfilState(newPerfilState);
     },
-    tubo_boca: (newTB, index) => {
-      const newLayers = [...perfilState.construtivo.tubo_boca];
+    surface_case: (newTB, index) => {
+      const newLayers = [...profileState.constructive.surface_case];
       newLayers[index] = newTB;
       const newTBList = reorderComponentsDepth(newLayers);
 
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, tubo_boca: newTBList },
+        ...profileState,
+        constructive: { ...profileState.constructive, surface_case: newTBList },
       };
       onChangePerfilState(newPerfilState);
     },
-    furo: (newFuros, index) => {
-      const newLayers = [...perfilState.construtivo.furo];
-      newLayers[index] = newFuros;
-      const newFurosList = reorderComponentsDepth(newLayers);
+    bole_hole: (newbole_holes, index) => {
+      const newLayers = [...profileState.constructive.bole_hole];
+      newLayers[index] = newbole_holes;
+      const newBoleHoleList = reorderComponentsDepth(newLayers);
 
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, furo: newFurosList },
+        ...profileState,
+        constructive: {
+          ...profileState.constructive,
+          bole_hole: newBoleHoleList,
+        },
       };
       onChangePerfilState(newPerfilState);
     },
-    revestimento: (newRevest, index) => {
-      const newLayers = [...perfilState.construtivo.revestimento];
+    well_case: (newRevest, index) => {
+      const newLayers = [...profileState.constructive.well_case];
       newLayers[index] = newRevest;
       // const newRevestList = reorderComponentsDepth(newLayers);
 
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, revestimento: newLayers },
+        ...profileState,
+        constructive: { ...profileState.constructive, well_case: newLayers },
       };
       onChangePerfilState(newPerfilState);
     },
-    filtros: (newComps, index) => {
-      const newLayers = [...perfilState.construtivo.filtros];
+    well_screen: (newComps, index) => {
+      const newLayers = [...profileState.constructive.well_screen];
       newLayers[index] = newComps;
       // const newRevestList = reorderComponentsDepth(newLayers);
 
       const newPerfilState = {
-        ...perfilState,
-        construtivo: { ...perfilState.construtivo, filtros: newLayers },
+        ...profileState,
+        constructive: { ...profileState.constructive, well_screen: newLayers },
       };
       onChangePerfilState(newPerfilState);
     },
   };
 
-  const handleLaje = (property, value) => {
-    const newLaje = { ...perfilState.construtivo.laje };
-    newLaje[property] = value;
+  const handleCementPadChange = (property, value) => {
+    const newcementPad = { ...profileState.constructive.cement_pad };
+    newcementPad[property] = value;
 
     const newPerfilState = {
-      ...perfilState,
-      construtivo: { ...perfilState.construtivo, laje: newLaje },
+      ...profileState,
+      constructive: { ...profileState.constructive, cement_pad: newcementPad },
     };
     onChangePerfilState(newPerfilState);
   };
@@ -434,6 +427,100 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
       if (!e) return;
       // @ts-ignore
       const perfilImported = JSON.parse(e.target.result);
+
+      let noPerfil = true;
+      if (perfilImported.geologic && perfilImported.constructive) {
+        noPerfil =
+          perfilImported.geologic.length === 0 &&
+          perfilImported.constructive.bole_hole.length === 0 &&
+          perfilImported.constructive.hole_fill.length === 0 &&
+          perfilImported.constructive.well_screen.length === 0;
+      }
+
+      if (noPerfil) {
+        const perfilConverted = PROFILE_DEFAULT;
+        if (perfilImported.geologico || perfilImported.construtivo) {
+          if (perfilImported.geologico.length > 0) {
+            perfilConverted.geologic = perfilImported.geologico.map(
+              (camada) => {
+                return {
+                  from: camada.de,
+                  to: camada.ate,
+                  fgdc_texture: camada.fgdc_texture || '',
+                  color: camada.color || '',
+                  description: camada.descricao || '',
+                  geologic_unit: camada.unidade_geologica || '',
+                };
+              }
+            );
+          }
+          if (perfilImported.construtivo.furo.length > 0) {
+            perfilConverted.constructive.bole_hole =
+              perfilImported.construtivo.furo.map((camada) => {
+                return {
+                  from: camada.de,
+                  to: camada.ate,
+                  diam_pol: camada.diam_pol || 0,
+                };
+              });
+          }
+          if (perfilImported.construtivo.espaco_anelar.length > 0) {
+            perfilConverted.constructive.hole_fill =
+              perfilImported.construtivo.furo.map((camada) => {
+                return {
+                  from: camada.de,
+                  to: camada.ate,
+                  diam_pol: camada.diam_pol || 0,
+                  description: camada.descricao || '',
+                  type: camada.tipo === 'cimento' ? 'seal' : 'gravel_pack',
+                };
+              });
+          }
+          if (perfilImported.construtivo.filtros.length > 0) {
+            perfilConverted.constructive.well_screen =
+              perfilImported.construtivo.filtros.map((camada) => {
+                return {
+                  from: camada.de,
+                  to: camada.ate,
+                  type: camada.tipo || '',
+                  diam_pol: camada.diam_pol || 0,
+                  screen_slot_mm: camada.ranhura_mm || 0,
+                };
+              });
+          }
+          if (perfilImported.construtivo.revestimento.length > 0) {
+            perfilConverted.constructive.well_screen =
+              perfilImported.construtivo.revestimento.map((camada) => {
+                return {
+                  from: camada.de,
+                  to: camada.ate,
+                  type: camada.tipo || '',
+                  diam_pol: camada.diam_pol || 0,
+                };
+              });
+          }
+          if (perfilImported.construtivo.tubo_boca.length > 0) {
+            perfilConverted.constructive.surface_case =
+              perfilImported.construtivo.tubo_boca.map((camada) => {
+                return {
+                  depth: camada.altura || 0,
+                  diam_pol: camada.diam_pol || 0,
+                };
+              });
+          }
+          if (perfilImported.construtivo.laje.length > 0) {
+            perfilConverted.constructive.surface_case =
+              perfilImported.construtivo.tubo_boca.map((camada) => {
+                return {
+                  depth: camada.altura || 0,
+                  diam_pol: camada.diam_pol || 0,
+                };
+              });
+          }
+        }
+        setOpenImportErrorS(true);
+        return;
+      }
       setPerfilState(perfilImported);
     };
     reader.readAsText(fileUploaded);
@@ -442,18 +529,30 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.btnContainer}>
-        <Button
+        {/* <Button
           className={styles.mainBtns}
           onClick={handleSave}
           color="primary"
           variant="contained"
         >
           Salvar
-        </Button>
+        </Button> */}
+        <Snackbar
+          className={styles.errorSnackBar}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={openImportErrorS}
+          autoHideDuration={6000}
+          onClose={() => {
+            setOpenImportErrorS(false);
+          }}
+          message="Erro ao importar o arquivo. Verifique seu arquivo e tente novamente"
+          // eslint-disable-next-line no-useless-concat
+          key={'top' + 'center'}
+        />
         <Button
           className={styles.mainBtns}
           onClick={() => {
-            const perfilJSON = JSON.stringify(perfilState);
+            const perfilJSON = JSON.stringify(profileState);
 
             const blob = new Blob([perfilJSON], { type: 'application/json' });
 
@@ -493,7 +592,7 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
       <div className={styles.container}>
         <div className={`${styles.perfilContainer}`}>
           <PerfilDrawer
-            perfil={perfilState}
+            profile={profileState}
             dimensions={{ MARGINS, HEIGHT, WIDTH }}
           />
         </div>
@@ -512,44 +611,46 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
             <div className={styles.inputContainers}>
               <div className={styles.componentContainer}>
                 <span className={styles.componentTitle}>
-                  Laje:
+                  Laje de Proteção Sanitária
                   <Checkbox
-                    checked={lajeChecked}
+                    checked={cementPadChecked}
                     onChange={(event) => {
                       const { checked } = event.target;
 
                       if (checked) {
                         const newPerfilState = {
-                          ...perfilState,
-                          construtivo: {
-                            ...perfilState.construtivo,
-                            laje: {
-                              largura: 3,
-                              espessura: 0.25,
-                              comprimento: 3,
-                              tipo: 'Cimento',
+                          ...profileState,
+                          constructive: {
+                            ...profileState.constructive,
+                            cement_pad: {
+                              width: 3,
+                              thickness: 0.25,
+                              length: 3,
+                              type: 'Cimento',
                             },
                           },
                         };
                         setPerfilState(newPerfilState);
                       } else {
                         const newPerfilState = {
-                          ...perfilState,
-                          construtivo: {
-                            ...perfilState.construtivo,
-                            laje: { ...PERFIL_DEFAULT.construtivo.laje },
+                          ...profileState,
+                          constructive: {
+                            ...profileState.constructive,
+                            cement_pad: {
+                              ...PROFILE_DEFAULT.constructive.cement_pad,
+                            },
                           },
                         };
                         setPerfilState(newPerfilState);
                       }
 
-                      setLajeChecked(checked);
+                      setcementPadChecked(checked);
                     }}
                     inputProps={{ 'aria-label': 'primary checkbox' }}
                   />
                 </span>
 
-                <Collapse in={lajeChecked} unmountOnExit>
+                <Collapse in={cementPadChecked} unmountOnExit>
                   <div>
                     <div className={styles.layerRow}>
                       <TextField
@@ -565,16 +666,16 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
                           ),
                         }}
                         value={
-                          perfilState &&
-                          perfilState.construtivo &&
-                          perfilState.construtivo.laje &&
-                          perfilState.construtivo.laje.largura
-                            ? perfilState.construtivo.laje.largura
+                          profileState &&
+                          profileState.constructive &&
+                          profileState.constructive.cement_pad &&
+                          profileState.constructive.cement_pad.width
+                            ? profileState.constructive.cement_pad.width
                             : ''
                         }
                         onChange={(event) => {
                           // eslint-disable-next-line implicit-arrow-linebreak
-                          handleLaje('largura', event.target.value);
+                          handleCementPadChange('width', event.target.value);
                         }}
                       />
 
@@ -591,16 +692,16 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
                           ),
                         }}
                         value={
-                          perfilState &&
-                          perfilState.construtivo &&
-                          perfilState.construtivo.laje &&
-                          perfilState.construtivo.laje.comprimento
-                            ? perfilState.construtivo.laje.comprimento
+                          profileState &&
+                          profileState.constructive &&
+                          profileState.constructive.cement_pad &&
+                          profileState.constructive.cement_pad.length
+                            ? profileState.constructive.cement_pad.length
                             : ''
                         }
                         onChange={(event) => {
                           // eslint-disable-next-line implicit-arrow-linebreak
-                          handleLaje('comprimento', event.target.value);
+                          handleCementPadChange('length', event.target.value);
                         }}
                       />
                       <TextField
@@ -616,16 +717,19 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
                           ),
                         }}
                         value={
-                          perfilState &&
-                          perfilState.construtivo &&
-                          perfilState.construtivo.laje &&
-                          perfilState.construtivo.laje.espessura
-                            ? perfilState.construtivo.laje.espessura
+                          profileState &&
+                          profileState.constructive &&
+                          profileState.constructive.cement_pad &&
+                          profileState.constructive.cement_pad.thickness
+                            ? profileState.constructive.cement_pad.thickness
                             : ''
                         }
                         onChange={(event) => {
                           // eslint-disable-next-line implicit-arrow-linebreak
-                          handleLaje('espessura', event.target.value);
+                          handleCementPadChange(
+                            'thickness',
+                            event.target.value
+                          );
                         }}
                       />
                     </div>
@@ -636,16 +740,16 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
                       id="standard-multiline-flexible"
                       label="Tipo"
                       value={
-                        perfilState &&
-                        perfilState.construtivo &&
-                        perfilState.construtivo.laje &&
-                        perfilState.construtivo.laje.tipo
-                          ? perfilState.construtivo.laje.tipo
+                        profileState &&
+                        profileState.constructive &&
+                        profileState.constructive.cement_pad &&
+                        profileState.constructive.cement_pad.type
+                          ? profileState.constructive.cement_pad.type
                           : ''
                       }
                       onChange={(event) => {
                         // eslint-disable-next-line implicit-arrow-linebreak
-                        handleLaje('tipo', event.target.value);
+                        handleCementPadChange('type', event.target.value);
                       }}
                     />
                   </div>
@@ -653,15 +757,15 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
               </div>
               <div className={styles.componentContainer}>
                 <span className={styles.componentTitle}>Furo:</span>
-                {perfilState &&
-                perfilState.construtivo &&
-                perfilState.construtivo.furo ? (
+                {profileState &&
+                profileState.constructive &&
+                profileState.constructive.bole_hole ? (
                   <SortableList
-                    defaultComponent={FURO_COMPONENT_DEFAULT}
-                    layers={perfilState.construtivo.furo}
-                    component={FuroLayer}
-                    onChangeList={reorderHandlers.furo}
-                    onChangeValues={onChangeHandlers.furo}
+                    defaultComponent={BORE_HOLE_COMPONENT_DEFAULT}
+                    layers={profileState.constructive.bole_hole}
+                    component={BoreHoleLayer}
+                    onChangeList={reorderHandlers.bole_hole}
+                    onChangeValues={onChangeHandlers.bole_hole}
                   />
                 ) : (
                   ''
@@ -669,15 +773,15 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
               </div>
               <div className={styles.componentContainer}>
                 <span className={styles.componentTitle}>Espaço Anelar:</span>
-                {perfilState &&
-                perfilState.construtivo &&
-                perfilState.construtivo.espaco_anelar ? (
+                {profileState &&
+                profileState.constructive &&
+                profileState.constructive.hole_fill ? (
                   <SortableList
-                    defaultComponent={ESP_ANELAR_COMPONENT_DEFAULT}
-                    layers={perfilState.construtivo.espaco_anelar}
-                    component={EALayer}
-                    onChangeList={reorderHandlers.espaco_anelar}
-                    onChangeValues={onChangeHandlers.espaco_anelar}
+                    defaultComponent={HOLE_FILL_COMPONENT_DEFAULT}
+                    layers={profileState.constructive.hole_fill}
+                    component={HoleFillLayer}
+                    onChangeList={reorderHandlers.hole_fill}
+                    onChangeValues={onChangeHandlers.hole_fill}
                   />
                 ) : (
                   ''
@@ -685,15 +789,15 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
               </div>
               <div className={styles.componentContainer}>
                 <span className={styles.componentTitle}>Tubo de Boca:</span>
-                {perfilState &&
-                perfilState.construtivo &&
-                perfilState.construtivo.tubo_boca ? (
+                {profileState &&
+                profileState.constructive &&
+                profileState.constructive.surface_case ? (
                   <SortableList
-                    defaultComponent={TUBO_BOCA_COMPONENT_DEFAULT}
-                    layers={perfilState.construtivo.tubo_boca}
-                    component={TuboBocaLayer}
-                    onChangeList={reorderHandlers.tubo_boca}
-                    onChangeValues={onChangeHandlers.tubo_boca}
+                    defaultComponent={SURFACE_CASE_COMPONENT_DEFAULT}
+                    layers={profileState.constructive.surface_case}
+                    component={SurfaceCaseLayer}
+                    onChangeList={reorderHandlers.surface_case}
+                    onChangeValues={onChangeHandlers.surface_case}
                   />
                 ) : (
                   ''
@@ -701,15 +805,15 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
               </div>
               <div className={styles.componentContainer}>
                 <span className={styles.componentTitle}>Revestimento:</span>
-                {perfilState &&
-                perfilState.construtivo &&
-                perfilState.construtivo.revestimento ? (
+                {profileState &&
+                profileState.constructive &&
+                profileState.constructive.well_case ? (
                   <SortableList
-                    defaultComponent={REVESTIMENTO_COMPONENT_DEFAULT}
-                    layers={perfilState.construtivo.revestimento}
-                    component={RevestLayer}
-                    onChangeList={reorderHandlers.revestimento}
-                    onChangeValues={onChangeHandlers.revestimento}
+                    defaultComponent={WELL_CASE_COMPONENT_DEFAULT}
+                    layers={profileState.constructive.well_case}
+                    component={WellCaseLayer}
+                    onChangeList={reorderHandlers.well_case}
+                    onChangeValues={onChangeHandlers.well_case}
                   />
                 ) : (
                   ''
@@ -717,15 +821,15 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
               </div>
               <div className={styles.componentContainer}>
                 <span className={styles.componentTitle}>Filtros:</span>
-                {perfilState &&
-                perfilState.construtivo &&
-                perfilState.construtivo.filtros ? (
+                {profileState &&
+                profileState.constructive &&
+                profileState.constructive.well_screen ? (
                   <SortableList
-                    defaultComponent={FILTROS_COMPONENT_DEFAULT}
-                    layers={perfilState.construtivo.filtros}
-                    component={FiltrosLayer}
-                    onChangeList={reorderHandlers.filtros}
-                    onChangeValues={onChangeHandlers.filtros}
+                    defaultComponent={WELL_SCREEN_COMPONENT_DEFAULT}
+                    layers={profileState.constructive.well_screen}
+                    component={WellScreenLayer}
+                    onChangeList={reorderHandlers.well_screen}
+                    onChangeValues={onChangeHandlers.well_screen}
                   />
                 ) : (
                   ''
@@ -735,13 +839,13 @@ const PerfilEditor = ({ nomePoco = '' }: PerfilEditorProps) => {
           </TabPanel>
           <TabPanel value={tabValue} index={1}>
             <div className={styles.inputContainers}>
-              {perfilState && perfilState.geologico ? (
+              {profileState && profileState.geologic ? (
                 <SortableList
                   defaultComponent={GEOLOGIC_COMPONENT_DEFAULT}
-                  layers={perfilState.geologico}
+                  layers={profileState.geologic}
                   component={GeologicLayer}
-                  onChangeList={reorderHandlers.geologico}
-                  onChangeValues={onChangeHandlers.geologico}
+                  onChangeList={reorderHandlers.geologic}
+                  onChangeValues={onChangeHandlers.geologic}
                 />
               ) : (
                 ''
