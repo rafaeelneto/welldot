@@ -17,12 +17,7 @@ const app = express();
 app.use(helmet());
 
 // SET THIS IN THE FUTURE TO ACCEPT OTHER DOMAINs
-app.use(
-  cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-  })
-);
+app.use(cors());
 
 // PARSE DATA FROM BODY TO REQ.BODY
 app.use(express.json());

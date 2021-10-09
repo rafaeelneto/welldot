@@ -58,6 +58,7 @@ export type CONSTRUCTIVE_COMPONENT_TYPE = {
 };
 
 export type PROFILE_TYPE = {
+  name?: string;
   geologic: GEOLOGIC_COMPONENT_TYPE[];
   constructive: CONSTRUCTIVE_COMPONENT_TYPE;
 };

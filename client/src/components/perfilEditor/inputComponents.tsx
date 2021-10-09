@@ -225,32 +225,32 @@ export const HoleFillLayer = ({
             updateValues({ ...component, diam_pol: event.target.value });
           }}
         />
-        <FormControl className={styles.layerInput} component="fieldset">
-          <FormLabel component="legend">Tipo</FormLabel>
-          <RadioGroup
-            className={styles.radioEA}
-            aria-label="tipo"
-            defaultValue={type}
-            name="radio-buttons-group"
-            row
-            onChange={(event) => {
-              // eslint-disable-next-line implicit-arrow-linebreak
-              updateValues({ ...component, type: event.target.value });
-            }}
-          >
-            <FormControlLabel
-              value="seal"
-              control={<Radio />}
-              label="Cimentação"
-            />
-            <FormControlLabel
-              value="gravel_pack"
-              control={<Radio />}
-              label="Pré-Filtro"
-            />
-          </RadioGroup>
-        </FormControl>
       </div>
+      <FormControl className={styles.radioInput} component="fieldset">
+        <FormLabel component="legend">Tipo</FormLabel>
+        <RadioGroup
+          className={styles.radioEA}
+          aria-label="tipo"
+          defaultValue={type}
+          name="radio-buttons-group"
+          row
+          onChange={(event) => {
+            // eslint-disable-next-line implicit-arrow-linebreak
+            updateValues({ ...component, type: event.target.value });
+          }}
+        >
+          <FormControlLabel
+            value="seal"
+            control={<Radio />}
+            label="Cimentação"
+          />
+          <FormControlLabel
+            value="gravel_pack"
+            control={<Radio />}
+            label="Pré-Filtro"
+          />
+        </RadioGroup>
+      </FormControl>
       <TextField
         size="small"
         variant="standard"
@@ -467,7 +467,7 @@ export const WellScreenLayer = ({
   index,
   onChangeValues,
 }: LayerProps) => {
-  const { from, to, type, diam_pol, ranhura_mm } = component;
+  const { from, to, type, diam_pol, screen_slot_mm } = component;
   const updateValues = (newLayer) => {
     onChangeValues(newLayer, index);
   };
@@ -532,10 +532,10 @@ export const WellScreenLayer = ({
           InputProps={{
             endAdornment: <InputAdornment position="end">mm</InputAdornment>,
           }}
-          value={ranhura_mm}
+          value={screen_slot_mm}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, ranhura_mm: event.target.value });
+            updateValues({ ...component, screen_slot_mm: event.target.value });
           }}
         />
       </div>

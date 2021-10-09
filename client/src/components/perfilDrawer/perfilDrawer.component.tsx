@@ -1,4 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { Snackbar, Slider } from '@mui/material';
+
 import * as d3 from 'd3';
 
 // @ts-ignore
@@ -22,22 +25,58 @@ import styles from './perfilDrawer.module.scss';
 
 type PDProps = {
   profile: PROFILE_TYPE;
-  dimensions: {
-    MARGINS: {
-      TOP: number;
-      RIGHT: number;
-      BOTTOM: number;
-      LEFT: number;
-    };
-    HEIGHT: number;
-    WIDTH: number;
-  };
 };
 
-const PerfilDrawer = ({ profile, dimensions }: PDProps) => {
+const getLithologicalFill = async (data) => {
+  const litologicalFill = {};
+  let error = false;
+
+  const texturesToFetch: (number | string)[] = [];
+  data.forEach((element) => {
+    const texture: number | string = element.fgdc_texture;
+    if (texturesToFetch.indexOf(texture) < 0) {
+      texturesToFetch.push(texture);
+    }
+  });
+
+  const texturesToFetchJSON = JSON.stringify({
+    textures: texturesToFetch,
+  });
+
+  try {
+    const res = await APIPost(API_ENDPOINTS.FGDC_TEXTURES, texturesToFetchJSON);
+
+    const { data: dataFetch, status } = await res;
+
+    if (dataFetch && dataFetch.data && status === 200) {
+      data.forEach((d) => {
+        litologicalFill[`${d.fgdc_texture}.${d.from}`] = textures
+          .paths()
+          .d((s) => dataFetch.data[d.fgdc_texture])
+          .size(150)
+          .strokeWidth(0.8)
+          .stroke('#303030')
+          .background(d.color);
+      });
+    }
+  } catch (e) {
+    error = true;
+    data.forEach((d) => {
+      litologicalFill[`${d.fgdc_texture}.${d.from}`] = d.color;
+    });
+  }
+  return { litologicalFill, error };
+};
+
+const PerfilDrawer = ({ profile }: PDProps) => {
   const svgContainer = useRef(null);
 
-  const { MARGINS, HEIGHT, WIDTH } = dimensions;
+  const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 50 };
+  const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
+  const WIDTH = 200 - MARGINS.LEFT - MARGINS.RIGHT;
+
+  const [openError, setOpenError] = useState(false);
+  const [scaleY, setScaleY] = useState(7);
 
   const tooltip = d3
     .select('body')
@@ -100,6 +139,7 @@ const PerfilDrawer = ({ profile, dimensions }: PDProps) => {
       }
 
       const profileTexture = {
+        pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
         seal: textures.lines().thicker().background('#ffffff'),
         gravel_pack: textures.circles().complement().background('#ffffff'),
         well_screen: textures
@@ -119,59 +159,24 @@ const PerfilDrawer = ({ profile, dimensions }: PDProps) => {
 
       svg.selectAll('*').remove();
 
-      const litoligicalGroup = svg
+      const pocoGroup = svg.append('g');
+
+      const litoligicalGroup = pocoGroup
         .append('g')
         .attr('transform', `translate(${MARGINS.LEFT}, ${MARGINS.TOP})`);
 
-      const constructionGroup = svg.append('g');
+      const constructionGroup = pocoGroup.append('g');
 
       let yScale: any = {};
 
       const svgWidth: any = d3.select(svgContainer.current).attr('width');
+      const svgHeight: any = d3.select(svgContainer.current).attr('height');
 
       const POCO_WIDTH = svgWidth / 4;
       const POCO_CENTER = (svgWidth * 3) / 4;
 
-      const plotGeology = async (data: GEOLOGIC_COMPONENT_TYPE[]) => {
-        const litologicalFill = {};
-
-        const texturesToFetch: (number | string)[] = [];
-        data.forEach((element) => {
-          const texture: number | string = element.fgdc_texture;
-          if (texturesToFetch.indexOf(texture) < 0) {
-            texturesToFetch.push(texture);
-          }
-        });
-
-        const texturesToFetchJSON = JSON.stringify({
-          textures: texturesToFetch,
-        });
-
-        // ! IMPROVE ERROR HANDLING ON API CALL
-
-        const res = await APIPost(
-          API_ENDPOINTS.FGDC_TEXTURES,
-          texturesToFetchJSON
-        );
-
-        const { data: dataFetch, status } = await res;
-
-        if (dataFetch && dataFetch.data) {
-          data.forEach((d) => {
-            litologicalFill[`${d.fgdc_texture}.${d.from}`] = textures
-              .paths()
-              .d((s) => dataFetch.data[d.fgdc_texture])
-              .size(150)
-              .strokeWidth(0.8)
-              .stroke('#303030')
-              .background(d.color);
-          });
-        } else {
-          data.forEach((d) => {
-            litologicalFill[`${d.fgdc_texture}.${d.from}`] = d.color;
-          });
-        }
-
+      const plotGeology = (data: GEOLOGIC_COMPONENT_TYPE[]) => {
+        const litologicalFill = getLithologicalFill(data);
         const rects = litoligicalGroup.selectAll('rect').data(data);
 
         rects.exit().remove();
@@ -251,12 +256,17 @@ const PerfilDrawer = ({ profile, dimensions }: PDProps) => {
           .append('rect')
           .attr(
             'x',
-            (POCO_CENTER - xScale((data.cement_pad.width * 39.37) / 4)) / 2
+            // (POCO_CENTER - xScale(data.cement_pad.width * 39.37 * 0.4)) / 2
+            (POCO_CENTER - (POCO_WIDTH + 40)) / 2
           )
-          .attr('y', -yScale(data.cement_pad.thickness * 10))
-          .attr('width', xScale((data.cement_pad.width * 39.37) / 4))
-          .attr('height', yScale(data.cement_pad.thickness * 10))
-          .style('fill', '#fff')
+          .attr('y', -10)
+          // .attr('width', xScale(data.cement_pad.width * 39.37 * 0.4))
+          .attr('width', POCO_WIDTH + 40)
+          .attr('height', 10)
+          .style('fill', (d) => {
+            svg.call(profileTexture.pad);
+            return profileTexture.pad.url();
+          })
           .style('stroke', '#303030')
           .style('stroke-width', '2px')
           .on('mouseover', (event, d: any) => {
@@ -298,8 +308,53 @@ const PerfilDrawer = ({ profile, dimensions }: PDProps) => {
           .attr('width', (d: any) => xScale(d.diam_pol))
           .attr('height', (d: any) => yScale(d.to - d.from))
           .style('fill', '#fff')
+          .style('opacity', '0.6')
           .style('stroke', '#303030')
           .style('stroke-width', '1px')
+          .on('mouseover', (event, d: any) => {
+            tooltip.transition().duration(200).style('opacity', 1);
+            tooltip
+              .html(
+                `
+                <span class="${styles.title}">FURO</span>
+                <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
+                <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
+              `
+              )
+              .style('left', `${event.pageX + 10}px`)
+              .style('top', `${event.pageY + 10}px`);
+          })
+          .on('mouseout', (event, d: any) => {
+            tooltip
+              .transition()
+              .duration(200)
+              .style('opacity', 0)
+              .attr('display', 'hidden')
+              .attr('visibility', 'hidden');
+          });
+
+        const surfaceCaseGroup = constructionGroup.append('g');
+
+        const surfaceCase = surfaceCaseGroup
+          .selectAll('rect')
+          .data(data.surface_case);
+
+        surfaceCase
+          .enter()
+          .append('line')
+          .attr('x1', (d: any) => xScale(d.diam_pol) / 2)
+          .attr('y1', (d: any, i) => {
+            if (i === 0) return 0;
+            return yScale(data.surface_case[i - 1].depth + d.depth);
+          })
+          .attr('x2', (d: any) => xScale(d.diam_pol) / 2)
+          .attr('y2', (d: any, i) => {
+            if (i === 0) return yScale(d.depth);
+            return yScale(data.surface_case[i - 1].depth + d.depth);
+          })
+
+          .style('stroke', 'red')
+          .style('stroke-width', '5px')
           .on('mouseover', (event, d: any) => {
             tooltip.transition().duration(200).style('opacity', 1);
             tooltip
@@ -480,13 +535,58 @@ const PerfilDrawer = ({ profile, dimensions }: PDProps) => {
 
       const maxYValues = d3.max(maxValues) || 0;
 
-      yScale = d3.scaleLinear().domain([0, maxYValues]).range([0, HEIGHT]);
+      // eslint-disable-next-line prefer-const
+      let scaleHeight = svgHeight;
+
+      yScale = d3
+        .scaleLinear()
+        .domain([0, maxYValues])
+        .range([0, scaleHeight - MARGINS.TOP - MARGINS.BOTTOM]);
 
       if (geologicData) plotGeology(geologicData);
       if (constructionData) plotPoco(constructionData);
       const yAxesCall = d3.axisLeft(yScale).tickFormat((d: any) => `${d} m`);
 
-      litoligicalGroup.append('g').attr('class', styles.yAxis).call(yAxesCall);
+      const gY = litoligicalGroup
+        .append('g')
+        .attr('class', styles.yAxis)
+        .call(yAxesCall);
+
+      function dragging(d) {
+        // yPan = d3.dy;
+        // yMin += yPan;
+        // yMax += yPan;
+        // y.domain([yMin, yMax]);
+        // d3.select('.y.axis').call(yAxis);
+      }
+
+      let z = d3.zoomIdentity;
+      const zoomY = d3.zoom().scaleExtent([0.2, 5]);
+
+      // @ts-ignore
+      const ty = () => d3.zoomTransform(gY.node());
+
+      const zoom = d3.zoom().on('zoom', function (e) {
+        const t = e.transform;
+        const k = t.k / z.k;
+
+        // is it on an axis? is the shift key pressed?
+        const shift = e.sourceEvent && e.sourceEvent.shiftKey;
+
+        // @ts-ignore
+        gY.call(zoomY.translateBy, 0, (t.y - z.y) / ty().k);
+
+        z = t;
+
+        yScale = ty().rescaleY(yScale);
+
+        gY.call(yAxesCall, yScale);
+        if (geologicData) plotGeology(geologicData);
+        if (constructionData) plotPoco(constructionData);
+      });
+
+      // @ts-ignore
+      svg.call(zoom).call(zoom.transform, d3.zoomIdentity.scale(0.8)).node();
     },
 
     /*
@@ -510,6 +610,37 @@ const PerfilDrawer = ({ profile, dimensions }: PDProps) => {
   }
   return (
     <>
+      {/* {!noPerfil ? (
+        <div className={styles.scaleInput}>
+          Escala vertical mínima
+          <Slider
+            size="small"
+            defaultValue={scaleY}
+            onChange={(event, value) => {
+              setScaleY(value[0] || value);
+            }}
+            min={4}
+            max={15}
+            aria-label="Small"
+            valueLabelDisplay="auto"
+          />
+        </div>
+      ) : (
+        ''
+      )} */}
+
+      <Snackbar
+        className="warningSnackBar"
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={openError}
+        autoHideDuration={6000}
+        onClose={() => {
+          setOpenError(false);
+        }}
+        message="Alguns recursos não estão disponíveis como as texturas das camadas. Por favor, verifique sua conexão"
+        // eslint-disable-next-line no-useless-concat
+        key={'top' + 'center'}
+      />
       {noPerfil ? (
         <span className={styles.noFilesMsg}>Perfil não configurado</span>
       ) : (

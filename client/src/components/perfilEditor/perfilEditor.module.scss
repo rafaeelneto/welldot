@@ -5,12 +5,42 @@
 
 .root {
   width: 100%;
-  height: 93%;
-  padding: 10px;
+  height: 95%;
+  padding: 0 10px 10px 10px;
   position: relative;
   display: flex;
+  overflow-y: auto;
   flex-direction: column;
   background-color: #f2f2f2;
+}
+
+.wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerContainer {
+  display: flex;
+  flex-direction: column;
+
+  @include md {
+    justify-content: space-between;
+    max-height: 60px;
+    flex-direction: row;
+  }
+}
+
+.wellNameInput {
+  background-color: transparent;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 32px;
+  border: none;
+  margin: 5px 0 5px 0;
+  font-family: $fontPoppins;
+  font-weight: 700;
+  color: $gray2;
 }
 
 .btnContainer {
@@ -18,20 +48,25 @@
   padding: 10px 0 10px 0;
   display: flex;
   flex-direction: row;
-  justify-content: end;
+  justify-content: start;
 
   button {
     margin-right: 10px;
+  }
+
+  @include md {
+    justify-content: end;
   }
 }
 
 .container {
   display: flex;
-  height: 100%;
-  overflow: hidden;
   position: relative;
   flex-direction: column;
+  height: 100%;
+
   @include md {
+    overflow: hidden;
     flex-direction: row;
   }
 }
@@ -50,7 +85,7 @@
   padding: 5px;
   position: relative;
   @include md {
-    width: 30%;
+    width: 35%;
   }
 }
 
@@ -59,9 +94,11 @@
 }
 
 .dataContainer {
+  margin-top: 5px;
   position: relative;
   @include md {
-    width: 70%;
+    margin-top: 0;
+    width: 65%;
   }
 }
 
@@ -95,27 +132,16 @@
 }
 
 .sortableList {
-  margin-left: 10px;
   li {
     padding: 0.5em 0;
     border-bottom: 1px solid #ccc;
   }
 }
 
-.radioEA {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-
-  // :global {
-  //   .MuiFormControlLabel-root {
-  //     color: red;
-  //   }
-  // }
-}
-
 .btnAdd {
   color: $colorPrimary;
+  margin-top: 5px;
+  border-radius: 10px;
   :global {
     .MuiListItemIcon-root {
       color: $colorPrimary;
@@ -130,16 +156,46 @@
 
 .layerRow {
   display: flex;
-  flex-direction: row;
   width: 100%;
+  flex-direction: column;
   max-width: 300px;
+  @include md {
+    flex-direction: row;
+  }
+  .layerInput {
+    margin-top: none;
+  }
 }
 
 .layerInput {
   margin: 5px;
   margin-right: 10px;
+  margin-top: 10px;
   width: fit-content;
-  min-width: 200px;
+  min-width: 50px;
+  @include md {
+    min-width: 200px;
+  }
+}
+
+.radioInput {
+  margin-top: 10px;
+  margin: 5px;
+  legend {
+    font-size: 12px;
+  }
+}
+
+.radioEA {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+
+  // :global {
+  //   .MuiFormControlLabel-root {
+  //     color: red;
+  //   }
+  // }
 }
 
 .colorInput {
@@ -162,15 +218,4 @@
 .inputContainers {
   height: 100%;
   overflow-y: auto;
-}
-
-.errorSnackBar {
-  border-radius: 10px;
-  * {
-    background-color: $error-main;
-  }
-  color: white;
-  font-family: $fontOpenSans;
-  font-size: 16px;
-  font-weight: 700;
 }
