@@ -7,6 +7,8 @@ import * as d3 from 'd3';
 // @ts-ignore
 import textures from 'textures';
 
+import fdgcTextures from '../../assets/fgdcTextures';
+
 import { APIPost, API_ENDPOINTS } from '../../utils/fetchAPI';
 
 import {
@@ -27,45 +29,34 @@ type PDProps = {
   profile: PROFILE_TYPE;
 };
 
-const getLithologicalFill = async (data) => {
-  const litologicalFill = {};
-  let error = false;
-
-  const texturesToFetch: (number | string)[] = [];
+const getLithologicalFill = (data) => {
+  const profileTextures: (number | string)[] = [];
   data.forEach((element) => {
     const texture: number | string = element.fgdc_texture;
-    if (texturesToFetch.indexOf(texture) < 0) {
-      texturesToFetch.push(texture);
+    if (profileTextures.indexOf(texture) < 0) {
+      profileTextures.push(texture);
     }
   });
 
-  const texturesToFetchJSON = JSON.stringify({
-    textures: texturesToFetch,
+  const litologicalFill = {};
+  const texturesLoaded = {};
+
+  profileTextures.forEach((textureCode) => {
+    if (fdgcTextures[textureCode]) {
+      texturesLoaded[textureCode] = fdgcTextures[textureCode];
+    }
   });
 
-  try {
-    const res = await APIPost(API_ENDPOINTS.FGDC_TEXTURES, texturesToFetchJSON);
-
-    const { data: dataFetch, status } = await res;
-
-    if (dataFetch && dataFetch.data && status === 200) {
-      data.forEach((d) => {
-        litologicalFill[`${d.fgdc_texture}.${d.from}`] = textures
-          .paths()
-          .d((s) => dataFetch.data[d.fgdc_texture])
-          .size(150)
-          .strokeWidth(0.8)
-          .stroke('#303030')
-          .background(d.color);
-      });
-    }
-  } catch (e) {
-    error = true;
-    data.forEach((d) => {
-      litologicalFill[`${d.fgdc_texture}.${d.from}`] = d.color;
-    });
-  }
-  return { litologicalFill, error };
+  data.forEach((d) => {
+    litologicalFill[`${d.fgdc_texture}.${d.from}`] = textures
+      .paths()
+      .d((s) => texturesLoaded[d.fgdc_texture])
+      .size(150)
+      .strokeWidth(0.8)
+      .stroke('#303030')
+      .background(d.color);
+  });
+  return litologicalFill;
 };
 
 const PerfilDrawer = ({ profile }: PDProps) => {
@@ -167,8 +158,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
       const constructionGroup = pocoGroup.append('g');
 
-      let yScale: any = {};
-
       const svgWidth: any = d3.select(svgContainer.current).attr('width');
       const svgHeight: any = d3.select(svgContainer.current).attr('height');
 
@@ -177,8 +166,9 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
       const transition = d3.transition().duration(750);
 
-      const plotGeology = async (data: GEOLOGIC_COMPONENT_TYPE[]) => {
-        const { litologicalFill } = await getLithologicalFill(data);
+      const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
+        const litologicalFill = getLithologicalFill(data);
+
         const rects = litoligicalGroup.selectAll('rect').data(data);
 
         const newLayers = rects
@@ -189,14 +179,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           .attr('width', POCO_CENTER)
           .style('stroke', '#101010')
           .style('stroke-width', '1px');
-
-        rects
-          .exit()
-          // @ts-ignore
-          .transition(transition)
-          .attr('height', 0)
-          .style('stroke', '#green')
-          .remove();
 
         rects
           .on('mouseover', (event, d: GEOLOGIC_COMPONENT_TYPE) => {
@@ -237,12 +219,20 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           })
           .attr('height', 0)
           // @ts-ignore
-          .attr('height', (d: GEOLOGIC_COMPONENT_TYPE) =>
-            yScale(d.to - d.from)
-          );
+          .attr('height', (d: GEOLOGIC_COMPONENT_TYPE) => {
+            return yScale(d.to - d.from);
+          });
+
+        rects
+          .exit()
+          // @ts-ignore
+          .transition(transition)
+          .attr('height', 0)
+          .style('stroke', '#green')
+          .remove();
       };
 
-      const plotPoco = (data: CONSTRUCTIVE_COMPONENT_TYPE) => {
+      const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
         constructionGroup.attr(
           'transform',
           `translate(${MARGINS.LEFT + WIDTH / 2}, ${MARGINS.TOP})`
@@ -270,14 +260,17 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           .domain([0, maxValues])
           .range([0, POCO_WIDTH]);
 
+        constructionGroup.selectAll('.cement_pad').remove();
+
         constructionGroup
           .append('rect')
+          .attr('class', 'cement_pad')
           .attr(
             'x',
             // (POCO_CENTER - xScale(data.cement_pad.width * 39.37 * 0.4)) / 2
             (POCO_CENTER - (POCO_WIDTH + 40)) / 2
           )
-          .attr('y', -10)
+          .attr('y', yScale(0) - 10)
           // .attr('width', xScale(data.cement_pad.width * 39.37 * 0.4))
           .attr('width', POCO_WIDTH + 40)
           .attr('height', 10)
@@ -554,49 +547,41 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       const maxYValues = d3.max(maxValues) || 0;
 
       // eslint-disable-next-line prefer-const
-      let scaleHeight = svgHeight;
 
-      yScale = d3
+      const yScaleGlobal = d3
         .scaleLinear()
         .domain([0, maxYValues])
-        .range([0, scaleHeight - MARGINS.TOP - MARGINS.BOTTOM]);
+        .range([0, svgHeight - MARGINS.TOP - MARGINS.BOTTOM]);
 
-      if (geologicData) plotGeology(geologicData);
-      if (constructionData) plotPoco(constructionData);
-      const yAxesCall = d3.axisLeft(yScale).tickFormat((d: any) => `${d} m`);
+      const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
 
       const gY = litoligicalGroup
         .append('g')
         .attr('class', styles.yAxis)
-        .call(yAxesCall);
+        .call(yAxis);
 
-      let z = d3.zoomIdentity;
-      const zoomY = d3.zoom().scaleExtent([0.2, 5]);
+      if (geologicData) updateGeology(geologicData, yScaleGlobal);
+      if (constructionData) updatePoco(constructionData, yScaleGlobal);
 
-      // @ts-ignore
-      const ty = () => d3.zoomTransform(gY.node());
+      const zoom = d3
+        .zoom()
+        .translateExtent([
+          [-100, -100],
+          [svgWidth + 90, svgHeight + 100],
+        ])
+        .on('zoom', function (e) {
+          const { transform } = e;
 
-      const zoom = d3.zoom().on('zoom', function (e) {
-        const t = e.transform;
-        const k = t.k / z.k;
+          const yNewScale = transform.rescaleX(yScaleGlobal);
+          yAxis.scale(yNewScale);
+          gY.call(yAxis);
 
-        // is it on an axis? is the shift key pressed?
-        const shift = e.sourceEvent && e.sourceEvent.shiftKey;
-
-        // @ts-ignore
-        gY.call(zoomY.translateBy, 0, (t.y - z.y) / ty().k);
-
-        z = t;
-
-        yScale = ty().rescaleY(yScale);
-
-        gY.call(yAxesCall, yScale);
-        if (geologicData) plotGeology(geologicData);
-        // if (constructionData) plotPoco(constructionData);
-      });
+          if (geologicData) updateGeology(geologicData, yNewScale);
+          if (constructionData) updatePoco(constructionData, yNewScale);
+        });
 
       // @ts-ignore
-      svg.call(zoom).call(zoom.transform, d3.zoomIdentity.scale(0.8)).node();
+      zoom(svg);
     },
 
     /*
