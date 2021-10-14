@@ -47,6 +47,7 @@
       {
         "endOfLine": "auto"
       }
+      
     ],
     "react/require-default-props": ["warn"],
     "react/no-array-index-key": ["warn"],

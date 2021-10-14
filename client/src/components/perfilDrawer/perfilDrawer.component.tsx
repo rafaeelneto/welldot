@@ -175,32 +175,30 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       const POCO_WIDTH = svgWidth / 4;
       const POCO_CENTER = (svgWidth * 3) / 4;
 
-      const plotGeology = (data: GEOLOGIC_COMPONENT_TYPE[]) => {
-        const litologicalFill = getLithologicalFill(data);
+      const transition = d3.transition().duration(750);
+
+      const plotGeology = async (data: GEOLOGIC_COMPONENT_TYPE[]) => {
+        const { litologicalFill } = await getLithologicalFill(data);
         const rects = litoligicalGroup.selectAll('rect').data(data);
 
-        rects.exit().remove();
-
-        rects
+        const newLayers = rects
           .enter()
           .append('rect')
           .attr('x', POCO_CENTER)
-          .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-            if (i === 0) return yScale(d.from);
-            return yScale(data[i - 1].to);
-          })
           .attr('x', 10)
           .attr('width', POCO_CENTER)
-          .attr('height', (d: GEOLOGIC_COMPONENT_TYPE) => yScale(d.to - d.from))
-          .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
-            if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
-              return litologicalFill[`${d.fgdc_texture}.${d.from}`];
-            }
-            svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
-            return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
-          })
           .style('stroke', '#101010')
-          .style('stroke-width', '1px')
+          .style('stroke-width', '1px');
+
+        rects
+          .exit()
+          // @ts-ignore
+          .transition(transition)
+          .attr('height', 0)
+          .style('stroke', '#green')
+          .remove();
+
+        rects
           .on('mouseover', (event, d: GEOLOGIC_COMPONENT_TYPE) => {
             tooltip.transition().duration(200).style('opacity', 1);
             tooltip
@@ -222,6 +220,26 @@ const PerfilDrawer = ({ profile }: PDProps) => {
               .attr('display', 'hidden')
               .attr('visibility', 'hidden');
           });
+
+        newLayers
+          // @ts-ignore
+          .merge(rects)
+          .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
+            if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
+              return litologicalFill[`${d.fgdc_texture}.${d.from}`];
+            }
+            svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
+            return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
+          })
+          .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+            if (i === 0) return yScale(d.from);
+            return yScale(data[i - 1].to);
+          })
+          .attr('height', 0)
+          // @ts-ignore
+          .attr('height', (d: GEOLOGIC_COMPONENT_TYPE) =>
+            yScale(d.to - d.from)
+          );
       };
 
       const plotPoco = (data: CONSTRUCTIVE_COMPONENT_TYPE) => {
@@ -552,14 +570,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .attr('class', styles.yAxis)
         .call(yAxesCall);
 
-      function dragging(d) {
-        // yPan = d3.dy;
-        // yMin += yPan;
-        // yMax += yPan;
-        // y.domain([yMin, yMax]);
-        // d3.select('.y.axis').call(yAxis);
-      }
-
       let z = d3.zoomIdentity;
       const zoomY = d3.zoom().scaleExtent([0.2, 5]);
 
@@ -582,7 +592,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
         gY.call(yAxesCall, yScale);
         if (geologicData) plotGeology(geologicData);
-        if (constructionData) plotPoco(constructionData);
+        // if (constructionData) plotPoco(constructionData);
       });
 
       // @ts-ignore
