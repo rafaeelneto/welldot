@@ -199,13 +199,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
         const rects = litoligicalGroup.selectAll('rect').data(data);
 
-        rects
-          .exit()
-          // @ts-ignore
-          .transition(transition)
-          .attr('height', 0)
-          .style('stroke', '#green')
-          .remove();
+        rects.exit().remove();
 
         const newLayers = rects
           .enter()
@@ -231,8 +225,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
             if (i === 0) return yScale(d.from);
             return yScale(data[i - 1].to);
           })
-          .attr('height', 0)
-          .attr('height', (d: GEOLOGIC_COMPONENT_TYPE) => {
+          .attr('height', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
             return yScale(d.to - d.from);
           })
           .on('mouseover', (event, d) => {
@@ -564,33 +557,57 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
       const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
 
-      const gY = litoligicalGroup
-        .append('g')
-        .attr('class', styles.yAxis)
-        .call(yAxis);
+      const gY = litoligicalGroup.append('g').attr('class', styles.yAxis);
+      // z holds a copy of the previous transform, so we can track its changes
+      let z = d3.zoomIdentity;
 
-      if (geologicData) updateGeology(geologicData, yScaleGlobal);
-      if (constructionData) updatePoco(constructionData, yScaleGlobal);
+      // set up the ancillary zooms and an accessor for their transforms
+      const zoomY = d3.zoom().scaleExtent([0.2, 5]);
+      // @ts-ignore
+      const ty = () => d3.zoomTransform(gY.node());
+      // @ts-ignore
+      gY.call(zoomY).attr('pointer-events', 'none');
 
-      const zoom = d3
-        .zoom()
-        .translateExtent([
-          [0, 0],
-          [0, 0],
-        ])
-        .on('zoom', function (e) {
-          const { transform } = e;
+      drawProfile();
 
-          const yNewScale = transform.rescaleX(yScaleGlobal);
-          yAxis.scale(yNewScale);
-          gY.call(yAxis);
+      const zoom = d3.zoom().on('zoom', function (e) {
+        const t = e.transform;
+        const k = t.k / z.k;
+        const point = center(e, this);
 
-          if (geologicData) updateGeology(geologicData, yNewScale);
-          if (constructionData) updatePoco(constructionData, yNewScale);
-        });
+        if (k === 1) {
+          // pure translation?
+          // @ts-ignore
+          gY.call(zoomY.translateBy, 0, (t.y - z.y) / ty().k);
+        } else {
+          // if not, we're zooming on a fixed point
+          // @ts-ignore
+          gY.call(zoomY.scaleBy, k, point);
+        }
+
+        z = t;
+
+        drawProfile();
+      });
 
       // @ts-ignore
-      zoom(svg);
+      svg.call(zoom).call(zoom.transform, d3.zoomIdentity.scale(0.8)).node();
+
+      function drawProfile() {
+        const yr = ty().rescaleY(yScaleGlobal);
+        yAxis.scale(yr);
+        gY.call(yAxis, yr);
+        if (geologicData) updateGeology(geologicData, yr);
+        if (constructionData) updatePoco(constructionData, yr);
+      }
+
+      function center(event, target) {
+        if (event.sourceEvent) {
+          const p = d3.pointers(event, target);
+          return [d3.mean(p, (d) => d[0]), d3.mean(p, (d) => d[1])];
+        }
+        return [svgWidth / 2, svgHeight / 2];
+      }
     },
 
     /*
