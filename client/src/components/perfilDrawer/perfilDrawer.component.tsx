@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Snackbar, Slider } from '@mui/material';
 
-import * as d3 from 'd3';
+import * as d3module from 'd3';
+import d3tip from 'd3-tip';
 
 // @ts-ignore
 import textures from 'textures';
@@ -24,6 +25,11 @@ import {
 } from '../../types/perfil.types';
 
 import styles from './perfilDrawer.module.scss';
+
+const d3 = {
+  ...d3module,
+  tip: d3tip,
+};
 
 type PDProps = {
   profile: PROFILE_TYPE;
@@ -74,6 +80,23 @@ const PerfilDrawer = ({ profile }: PDProps) => {
     .append('div')
     .attr('class', styles.tooltip)
     .style('opacity', 0);
+
+  const showTooltip = (event, d: any, html: string) => {
+    tooltip.transition().duration(200).style('opacity', 1);
+    tooltip
+      .html(html)
+      .style('left', `${event.pageX + 10}px`)
+      .style('top', `${event.pageY + 10}px`);
+  };
+
+  const hideTooltip = (event, d: any) => {
+    tooltip
+      .transition()
+      .duration(200)
+      .style('opacity', 0)
+      .attr('display', 'hidden')
+      .attr('visibility', 'hidden');
+  };
 
   useEffect(
     () => {
@@ -156,7 +179,12 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .append('g')
         .attr('transform', `translate(${MARGINS.LEFT}, ${MARGINS.TOP})`);
 
-      const constructionGroup = pocoGroup.append('g');
+      const constructionGroup = pocoGroup
+        .append('g')
+        .attr(
+          'transform',
+          `translate(${MARGINS.LEFT + WIDTH / 2}, ${MARGINS.TOP})`
+        );
 
       const svgWidth: any = d3.select(svgContainer.current).attr('width');
       const svgHeight: any = d3.select(svgContainer.current).attr('height');
@@ -171,37 +199,23 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
         const rects = litoligicalGroup.selectAll('rect').data(data);
 
+        rects
+          .exit()
+          // @ts-ignore
+          .transition(transition)
+          .attr('height', 0)
+          .style('stroke', '#green')
+          .remove();
+
         const newLayers = rects
           .enter()
           .append('rect')
           .attr('x', POCO_CENTER)
           .attr('x', 10)
+          .style('opacity', 0.5)
           .attr('width', POCO_CENTER)
           .style('stroke', '#101010')
           .style('stroke-width', '1px');
-
-        rects
-          .on('mouseover', (event, d: GEOLOGIC_COMPONENT_TYPE) => {
-            tooltip.transition().duration(200).style('opacity', 1);
-            tooltip
-              .html(
-                `
-                <span class="${styles.title}">Litologia</span>
-                <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-                <span class="${styles.secondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
-              `
-              )
-              .style('left', `${event.pageX + 10}px`)
-              .style('top', `${event.pageY + 10}px`);
-          })
-          .on('mouseout', (event, d: GEOLOGIC_COMPONENT_TYPE) => {
-            tooltip
-              .transition()
-              .duration(200)
-              .style('opacity', 0)
-              .attr('display', 'hidden')
-              .attr('visibility', 'hidden');
-          });
 
         newLayers
           // @ts-ignore
@@ -218,26 +232,30 @@ const PerfilDrawer = ({ profile }: PDProps) => {
             return yScale(data[i - 1].to);
           })
           .attr('height', 0)
-          // @ts-ignore
           .attr('height', (d: GEOLOGIC_COMPONENT_TYPE) => {
             return yScale(d.to - d.from);
-          });
-
-        rects
-          .exit()
-          // @ts-ignore
-          .transition(transition)
-          .attr('height', 0)
-          .style('stroke', '#green')
-          .remove();
+          })
+          .on('mouseover', (event, d) => {
+            showTooltip(
+              event,
+              d,
+              `
+              <span class="${styles.title}">Litologia</span>
+              <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
+              <span class="${styles.secondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
+          `
+            );
+          })
+          .on('mouseout', hideTooltip);
       };
 
-      const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
-        constructionGroup.attr(
-          'transform',
-          `translate(${MARGINS.LEFT + WIDTH / 2}, ${MARGINS.TOP})`
-        );
+      const holeGroup = constructionGroup.append('g');
+      const surfaceCaseGroup = constructionGroup.append('g');
+      const holeFillGroup = constructionGroup.append('g');
+      const wellCaseGroup = constructionGroup.append('g');
+      const wellScreenGroup = constructionGroup.append('g');
 
+      const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
         const maxXValues = [
           ...data.bole_hole.map(
             (d: BORE_HOLE_COMPONENT_TYPE) =>
@@ -262,55 +280,63 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
         constructionGroup.selectAll('.cement_pad').remove();
 
-        constructionGroup
-          .append('rect')
-          .attr('class', 'cement_pad')
-          .attr(
-            'x',
-            // (POCO_CENTER - xScale(data.cement_pad.width * 39.37 * 0.4)) / 2
-            (POCO_CENTER - (POCO_WIDTH + 40)) / 2
-          )
-          .attr('y', yScale(0) - 10)
-          // .attr('width', xScale(data.cement_pad.width * 39.37 * 0.4))
-          .attr('width', POCO_WIDTH + 40)
-          .attr('height', 10)
-          .style('fill', (d) => {
-            svg.call(profileTexture.pad);
-            return profileTexture.pad.url();
-          })
-          .style('stroke', '#303030')
-          .style('stroke-width', '2px')
-          .on('mouseover', (event, d: any) => {
-            tooltip.transition().duration(200).style('opacity', 1);
-            tooltip
-              .html(
+        if (data.cement_pad && data.cement_pad.thickness) {
+          constructionGroup
+            .append('rect')
+            .attr('class', 'cement_pad')
+            .attr(
+              'x',
+              // (POCO_CENTER - xScale(data.cement_pad.width * 39.37 * 0.4)) / 2
+              (POCO_CENTER - (POCO_WIDTH + 40)) / 2
+            )
+            .attr('y', yScale(0) - 10)
+            // .attr('width', xScale(data.cement_pad.width * 39.37 * 0.4))
+            .attr('width', POCO_WIDTH + 40)
+            .attr('height', 10)
+            .style('fill', (d) => {
+              svg.call(profileTexture.pad);
+              return profileTexture.pad.url();
+            })
+            .style('stroke', '#303030')
+            .style('stroke-width', '2px')
+            .on('mouseover', (event, d: any) => {
+              showTooltip(
+                event,
+                d,
                 `
-                <span class="${styles.title}">LAJE DE PROTEÇÃO</span>
-                <span class="${styles.primaryInfo}">${data.cement_pad.type}</span>
-                <span class="${styles.secondaryInfo}"><strong>Espessura:</strong> ${data.cement_pad.thickness} m</span>
-                <span class="${styles.secondaryInfo}"><strong>Largura:</strong> ${data.cement_pad.width} m</span>
-                <span class="${styles.secondaryInfo}"><strong>Comprimento:</strong> ${data.cement_pad.length} m</span>
-              `
-              )
-              .style('left', `${event.pageX + 10}px`)
-              .style('top', `${event.pageY + 10}px`);
-          })
-          .on('mouseout', (event, d: any) => {
-            tooltip
-              .transition()
-              .duration(200)
-              .style('opacity', 0)
-              .attr('display', 'hidden')
-              .attr('visibility', 'hidden');
-          });
+              <span class="${styles.title}">LAJE DE PROTEÇÃO</span>
+              <span class="${styles.primaryInfo}">${data.cement_pad.type}</span>
+              <span class="${styles.secondaryInfo}"><strong>Espessura:</strong> 
+              ${data.cement_pad.thickness} m</span>
+              <span class="${styles.secondaryInfo}"><strong>Largura:</strong> ${data.cement_pad.width} m</span>
+              <span class="${styles.secondaryInfo}"><strong>Comprimento:</strong> ${data.cement_pad.length} m</span>
+            `
+              );
+            })
+            .on('mouseout', hideTooltip);
+        }
 
-        const furoGroup = constructionGroup.append('g');
+        const hole = holeGroup.selectAll('rect').data(data.bole_hole);
 
-        const furo = furoGroup.selectAll('rect').data(data.bole_hole);
+        hole
+          .exit()
+          // @ts-ignore
+          .transition(transition)
+          .attr('height', 0)
+          .style('fill', '#000')
+          .remove();
 
-        furo
+        const newHole = hole
           .enter()
           .append('rect')
+          .style('fill', '#fff')
+          .style('opacity', '0.6')
+          .style('stroke', '#303030')
+          .style('stroke-width', '1px');
+
+        newHole
+          // @ts-ignore
+          .merge(hole)
           .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
           .attr('y', (d: any, i) => {
             if (i === 0) return yScale(d.from);
@@ -318,83 +344,72 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           })
           .attr('width', (d: any) => xScale(d.diam_pol))
           .attr('height', (d: any) => yScale(d.to - d.from))
-          .style('fill', '#fff')
-          .style('opacity', '0.6')
-          .style('stroke', '#303030')
-          .style('stroke-width', '1px')
           .on('mouseover', (event, d: any) => {
-            tooltip.transition().duration(200).style('opacity', 1);
-            tooltip
-              .html(
-                `
-                <span class="${styles.title}">FURO</span>
-                <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-                <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
+            showTooltip(
+              event,
+              d,
               `
-              )
-              .style('left', `${event.pageX + 10}px`)
-              .style('top', `${event.pageY + 10}px`);
+              <span class="${styles.title}">FURO</span>
+              <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
+              <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
+          `
+            );
           })
-          .on('mouseout', (event, d: any) => {
-            tooltip
-              .transition()
-              .duration(200)
-              .style('opacity', 0)
-              .attr('display', 'hidden')
-              .attr('visibility', 'hidden');
-          });
-
-        const surfaceCaseGroup = constructionGroup.append('g');
+          .on('mouseout', hideTooltip);
 
         const surfaceCase = surfaceCaseGroup
           .selectAll('rect')
           .data(data.surface_case);
 
         surfaceCase
-          .enter()
-          .append('line')
-          .attr('x1', (d: any) => xScale(d.diam_pol) / 2)
-          .attr('y1', (d: any, i) => {
-            if (i === 0) return 0;
-            return yScale(data.surface_case[i - 1].depth + d.depth);
-          })
-          .attr('x2', (d: any) => xScale(d.diam_pol) / 2)
-          .attr('y2', (d: any, i) => {
-            if (i === 0) return yScale(d.depth);
-            return yScale(data.surface_case[i - 1].depth + d.depth);
-          })
+          .exit()
+          // @ts-ignore
+          .transition(transition)
+          .attr('height', 0)
+          .style('fill', '#000')
+          .remove();
 
-          .style('stroke', 'red')
-          .style('stroke-width', '5px')
-          .on('mouseover', (event, d: any) => {
-            tooltip.transition().duration(200).style('opacity', 1);
-            tooltip
-              .html(
-                `
-                <span class="${styles.title}">FURO</span>
-                <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-                <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
-              `
-              )
-              .style('left', `${event.pageX + 10}px`)
-              .style('top', `${event.pageY + 10}px`);
-          })
-          .on('mouseout', (event, d: any) => {
-            tooltip
-              .transition()
-              .duration(200)
-              .style('opacity', 0)
-              .attr('display', 'hidden')
-              .attr('visibility', 'hidden');
-          });
-
-        const espAnelaGroup = constructionGroup.append('g');
-
-        const espAnelar = espAnelaGroup.selectAll('rect').data(data.hole_fill);
-
-        espAnelar
+        const newSurfaceCase = surfaceCase
           .enter()
           .append('rect')
+          .style('fill', '#000');
+
+        newSurfaceCase
+          // @ts-ignore
+          .merge(surfaceCase)
+          .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
+          .attr('y', (d: any, i) => {
+            if (i === 0) return yScale(d.from);
+            return yScale(data.surface_case[i - 1].depth);
+          })
+          .attr('width', (d: any) => xScale(d.diam_pol))
+          .attr('height', (d: any) => yScale(d.depth))
+          .on('mouseover', (event, d: any) => {
+            showTooltip(
+              event,
+              d,
+              `
+              <span class="${styles.title}">TUBO DE BOCA</span>
+              <span class="${styles.primaryInfo}">Profundidade ${d.depth} m</span>
+              <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
+          `
+            );
+          })
+          .on('mouseout', hideTooltip);
+
+        const holeFill = holeFillGroup.selectAll('rect').data(data.hole_fill);
+
+        holeFill.exit().remove();
+
+        const newHoleFill = holeFill
+          .enter()
+          .append('rect')
+          .style('stroke', '#303030')
+          .style('stroke-width', '2px');
+
+        newHoleFill
+          // @ts-ignore
+          .merge(holeFill)
           .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
           .attr('y', (d: any, i) => {
             if (i === 0) return yScale(d.from);
@@ -406,38 +421,35 @@ const PerfilDrawer = ({ profile }: PDProps) => {
             svg.call(profileTexture[d.type]);
             return profileTexture[d.type].url();
           })
-          .style('stroke', '#303030')
-          .style('stroke-width', '2px')
+
           .on('mouseover', (event, d: any) => {
-            tooltip.transition().duration(200).style('opacity', 1);
-            tooltip
-              .html(
-                `
-                <span class="${styles.title}">ESP. ANELAR</span>
+            showTooltip(
+              event,
+              d,
+              `
+              <span class="${styles.title}">ESP. ANELAR</span>
                 <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
                 <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
                 <span class="${styles.secondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
-              `
-              )
-              .style('left', `${event.pageX + 10}px`)
-              .style('top', `${event.pageY + 10}px`);
+          `
+            );
           })
-          .on('mouseout', (event, d: any) => {
-            tooltip
-              .transition()
-              .duration(200)
-              .style('opacity', 0)
-              .attr('display', 'hidden')
-              .attr('visibility', 'hidden');
-          });
+          .on('mouseout', hideTooltip);
 
-        const revestGroup = constructionGroup.append('g');
+        const wellCase = wellCaseGroup.selectAll('rect').data(data.well_case);
 
-        const revest = revestGroup.selectAll('rect').data(data.well_case);
+        wellCase.exit().remove();
 
-        revest
+        const newWellCase = wellCase
           .enter()
           .append('rect')
+          .style('fill', '#fff')
+          .style('stroke', '#303030')
+          .style('stroke-width', '2px');
+
+        newWellCase
+          // @ts-ignore
+          .merge(wellCase)
           .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
           .attr('y', (d: any, i) => {
             if (i === 0) return yScale(d.from) - 20;
@@ -448,22 +460,17 @@ const PerfilDrawer = ({ profile }: PDProps) => {
             if (i === 0) return yScale(d.to - d.from) + 20;
             return yScale(d.to - d.from);
           })
-          .style('fill', '#fff')
-          .style('stroke', '#303030')
-          .style('stroke-width', '2px')
           .on('mouseover', (event, d: any) => {
-            tooltip.transition().duration(200).style('opacity', 1);
-            tooltip
-              .html(
-                `
-                <span class="${styles.title}">REVESTIMENTO</span>
+            showTooltip(
+              event,
+              d,
+              `
+              <span class="${styles.title}">REVESTIMENTO</span>
                 <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
                 <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong> ${d.diam_pol}"</span>
                 <span class="${styles.secondaryInfo}"><strong>Tipo:</strong> ${d.tipo}</span>
-              `
-              )
-              .style('left', `${event.pageX + 10}px`)
-              .style('top', `${event.pageY + 10}px`);
+          `
+            );
           })
           .on('mouseout', (event, d: any) => {
             tooltip
@@ -474,39 +481,43 @@ const PerfilDrawer = ({ profile }: PDProps) => {
               .attr('visibility', 'hidden');
           });
 
-        const filtrosGroup = constructionGroup.append('g');
+        const wellScreen = wellScreenGroup
+          .selectAll('rect')
+          .data(data.well_screen);
 
-        const filtros = filtrosGroup.selectAll('rect').data(data.well_screen);
+        wellScreen.exit().remove();
 
-        filtros
+        const newWellScreen = wellScreen
           .enter()
           .append('rect')
+          .style('stroke', '#303030')
+          .style('stroke-width', '2px')
+          .style('fill', (d: any) => {
+            svg.call(profileTexture.well_screen);
+            return profileTexture.well_screen.url();
+          });
+
+        newWellScreen
+          // @ts-ignore
+          .merge(wellScreen)
           .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
           .attr('y', (d: any, i) => {
             return yScale(d.from);
           })
           .attr('width', (d: any) => xScale(d.diam_pol))
           .attr('height', (d: any) => yScale(d.to - d.from))
-          .style('fill', (d: any) => {
-            svg.call(profileTexture.well_screen);
-            return profileTexture.well_screen.url();
-          })
-          .style('stroke', '#303030')
-          .style('stroke-width', '2px')
           .on('mouseover', (event, d: any) => {
-            tooltip.transition().duration(200).style('opacity', 1);
-            tooltip
-              .html(
-                `
-                <span class="${styles.title}">FILTROS</span>
+            showTooltip(
+              event,
+              d,
+              `
+              <span class="${styles.title}">FILTROS</span>
                 <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
                 <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong> ${d.diam_pol}"</span>
                 <span class="${styles.secondaryInfo}"><strong>Tipo:</strong> ${d.tipo}</span>
                 <span class="${styles.secondaryInfo}"><strong>Ranhura:</strong> ${d.ranhura_mm}mm</span>
-              `
-              )
-              .style('left', `${event.pageX + 10}px`)
-              .style('top', `${event.pageY + 10}px`);
+          `
+            );
           })
           .on('mouseout', (event, d: any) => {
             tooltip
@@ -546,8 +557,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
       const maxYValues = d3.max(maxValues) || 0;
 
-      // eslint-disable-next-line prefer-const
-
       const yScaleGlobal = d3
         .scaleLinear()
         .domain([0, maxYValues])
@@ -566,8 +575,8 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       const zoom = d3
         .zoom()
         .translateExtent([
-          [-100, -100],
-          [svgWidth + 90, svgHeight + 100],
+          [0, 0],
+          [0, 0],
         ])
         .on('zoom', function (e) {
           const { transform } = e;
