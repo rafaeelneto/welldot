@@ -417,7 +417,7 @@ export const SurfaceCaseLayer = ({
   index,
   onChangeValues,
 }: LayerProps) => {
-  const { depth, diam_pol } = component;
+  const { to, from, diam_pol } = component;
   const updateValues = (newLayer) => {
     onChangeValues(newLayer, index);
   };
@@ -429,18 +429,33 @@ export const SurfaceCaseLayer = ({
           variant="standard"
           className={styles.layerInput}
           id="standard-multiline-flexible"
-          label="Altura"
+          label="De"
           type="number"
           InputProps={{
             endAdornment: <InputAdornment position="end">m</InputAdornment>,
           }}
-          value={depth}
+          value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, depth: event.target.value });
+            updateValues({ ...component, from: event.target.value });
           }}
         />
-
+        <TextField
+          size="small"
+          variant="standard"
+          className={styles.layerInput}
+          id="standard-multiline-flexible"
+          label="Até"
+          type="number"
+          InputProps={{
+            endAdornment: <InputAdornment position="end">m</InputAdornment>,
+          }}
+          value={to}
+          onChange={(event) => {
+            // eslint-disable-next-line implicit-arrow-linebreak
+            updateValues({ ...component, to: event.target.value });
+          }}
+        />
         <TextField
           size="small"
           variant="standard"

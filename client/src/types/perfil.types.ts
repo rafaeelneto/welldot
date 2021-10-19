@@ -37,7 +37,9 @@ export type HOLE_FILL_COMPONENT_TYPE = {
 };
 
 export type SURFACE_CASE_COMPONENT_TYPE = {
-  depth: number;
+  from: number;
+  to: number;
+  // depth: number;
   diam_pol: number;
 };
 

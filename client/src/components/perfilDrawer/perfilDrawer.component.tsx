@@ -72,9 +72,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
   const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
   const WIDTH = 200 - MARGINS.LEFT - MARGINS.RIGHT;
 
-  const [openError, setOpenError] = useState(false);
-  const [scaleY, setScaleY] = useState(7);
-
   const tooltip = d3
     .select('body')
     .append('div')
@@ -206,29 +203,10 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           .append('rect')
           .attr('x', POCO_CENTER)
           .attr('x', 10)
-          .style('opacity', 0.5)
           .attr('width', POCO_CENTER)
           .style('stroke', '#101010')
-          .style('stroke-width', '1px');
-
-        newLayers
-          // @ts-ignore
-          .merge(rects)
-          .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
-            if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
-              return litologicalFill[`${d.fgdc_texture}.${d.from}`];
-            }
-            svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
-            return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
-          })
-          .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-            if (i === 0) return yScale(d.from);
-            return yScale(data[i - 1].to);
-          })
-          .attr('height', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-            return yScale(d.to - d.from);
-          })
-          .on('mouseover', (event, d) => {
+          .style('stroke-width', '1px')
+          .on('mouseover', (event, d: any) => {
             showTooltip(
               event,
               d,
@@ -240,8 +218,29 @@ const PerfilDrawer = ({ profile }: PDProps) => {
             );
           })
           .on('mouseout', hideTooltip);
+
+        newLayers
+          // @ts-ignore
+          .merge(rects)
+          .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
+            if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
+              return litologicalFill[`${d.fgdc_texture}.${d.from}`];
+            }
+            svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
+            return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
+          })
+          // @ts-ignore
+          .transition(transition)
+          .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+            if (i === 0) return yScale(d.from);
+            return yScale(data[i - 1].to);
+          })
+          .attr('height', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+            return yScale(d.to - d.from);
+          });
       };
 
+      const cementPadGroup = constructionGroup.append('g');
       const holeGroup = constructionGroup.append('g');
       const surfaceCaseGroup = constructionGroup.append('g');
       const holeFillGroup = constructionGroup.append('g');
@@ -274,16 +273,18 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         constructionGroup.selectAll('.cement_pad').remove();
 
         if (data.cement_pad && data.cement_pad.thickness) {
-          constructionGroup
+          const cementPad = cementPadGroup
+            .selectAll('rect')
+            .data([data.cement_pad]);
+
+          cementPad.exit().remove();
+
+          const newCementPad = cementPad
+            .enter()
             .append('rect')
             .attr('class', 'cement_pad')
-            .attr(
-              'x',
-              // (POCO_CENTER - xScale(data.cement_pad.width * 39.37 * 0.4)) / 2
-              (POCO_CENTER - (POCO_WIDTH + 40)) / 2
-            )
+            .attr('x', (POCO_CENTER - (POCO_WIDTH + 40)) / 2)
             .attr('y', yScale(0) - 10)
-            // .attr('width', xScale(data.cement_pad.width * 39.37 * 0.4))
             .attr('width', POCO_WIDTH + 40)
             .attr('height', 10)
             .style('fill', (d) => {
@@ -291,7 +292,9 @@ const PerfilDrawer = ({ profile }: PDProps) => {
               return profileTexture.pad.url();
             })
             .style('stroke', '#303030')
-            .style('stroke-width', '2px')
+            .style('stroke-width', '2px');
+
+          newCementPad
             .on('mouseover', (event, d: any) => {
               showTooltip(
                 event,
@@ -373,10 +376,10 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
           .attr('y', (d: any, i) => {
             if (i === 0) return yScale(d.from);
-            return yScale(data.surface_case[i - 1].depth);
+            return yScale(data.surface_case[i - 1].to);
           })
           .attr('width', (d: any) => xScale(d.diam_pol))
-          .attr('height', (d: any) => yScale(d.depth))
+          .attr('height', (d: any) => yScale(d.to - d.from))
           .on('mouseover', (event, d: any) => {
             showTooltip(
               event,
@@ -557,56 +560,49 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
       const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
 
-      const gY = litoligicalGroup.append('g').attr('class', styles.yAxis);
-      // z holds a copy of the previous transform, so we can track its changes
-      let z = d3.zoomIdentity;
+      const gY = litoligicalGroup
+        .append('g')
+        .attr('class', styles.yAxis)
+        .call(yAxis);
 
-      // set up the ancillary zooms and an accessor for their transforms
-      const zoomY = d3.zoom().scaleExtent([0.2, 5]);
+      const spanY = (d) => {
+        if (d.thickness) return yScaleGlobal(0) - 10;
+        return yScaleGlobal(d.from);
+      };
+
+      const spanH = (d) => {
+        if (d.thickness) return 10;
+        return yScaleGlobal(d.to - d.from);
+      };
+
       // @ts-ignore
-      const ty = () => d3.zoomTransform(gY.node());
-      // @ts-ignore
-      gY.call(zoomY).attr('pointer-events', 'none');
+      const zoom = d3
+        .zoom()
+        .scaleExtent([0.2, 5])
+        .on('zoom', (e) => {
+          // eslint-disable-next-line prefer-destructuring
+          const transform = e.transform;
+          gY.call(yAxis.scale(transform.rescaleY(yScaleGlobal)));
+          pocoGroup
+            .selectAll('rect')
+            .attr('y', (d) => {
+              if (!d) return null;
+              return transform.applyY(spanY(d));
+            })
+            .attr('height', (d) => {
+              if (!d) return null;
+              return transform.k * spanH(d);
+            });
+        });
 
       drawProfile();
 
-      const zoom = d3.zoom().on('zoom', function (e) {
-        const t = e.transform;
-        const k = t.k / z.k;
-        const point = center(e, this);
-
-        if (k === 1) {
-          // pure translation?
-          // @ts-ignore
-          gY.call(zoomY.translateBy, 0, (t.y - z.y) / ty().k);
-        } else {
-          // if not, we're zooming on a fixed point
-          // @ts-ignore
-          gY.call(zoomY.scaleBy, k, point);
-        }
-
-        z = t;
-
-        drawProfile();
-      });
-
       // @ts-ignore
-      svg.call(zoom).call(zoom.transform, d3.zoomIdentity.scale(0.8)).node();
+      svg.call(zoom);
 
       function drawProfile() {
-        const yr = ty().rescaleY(yScaleGlobal);
-        yAxis.scale(yr);
-        gY.call(yAxis, yr);
-        if (geologicData) updateGeology(geologicData, yr);
-        if (constructionData) updatePoco(constructionData, yr);
-      }
-
-      function center(event, target) {
-        if (event.sourceEvent) {
-          const p = d3.pointers(event, target);
-          return [d3.mean(p, (d) => d[0]), d3.mean(p, (d) => d[1])];
-        }
-        return [svgWidth / 2, svgHeight / 2];
+        if (geologicData) updateGeology(geologicData, yScaleGlobal);
+        if (constructionData) updatePoco(constructionData, yScaleGlobal);
       }
     },
 
@@ -649,19 +645,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       ) : (
         ''
       )} */}
-
-      <Snackbar
-        className="warningSnackBar"
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={openError}
-        autoHideDuration={6000}
-        onClose={() => {
-          setOpenError(false);
-        }}
-        message="Alguns recursos não estão disponíveis como as texturas das camadas. Por favor, verifique sua conexão"
-        // eslint-disable-next-line no-useless-concat
-        key={'top' + 'center'}
-      />
       {noPerfil ? (
         <span className={styles.noFilesMsg}>Perfil não configurado</span>
       ) : (

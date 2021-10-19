@@ -121,7 +121,8 @@ const HOLE_FILL_COMPONENT_DEFAULT: HOLE_FILL_COMPONENT_TYPE = {
   description: '',
 };
 const SURFACE_CASE_COMPONENT_DEFAULT: SURFACE_CASE_COMPONENT_TYPE = {
-  depth: 20,
+  from: 0,
+  to: 20,
   diam_pol: 10,
 };
 
@@ -511,8 +512,11 @@ const PerfilEditor = ({
           if (perfilImported.construtivo.tubo_boca.length > 0) {
             perfilConverted.constructive.surface_case =
               perfilImported.construtivo.tubo_boca.map((camada) => {
+                const depth =
+                  parseFloat(camada.altura) || parseFloat(camada.depth) || 0;
                 return {
-                  depth: parseFloat(camada.altura) || 0,
+                  from: camada.from || 0,
+                  to: camada.to || depth,
                   diam_pol: parseFloat(camada.diam_pol) || 0,
                 };
               });
