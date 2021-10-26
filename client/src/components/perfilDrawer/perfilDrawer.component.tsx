@@ -8,7 +8,7 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
-import fdgcTextures from '../../assets/fgdcTextures';
+import fdgcTextures from '../../utils/fgdcTextures';
 
 import { APIPost, API_ENDPOINTS } from '../../utils/fetchAPI';
 
@@ -269,13 +269,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       newLayers
         // @ts-ignore
         .merge(rects)
-        .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
-          if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
-            return litologicalFill[`${d.fgdc_texture}.${d.from}`];
-          }
-          svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
-          return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
-        })
+
         .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
           if (i === 0) return yScale(d.from);
           return yScale(data[i - 1].to);
@@ -284,6 +278,13 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .transition(transition)
         .attr('height', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
           return yScale(d.to - d.from);
+        })
+        .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
+          if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
+            return litologicalFill[`${d.fgdc_texture}.${d.from}`];
+          }
+          svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
+          return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
         });
     };
 
@@ -695,8 +696,9 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       {noPerfil ? (
         <span className={styles.noFilesMsg}>Perfil não configurado</span>
       ) : (
-        <svg className={`${styles.svgContainer}`} ref={svgContainer} />
+        ''
       )}
+      <svg className={`${styles.svgContainer}`} ref={svgContainer} />
     </>
   );
 };

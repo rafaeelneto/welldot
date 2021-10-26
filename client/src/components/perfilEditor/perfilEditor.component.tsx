@@ -27,9 +27,18 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
 import Checkbox from '@mui/material/Checkbox';
 
-import { Trash, PlusCircle, Upload, Download, XCircle } from 'react-feather';
+import {
+  Trash,
+  PlusCircle,
+  Upload,
+  Download,
+  XCircle,
+  FileText,
+} from 'react-feather';
 
 import download from 'downloadjs';
+
+import { usePrint } from '../print/print.component';
 
 import PerfilDrawer from '../perfilDrawer/perfilDrawer.component';
 
@@ -248,6 +257,8 @@ const PerfilEditor = ({
   const [cementPadChecked, setcementPadChecked] = useState(false);
 
   const [tabValue, setTabValue] = React.useState(0);
+
+  const pdfGenerate = usePrint();
 
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
@@ -590,6 +601,17 @@ const PerfilEditor = ({
               // eslint-disable-next-line no-useless-concat
               key={'top' + 'center'}
             />
+            <Button
+              className={styles.mainBtns}
+              onClick={() => {
+                // call pdf function
+                pdfGenerate();
+              }}
+              startIcon={<FileText />}
+              color="primary"
+            >
+              Exportar PDF
+            </Button>
             <Button
               className={styles.mainBtns}
               onClick={() => {
