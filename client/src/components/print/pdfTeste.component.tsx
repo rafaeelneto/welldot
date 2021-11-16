@@ -1,3 +1,4 @@
+/* eslint-disable one-var */
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Snackbar, Slider } from '@mui/material';
@@ -24,7 +25,7 @@ import {
   CONSTRUCTIVE_COMPONENT_TYPE,
 } from '../../types/perfil.types';
 
-import styles from './perfilDrawer.module.scss';
+import styles from './pdfTeste.module.scss';
 
 const d3 = {
   ...d3module,
@@ -65,38 +66,12 @@ const getLithologicalFill = (data) => {
   return litologicalFill;
 };
 
-const PerfilDrawer = ({ profile }: PDProps) => {
-  console.log(profile);
+const PDFTeste = ({ profile }: PDProps) => {
   const svgContainer = useRef(null);
-
-  const [firstRender, setFirstRender] = useState(true);
 
   const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 50 };
   const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
-  const WIDTH = 200 - MARGINS.LEFT - MARGINS.RIGHT;
-
-  const tooltip = d3
-    .select('body')
-    .append('div')
-    .attr('class', styles.tooltip)
-    .style('opacity', 0);
-
-  const showTooltip = (event, d: any, html: string) => {
-    tooltip.transition().duration(200).style('opacity', 1);
-    tooltip
-      .html(html)
-      .style('left', `${event.pageX + 10}px`)
-      .style('top', `${event.pageY + 10}px`);
-  };
-
-  const hideTooltip = (event, d: any) => {
-    tooltip
-      .transition()
-      .duration(200)
-      .style('opacity', 0)
-      .attr('display', 'hidden')
-      .attr('visibility', 'hidden');
-  };
+  const WIDTH = 500 - MARGINS.LEFT - MARGINS.RIGHT;
 
   const setSVGContainer = () => {
     if (!svgContainer.current) return;
@@ -135,6 +110,46 @@ const PerfilDrawer = ({ profile }: PDProps) => {
     drawLog();
   };
 
+  function wrap(textSet, width) {
+    textSet.each(function (textEl) {
+      // @ts-ignore
+      // eslint-disable-next-line no-shadow
+      const text = d3.select(this);
+      const words = text.text().split(/\s+/).reverse();
+      let word: any | never = '';
+      let line: any[] = [];
+      let lineNumber = 0;
+      const lineHeight = 1.1; // ems
+      const x = text.attr('x');
+      const y = text.attr('y');
+      const dy = parseFloat(text.attr('dy'));
+      let tspan = text
+        .text(null)
+        .append('tspan')
+        .attr('x', x)
+        .attr('y', y)
+        .attr('dy', `${dy}em`);
+
+      // eslint-disable-next-line no-cond-assign
+      while ((word = words.pop())) {
+        line.push(word);
+        tspan.text(line.join(' '));
+
+        if (tspan!.node!()!.getComputedTextLength() > width) {
+          line.pop();
+          tspan.text(line.join(' '));
+          line = [word];
+          tspan = text
+            .append('tspan')
+            .attr('x', x)
+            .attr('y', y)
+            .attr('dy', `${++lineNumber * lineHeight + dy}em`)
+            .text(word);
+        }
+      }
+    });
+  }
+
   const drawLog = () => {
     if (!svgContainer.current) return;
     if (!profile.constructive || !profile.geologic) return;
@@ -161,51 +176,11 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .background('#fff'),
     };
 
-    function responsivefy(svg) {
-      // container will be the DOM element
-      // that the svg is appended to
-      // we then measure the container
-      // and find its aspect ratio
-      const container = d3.select(svg.node().parentNode);
+    const svg = d3.select(svgContainer.current);
 
-      const width = svg.style('width');
-      const height = svg.style('height');
-
-      // set viewBox attribute to the initial size
-      // control scaling with preserveAspectRatio
-      // resize svg on inital page load
-      svg
-        .attr('viewBox', `0 0 ${width} ${height}`)
-        .attr('preserveAspectRatio', 'xMinYMid')
-        .call(resize);
-
-      // add a listener so the chart will be resized
-      // when the window resizes
-      // multiple listeners for the same event type
-      // requires a namespace, i.e., 'click.foo'
-      // api docs: https://goo.gl/F3ZCFr
-      d3.select(window).on('resize.' + container.attr('id'), resize);
-
-      // this is the code that resizes the chart
-      // it will be called on load
-      // and in response to window resizes
-      // gets the width of the container
-      // and resizes the svg to fill it
-      // while maintaining a consistent aspect ratio
-      function resize() {
-        const h = parseInt(container.style('height').slice(0, -2));
-        const w = parseInt(container.style('width').slice(0, -2));
-
-        svg.attr('width', w);
-        svg.attr('height', h);
-      }
-    }
-
-    const svg = d3
-      .select(svgContainer.current)
+    svg
       .attr('height', HEIGHT + MARGINS.TOP + MARGINS.BOTTOM)
-      .attr('width', WIDTH + MARGINS.LEFT + MARGINS.RIGHT)
-      .call(responsivefy);
+      .attr('width', WIDTH + MARGINS.LEFT + MARGINS.RIGHT);
 
     const pocoGroup = svg.select('.poco-group');
 
@@ -227,56 +202,29 @@ const PerfilDrawer = ({ profile }: PDProps) => {
     const wellCaseGroup = constructionGroup.select('.well-case');
     const wellScreenGroup = constructionGroup.select('.well-screen');
 
-    const svgWidth: any = d3.select(svgContainer.current).attr('width');
     const svgHeight: any = d3.select(svgContainer.current).attr('height');
 
-    const POCO_WIDTH = svgWidth / 4;
-    const POCO_CENTER = (svgWidth * 3) / 4;
-
-    const transition = d3.transition().duration(750).ease(d3.easeCubic);
+    const POCO_WIDTH = 120;
+    const POCO_CENTER = 150;
 
     const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
-      const tipGeology = d3
-        .tip()
-        .attr('class', styles.tooltip)
-        .direction('e')
-        .html(function (element, d) {
-          return `
-              <span class="${styles.title}">Litologia</span>
-              <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-              <span class="${styles.secondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
-          `;
-        });
-
-      svg.call(tipGeology);
-
       const litologicalFill = getLithologicalFill(data);
 
-      const rects = litoligicalGroup.selectAll('rect').data(data);
+      const layerGroup = litoligicalGroup.append('g');
 
-      rects.exit().remove();
+      const layers = layerGroup.selectAll('rect').data(data);
 
-      const newLayers = rects
+      layers
         .enter()
         .append('rect')
-        .attr('x', POCO_CENTER)
         .attr('x', 10)
-        .attr('width', POCO_CENTER)
+        .attr('width', 150)
         .style('stroke', '#101010')
         .style('stroke-width', '1px')
-        .on('mouseover', tipGeology.show)
-        .on('mouseout', tipGeology.hide);
-
-      newLayers
-        // @ts-ignore
-        .merge(rects)
-
         .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
           if (i === 0) return yScale(d.from);
           return yScale(data[i - 1].to);
         })
-        // @ts-ignore
-        .transition(transition)
         .attr('height', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
           return yScale(d.to - d.from);
         })
@@ -286,6 +234,112 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           }
           svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
           return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
+        });
+
+      const LABELS_MARGINS = { top: 7, button: 5 };
+
+      const labelGroup = litoligicalGroup.append('g');
+
+      const labels = labelGroup.selectAll('text').data(data);
+
+      labels.exit().remove();
+
+      let currYPosLabel = 0;
+
+      labels
+        .enter()
+        .append('text')
+        .attr('class', (d) => `text-${d.from}`)
+        .attr('x', 400)
+        .attr('dy', '.35em')
+        .attr('font-size', 10)
+        .text((d) => {
+          return d.description;
+        })
+        .call(wrap, 300)
+        .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+          if (i > 0) {
+            const lastTextHeight =
+              // @ts-ignore
+              (d3
+                .select(`.text-${data[i - 1].from}`)
+                .node()
+                // @ts-ignore
+                .getBoundingClientRect().height || 0) +
+              LABELS_MARGINS.top +
+              LABELS_MARGINS.button;
+
+            const calculatedY = currYPosLabel + lastTextHeight;
+
+            if (
+              yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
+              calculatedY
+            ) {
+              currYPosLabel = calculatedY;
+
+              return calculatedY;
+            }
+          }
+
+          currYPosLabel = yScale(d.from) + LABELS_MARGINS.top;
+          return yScale(d.from) + LABELS_MARGINS.top;
+        });
+
+      const dividersGroup = litoligicalGroup.append('g');
+
+      const dividers = dividersGroup.selectAll('g').data(data);
+
+      let currYPosDiv = 0;
+
+      dividers
+        .enter()
+        .append('g')
+        .append('path')
+        .attr('class', 'lines')
+        .attr('fill', 'none')
+        .style('stroke', '#101010')
+        .style('stroke-width', '1px')
+        // eslint-disable-next-line no-unused-vars
+        // @ts-ignore
+        .attr('d', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+          let curveCoordinates: any[] = [[700, yScale(d.from)]];
+
+          if (i > 0) {
+            const lastTextHeight =
+              // @ts-ignore
+              (d3
+                .select(`.text-${data[i - 1].from}`)
+                .node()
+                // @ts-ignore
+                .getBoundingClientRect().height || 0) +
+              LABELS_MARGINS.top +
+              LABELS_MARGINS.button;
+
+            const calculatedY = currYPosDiv + lastTextHeight;
+
+            if (
+              yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
+              calculatedY
+            ) {
+              curveCoordinates = [
+                [395, calculatedY],
+                [700, calculatedY],
+              ];
+
+              currYPosDiv = calculatedY;
+            } else {
+              currYPosDiv = yScale(d.from);
+              curveCoordinates = [[700, yScale(d.from)]];
+            }
+          } else {
+            currYPosDiv = yScale(d.from);
+          }
+
+          return d3.line()([
+            [10, yScale(d.from)],
+            [380, yScale(d.from)],
+            ...curveCoordinates,
+          ]);
         });
     };
 
@@ -313,23 +367,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       constructionGroup.selectAll('.cement_pad').remove();
 
       if (data.cement_pad && data.cement_pad.thickness) {
-        const tipCP = d3
-          .tip()
-          .attr('class', styles.tooltip)
-          .direction('e')
-          .html((element, d) => {
-            return `
-            <span class="${styles.title}">LAJE DE PROTEÇÃO</span>
-            <span class="${styles.primaryInfo}">${data.cement_pad.type}</span>
-            <span class="${styles.secondaryInfo}"><strong>Espessura:</strong> 
-            ${data.cement_pad.thickness} m</span>
-            <span class="${styles.secondaryInfo}"><strong>Largura:</strong> ${data.cement_pad.width} m</span>
-            <span class="${styles.secondaryInfo}"><strong>Comprimento:</strong> ${data.cement_pad.length} m</span>
-          `;
-          });
-
-        svg.call(tipCP);
-
         const cementPad = cementPadGroup
           .selectAll('rect')
           .data([data.cement_pad]);
@@ -354,23 +391,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           })
           .style('stroke', '#303030')
           .style('stroke-width', '2px');
-
-        newCementPad.on('mouseover', tipCP.show).on('mouseout', tipCP.hide);
       }
-
-      const tipHole = d3
-        .tip()
-        .attr('class', styles.tooltip)
-        .direction('e')
-        .html((element, d) => {
-          return `
-          <span class="${styles.title}">FURO</span>
-          <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-          <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
-          `;
-        });
-
-      svg.call(tipHole);
 
       const hole = holeGroup.selectAll('rect').data(data.bole_hole);
 
@@ -382,83 +403,40 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .style('fill', '#fff')
         .style('opacity', '0.6')
         .style('stroke', '#303030')
-        .style('stroke-width', '1px')
-        .on('mouseover', tipHole.show)
-        .on('mouseout', tipHole.hide);
+        .style('stroke-width', '1px');
 
       newHole
         // @ts-ignore
         .merge(hole)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        // @ts-ignore
-        .transition(transition)
         .attr('y', (d: any, i) => {
           if (i === 0) return yScale(d.from);
           return yScale(data.bole_hole[i - 1].to);
         })
         .attr('height', (d: any) => yScale(d.to - d.from));
 
-      const tipSC = d3
-        .tip()
-        .attr('class', styles.tooltip)
-        .direction('e')
-        .html((element, d) => {
-          return `
-            <span class="${styles.title}">TUBO DE BOCA</span>
-            <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-            <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
-          `;
-        });
-
-      svg.call(tipSC);
-
       const surfaceCase = surfaceCaseGroup
         .selectAll('rect')
         .data(data.surface_case);
 
-      surfaceCase
-        .exit()
-        // @ts-ignore
-        .transition(transition)
-        .attr('height', 0)
-        .style('fill', '#000')
-        .remove();
+      surfaceCase.exit().attr('height', 0).style('fill', '#000').remove();
 
       const newSurfaceCase = surfaceCase
         .enter()
         .append('rect')
-        .style('fill', '#000')
-        .on('mouseover', tipSC.show)
-        .on('mouseout', tipSC.hide);
+        .style('fill', '#000');
 
       newSurfaceCase
         // @ts-ignore
         .merge(surfaceCase)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        // @ts-ignore
-        .transition(transition)
         .attr('y', (d: any, i) => {
           if (i === 0) return yScale(d.from);
           return yScale(data.surface_case[i - 1].to);
         })
         .attr('height', (d: any) => yScale(d.to - d.from));
-
-      const tipHoleFill = d3
-        .tip()
-        .attr('class', styles.tooltip)
-        .direction('e')
-        .html((element, d) => {
-          return `
-          <span class="${styles.title}">ESP. ANELAR</span>
-          <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-          <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
-          <span class="${styles.secondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
-          `;
-        });
-
-      svg.call(tipHoleFill);
 
       const holeFill = holeFillGroup.selectAll('rect').data(data.hole_fill);
 
@@ -468,17 +446,13 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .enter()
         .append('rect')
         .style('stroke', '#303030')
-        .style('stroke-width', '2px')
-        .on('mouseover', tipHoleFill.show)
-        .on('mouseout', tipHoleFill.hide);
+        .style('stroke-width', '2px');
 
       newHoleFill
         // @ts-ignore
         .merge(holeFill)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        // @ts-ignore
-        .transition(transition)
         .attr('y', (d: any, i) => {
           if (i === 0) return yScale(d.from);
           return yScale(data.hole_fill[i - 1].to);
@@ -489,21 +463,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           return profileTexture[d.type].url();
         });
 
-      const tipWellCase = d3
-        .tip()
-        .attr('class', styles.tooltip)
-        .direction('e')
-        .html((element, d) => {
-          return `
-          <span class="${styles.title}">REVESTIMENTO</span>
-              <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-              <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong> ${d.diam_pol}"</span>
-              <span class="${styles.secondaryInfo}"><strong>Tipo:</strong> ${d.tipo}</span>
-          `;
-        });
-
-      svg.call(tipWellCase);
-
       const wellCase = wellCaseGroup.selectAll('rect').data(data.well_case);
 
       wellCase.exit().remove();
@@ -513,17 +472,13 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .append('rect')
         .style('fill', '#fff')
         .style('stroke', '#303030')
-        .style('stroke-width', '2px')
-        .on('mouseover', tipWellCase.show)
-        .on('mouseout', tipWellCase.hide);
+        .style('stroke-width', '2px');
 
       newWellCase
         // @ts-ignore
         .merge(wellCase)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        // @ts-ignore
-        .transition(transition)
         .attr('y', (d: any, i) => {
           if (i === 0) return yScale(d.from);
           return yScale(d.from);
@@ -532,22 +487,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           if (i === 0) return yScale(d.to - d.from);
           return yScale(d.to - d.from);
         });
-
-      const tipWellScreen = d3
-        .tip()
-        .attr('class', styles.tooltip)
-        .direction('e')
-        .html((element, d) => {
-          return `
-          <span class="${styles.title}">FILTROS</span>
-              <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
-              <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong> ${d.diam_pol}"</span>
-              <span class="${styles.secondaryInfo}"><strong>Tipo:</strong> ${d.tipo}</span>
-              <span class="${styles.secondaryInfo}"><strong>Ranhura:</strong> ${d.ranhura_mm}mm</span>
-          `;
-        });
-
-      svg.call(tipWellScreen);
 
       const wellScreen = wellScreenGroup
         .selectAll('rect')
@@ -563,17 +502,13 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .style('fill', (d: any) => {
           svg.call(profileTexture.well_screen);
           return profileTexture.well_screen.url();
-        })
-        .on('mouseover', tipWellScreen.show)
-        .on('mouseout', tipWellScreen.hide);
+        });
 
       newWellScreen
         // @ts-ignore
         .merge(wellScreen)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        // @ts-ignore
-        .transition(transition)
         .attr('y', (d: any, i) => {
           return yScale(d.from);
         })
@@ -605,49 +540,19 @@ const PerfilDrawer = ({ profile }: PDProps) => {
     const yScaleGlobal = d3
       .scaleLinear()
       .domain([0, maxYValues])
-      .range([0, svgHeight - MARGINS.TOP - MARGINS.BOTTOM]);
+      .range([0, 8 * maxYValues]);
+
+    svg.attr('height', 10 * maxYValues + MARGINS.TOP + MARGINS.BOTTOM);
 
     const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
 
     // @ts-ignore
     const gY = litoligicalGroup.select(`.${styles.yAxis}`).call(yAxis);
 
-    const spanY = (d) => {
-      if (d.thickness) return yScaleGlobal(0) - yScaleGlobal(d.thickness * 4);
-      return yScaleGlobal(d.from);
-    };
-
-    const spanH = (d) => {
-      if (d.thickness) return yScaleGlobal(d.thickness * 4);
-      return yScaleGlobal(d.to - d.from);
-    };
-
-    // @ts-ignore
-    const zoom = d3
-      .zoom()
-      .scaleExtent([0.2, 5])
-      .on('zoom', (e) => {
-        // eslint-disable-next-line prefer-destructuring
-        const transform = e.transform;
-
-        // @ts-ignore
-        gY.call(yAxis.scale(transform.rescaleY(yScaleGlobal)));
-        pocoGroup
-          .selectAll('rect')
-          .attr('y', (d) => {
-            if (!d) return null;
-            return transform.applyY(spanY(d));
-          })
-          .attr('height', (d) => {
-            if (!d) return null;
-            return transform.k * spanH(d);
-          });
-      });
-
     drawProfile();
 
     // @ts-ignore
-    svg.call(zoom);
+    // svg.call(zoom);
 
     function drawProfile() {
       if (geologicData) updateGeology(geologicData, yScaleGlobal);
@@ -676,24 +581,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
   }
   return (
     <>
-      {/* {!noPerfil ? (
-        <div className={styles.scaleInput}>
-          Escala vertical mínima
-          <Slider
-            size="small"
-            defaultValue={scaleY}
-            onChange={(event, value) => {
-              setScaleY(value[0] || value);
-            }}
-            min={4}
-            max={15}
-            aria-label="Small"
-            valueLabelDisplay="auto"
-          />
-        </div>
-      ) : (
-        ''
-      )} */}
       {noPerfil ? (
         <span className={styles.noFilesMsg}>Perfil não configurado</span>
       ) : (
@@ -704,4 +591,4 @@ const PerfilDrawer = ({ profile }: PDProps) => {
   );
 };
 
-export default PerfilDrawer;
+export default PDFTeste;

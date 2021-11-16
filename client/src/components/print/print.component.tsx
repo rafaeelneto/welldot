@@ -7,9 +7,9 @@ import BlobStream from 'blob-stream';
 
 import '../../register-files';
 
-export const usePrint = () => {
+export const pdfExportProfile = () => {
   const wellName = 'P1 - TESTE';
-  const print = () => {
+  const pdfGenerate = () => {
     const doc = new PDFDocument({
       size: 'A4',
       margins: 50,
@@ -17,8 +17,11 @@ export const usePrint = () => {
     const stream = doc.pipe(BlobStream());
 
     doc.registerFont('Roboto', 'fonts/Roboto-Regular.ttf');
+
+    doc.font = 'Roboto';
+
     // Add another page
-    doc.text('Hello world!', 1, 1);
+    doc.text('Hello world!', 20, 20);
 
     doc.end();
     stream.on('finish', function () {
@@ -29,5 +32,5 @@ export const usePrint = () => {
     });
   };
 
-  return print;
+  return pdfGenerate;
 };

@@ -38,7 +38,7 @@ import {
 
 import download from 'downloadjs';
 
-import { usePrint } from '../print/print.component';
+import { pdfExportProfile } from '../print/print.component';
 
 import PerfilDrawer from '../perfilDrawer/perfilDrawer.component';
 
@@ -258,7 +258,7 @@ const PerfilEditor = ({
 
   const [tabValue, setTabValue] = React.useState(0);
 
-  const pdfGenerate = usePrint();
+  const pdfGenerate = pdfExportProfile();
 
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
