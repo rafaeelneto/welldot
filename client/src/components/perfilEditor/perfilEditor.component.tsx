@@ -42,6 +42,9 @@ import { pdfExportProfile } from '../print/print.component';
 
 import PerfilDrawer from '../perfilDrawer/perfilDrawer.component';
 
+import PDFExport from '../print/pdfExport.component';
+import profile2Export from '../print/profile2Export.component';
+
 import {
   BoreHoleLayer,
   HoleFillLayer,
@@ -251,6 +254,8 @@ const PerfilEditor = ({
 
   const [profileState, setPerfilState] = useState(PROFILE_DEFAULT);
   const [changesCounter, setChangesCounter] = useState(0);
+
+  const [shouldExport, setShouldExport] = useState(false);
 
   const [openImportErrorS, setOpenImportErrorS] = useState(false);
 
@@ -565,6 +570,15 @@ const PerfilEditor = ({
 
   return (
     <div className={styles.root}>
+      {/* <div style={{ overflow: 'hidden', height: 0, width: 0 }}>
+        <PDFExport
+          profile={profileState}
+          render={shouldExport}
+          onRenderFinish={() => {
+            setShouldExport(false);
+          }}
+        />
+      </div> */}
       <div className={styles.wrapper}>
         <div className={styles.headerContainer}>
           <InputBase
@@ -605,13 +619,15 @@ const PerfilEditor = ({
               className={styles.mainBtns}
               onClick={() => {
                 // call pdf function
-                pdfGenerate();
+                // pdfGenerate()
+                profile2Export({ ...profileState });
               }}
               startIcon={<FileText />}
               color="primary"
             >
               Exportar PDF
             </Button>
+
             <Button
               className={styles.mainBtns}
               onClick={() => {

@@ -1,7 +1,9 @@
 /* eslint-disable one-var */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import { Snackbar, Slider } from '@mui/material';
+import { Button } from '@mui/material';
+
+import { FileText } from 'react-feather';
 
 import * as d3module from 'd3';
 import d3tip from 'd3-tip';
@@ -9,9 +11,8 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
+import { pdfExportProfile } from './print.component';
 import fdgcTextures from '../../utils/fgdcTextures';
-
-import { APIPost, API_ENDPOINTS } from '../../utils/fetchAPI';
 
 import {
   GEOLOGIC_COMPONENT_TYPE,
@@ -25,7 +26,7 @@ import {
   CONSTRUCTIVE_COMPONENT_TYPE,
 } from '../../types/perfil.types';
 
-import styles from './pdfTeste.module.scss';
+import styles from './pdfExport.module.scss';
 
 const d3 = {
   ...d3module,
@@ -34,6 +35,8 @@ const d3 = {
 
 type PDProps = {
   profile: PROFILE_TYPE;
+  render: boolean;
+  onRenderFinish: () => void;
 };
 
 const getLithologicalFill = (data) => {
@@ -66,12 +69,14 @@ const getLithologicalFill = (data) => {
   return litologicalFill;
 };
 
-const PDFTeste = ({ profile }: PDProps) => {
+const PDFExport = ({ profile, render, onRenderFinish }: PDProps) => {
   const svgContainer = useRef(null);
+
+  const pdfGenerate = pdfExportProfile();
 
   const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 50 };
   const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
-  const WIDTH = 500 - MARGINS.LEFT - MARGINS.RIGHT;
+  const WIDTH = 950 - MARGINS.LEFT - MARGINS.RIGHT;
 
   const setSVGContainer = () => {
     if (!svgContainer.current) return;
@@ -151,7 +156,7 @@ const PDFTeste = ({ profile }: PDProps) => {
   }
 
   const drawLog = () => {
-    if (!svgContainer.current) return;
+    // if (!svgContainer.current) return;
     if (!profile.constructive || !profile.geologic) return;
 
     const noPerfil =
@@ -176,7 +181,10 @@ const PDFTeste = ({ profile }: PDProps) => {
         .background('#fff'),
     };
 
-    const svg = d3.select(svgContainer.current);
+    const svg = d3.select('#svgCanvas2Export');
+
+    console.log(d3.select('#svgCanvas2Export').attr('id'));
+    console.log('fadsfa');
 
     svg
       .attr('height', HEIGHT + MARGINS.TOP + MARGINS.BOTTOM)
@@ -190,10 +198,7 @@ const PDFTeste = ({ profile }: PDProps) => {
 
     const constructionGroup = svg
       .select('.const-group')
-      .attr(
-        'transform',
-        `translate(${MARGINS.LEFT + WIDTH / 2}, ${MARGINS.TOP})`
-      );
+      .attr('transform', `translate(${MARGINS.LEFT}, ${MARGINS.TOP})`);
 
     const cementPadGroup = constructionGroup.select('.cement-pad');
     const holeGroup = constructionGroup.select('.hole');
@@ -202,10 +207,10 @@ const PDFTeste = ({ profile }: PDProps) => {
     const wellCaseGroup = constructionGroup.select('.well-case');
     const wellScreenGroup = constructionGroup.select('.well-screen');
 
-    const svgHeight: any = d3.select(svgContainer.current).attr('height');
+    const svgHeight: any = svg.attr('height');
 
     const POCO_WIDTH = 120;
-    const POCO_CENTER = 150;
+    const POCO_CENTER = 550;
 
     const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
       const litologicalFill = getLithologicalFill(data);
@@ -547,7 +552,14 @@ const PDFTeste = ({ profile }: PDProps) => {
     const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
 
     // @ts-ignore
-    const gY = litoligicalGroup.select(`.${styles.yAxis}`).call(yAxis);
+    const gY = pocoGroup
+      .append('g')
+      .attr('class', `${styles.yAxis}`)
+      .call(yAxis)
+      .attr('transform', `translate(${MARGINS.LEFT}, ${MARGINS.TOP})`)
+      .attr('stroke', '#000000');
+
+    gY.selectAll('text').attr('stroke', 'none').attr('fill', '#000000');
 
     drawProfile();
 
@@ -565,10 +577,13 @@ const PDFTeste = ({ profile }: PDProps) => {
   }, [svgContainer.current]);
 
   useEffect(() => {
-    // console.log(d3.select(svgContainer.current));
-
     drawLog();
-  }, [profile, svgContainer.current]);
+
+    if (svgContainer && svgContainer.current && render) {
+      pdfGenerate(document.getElementById('svgCanvas2Export'));
+      onRenderFinish();
+    }
+  }, [profile, render]);
 
   let noPerfil = true;
   if (profile.geologic && profile.constructive) {
@@ -579,16 +594,24 @@ const PDFTeste = ({ profile }: PDProps) => {
       profile.constructive.well_case.length === 0 &&
       profile.constructive.well_screen.length === 0;
   }
+
   return (
-    <>
-      {noPerfil ? (
-        <span className={styles.noFilesMsg}>Perfil não configurado</span>
-      ) : (
-        ''
-      )}
-      <svg className={`${styles.svgContainer}`} ref={svgContainer} />
-    </>
+    <div style={{ visibility: 'hidden' }}>
+      <>
+        {noPerfil ? (
+          <span className={styles.noFilesMsg}>Perfil não configurado</span>
+        ) : (
+          ''
+        )}
+
+        {render ? (
+          <svg className={`${styles.svgContainer}`} ref={svgContainer} />
+        ) : (
+          ''
+        )}
+      </>
+    </div>
   );
 };
 
-export default PDFTeste;
+export default PDFExport;

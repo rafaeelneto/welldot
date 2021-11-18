@@ -17,6 +17,13 @@ body {
   overflow: overlay;
 }
 
+.yAxis {
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  color: #76777b;
+  font-weight: 700;
+}
+
 code {
   font-family: Lato, source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
