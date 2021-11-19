@@ -70,7 +70,10 @@ export const GeologicLayer = ({
           value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, from: event.target.value });
+            updateValues({
+              ...component,
+              from: parseFloat(event.target.value),
+            });
           }}
         />
         <TextField
@@ -86,7 +89,7 @@ export const GeologicLayer = ({
           value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, to: event.target.value });
+            updateValues({ ...component, to: parseFloat(event.target.value) });
           }}
         />
         <Autocomplete
@@ -190,7 +193,10 @@ export const HoleFillLayer = ({
           value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, from: event.target.value });
+            updateValues({
+              ...component,
+              from: parseFloat(event.target.value),
+            });
           }}
         />
         <TextField
@@ -206,7 +212,7 @@ export const HoleFillLayer = ({
           value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, to: event.target.value });
+            updateValues({ ...component, to: parseFloat(event.target.value) });
           }}
         />
         <TextField
@@ -222,7 +228,10 @@ export const HoleFillLayer = ({
           value={diam_pol}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, diam_pol: event.target.value });
+            updateValues({
+              ...component,
+              diam_pol: parseFloat(event.target.value),
+            });
           }}
         />
       </div>
@@ -295,7 +304,10 @@ export const WellCaseLayer = ({
           value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, from: event.target.value });
+            updateValues({
+              ...component,
+              from: parseFloat(event.target.value),
+            });
           }}
         />
         <TextField
@@ -311,7 +323,7 @@ export const WellCaseLayer = ({
           value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, to: event.target.value });
+            updateValues({ ...component, to: parseFloat(event.target.value) });
           }}
         />
         <TextField
@@ -327,7 +339,10 @@ export const WellCaseLayer = ({
           value={diam_pol}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, diam_pol: event.target.value });
+            updateValues({
+              ...component,
+              diam_pol: parseFloat(event.target.value),
+            });
           }}
         />
       </div>
@@ -372,7 +387,10 @@ export const BoreHoleLayer = ({
           value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, from: event.target.value });
+            updateValues({
+              ...component,
+              from: parseFloat(event.target.value),
+            });
           }}
         />
         <TextField
@@ -388,7 +406,7 @@ export const BoreHoleLayer = ({
           value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, to: event.target.value });
+            updateValues({ ...component, to: parseFloat(event.target.value) });
           }}
         />
         <TextField
@@ -404,7 +422,10 @@ export const BoreHoleLayer = ({
           value={diam_pol}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, diam_pol: event.target.value });
+            updateValues({
+              ...component,
+              diam_pol: parseFloat(event.target.value),
+            });
           }}
         />
       </div>
@@ -437,7 +458,10 @@ export const SurfaceCaseLayer = ({
           value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, from: event.target.value });
+            updateValues({
+              ...component,
+              from: parseFloat(event.target.value),
+            });
           }}
         />
         <TextField
@@ -453,7 +477,7 @@ export const SurfaceCaseLayer = ({
           value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, to: event.target.value });
+            updateValues({ ...component, to: parseFloat(event.target.value) });
           }}
         />
         <TextField
@@ -469,7 +493,10 @@ export const SurfaceCaseLayer = ({
           value={diam_pol}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, diam_pol: event.target.value });
+            updateValues({
+              ...component,
+              diam_pol: parseFloat(event.target.value),
+            });
           }}
         />
       </div>
@@ -502,7 +529,10 @@ export const WellScreenLayer = ({
           value={from}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, from: event.target.value });
+            updateValues({
+              ...component,
+              from: parseFloat(event.target.value),
+            });
           }}
         />
         <TextField
@@ -518,7 +548,7 @@ export const WellScreenLayer = ({
           value={to}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, to: event.target.value });
+            updateValues({ ...component, to: parseFloat(event.target.value) });
           }}
         />
         <TextField
@@ -534,7 +564,10 @@ export const WellScreenLayer = ({
           value={diam_pol}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, diam_pol: event.target.value });
+            updateValues({
+              ...component,
+              diam_pol: parseFloat(event.target.value),
+            });
           }}
         />
         <TextField
@@ -550,7 +583,10 @@ export const WellScreenLayer = ({
           value={screen_slot_mm}
           onChange={(event) => {
             // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, screen_slot_mm: event.target.value });
+            updateValues({
+              ...component,
+              screen_slot_mm: parseFloat(event.target.value),
+            });
           }}
         />
       </div>

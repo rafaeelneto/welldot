@@ -4,7 +4,8 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
-import { pdfExportProfile } from './print.component';
+import { exportPdfProfile } from './print.component';
+
 import fdgcTextures from '../../utils/fgdcTextures';
 
 import {
@@ -19,15 +20,11 @@ import {
   CONSTRUCTIVE_COMPONENT_TYPE,
 } from '../../types/perfil.types';
 
+import { SvgInfo, infoType } from '../../types/profile2Export.types';
+
 const d3 = {
   ...d3module,
   tip: d3tip,
-};
-
-type PDProps = {
-  profile: PROFILE_TYPE;
-  render: boolean;
-  onRenderFinish: () => void;
 };
 
 const getLithologicalFill = (data) => {
@@ -60,47 +57,130 @@ const getLithologicalFill = (data) => {
   return litologicalFill;
 };
 
-const PDFExport = (profile: PROFILE_TYPE) => {
-  const pdfGenerate = pdfExportProfile();
+const profile2Export = (
+  headingInfo: infoType[],
+  endInfo: infoType[],
+  profile: PROFILE_TYPE,
+  breakPages: boolean,
+  zoomLevel: number,
+  iframeId?: string
+) => {
+  // check if profile is empty
+  if (!profile.constructive || !profile.geologic) return;
 
-  const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 50 };
-  const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
+  const noPerfil =
+    profile.geologic.length === 0 &&
+    profile.constructive.bole_hole.length === 0 &&
+    profile.constructive.hole_fill.length === 0 &&
+    profile.constructive.well_case.length === 0 &&
+    profile.constructive.well_screen.length === 0;
+
+  if (noPerfil) return;
+
+  const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 30, LEFT: 50 };
+
+  const geologicData = profile.geologic;
+  const constructionData = profile.constructive;
+
+  // calculate max depth on the profile
+  const depthValues = [
+    geologicData.length === 0 ? 0 : geologicData[geologicData.length - 1].to,
+    constructionData.bole_hole.length === 0
+      ? 0
+      : constructionData.bole_hole[constructionData.bole_hole.length - 1].to,
+    constructionData.hole_fill.length === 0
+      ? 0
+      : constructionData.hole_fill[constructionData.hole_fill.length - 1].to,
+    constructionData.well_case.length === 0
+      ? 0
+      : constructionData.well_case[constructionData.well_case.length - 1].to,
+    constructionData.well_screen.length === 0
+      ? 0
+      : constructionData.well_screen[constructionData.well_screen.length - 1]
+          .to,
+  ];
+
+  const maxYValues = d3.max(depthValues) || 0;
+
+  const yScaleGlobal = d3
+    .scaleLinear()
+    .domain([0, maxYValues])
+    .range([0, 8 * maxYValues]);
+
+  const POCO_WIDTH = 120;
+  const POCO_CENTER = 550;
+
+  const maxDiamValues = [
+    ...constructionData.bole_hole.map(
+      (d: BORE_HOLE_COMPONENT_TYPE) =>
+        // divide by 1 to convert text to number
+        // eslint-disable-next-line implicit-arrow-linebreak
+        // @ts-ignore
+        parseFloat(d.diam_pol)
+      // eslint-disable-next-line function-paren-newline
+    ),
+    ...constructionData.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
+      // @ts-ignore
+      parseFloat(d.diam_pol)
+    ),
+    ...constructionData.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
+      // @ts-ignore
+      parseFloat(d.diam_pol)
+    ),
+    ...constructionData.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
+      // @ts-ignore
+      parseFloat(d.diam_pol)
+    ),
+  ];
+
+  const maxXValues = d3.max(maxDiamValues) || 0;
+
+  const xScale = d3
+    .scaleLinear()
+    .domain([0, maxXValues])
+    .range([0, POCO_WIDTH]);
+
+  // define the height of the svg  viz based on the value of zoom level
+  // ! find conversion ration
+  const svgTotalHeight = 10 * maxYValues;
+  const svgs: SvgInfo[] = [];
+
+  const A4_SVG_HEIGHT = 700;
+
+  if (breakPages) {
+    // get the value the division and iterates to generate the array of svgs that will be draw
+    let heightLeft = svgTotalHeight;
+    let index = 1;
+
+    while (heightLeft > 0) {
+      svgs.push({
+        id: `svgCanvas${index}`,
+        height: heightLeft > A4_SVG_HEIGHT ? A4_SVG_HEIGHT : heightLeft,
+      });
+
+      heightLeft -= A4_SVG_HEIGHT;
+      index += 1;
+    }
+  } else {
+    // add one svg container to the list
+    svgs.push({
+      id: `svgCanvas1`,
+      height: svgTotalHeight,
+    });
+  }
+
+  // iterates through the array of svgs to add it to the div container
+  const divContainer = d3.select('#svgDraftContainer');
+  divContainer.selectAll('svg').remove();
+
+  svgs.forEach((svgInfo) => {
+    const svgEl = divContainer.append('svg');
+    svgEl.attr('id', svgInfo.id);
+  });
+
   const WIDTH = 950 - MARGINS.LEFT - MARGINS.RIGHT;
 
-  const setSVGContainer = () => {
-    const svg = d3.select('#svgCanvas2Export');
-
-    svg.selectAll('*').remove();
-
-    const pocoGroup = svg.append('g').attr('class', 'poco-group');
-
-    const litoligicalGroup = pocoGroup.append('g').attr('class', 'lito-group');
-
-    const constructionGroup = pocoGroup
-      .append('g')
-      .attr('class', 'const-group');
-
-    litoligicalGroup.append('g').attr('class', 'yAxis');
-
-    const cementPadGroup = constructionGroup
-      .append('g')
-      .attr('class', 'cement-pad');
-    const holeGroup = constructionGroup.append('g').attr('class', 'hole');
-    const surfaceCaseGroup = constructionGroup
-      .append('g')
-      .attr('class', 'surface-case');
-    const holeFillGroup = constructionGroup
-      .append('g')
-      .attr('class', 'hole-fill');
-    const wellCaseGroup = constructionGroup
-      .append('g')
-      .attr('class', 'well-case');
-    const wellScreenGroup = constructionGroup
-      .append('g')
-      .attr('class', 'well-screen');
-
-    drawLog();
-  };
+  let currentDepth = 0;
 
   function wrap(textSet, width) {
     textSet.each(function (textEl) {
@@ -142,17 +222,63 @@ const PDFExport = (profile: PROFILE_TYPE) => {
     });
   }
 
-  const drawLog = () => {
-    if (!profile.constructive || !profile.geologic) return;
+  const drawLog = (svgInfo: SvgInfo) => {
+    const svg = d3.select(`#${svgInfo.id}`);
 
-    const noPerfil =
-      profile.geologic.length === 0 &&
-      profile.constructive.bole_hole.length === 0 &&
-      profile.constructive.hole_fill.length === 0 &&
-      profile.constructive.well_case.length === 0 &&
-      profile.constructive.well_screen.length === 0;
+    svg.attr('height', svgInfo.height + MARGINS.TOP + MARGINS.BOTTOM);
+    svg.attr('width', WIDTH);
 
-    if (noPerfil) return;
+    svg.selectAll('*').remove();
+
+    const pocoGroup = svg
+      .append('g')
+      .attr('class', 'poco-group')
+      .attr('transform', `translate(${MARGINS.LEFT}, ${MARGINS.TOP})`);
+
+    const litoligicalGroup = pocoGroup.append('g').attr('class', 'lito-group');
+
+    const constructionGroup = pocoGroup
+      .append('g')
+      .attr('class', 'const-group');
+
+    litoligicalGroup.append('g').attr('class', 'yAxis');
+
+    const cementPadGroup = constructionGroup
+      .append('g')
+      .attr('class', 'cement-pad');
+    const holeGroup = constructionGroup.append('g').attr('class', 'hole');
+    const surfaceCaseGroup = constructionGroup
+      .append('g')
+      .attr('class', 'surface-case');
+    const holeFillGroup = constructionGroup
+      .append('g')
+      .attr('class', 'hole-fill');
+    const wellCaseGroup = constructionGroup
+      .append('g')
+      .attr('class', 'well-case');
+    const wellScreenGroup = constructionGroup
+      .append('g')
+      .attr('class', 'well-screen');
+
+    // define a new scale
+    const maxSvgDepth = yScaleGlobal.invert(svgInfo.height) + currentDepth;
+
+    const yScaleLocal = d3
+      .scaleLinear()
+      .domain([currentDepth, maxSvgDepth])
+      .range([0, svgInfo.height]);
+
+    const yAxis = d3.axisLeft(yScaleLocal).tickFormat((d: any) => `${d} m`);
+
+    // @ts-ignore
+    const gY = pocoGroup
+      .append('g')
+      .attr('class', `yAxis`)
+      .call(yAxis)
+      .attr('transform', `translate(20, 0)`)
+      .attr('stroke', '#000000');
+
+    gY.selectAll('text').attr('stroke', 'none').attr('fill', '#000000');
 
     const profileTexture = {
       pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
@@ -167,34 +293,6 @@ const PDFExport = (profile: PROFILE_TYPE) => {
         .background('#fff'),
     };
 
-    const svg = d3.select('#svgCanvas2Export');
-
-    svg
-      .attr('height', HEIGHT + MARGINS.TOP + MARGINS.BOTTOM)
-      .attr('width', WIDTH + MARGINS.LEFT + MARGINS.RIGHT);
-
-    const pocoGroup = svg.select('.poco-group');
-
-    const litoligicalGroup = svg
-      .select('.lito-group')
-      .attr('transform', `translate(${MARGINS.LEFT}, ${MARGINS.TOP})`);
-
-    const constructionGroup = svg
-      .select('.const-group')
-      .attr('transform', `translate(${MARGINS.LEFT}, ${MARGINS.TOP})`);
-
-    const cementPadGroup = constructionGroup.select('.cement-pad');
-    const holeGroup = constructionGroup.select('.hole');
-    const surfaceCaseGroup = constructionGroup.select('.surface-case');
-    const holeFillGroup = constructionGroup.select('.hole-fill');
-    const wellCaseGroup = constructionGroup.select('.well-case');
-    const wellScreenGroup = constructionGroup.select('.well-screen');
-
-    const svgHeight: any = svg.attr('height');
-
-    const POCO_WIDTH = 120;
-    const POCO_CENTER = 550;
-
     const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
       const litologicalFill = getLithologicalFill(data);
 
@@ -205,16 +303,25 @@ const PDFExport = (profile: PROFILE_TYPE) => {
       layers
         .enter()
         .append('rect')
-        .attr('x', 10)
-        .attr('width', 150)
+        .attr('x', 50)
+        .attr('width', 100)
         .style('stroke', '#101010')
         .style('stroke-width', '1px')
         .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-          if (i === 0) return yScale(d.from);
+          if (i === 0) {
+            const depth = d.from < currentDepth ? currentDepth : d.from;
+            return yScale(depth);
+          }
+
+          // const depth = d.from < currentDepth ? currentDepth : d.from;
           return yScale(data[i - 1].to);
         })
         .attr('height', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-          return yScale(d.to - d.from);
+          const depth =
+            (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
+            (d.from > currentDepth ? d.from : currentDepth);
+
+          return yScale(depth + currentDepth);
         })
         .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
           if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
@@ -238,7 +345,7 @@ const PDFExport = (profile: PROFILE_TYPE) => {
         .enter()
         .append('text')
         .attr('class', (d) => `text-${d.from}`)
-        .attr('x', 400)
+        .attr('x', 390)
         .attr('dy', '.35em')
         .attr('font-size', 10)
         .text((d) => {
@@ -324,7 +431,7 @@ const PDFExport = (profile: PROFILE_TYPE) => {
           }
 
           return d3.line()([
-            [10, yScale(d.from)],
+            [50, yScale(d.from)],
             [380, yScale(d.from)],
             ...curveCoordinates,
           ]);
@@ -332,29 +439,9 @@ const PDFExport = (profile: PROFILE_TYPE) => {
     };
 
     const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
-      const maxXValues = [
-        ...data.bole_hole.map(
-          (d: BORE_HOLE_COMPONENT_TYPE) =>
-            // divide by 1 to convert text to number
-            // eslint-disable-next-line implicit-arrow-linebreak
-            d.diam_pol
-          // eslint-disable-next-line function-paren-newline
-        ),
-        ...data.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) => d.diam_pol),
-        ...data.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) => d.diam_pol),
-        ...data.well_case.map((d: WELL_CASE_COMPONENT_TYPE) => d.diam_pol),
-      ];
-
-      const maxValues = d3.max(maxXValues) || 0;
-
-      const xScale = d3
-        .scaleLinear()
-        .domain([0, maxValues])
-        .range([0, POCO_WIDTH]);
-
       constructionGroup.selectAll('.cement_pad').remove();
 
-      if (data.cement_pad && data.cement_pad.thickness) {
+      if (data.cement_pad && data.cement_pad.thickness && currentDepth === 0) {
         const cementPad = cementPadGroup
           .selectAll('rect')
           .data([data.cement_pad]);
@@ -381,6 +468,18 @@ const PDFExport = (profile: PROFILE_TYPE) => {
           .style('stroke-width', '2px');
       }
 
+      const getYPos = (dataInner) => {
+        return (d, i) => {
+          if (i === 0) {
+            const depth = d.from < currentDepth ? currentDepth : d.from;
+            return yScale(depth);
+          }
+
+          // const depth = d.from < currentDepth ? currentDepth : d.from;
+          return yScale(dataInner[i - 1].to);
+        };
+      };
+
       const hole = holeGroup.selectAll('rect').data(data.bole_hole);
 
       hole.exit().remove();
@@ -398,11 +497,14 @@ const PDFExport = (profile: PROFILE_TYPE) => {
         .merge(hole)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        .attr('y', (d: any, i) => {
-          if (i === 0) return yScale(d.from);
-          return yScale(data.bole_hole[i - 1].to);
-        })
-        .attr('height', (d: any) => yScale(d.to - d.from));
+        .attr('y', getYPos(data.bole_hole))
+        .attr('height', (d: any) => {
+          const depth =
+            (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
+            (d.from > currentDepth ? d.from : currentDepth);
+
+          return yScale(depth + currentDepth);
+        });
 
       const surfaceCase = surfaceCaseGroup
         .selectAll('rect')
@@ -420,11 +522,14 @@ const PDFExport = (profile: PROFILE_TYPE) => {
         .merge(surfaceCase)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        .attr('y', (d: any, i) => {
-          if (i === 0) return yScale(d.from);
-          return yScale(data.surface_case[i - 1].to);
-        })
-        .attr('height', (d: any) => yScale(d.to - d.from));
+        .attr('y', getYPos(data.surface_case))
+        .attr('height', (d: any) => {
+          const depth =
+            (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
+            (d.from > currentDepth ? d.from : currentDepth);
+
+          return yScale(depth + currentDepth);
+        });
 
       const holeFill = holeFillGroup.selectAll('rect').data(data.hole_fill);
 
@@ -441,11 +546,14 @@ const PDFExport = (profile: PROFILE_TYPE) => {
         .merge(holeFill)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        .attr('y', (d: any, i) => {
-          if (i === 0) return yScale(d.from);
-          return yScale(data.hole_fill[i - 1].to);
+        .attr('y', getYPos(data.hole_fill))
+        .attr('height', (d: any) => {
+          const depth =
+            (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
+            (d.from > currentDepth ? d.from : currentDepth);
+
+          return yScale(depth + currentDepth);
         })
-        .attr('height', (d: any) => yScale(d.to - d.from))
         .style('fill', (d: HOLE_FILL_COMPONENT_TYPE) => {
           svg.call(profileTexture[d.type]);
           return profileTexture[d.type].url();
@@ -467,13 +575,13 @@ const PDFExport = (profile: PROFILE_TYPE) => {
         .merge(wellCase)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        .attr('y', (d: any, i) => {
-          if (i === 0) return yScale(d.from);
-          return yScale(d.from);
-        })
+        .attr('y', getYPos(data.well_case))
         .attr('height', (d: any, i) => {
-          if (i === 0) return yScale(d.to - d.from);
-          return yScale(d.to - d.from);
+          const depth =
+            (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
+            (d.from > currentDepth ? d.from : currentDepth);
+
+          return yScale(depth + currentDepth);
         });
 
       const wellScreen = wellScreenGroup
@@ -497,75 +605,51 @@ const PDFExport = (profile: PROFILE_TYPE) => {
         .merge(wellScreen)
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
-        .attr('y', (d: any, i) => {
-          return yScale(d.from);
-        })
-        .attr('height', (d: any) => yScale(d.to - d.from));
+        .attr('y', getYPos(data.well_screen))
+        .attr('height', (d: any) => {
+          const depth =
+            (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
+            (d.from > currentDepth ? d.from : currentDepth);
+
+          return yScale(depth + currentDepth);
+        });
     };
-
-    const geologicData = profile.geologic;
-    const constructionData = profile.constructive;
-
-    const maxValues = [
-      geologicData.length === 0 ? 0 : geologicData[geologicData.length - 1].to,
-      constructionData.bole_hole.length === 0
-        ? 0
-        : constructionData.bole_hole[constructionData.bole_hole.length - 1].to,
-      constructionData.hole_fill.length === 0
-        ? 0
-        : constructionData.hole_fill[constructionData.hole_fill.length - 1].to,
-      constructionData.well_case.length === 0
-        ? 0
-        : constructionData.well_case[constructionData.well_case.length - 1].to,
-      constructionData.well_screen.length === 0
-        ? 0
-        : constructionData.well_screen[constructionData.well_screen.length - 1]
-            .to,
-    ];
-
-    const maxYValues = d3.max(maxValues) || 0;
-
-    const yScaleGlobal = d3
-      .scaleLinear()
-      .domain([0, maxYValues])
-      .range([0, 8 * maxYValues]);
-
-    svg.attr('height', 10 * maxYValues + MARGINS.TOP + MARGINS.BOTTOM);
-
-    const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
-
-    // @ts-ignore
-    const gY = pocoGroup
-      .append('g')
-      .attr('class', `yAxis`)
-      .call(yAxis)
-      .attr('transform', `translate(${MARGINS.LEFT}, ${MARGINS.TOP})`)
-      .attr('stroke', '#000000');
-
-    gY.selectAll('text').attr('stroke', 'none').attr('fill', '#000000');
 
     drawProfile();
 
     function drawProfile() {
-      if (geologicData) updateGeology(geologicData, yScaleGlobal);
-      if (constructionData) updatePoco(constructionData, yScaleGlobal);
+      const filterByDepth = (l) => {
+        if (l.to < currentDepth && l.from < currentDepth) return false;
+
+        if (l.to > maxSvgDepth && l.from > maxSvgDepth) return false;
+
+        return true;
+      };
+
+      if (geologicData) {
+        updateGeology(geologicData.filter(filterByDepth), yScaleLocal);
+      }
+
+      const drawConstructionData: CONSTRUCTIVE_COMPONENT_TYPE = {
+        cement_pad: constructionData.cement_pad,
+        bole_hole: constructionData.bole_hole.filter(filterByDepth),
+        hole_fill: constructionData.hole_fill.filter(filterByDepth),
+        surface_case: constructionData.surface_case.filter(filterByDepth),
+        well_case: constructionData.well_case.filter(filterByDepth),
+        well_screen: constructionData.well_screen.filter(filterByDepth),
+      };
+
+      if (constructionData) updatePoco(drawConstructionData, yScaleLocal);
     }
   };
 
-  setSVGContainer();
-  drawLog();
+  // iterates through the array to render the visualization
+  svgs.forEach((svgInfo) => {
+    drawLog(svgInfo);
+    currentDepth += yScaleGlobal.invert(svgInfo.height);
+  });
 
-  pdfGenerate(document.getElementById('svgCanvas2Export'));
-
-  let noPerfil = true;
-  if (profile.geologic && profile.constructive) {
-    noPerfil =
-      profile.geologic.length === 0 &&
-      profile.constructive.bole_hole.length === 0 &&
-      profile.constructive.hole_fill.length === 0 &&
-      profile.constructive.well_case.length === 0 &&
-      profile.constructive.well_screen.length === 0;
-  }
+  exportPdfProfile(headingInfo, endInfo, svgs, iframeId);
 };
 
-export default PDFExport;
+export default profile2Export;

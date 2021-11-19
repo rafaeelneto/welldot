@@ -2,50 +2,45 @@
 @import '../../styles/app.global.scss';
 @import '../../styles/fonts';
 @import '../../styles/breakpoints';
-.tooltip {
-  z-index: 3000;
-  position: absolute;
-  top: 0;
-  left: 0;
-  text-align: left;
-  width: fit-content;
-  max-width: 200px;
-  font-family: $fontOpenSans;
-  box-shadow: 0 3px 10px rgba(66, 66, 66, 0.384);
+
+.root {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  @include md {
+    flex-direction: row;
+  }
+}
+
+.componentTitle {
+  font-size: 18px;
+  font-family: $fontOpenSans;
+  font-weight: 700;
   color: $gray2;
-  background: white;
-  border-radius: 5px;
-  padding: 10px;
-  .title {
-    font-size: 12px;
-    text-transform: uppercase;
-    font-family: $fontPoppins;
-    letter-spacing: 0.2em;
-    font-weight: 700;
-    color: $colorPrimaryDark;
-    margin-bottom: 5px;
-  }
-  .primaryInfo {
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .secondaryInfo {
-    font-size: 12px;
-    strong {
-      font-size: 12px;
-      font-weight: 600;
-    }
-  }
+  margin-top: 25px;
 }
 
-.d3Container {
-}
-
-.svgContainer {
+.settingsPanel {
   width: 100%;
-  position: relative;
+  height: 100%;
+  padding: 10px;
+  @include md {
+    width: 40%;
+  }
+}
+
+.pdfFrameContainer {
+  width: 100%;
+  height: 100%;
+  @include md {
+    width: 60%;
+  }
+}
+
+.pdfFrame {
+  height: 100%;
+  width: 100%;
 }
 
 .noFilesMsg {
@@ -56,16 +51,52 @@
   justify-content: center;
 }
 
-.yAxis {
-  font-family: $fontOpenSans;
-  color: $gray1;
-  font-weight: 700;
-}
-
 .scaleInput {
   font-family: $fontOpenSans;
   color: $gray1;
   font-size: 12px;
   font-weight: 700;
   padding: 10px;
+}
+
+.layerRow {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  max-width: 300px;
+  @include md {
+    flex-direction: row;
+  }
+  .layerInput {
+    margin-top: none;
+  }
+}
+
+.layerInput {
+  margin: 5px;
+  margin-right: 10px;
+  margin-top: 10px;
+  width: fit-content;
+  min-width: 50px;
+  @include md {
+    min-width: 100px;
+  }
+}
+
+.sortableList {
+  li {
+    padding: 0.5em 0;
+    border-bottom: 1px solid #ccc;
+  }
+}
+
+.btnAdd {
+  color: $colorPrimary;
+  margin-top: 5px;
+  border-radius: 10px;
+  :global {
+    .MuiListItemIcon-root {
+      color: $colorPrimary;
+    }
+  }
 }

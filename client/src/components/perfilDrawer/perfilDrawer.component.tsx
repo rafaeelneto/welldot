@@ -66,7 +66,7 @@ const getLithologicalFill = (data) => {
 };
 
 const PerfilDrawer = ({ profile }: PDProps) => {
-  console.log(profile);
+  // console.log(profile);
   const svgContainer = useRef(null);
 
   const [firstRender, setFirstRender] = useState(true);
@@ -295,12 +295,22 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           (d: BORE_HOLE_COMPONENT_TYPE) =>
             // divide by 1 to convert text to number
             // eslint-disable-next-line implicit-arrow-linebreak
-            d.diam_pol
+            // @ts-ignore
+            parseFloat(d.diam_pol)
           // eslint-disable-next-line function-paren-newline
         ),
-        ...data.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) => d.diam_pol),
-        ...data.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) => d.diam_pol),
-        ...data.well_case.map((d: WELL_CASE_COMPONENT_TYPE) => d.diam_pol),
+        ...data.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
+          // @ts-ignore
+          parseFloat(d.diam_pol)
+        ),
+        ...data.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
+          // @ts-ignore
+          parseFloat(d.diam_pol)
+        ),
+        ...data.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
+          // @ts-ignore
+          parseFloat(d.diam_pol)
+        ),
       ];
 
       const maxValues = d3.max(maxXValues) || 0;

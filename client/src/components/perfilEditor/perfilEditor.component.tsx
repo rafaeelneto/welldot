@@ -38,12 +38,11 @@ import {
 
 import download from 'downloadjs';
 
-import { pdfExportProfile } from '../print/print.component';
+import FullScreenDialog from '../dialogs/fullScreenDialog.component';
 
 import PerfilDrawer from '../perfilDrawer/perfilDrawer.component';
 
 import PDFExport from '../print/pdfExport.component';
-import profile2Export from '../print/profile2Export.component';
 
 import {
   BoreHoleLayer,
@@ -255,15 +254,14 @@ const PerfilEditor = ({
   const [profileState, setPerfilState] = useState(PROFILE_DEFAULT);
   const [changesCounter, setChangesCounter] = useState(0);
 
-  const [shouldExport, setShouldExport] = useState(false);
+  // ! change
+  const [openExport, setOpenExport] = useState(true);
 
   const [openImportErrorS, setOpenImportErrorS] = useState(false);
 
   const [cementPadChecked, setcementPadChecked] = useState(false);
 
   const [tabValue, setTabValue] = React.useState(0);
-
-  const pdfGenerate = pdfExportProfile();
 
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
@@ -620,14 +618,24 @@ const PerfilEditor = ({
               onClick={() => {
                 // call pdf function
                 // pdfGenerate()
-                profile2Export({ ...profileState });
+                setOpenExport(true);
               }}
               startIcon={<FileText />}
               color="primary"
             >
               Exportar PDF
             </Button>
-
+            <div>
+              <FullScreenDialog
+                open={openExport}
+                onResponse={() => setOpenExport(false)}
+                btnText={null}
+                title="Exportar Perfil"
+                alwaysFull
+              >
+                <PDFExport profile={profileState} />
+              </FullScreenDialog>
+            </div>
             <Button
               className={styles.mainBtns}
               onClick={() => {
