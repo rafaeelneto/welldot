@@ -8,6 +8,7 @@ import {
   FormControlLabel,
   FormGroup,
   Checkbox,
+  Divider,
 } from '@mui/material';
 
 import { Container, Draggable } from 'react-smooth-dnd';
@@ -147,25 +148,28 @@ const SortableList = ({
 };
 
 const PDFExport = ({ profile }: PDFEProps) => {
-  const iframeRef = useRef();
+  const timeoutRef = useRef<any>();
   const IFRAME_ID = 'ÏFRAME_PDF_ID';
 
   const [headingInfo, setHeadingInfo] = useState<infoType[]>([]);
   const [endInfo, setEndInfo] = useState<infoType[]>([]);
 
-  const [zoomValue, setZoomValue] = useState(30);
+  const [zoomValue, setZoomValue] = useState(500);
 
   const [breakPages, setBreakPages] = useState(true);
 
   useEffect(() => {
-    profile2Export(
-      headingInfo,
-      endInfo,
-      { ...profile },
-      breakPages,
-      zoomValue,
-      IFRAME_ID
-    );
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      profile2Export(
+        headingInfo,
+        endInfo,
+        { ...profile },
+        breakPages,
+        zoomValue,
+        IFRAME_ID
+      );
+    }, 500);
   }, [headingInfo, endInfo, breakPages, zoomValue]);
 
   const handleBreakChange = (event) => {
@@ -217,12 +221,6 @@ const PDFExport = ({ profile }: PDFEProps) => {
         >
           Baixar
         </Button>
-        {/* scale slider */}
-        <Slider
-          aria-label="Volume"
-          value={zoomValue}
-          onChange={handleZoomChange}
-        />
 
         {/* break pages checkbox */}
         <FormGroup>
@@ -237,6 +235,36 @@ const PDFExport = ({ profile }: PDFEProps) => {
             }
           />
         </FormGroup>
+        <Divider />
+        {/* scale slider */}
+        <span className={styles.componentTitle}>Escala</span>
+        <div className={styles.scaleRow}>
+          <Slider
+            aria-label="Volume"
+            value={zoomValue}
+            onChange={handleZoomChange}
+            max={1000}
+            min={1}
+            valueLabelDisplay="auto"
+          />
+          <div className={`${styles.inputContainer}`}>
+            1:
+            <Input
+              className={styles.scaleInput}
+              id="standard-multiline-flexible"
+              type="number"
+              // placeholder="Escala"
+              value={zoomValue}
+              onChange={(event) => {
+                // eslint-disable-next-line implicit-arrow-linebreak
+                setZoomValue(parseFloat(event.target.value));
+              }}
+            />
+          </div>
+        </div>
+
+        <Divider />
+
         <span className={styles.componentTitle}>Infomações iniciais</span>
         <SortableList
           defaultItem={{ label: '', value: '' }}
@@ -244,6 +272,7 @@ const PDFExport = ({ profile }: PDFEProps) => {
           onChangeList={onChangeHeadingInfo}
           onChangeValues={handleHeadingInfoValueChange}
         />
+        <Divider />
         <span className={styles.componentTitle}>Infomações finais</span>
         <SortableList
           defaultItem={{ label: '', value: '' }}

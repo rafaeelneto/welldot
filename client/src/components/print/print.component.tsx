@@ -50,7 +50,8 @@ export const exportPdfProfile = (
     const svgHeight = parseFloat(svg!.getAttribute('height') || '0');
     const svgWidth = parseFloat(svg!.getAttribute('width') || '0');
 
-    const pageSize = svgs.length > 1 ? 'A4' : [595.28, svgHeight * 0.75 + 200];
+    const pageSize =
+      svgs.length > 1 || svgHeight < 835.88 ? 'A4' : [595.28, svgHeight * 0.75];
 
     doc.addPage({ size: pageSize, margin: MARGIN });
     // Add another page
@@ -109,7 +110,7 @@ export const exportPdfProfile = (
 
     // @ts-ignore
     doc.addSVG(svg, 0, doc.y, {
-      width: (svgWidth * 72) / 96,
+      width: svgWidth * 1.33,
       // height: svgHeight + 60,
       // assumePt: true,
       // preserveAspectRatio: `${(svgWidth * 72) / 96}x${svgHeight}`,

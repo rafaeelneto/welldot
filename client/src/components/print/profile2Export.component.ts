@@ -102,13 +102,10 @@ const profile2Export = (
 
   const maxYValues = d3.max(depthValues) || 0;
 
-  const yScaleGlobal = d3
-    .scaleLinear()
-    .domain([0, maxYValues])
-    .range([0, 8 * maxYValues]);
-
   const POCO_WIDTH = 120;
   const POCO_CENTER = 550;
+  const GEOLOGY_X_POS = 50;
+  const GEOLOGY_WIDTH = 300;
 
   const maxDiamValues = [
     ...constructionData.bole_hole.map(
@@ -135,17 +132,27 @@ const profile2Export = (
 
   const maxXValues = d3.max(maxDiamValues) || 0;
 
+  // define the height of the svg  viz based on the value of zoom level
+  // * conversion rule pt -> px
+  // * 1 pt = 1.33 px
+  // * 1 px = 0.75 pt
+  // ! find conversion ration to scale
+  const svgTotalHeight = ((1 / zoomLevel) * maxYValues * 1000 * 72) / 25.4;
+  const svgs: SvgInfo[] = [];
+
+  const A4_SVG_HEIGHT = 835.88;
+
+  const WIDTH = 713.03 - MARGINS.LEFT - MARGINS.RIGHT;
+
+  const yScaleGlobal = d3
+    .scaleLinear()
+    .domain([0, maxYValues])
+    .range([0, svgTotalHeight]);
+
   const xScale = d3
     .scaleLinear()
     .domain([0, maxXValues])
     .range([0, POCO_WIDTH]);
-
-  // define the height of the svg  viz based on the value of zoom level
-  // ! find conversion ration
-  const svgTotalHeight = 10 * maxYValues;
-  const svgs: SvgInfo[] = [];
-
-  const A4_SVG_HEIGHT = 700;
 
   if (breakPages) {
     // get the value the division and iterates to generate the array of svgs that will be draw
@@ -177,8 +184,6 @@ const profile2Export = (
     const svgEl = divContainer.append('svg');
     svgEl.attr('id', svgInfo.id);
   });
-
-  const WIDTH = 950 - MARGINS.LEFT - MARGINS.RIGHT;
 
   let currentDepth = 0;
 
@@ -226,7 +231,7 @@ const profile2Export = (
     const svg = d3.select(`#${svgInfo.id}`);
 
     svg.attr('height', svgInfo.height + MARGINS.TOP + MARGINS.BOTTOM);
-    svg.attr('width', WIDTH);
+    svg.attr('width', WIDTH + MARGINS.LEFT + MARGINS.RIGHT);
 
     svg.selectAll('*').remove();
 
@@ -263,19 +268,24 @@ const profile2Export = (
     // define a new scale
     const maxSvgDepth = yScaleGlobal.invert(svgInfo.height) + currentDepth;
 
+    const tickCount = svgInfo.height / 80;
+
     const yScaleLocal = d3
       .scaleLinear()
       .domain([currentDepth, maxSvgDepth])
       .range([0, svgInfo.height]);
 
-    const yAxis = d3.axisLeft(yScaleLocal).tickFormat((d: any) => `${d} m`);
+    const yAxis = d3
+      .axisLeft(yScaleLocal)
+      .tickFormat((d: any) => `${d} m`)
+      .tickArguments([tickCount]);
 
     // @ts-ignore
     const gY = pocoGroup
       .append('g')
       .attr('class', `yAxis`)
       .call(yAxis)
-      .attr('transform', `translate(20, 0)`)
+      .attr('transform', `translate(10, 0)`)
       .attr('stroke', '#000000');
 
     gY.selectAll('text').attr('stroke', 'none').attr('fill', '#000000');
@@ -303,8 +313,8 @@ const profile2Export = (
       layers
         .enter()
         .append('rect')
-        .attr('x', 50)
-        .attr('width', 100)
+        .attr('x', GEOLOGY_X_POS)
+        .attr('width', GEOLOGY_WIDTH)
         .style('stroke', '#101010')
         .style('stroke-width', '1px')
         .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
@@ -333,13 +343,61 @@ const profile2Export = (
 
       const LABELS_MARGINS = { top: 7, button: 5 };
 
+      const depthTipGroup = litoligicalGroup.append('g');
+
+      const depthTip = depthTipGroup.selectAll('text').data(data);
+
+      depthTip.exit().remove();
+
+      let currYPos = 0;
+
+      depthTip
+        .enter()
+        .append('text')
+        .attr('class', (d) => `depthTip-${d.from}`)
+        .attr('x', GEOLOGY_X_POS - 5)
+        .attr('dy', '.35em')
+        .attr('font-size', 10)
+        .attr('text-anchor', 'end')
+        .text((d) => {
+          if (d.to > maxSvgDepth) return null;
+          return `${d.to}`;
+        })
+        .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+          // if (i > 0) {
+          //   const lastTextHeight =
+          //     // @ts-ignore
+          //     (d3
+          //       .select(`.depthTip-${data[i - 1].from}`)
+          //       .node()
+          //       // @ts-ignore
+          //       .getBoundingClientRect().height || 0) +
+          //     LABELS_MARGINS.top +
+          //     LABELS_MARGINS.button;
+
+          //   const calculatedY = currYPos + lastTextHeight;
+
+          //   if (
+          //     yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
+          //     calculatedY
+          //   ) {
+          //     currYPos = calculatedY;
+
+          //     return calculatedY;
+          //   }
+          // }
+
+          currYPos = yScale(d.to);
+          return yScale(d.to);
+        });
+
       const labelGroup = litoligicalGroup.append('g');
 
       const labels = labelGroup.selectAll('text').data(data);
 
       labels.exit().remove();
 
-      let currYPosLabel = 0;
+      currYPos = 0;
 
       labels
         .enter()
@@ -349,6 +407,7 @@ const profile2Export = (
         .attr('dy', '.35em')
         .attr('font-size', 10)
         .text((d) => {
+          if (d.from < currentDepth) return null;
           return d.description;
         })
         .call(wrap, 300)
@@ -364,19 +423,19 @@ const profile2Export = (
               LABELS_MARGINS.top +
               LABELS_MARGINS.button;
 
-            const calculatedY = currYPosLabel + lastTextHeight;
+            const calculatedY = currYPos + lastTextHeight;
 
             if (
               yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
               calculatedY
             ) {
-              currYPosLabel = calculatedY;
+              currYPos = calculatedY;
 
               return calculatedY;
             }
           }
 
-          currYPosLabel = yScale(d.from) + LABELS_MARGINS.top;
+          currYPos = yScale(d.from) + LABELS_MARGINS.top;
           return yScale(d.from) + LABELS_MARGINS.top;
         });
 
@@ -384,7 +443,7 @@ const profile2Export = (
 
       const dividers = dividersGroup.selectAll('g').data(data);
 
-      let currYPosDiv = 0;
+      currYPos = 0;
 
       dividers
         .enter()
@@ -392,6 +451,7 @@ const profile2Export = (
         .append('path')
         .attr('class', 'lines')
         .attr('fill', 'none')
+
         .style('stroke', '#101010')
         .style('stroke-width', '1px')
         // eslint-disable-next-line no-unused-vars
@@ -410,7 +470,7 @@ const profile2Export = (
               LABELS_MARGINS.top +
               LABELS_MARGINS.button;
 
-            const calculatedY = currYPosDiv + lastTextHeight;
+            const calculatedY = currYPos + lastTextHeight;
 
             if (
               yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
@@ -421,17 +481,17 @@ const profile2Export = (
                 [700, calculatedY],
               ];
 
-              currYPosDiv = calculatedY;
+              currYPos = calculatedY;
             } else {
-              currYPosDiv = yScale(d.from);
+              currYPos = yScale(d.from);
               curveCoordinates = [[700, yScale(d.from)]];
             }
           } else {
-            currYPosDiv = yScale(d.from);
+            currYPos = yScale(d.from);
           }
 
           return d3.line()([
-            [50, yScale(d.from)],
+            [GEOLOGY_X_POS, yScale(d.from)],
             [380, yScale(d.from)],
             ...curveCoordinates,
           ]);
