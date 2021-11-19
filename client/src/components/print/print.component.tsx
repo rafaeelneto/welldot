@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import BlobStream from 'blob-stream';
 
 import PdfTable from 'voilab-pdf-table';
-import FitCollumnPlugin from 'voilab-pdf-table/plugins/fitcolumn';
+// import FitCollumnPlugin from 'voilab-pdf-table/plugins/fitcolumn';
 
 import SVGtoPDF from 'svg-to-pdfkit';
 // import PDFDocument from '../../utils/pdfKitTable';
