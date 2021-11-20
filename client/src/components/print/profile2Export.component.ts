@@ -142,7 +142,7 @@ const profile2Export = (
 
   const A4_SVG_HEIGHT = 835.88;
 
-  const WIDTH = 713.03 - MARGINS.LEFT - MARGINS.RIGHT;
+  const WIDTH = 900 - MARGINS.LEFT - MARGINS.RIGHT;
 
   const yScaleGlobal = d3
     .scaleLinear()

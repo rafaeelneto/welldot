@@ -26,7 +26,7 @@ export const exportPdfProfile = (
   svgs: SvgInfo[],
   iframeId?: string
 ) => {
-  const wellName = 'P1 - TESTE';
+  const wellName = 'P2 - Água Boa';
 
   const doc = new PDFDocument({
     margin: MARGIN,
@@ -110,13 +110,13 @@ export const exportPdfProfile = (
 
     // @ts-ignore
     doc.addSVG(svg, 0, doc.y, {
-      width: svgWidth * 1.33,
-      // height: svgHeight + 60,
+      width: svgWidth,
       // assumePt: true,
+      // height: svgHeight + 60,
       // preserveAspectRatio: `${(svgWidth * 72) / 96}x${svgHeight}`,
     });
   });
-  doc.fontSize(19).text(wellName, { align: 'center', underline: true });
+  // doc.fontSize(19).text(wellName, { align: 'center', underline: true });
 
   doc.end();
   stream.on('finish', function () {
