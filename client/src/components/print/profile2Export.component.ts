@@ -4,6 +4,8 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
+import wrap from '../../utils/wrap';
+
 import { exportPdfProfile } from './print.component';
 
 import fdgcTextures from '../../utils/fgdcTextures';
@@ -18,7 +20,7 @@ import {
   WELL_CASE_COMPONENT_TYPE,
   WELL_SCREEN_COMPONENT_TYPE,
   CONSTRUCTIVE_COMPONENT_TYPE,
-} from '../../types/perfil.types';
+} from '../../types/profile.types';
 
 import { SvgInfo, infoType } from '../../types/profile2Export.types';
 
@@ -187,50 +189,10 @@ const profile2Export = (
 
   let currentDepth = 0;
 
-  function wrap(textSet, width) {
-    textSet.each(function (textEl) {
-      // @ts-ignore
-      // eslint-disable-next-line no-shadow
-      const text = d3.select(this);
-      const words = text.text().split(/\s+/).reverse();
-      let word: any | never = '';
-      let line: any[] = [];
-      let lineNumber = 0;
-      const lineHeight = 1.1; // ems
-      const x = text.attr('x');
-      const y = text.attr('y');
-      const dy = parseFloat(text.attr('dy'));
-      let tspan = text
-        .text(null)
-        .append('tspan')
-        .attr('x', x)
-        .attr('y', y)
-        .attr('dy', `${dy}em`);
-
-      // eslint-disable-next-line no-cond-assign
-      while ((word = words.pop())) {
-        line.push(word);
-        tspan.text(line.join(' '));
-
-        if (tspan!.node!()!.getComputedTextLength() > width) {
-          line.pop();
-          tspan.text(line.join(' '));
-          line = [word];
-          tspan = text
-            .append('tspan')
-            .attr('x', x)
-            .attr('y', y)
-            .attr('dy', `${++lineNumber * lineHeight + dy}em`)
-            .text(word);
-        }
-      }
-    });
-  }
-
   const drawLog = (svgInfo: SvgInfo) => {
     const svg = d3.select(`#${svgInfo.id}`);
 
-    svg.attr('height', svgInfo.height + MARGINS.TOP + MARGINS.BOTTOM);
+    svg.attr('height', svgInfo.height + MARGINS.TOP + MARGINS.BOTTOM + 100);
     svg.attr('width', WIDTH + MARGINS.LEFT + MARGINS.RIGHT);
 
     svg.selectAll('*').remove();
@@ -364,29 +326,6 @@ const profile2Export = (
           return `${d.to}`;
         })
         .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-          // if (i > 0) {
-          //   const lastTextHeight =
-          //     // @ts-ignore
-          //     (d3
-          //       .select(`.depthTip-${data[i - 1].from}`)
-          //       .node()
-          //       // @ts-ignore
-          //       .getBoundingClientRect().height || 0) +
-          //     LABELS_MARGINS.top +
-          //     LABELS_MARGINS.button;
-
-          //   const calculatedY = currYPos + lastTextHeight;
-
-          //   if (
-          //     yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
-          //     calculatedY
-          //   ) {
-          //     currYPos = calculatedY;
-
-          //     return calculatedY;
-          //   }
-          // }
-
           currYPos = yScale(d.to);
           return yScale(d.to);
         });
@@ -451,7 +390,6 @@ const profile2Export = (
         .append('path')
         .attr('class', 'lines')
         .attr('fill', 'none')
-
         .style('stroke', '#101010')
         .style('stroke-width', '1px')
         // eslint-disable-next-line no-unused-vars
@@ -477,7 +415,7 @@ const profile2Export = (
               calculatedY
             ) {
               curveCoordinates = [
-                [395, calculatedY],
+                [385, calculatedY],
                 [700, calculatedY],
               ];
 
@@ -492,7 +430,7 @@ const profile2Export = (
 
           return d3.line()([
             [GEOLOGY_X_POS, yScale(d.from)],
-            [380, yScale(d.from)],
+            [370, yScale(d.from)],
             ...curveCoordinates,
           ]);
         });
@@ -500,6 +438,8 @@ const profile2Export = (
 
     const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
       constructionGroup.selectAll('.cement_pad').remove();
+
+      const occupiedPositions: number[] = [];
 
       if (data.cement_pad && data.cement_pad.thickness && currentDepth === 0) {
         const cementPad = cementPadGroup
@@ -528,6 +468,13 @@ const profile2Export = (
           .style('stroke-width', '2px');
       }
 
+      const getXPos = () => {
+        return (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2;
+      };
+      const getWidth = () => {
+        return (d: any) => xScale(d.diam_pol);
+      };
+
       const getYPos = (dataInner) => {
         return (d, i) => {
           if (i === 0) {
@@ -537,6 +484,16 @@ const profile2Export = (
 
           // const depth = d.from < currentDepth ? currentDepth : d.from;
           return yScale(dataInner[i - 1].to);
+        };
+      };
+
+      const getHeight = (dataInner) => {
+        return (d, i) => {
+          const depth =
+            (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
+            (d.from > currentDepth ? d.from : currentDepth);
+
+          return yScale(depth + currentDepth);
         };
       };
 
@@ -555,16 +512,37 @@ const profile2Export = (
       newHole
         // @ts-ignore
         .merge(hole)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr('x', getXPos())
+        .attr('width', getWidth())
         .attr('y', getYPos(data.bole_hole))
-        .attr('height', (d: any) => {
+        .attr('height', getHeight(data.bole_hole));
+
+      const getTipXPos = (margin: number) => {
+        return (d) => {
+          return getXPos()(d) - margin;
+        };
+      };
+
+      const getTipYpos = (dataInner, className) => {
+        return (d, i) => {
+          const yDepth = d.from < currentDepth ? currentDepth : d.from;
+          console.log(d);
+
+          const lastTextHeight =
+            // @ts-ignore
+            d3
+              .select(`.${className}${d.from * 100}`)
+              .node()
+              // @ts-ignore
+              .getBoundingClientRect().height || 0;
+
           const depth =
             (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
             (d.from > currentDepth ? d.from : currentDepth);
 
-          return yScale(depth + currentDepth);
-        });
+          return yScale(depth / 2 + yDepth) + lastTextHeight / 2;
+        };
+      };
 
       const surfaceCase = surfaceCaseGroup
         .selectAll('rect')
@@ -636,13 +614,31 @@ const profile2Export = (
         .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
         .attr('width', (d: any) => xScale(d.diam_pol))
         .attr('y', getYPos(data.well_case))
-        .attr('height', (d: any, i) => {
-          const depth =
-            (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
-            (d.from > currentDepth ? d.from : currentDepth);
+        .attr('height', getHeight(data.well_case));
 
-          return yScale(depth + currentDepth);
-        });
+      const wellCaseTipGroup = constructionGroup.append('g');
+
+      const wellCaseTip = wellCaseTipGroup
+        .selectAll('text')
+        .data(data.well_case);
+
+      wellCaseTip.exit().remove();
+
+      wellCaseTip
+        .enter()
+        .append('text')
+        .attr('class', (d) => `wellCaseTip-${d.from * 100}`)
+        .attr('x', getTipXPos(10))
+        .attr('dy', '.35em')
+        .attr('font-size', 10)
+        .attr('fill', 'red')
+        .attr('text-anchor', 'end')
+        .text((d) => {
+          // if (d.to > maxSvgDepth) return null;
+          return `Revest. ${d.diam_pol}"x${d.to - d.from}m ${d.type}`;
+        })
+        .call(wrap, 50)
+        .attr('y', getTipYpos(data.well_case, 'wellCaseTip-'));
 
       const wellScreen = wellScreenGroup
         .selectAll('rect')
@@ -673,6 +669,33 @@ const profile2Export = (
 
           return yScale(depth + currentDepth);
         });
+
+      const wellScreenTipGroup = constructionGroup.append('g');
+
+      const wellScreenTip = wellScreenTipGroup
+        .selectAll('text')
+        .data(data.well_screen);
+
+      wellScreenTip.exit().remove();
+
+      wellScreenTip
+        .enter()
+        .append('text')
+        .attr('class', (d) => `wellScreenTip-${d.from * 100}`)
+
+        .attr('x', getTipXPos(10))
+        .attr('dy', '.35em')
+        .attr('font-size', 10)
+        .attr('fill', 'red')
+        .text((d) => {
+          // if (d.to > maxSvgDepth) return null;
+          return `Filtro ${d.diam_pol}"x${d.to - d.from}m ${d.type} Ranhura: ${
+            d.screen_slot_mm
+          }mm`;
+        })
+        .call(wrap, 70)
+        .attr('text-anchor', 'end')
+        .attr('y', getTipYpos(data.well_screen, 'wellScreenTip-'));
     };
 
     drawProfile();

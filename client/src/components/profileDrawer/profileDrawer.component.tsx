@@ -22,9 +22,9 @@ import {
   WELL_CASE_COMPONENT_TYPE,
   WELL_SCREEN_COMPONENT_TYPE,
   CONSTRUCTIVE_COMPONENT_TYPE,
-} from '../../types/perfil.types';
+} from '../../types/profile.types';
 
-import styles from './perfilDrawer.module.scss';
+import styles from './profileDrawer.module.scss';
 
 const d3 = {
   ...d3module,
@@ -508,7 +508,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           <span class="${styles.title}">REVESTIMENTO</span>
               <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
               <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong> ${d.diam_pol}"</span>
-              <span class="${styles.secondaryInfo}"><strong>Tipo:</strong> ${d.tipo}</span>
+              <span class="${styles.secondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
           `;
         });
 
@@ -552,8 +552,8 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           <span class="${styles.title}">FILTROS</span>
               <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
               <span class="${styles.secondaryInfo}"><strong>Diâmetro:</strong> ${d.diam_pol}"</span>
-              <span class="${styles.secondaryInfo}"><strong>Tipo:</strong> ${d.tipo}</span>
-              <span class="${styles.secondaryInfo}"><strong>Ranhura:</strong> ${d.ranhura_mm}mm</span>
+              <span class="${styles.secondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
+              <span class="${styles.secondaryInfo}"><strong>Ranhura:</strong> ${d.screen_slot_mm}mm</span>
           `;
         });
 
@@ -635,7 +635,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
     // @ts-ignore
     const zoom = d3
       .zoom()
-      .scaleExtent([0.2, 5])
+      .scaleExtent([0.2, 15])
       .on('zoom', (e) => {
         // eslint-disable-next-line prefer-destructuring
         const transform = e.transform;

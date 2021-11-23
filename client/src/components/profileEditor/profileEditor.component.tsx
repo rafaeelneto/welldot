@@ -40,7 +40,9 @@ import download from 'downloadjs';
 
 import FullScreenDialog from '../dialogs/fullScreenDialog.component';
 
-import PerfilDrawer from '../perfilDrawer/perfilDrawer.component';
+import PerfilDrawer from '../profileDrawer/profileDrawer.component';
+
+import profileConverter from '../../utils/profileConverter';
 
 import PDFExport from '../print/pdfExport.component';
 
@@ -53,88 +55,27 @@ import {
   SurfaceCaseLayer,
 } from './inputComponents';
 
-import styles from './perfilEditor.module.scss';
+import styles from './profileEditor.module.scss';
 
 import {
   onChangeValuesType,
   onChangeListType,
   LayerProps,
-} from '../../types/perfilEditor.types';
+} from '../../types/profileEditor.types';
 
 import {
-  GEOLOGIC_COMPONENT_TYPE,
-  BORE_HOLE_COMPONENT_TYPE,
-  CEMENT_PAD_COMPONENT_TYPE,
-  HOLE_FILL_COMPONENT_TYPE,
-  PROFILE_TYPE,
-  SURFACE_CASE_COMPONENT_TYPE,
-  WELL_CASE_COMPONENT_TYPE,
-  WELL_SCREEN_COMPONENT_TYPE,
-} from '../../types/perfil.types';
+  PROFILE_DEFAULT,
+  BORE_HOLE_COMPONENT_DEFAULT,
+  GEOLOGIC_COMPONENT_DEFAULT,
+  HOLE_FILL_COMPONENT_DEFAULT,
+  SURFACE_CASE_COMPONENT_DEFAULT,
+  WELL_CASE_COMPONENT_DEFAULT,
+  WELL_SCREEN_COMPONENT_DEFAULT,
+} from '../../defaults/profileDefaults';
 
 type ProfileEditorProps = {
   wellName?: string;
   onChangeWellName?: (newName: string) => void;
-};
-
-const PROFILE_DEFAULT: PROFILE_TYPE = {
-  geologic: [],
-  constructive: {
-    bole_hole: [],
-    well_screen: [],
-    surface_case: [],
-    well_case: [],
-    hole_fill: [],
-    cement_pad: {
-      type: '',
-      width: 0,
-      thickness: 0,
-      length: 0,
-    },
-  },
-};
-
-// const NULL_VALUE = { value: PROFILE_DEFAULT, label: '' };
-
-const GEOLOGIC_COMPONENT_DEFAULT: GEOLOGIC_COMPONENT_TYPE = {
-  from: 0,
-  to: 10,
-  description: '',
-  color: '#ff0000',
-  fgdc_texture: '',
-  geologic_unit: '',
-};
-
-const BORE_HOLE_COMPONENT_DEFAULT: BORE_HOLE_COMPONENT_TYPE = {
-  from: 0,
-  to: 10,
-  diam_pol: 10,
-};
-const WELL_CASE_COMPONENT_DEFAULT: WELL_CASE_COMPONENT_TYPE = {
-  from: 0,
-  to: 10,
-  type: '',
-  diam_pol: 10,
-};
-
-const WELL_SCREEN_COMPONENT_DEFAULT: WELL_SCREEN_COMPONENT_TYPE = {
-  from: 0,
-  to: 10,
-  type: '',
-  diam_pol: 10,
-  screen_slot_mm: 0.75,
-};
-const HOLE_FILL_COMPONENT_DEFAULT: HOLE_FILL_COMPONENT_TYPE = {
-  from: 0,
-  to: 10,
-  type: 'seal',
-  diam_pol: 10,
-  description: '',
-};
-const SURFACE_CASE_COMPONENT_DEFAULT: SURFACE_CASE_COMPONENT_TYPE = {
-  from: 0,
-  to: 20,
-  diam_pol: 10,
 };
 
 const SortableList = ({
@@ -444,126 +385,23 @@ const PerfilEditor = ({
     const reader = new FileReader();
     reader.onload = (e) => {
       if (!e) return;
-      // @ts-ignore
-      let perfilImported = JSON.parse(e.target.result);
 
-      let noPerfil = true;
-      if (perfilImported.geologic && perfilImported.constructive) {
-        noPerfil =
-          perfilImported.geologic.length === 0 &&
-          perfilImported.constructive.bole_hole.length === 0 &&
-          perfilImported.constructive.hole_fill.length === 0 &&
-          perfilImported.constructive.well_screen.length === 0;
+      try {
+        const { perfilImported, cementPad } = profileConverter(
+          e.target?.result
+        );
+        setcementPadChecked(cementPad);
+        setPerfilState(perfilImported);
+      } catch (error) {
+        setOpenImportErrorS(true);
       }
-
-      if (noPerfil) {
-        const perfilConverted = PROFILE_DEFAULT;
-        if (perfilImported.geologico || perfilImported.construtivo) {
-          if (perfilImported.geologico.length > 0) {
-            perfilConverted.geologic = perfilImported.geologico.map(
-              (camada) => {
-                return {
-                  from: parseFloat(camada.de),
-                  to: parseFloat(camada.ate),
-                  fgdc_texture: camada.fgdc_texture || '',
-                  color: camada.color || '',
-                  description: camada.descricao || '',
-                  geologic_unit: camada.unidade_geologica || '',
-                };
-              }
-            );
-          }
-          if (perfilImported.construtivo.furo.length > 0) {
-            perfilConverted.constructive.bole_hole =
-              perfilImported.construtivo.furo.map((camada) => {
-                return {
-                  from: parseFloat(camada.de),
-                  to: parseFloat(camada.ate),
-                  diam_pol: parseFloat(camada.diam_pol) || 0,
-                };
-              });
-          }
-          if (perfilImported.construtivo.espaco_anelar.length > 0) {
-            perfilConverted.constructive.hole_fill =
-              perfilImported.construtivo.espaco_anelar.map((camada) => {
-                let tipo = 'gravel_pack';
-                if (camada.tipo === 'cimento') {
-                  tipo = 'seal';
-                }
-                return {
-                  from: parseFloat(camada.de),
-                  to: parseFloat(camada.ate),
-                  diam_pol: parseFloat(camada.diam_pol) || 0,
-                  description: camada.descricao || '',
-                  // eslint-disable-next-line eqeqeq
-                  type: tipo,
-                };
-              });
-          }
-          if (perfilImported.construtivo.filtros.length > 0) {
-            perfilConverted.constructive.well_screen =
-              perfilImported.construtivo.filtros.map((camada) => {
-                return {
-                  from: parseFloat(camada.de),
-                  to: parseFloat(camada.ate),
-                  type: camada.tipo || '',
-                  diam_pol: parseFloat(camada.diam_pol) || 0,
-                  screen_slot_mm: parseFloat(camada.ranhura_mm) || 0,
-                };
-              });
-          }
-          if (perfilImported.construtivo.revestimento.length > 0) {
-            perfilConverted.constructive.well_case =
-              perfilImported.construtivo.revestimento.map((camada) => {
-                return {
-                  from: parseFloat(camada.de),
-                  to: parseFloat(camada.ate),
-                  type: camada.tipo || '',
-                  diam_pol: parseFloat(camada.diam_pol) || 0,
-                };
-              });
-          }
-          if (perfilImported.construtivo.tubo_boca.length > 0) {
-            perfilConverted.constructive.surface_case =
-              perfilImported.construtivo.tubo_boca.map((camada) => {
-                const depth =
-                  parseFloat(camada.altura) || parseFloat(camada.depth) || 0;
-                return {
-                  from: camada.from || 0,
-                  to: camada.to || depth,
-                  diam_pol: parseFloat(camada.diam_pol) || 0,
-                };
-              });
-          }
-          if (perfilImported.construtivo.laje.largura) {
-            perfilConverted.constructive.cement_pad = {
-              type: perfilImported.construtivo.laje.tipo,
-              thickness: parseFloat(perfilImported.construtivo.laje.espessura),
-              width: parseFloat(perfilImported.construtivo.laje.largura),
-              length: parseFloat(perfilImported.construtivo.laje.comprimento),
-            };
-          }
-          perfilImported = { ...perfilConverted };
-        } else {
-          setOpenImportErrorS(true);
-          return;
-        }
-      }
-
-      if (onChangeWellName) {
-        onChangeWellName(perfilImported ? perfilImported.name : '');
-      }
-
-      if (
-        perfilImported.constructive &&
-        perfilImported.constructive.cement_pad &&
-        perfilImported.constructive.cement_pad.width
-      ) {
-        setcementPadChecked(true);
-      }
-      setPerfilState(perfilImported);
     };
-    reader.readAsText(fileUploaded);
+
+    try {
+      reader.readAsText(fileUploaded);
+    } catch (e) {
+      // user cancelled upload
+    }
   };
 
   return (

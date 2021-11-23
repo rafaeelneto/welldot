@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import PerfilEditor from './components/perfilEditor/perfilEditor.component';
+import PerfilEditor from './components/profileEditor/profileEditor.component';
 import Header from './components/header/header.component';
 
 import './App.css';

@@ -15,9 +15,9 @@ import FormLabel from '@mui/material/FormLabel';
 
 import { SketchPicker } from 'react-color';
 
-import { LayerProps } from '../../types/perfilEditor.types';
+import { LayerProps } from '../../types/profileEditor.types';
 
-import styles from './perfilEditor.module.scss';
+import styles from './profileEditor.module.scss';
 
 const FGDC_TEXTURES = [
   120, 123, 132, 601, 602, 603, 605, 606, 607, 608, 609, 610, 611, 612, 613,

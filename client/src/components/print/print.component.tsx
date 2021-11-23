@@ -51,7 +51,7 @@ export const exportPdfProfile = (
     const svgWidth = parseFloat(svg!.getAttribute('width') || '0');
 
     const pageSize =
-      svgs.length > 1 || svgHeight < 835.88 ? 'A4' : [595.28, svgHeight * 0.75];
+      svgs.length > 1 || svgHeight < 835.88 ? 'A4' : [595.28, svgHeight];
 
     doc.addPage({ size: pageSize, margin: MARGIN });
     // Add another page

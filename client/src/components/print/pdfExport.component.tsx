@@ -27,7 +27,7 @@ import {
   FileText,
 } from 'react-feather';
 
-import { PROFILE_TYPE } from '../../types/perfil.types';
+import { PROFILE_TYPE } from '../../types/profile.types';
 import { infoType } from '../../types/profile2Export.types';
 
 import styles from './pdfExport.module.scss';
