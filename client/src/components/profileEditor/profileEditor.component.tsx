@@ -44,7 +44,7 @@ import PerfilDrawer from '../profileDrawer/profileDrawer.component';
 
 import profileConverter from '../../utils/profileConverter';
 
-import PDFExport from '../print/pdfExport.component';
+import PDFExport from '../export/pdfExport.component';
 
 import {
   BoreHoleLayer,

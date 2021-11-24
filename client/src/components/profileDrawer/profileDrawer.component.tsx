@@ -261,7 +261,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .append('rect')
         .attr('x', POCO_CENTER)
         .attr('x', 10)
-        .attr('width', POCO_CENTER)
+        .attr('width', svgWidth - 100)
         .style('stroke', '#101010')
         .style('stroke-width', '1px')
         .on('mouseover', tipGeology.show)

@@ -50,7 +50,7 @@ export default function FullScreenDialog({
               onClick={() => onResponse(false)}
               aria-label="close"
             >
-              <CloseIcon />
+              <CloseIcon className={styles.closeIcon} />
             </IconButton>
             <Typography variant="h6" className={styles.title}>
               {title}

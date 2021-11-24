@@ -10,7 +10,7 @@ export default () => {
       <span>
         <WPLogo className={styles.logo} />
       </span>
-      <span className={styles.title}>Well Logger</span>
+      <span className={styles.title}>Well Profiler</span>
     </div>
   );
 };

@@ -1,7 +1,14 @@
+@import '../../styles/colors';
 .appBar {
   position: relative;
+  background-color: $colorPrimaryDark;
 }
 
 .title {
   flex: 1;
+  color: white;
+}
+
+.closeIcon {
+  fill: white;
 }

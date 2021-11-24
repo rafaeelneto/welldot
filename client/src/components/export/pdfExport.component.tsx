@@ -243,7 +243,7 @@ const PDFExport = ({ profile }: PDFEProps) => {
             aria-label="Volume"
             value={zoomValue}
             onChange={handleZoomChange}
-            max={1000}
+            max={850}
             min={1}
             valueLabelDisplay="auto"
           />
