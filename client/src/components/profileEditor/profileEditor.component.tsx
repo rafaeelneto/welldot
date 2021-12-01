@@ -471,7 +471,10 @@ const PerfilEditor = ({
                 title="Exportar Perfil"
                 alwaysFull
               >
-                <PDFExport profile={profileState} />
+                <PDFExport
+                  profile={profileState}
+                  onChangeInfo={onChangePerfilState}
+                />
               </FullScreenDialog>
             </div>
             <Button

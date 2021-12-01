@@ -9,6 +9,7 @@ import {
   FormGroup,
   Checkbox,
   Divider,
+  TextField,
 } from '@mui/material';
 
 import { Container, Draggable } from 'react-smooth-dnd';
@@ -21,7 +22,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import {
   Trash,
   PlusCircle,
-  Upload,
+  Printer,
   Download,
   XCircle,
   FileText,
@@ -36,6 +37,7 @@ import profile2Export from './profile2Export.component';
 
 type PDFEProps = {
   profile: PROFILE_TYPE;
+  onChangeInfo: (newPerfilState: any) => void;
 };
 
 const SortableList = ({
@@ -43,11 +45,13 @@ const SortableList = ({
   defaultItem,
   onChangeList,
   onChangeValues,
+  limit,
 }: {
   itens: infoType[];
   defaultItem: infoType;
   onChangeList: (newComponents: infoType[]) => void;
   onChangeValues: (newComponent: infoType, index: number) => void;
+  limit?: number | null;
 }) => {
   const onDrop = ({ removedIndex, addedIndex }) => {
     onChangeList(arrayMoveImmutable(itens, removedIndex, addedIndex));
@@ -132,6 +136,7 @@ const SortableList = ({
         <ListItem
           className={styles.btnAdd}
           dense
+          disabled={(limit && itens.length > limit - 1) || false}
           button
           onClick={() => onAdd()}
         >
@@ -147,21 +152,23 @@ const SortableList = ({
   );
 };
 
-const PDFExport = ({ profile }: PDFEProps) => {
+const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
   const timeoutRef = useRef<any>();
   const IFRAME_ID = 'ÏFRAME_PDF_ID';
 
-  const [headingInfo, setHeadingInfo] = useState<infoType[]>([]);
-  const [endInfo, setEndInfo] = useState<infoType[]>([]);
+  const headingInfo = profile.info?.headingInfo || [];
+  const endInfo = profile.info?.endInfo || [];
 
   const [zoomValue, setZoomValue] = useState(500);
+  const [header, setHeader] = useState('PERFIL GEOLÓGICO CONSTRUTIVO');
 
-  const [breakPages, setBreakPages] = useState(true);
+  const [breakPages, setBreakPages] = useState(false);
 
   useEffect(() => {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       profile2Export(
+        header,
         headingInfo,
         endInfo,
         { ...profile },
@@ -169,8 +176,10 @@ const PDFExport = ({ profile }: PDFEProps) => {
         zoomValue,
         IFRAME_ID
       );
-    }, 500);
-  }, [headingInfo, endInfo, breakPages, zoomValue]);
+
+      onChangeInfo({ ...profile, info: { headingInfo, endInfo } });
+    }, 1000);
+  }, [headingInfo, header, endInfo, breakPages, zoomValue]);
 
   const handleBreakChange = (event) => {
     setBreakPages(event.target.checked);
@@ -181,7 +190,10 @@ const PDFExport = ({ profile }: PDFEProps) => {
   };
 
   const onChangeHeadingInfo = (newHeadingInfo) => {
-    setHeadingInfo(newHeadingInfo);
+    onChangeInfo({
+      ...profile,
+      info: { headingInfo: newHeadingInfo, endInfo },
+    });
   };
 
   const handleHeadingInfoValueChange = (newValue, index) => {
@@ -192,7 +204,10 @@ const PDFExport = ({ profile }: PDFEProps) => {
   };
 
   const onChangeEndInfo = (newEndInfo) => {
-    setEndInfo(newEndInfo);
+    onChangeInfo({
+      ...profile,
+      info: { headingInfo, endInfo: newEndInfo },
+    });
   };
 
   const handleEndInfoValueChange = (newValue, index) => {
@@ -209,18 +224,53 @@ const PDFExport = ({ profile }: PDFEProps) => {
           className={styles.mainBtns}
           onClick={() => {
             profile2Export(
+              header,
               headingInfo,
               endInfo,
               { ...profile },
               breakPages,
-              zoomValue
+              zoomValue,
+              undefined,
+              false
             );
           }}
-          startIcon={<FileText />}
+          startIcon={<Download />}
           color="primary"
         >
-          Baixar
+          Baixar PDF
         </Button>
+        <Button
+          className={styles.mainBtns}
+          onClick={() => {
+            profile2Export(
+              header,
+              headingInfo,
+              endInfo,
+              { ...profile },
+              breakPages,
+              zoomValue,
+              undefined,
+              true
+            );
+          }}
+          startIcon={<Printer />}
+          color="primary"
+        >
+          Imprimir
+        </Button>
+
+        <TextField
+          className={`${styles.layerInput} ${styles.headerInput}`}
+          id="standard-multiline-flexible"
+          // placeholder="Cabeçalho"
+          label="Cabeçalho"
+          variant="standard"
+          value={header}
+          onChange={(event) => {
+            // eslint-disable-next-line implicit-arrow-linebreak
+            setHeader(event.target.value);
+          }}
+        />
 
         {/* break pages checkbox */}
         <FormGroup>
@@ -269,6 +319,7 @@ const PDFExport = ({ profile }: PDFEProps) => {
         <SortableList
           defaultItem={{ label: '', value: '' }}
           itens={headingInfo}
+          limit={6}
           onChangeList={onChangeHeadingInfo}
           onChangeValues={handleHeadingInfoValueChange}
         />

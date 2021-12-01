@@ -6,7 +6,8 @@ import textures from 'textures';
 
 import wrap from '../../utils/wrap';
 
-import { exportPdfProfile } from './pdfGenerate.component';
+// eslint-disable-next-line import/namespace
+import { innerRenderPdf, printPdf, downloadPdf } from './pdfGenerate';
 
 import fdgcTextures from '../../utils/fgdcTextures';
 
@@ -62,12 +63,14 @@ const getLithologicalFill = (data) => {
 };
 
 const profile2Export = (
+  header: string,
   headingInfo: infoType[],
   endInfo: infoType[],
   profile: PROFILE_TYPE,
   breakPages: boolean,
   zoomLevel: number,
-  iframeId?: string
+  iframeId?: string,
+  print?: boolean
 ) => {
   // check if profile is empty
   if (!profile.constructive || !profile.geologic) return;
@@ -81,7 +84,7 @@ const profile2Export = (
 
   if (noPerfil) return;
 
-  const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 30, LEFT: 50 };
+  const MARGINS = { TOP: 15, RIGHT: 30, BOTTOM: 30, LEFT: 20 };
 
   const geologicData = profile.geologic;
   const constructionData = profile.constructive;
@@ -106,10 +109,13 @@ const profile2Export = (
 
   const maxYValues = d3.max(depthValues) || 0;
 
-  const POCO_WIDTH = 120;
-  const POCO_CENTER = 550;
-  const GEOLOGY_X_POS = 50;
-  const GEOLOGY_WIDTH = 300;
+  const POCO_WIDTH = 100;
+  const POCO_CENTER = 350;
+  const GEOLOGY_X_POS = 35;
+  const GEOLOGY_WIDTH = 220;
+  const GEOLOGY_X_POS_DIV_1 = GEOLOGY_WIDTH + GEOLOGY_X_POS + 10;
+  const GEOLOGY_X_POS_DIV_2 = GEOLOGY_X_POS_DIV_1 + 20;
+  const GEOLOGY_TIP_WIDTH = 200;
 
   const maxDiamValues = [
     ...constructionData.bole_hole.map(
@@ -143,9 +149,9 @@ const profile2Export = (
   const svgTotalHeight = ((1 / zoomLevel) * maxYValues * 1000 * 72) / 25.4;
   const svgs: SvgInfo[] = [];
 
-  const A4_SVG_HEIGHT = 835.88;
+  const A4_SVG_HEIGHT = 480 * 1.33;
 
-  const WIDTH = 900 - MARGINS.LEFT - MARGINS.RIGHT;
+  const WIDTH = 521.8 * 1.33 - MARGINS.LEFT - MARGINS.RIGHT;
 
   const yScaleGlobal = d3
     .scaleLinear()
@@ -193,7 +199,7 @@ const profile2Export = (
   const drawLog = (svgInfo: SvgInfo) => {
     const svg = d3.select(`#${svgInfo.id}`);
 
-    svg.attr('height', svgInfo.height + MARGINS.TOP + MARGINS.BOTTOM + 100);
+    svg.attr('height', svgInfo.height + MARGINS.TOP + MARGINS.BOTTOM);
     svg.attr('width', WIDTH + MARGINS.LEFT + MARGINS.RIGHT);
 
     svg.selectAll('*').remove();
@@ -251,7 +257,10 @@ const profile2Export = (
       .attr('transform', `translate(10, 0)`)
       .attr('stroke', '#000000');
 
-    gY.selectAll('text').attr('stroke', 'none').attr('fill', '#000000');
+    gY.selectAll('text')
+      .attr('stroke', 'none')
+      .attr('fill', '#000000')
+      .attr('font-size', 7.5);
 
     const profileTexture = {
       pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
@@ -304,7 +313,7 @@ const profile2Export = (
           return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
         });
 
-      const LABELS_MARGINS = { top: 7, button: 5 };
+      const LABELS_MARGINS = { top: 2, button: 2 };
 
       const depthTipGroup = litoligicalGroup.append('g');
 
@@ -320,7 +329,7 @@ const profile2Export = (
         .attr('class', (d) => `depthTip-${d.from}`)
         .attr('x', GEOLOGY_X_POS - 5)
         .attr('dy', '.35em')
-        .attr('font-size', 10)
+        .attr('font-size', 7.5)
         .attr('text-anchor', 'end')
         .text((d) => {
           if (d.to > maxSvgDepth) return null;
@@ -343,14 +352,14 @@ const profile2Export = (
         .enter()
         .append('text')
         .attr('class', (d) => `text-${d.from}`)
-        .attr('x', 390)
-        .attr('dy', '.35em')
-        .attr('font-size', 10)
+        .attr('x', GEOLOGY_X_POS_DIV_2)
+        .attr('dy', '.15em')
+        .attr('font-size', 7.5)
         .text((d) => {
           if (d.from < currentDepth) return null;
           return d.description;
         })
-        .call(wrap, 300)
+        .call(wrap, GEOLOGY_TIP_WIDTH)
         .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
           if (i > 0) {
             const lastTextHeight =
@@ -360,8 +369,8 @@ const profile2Export = (
                 .node()
                 // @ts-ignore
                 .getBoundingClientRect().height || 0) +
-              LABELS_MARGINS.top +
-              LABELS_MARGINS.button;
+              LABELS_MARGINS.button +
+              LABELS_MARGINS.top;
 
             const calculatedY = currYPos + lastTextHeight;
 
@@ -371,12 +380,12 @@ const profile2Export = (
             ) {
               currYPos = calculatedY;
 
-              return calculatedY;
+              return calculatedY + 7;
             }
           }
 
-          currYPos = yScale(d.from) + LABELS_MARGINS.top;
-          return yScale(d.from) + LABELS_MARGINS.top;
+          currYPos = yScale(d.from);
+          return yScale(d.from) + 7;
         });
 
       const dividersGroup = litoligicalGroup.append('g');
@@ -396,7 +405,7 @@ const profile2Export = (
         // eslint-disable-next-line no-unused-vars
         // @ts-ignore
         .attr('d', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-          let curveCoordinates: any[] = [[700, yScale(d.from)]];
+          let curveCoordinates: any[] = [[WIDTH, yScale(d.from)]];
 
           if (i > 0) {
             const lastTextHeight =
@@ -416,22 +425,22 @@ const profile2Export = (
               calculatedY
             ) {
               curveCoordinates = [
-                [385, calculatedY],
-                [700, calculatedY],
+                [GEOLOGY_X_POS_DIV_2, calculatedY],
+                [WIDTH, calculatedY],
               ];
 
               currYPos = calculatedY;
             } else {
               currYPos = yScale(d.from);
-              curveCoordinates = [[700, yScale(d.from)]];
+              curveCoordinates = [[WIDTH, yScale(d.from)]];
             }
           } else {
             currYPos = yScale(d.from);
           }
 
           return d3.line()([
-            [GEOLOGY_X_POS, yScale(d.from)],
-            [370, yScale(d.from)],
+            [GEOLOGY_X_POS + GEOLOGY_WIDTH, yScale(d.from)],
+            [GEOLOGY_X_POS_DIV_1, yScale(d.from)],
             ...curveCoordinates,
           ]);
         });
@@ -818,7 +827,7 @@ const profile2Export = (
           (d) => `${WELL_CASE_TIP_CLASS_NAME}${parseInt(d.from, 10)}`
         )
         .attr('dy', '.35em')
-        .attr('font-size', 10)
+        .attr('font-size', 7.5)
         .attr('fill', DARK_GRAY)
 
         .text((d) => {
@@ -868,7 +877,7 @@ const profile2Export = (
           (d) => `${WELL_SCREEN_TIP_CLASS_NAME}${parseInt(d.from, 10)}`
         )
         .attr('dy', '.35em')
-        .attr('font-size', 10)
+        .attr('font-size', 7.5)
         .attr('fill', DARK_GRAY)
         .text((d) => {
           // if (d.to > maxSvgDepth) return null;
@@ -933,7 +942,21 @@ const profile2Export = (
     currentDepth += yScaleGlobal.invert(svgInfo.height);
   });
 
-  exportPdfProfile(headingInfo, endInfo, svgs, iframeId);
+  if (iframeId) {
+    innerRenderPdf(
+      header,
+      profile,
+      headingInfo,
+      endInfo,
+      svgs,
+      breakPages,
+      iframeId
+    );
+  } else if (print) {
+    printPdf(header, profile, headingInfo, endInfo, svgs, breakPages);
+  } else {
+    downloadPdf(header, profile, headingInfo, endInfo, svgs, breakPages);
+  }
 };
 
 export default profile2Export;

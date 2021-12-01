@@ -59,8 +59,14 @@ export type CONSTRUCTIVE_COMPONENT_TYPE = {
   cement_pad: CEMENT_PAD_COMPONENT_TYPE;
 };
 
+export type INFO_TYPE = { label: string; value: string };
+
 export type PROFILE_TYPE = {
   name?: string;
+  info?: {
+    headingInfo?: INFO_TYPE[];
+    endInfo?: INFO_TYPE[];
+  };
   geologic: GEOLOGIC_COMPONENT_TYPE[];
   constructive: CONSTRUCTIVE_COMPONENT_TYPE;
 };
