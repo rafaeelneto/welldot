@@ -356,7 +356,7 @@ const profile2Export = (
         .attr('dy', '.15em')
         .attr('font-size', 7.5)
         .text((d) => {
-          if (d.from < currentDepth) return null;
+          // if (d.from < currentDepth) return null;
           return d.description;
         })
         .call(wrap, GEOLOGY_TIP_WIDTH)
@@ -384,8 +384,10 @@ const profile2Export = (
             }
           }
 
-          currYPos = yScale(d.from);
-          return yScale(d.from) + 7;
+          const yPos = yScale(d.from > currentDepth ? d.from : currentDepth);
+
+          currYPos = yPos;
+          return yPos + 7;
         });
 
       const dividersGroup = litoligicalGroup.append('g');
@@ -405,7 +407,8 @@ const profile2Export = (
         // eslint-disable-next-line no-unused-vars
         // @ts-ignore
         .attr('d', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-          let curveCoordinates: any[] = [[WIDTH, yScale(d.from)]];
+          const yPos = yScale(d.from > currentDepth ? d.from : currentDepth);
+          let curveCoordinates: any[] = [[WIDTH, yPos]];
 
           if (i > 0) {
             const lastTextHeight =
@@ -421,7 +424,7 @@ const profile2Export = (
             const calculatedY = currYPos + lastTextHeight;
 
             if (
-              yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
+              yPos + LABELS_MARGINS.top + LABELS_MARGINS.button <
               calculatedY
             ) {
               curveCoordinates = [
@@ -431,16 +434,16 @@ const profile2Export = (
 
               currYPos = calculatedY;
             } else {
-              currYPos = yScale(d.from);
+              currYPos = yPos;
               curveCoordinates = [[WIDTH, yScale(d.from)]];
             }
           } else {
-            currYPos = yScale(d.from);
+            currYPos = yPos;
           }
 
           return d3.line()([
-            [GEOLOGY_X_POS + GEOLOGY_WIDTH, yScale(d.from)],
-            [GEOLOGY_X_POS_DIV_1, yScale(d.from)],
+            [GEOLOGY_X_POS + GEOLOGY_WIDTH, yPos],
+            [GEOLOGY_X_POS_DIV_1, yPos],
             ...curveCoordinates,
           ]);
         });
@@ -783,10 +786,6 @@ const profile2Export = (
           return yPos;
         };
       };
-
-      const numberFormater = new Intl.NumberFormat('pt-BR', {
-        maximumFractionDigits: 2,
-      });
 
       const WELL_CASE_TIP_CLASS_NAME = 'wellCaseTip-';
 
