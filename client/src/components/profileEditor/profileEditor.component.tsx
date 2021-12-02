@@ -192,11 +192,11 @@ const PerfilEditor = ({
 }: ProfileEditorProps) => {
   const inputFile = useRef(null);
 
-  const [profileState, setPerfilState] = useState(PROFILE_DEFAULT);
+  const [profileState, setProfileState] = useState(PROFILE_DEFAULT);
   const [changesCounter, setChangesCounter] = useState(0);
 
   // ! change
-  const [openExport, setOpenExport] = useState(true);
+  const [openExport, setOpenExport] = useState(false);
 
   const [openImportErrorS, setOpenImportErrorS] = useState(false);
 
@@ -228,7 +228,7 @@ const PerfilEditor = ({
   };
 
   const onChangePerfilState = (newPerfilState) => {
-    setPerfilState(newPerfilState);
+    setProfileState(newPerfilState);
     setChangesCounter(changesCounter + 1);
     if (changesCounter > 30) {
       setChangesCounter(0);
@@ -391,7 +391,7 @@ const PerfilEditor = ({
           e.target?.result
         );
         setcementPadChecked(cementPad);
-        setPerfilState(perfilImported);
+        setProfileState(perfilImported);
       } catch (error) {
         setOpenImportErrorS(true);
       }
@@ -431,14 +431,6 @@ const PerfilEditor = ({
           />
 
           <div className={styles.btnContainer}>
-            {/* <Button
-          className={styles.mainBtns}
-          onClick={handleSave}
-          color="primary"
-          variant="contained"
-        >
-          Salvar
-        </Button> */}
             <Snackbar
               className="errorSnackBar"
               anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -451,6 +443,13 @@ const PerfilEditor = ({
               // eslint-disable-next-line no-useless-concat
               key={'top' + 'center'}
             />
+            <Button
+              className={styles.mainBtns}
+              onClick={() => setProfileState(PROFILE_DEFAULT)}
+              color="primary"
+            >
+              Limpar perfil
+            </Button>
             <Button
               className={styles.mainBtns}
               onClick={() => {
@@ -561,7 +560,7 @@ const PerfilEditor = ({
                               },
                             },
                           };
-                          setPerfilState(newPerfilState);
+                          setProfileState(newPerfilState);
                         } else {
                           const newPerfilState = {
                             ...profileState,
@@ -572,7 +571,7 @@ const PerfilEditor = ({
                               },
                             },
                           };
-                          setPerfilState(newPerfilState);
+                          setProfileState(newPerfilState);
                         }
 
                         setcementPadChecked(checked);
