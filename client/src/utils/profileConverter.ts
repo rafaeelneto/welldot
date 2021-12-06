@@ -13,7 +13,10 @@ const convertProfile = (jsonString) => {
   }
 
   if (noPerfil) {
-    const perfilConverted = PROFILE_DEFAULT;
+    const perfilConverted = {
+      ...PROFILE_DEFAULT,
+      constructive: { ...PROFILE_DEFAULT.constructive },
+    };
     if (perfilImported.geologico || perfilImported.construtivo) {
       if (perfilImported.geologico.length > 0) {
         perfilConverted.geologic = perfilImported.geologico.map((camada) => {

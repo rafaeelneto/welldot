@@ -8,22 +8,24 @@ import {
   HOLE_FILL_COMPONENT_TYPE,
 } from '../types/profile.types';
 
-export const PROFILE_DEFAULT: PROFILE_TYPE = {
-  geologic: [],
-  constructive: {
-    bole_hole: [],
-    well_screen: [],
-    surface_case: [],
-    well_case: [],
-    hole_fill: [],
-    cement_pad: {
-      type: '',
-      width: 0,
-      thickness: 0,
-      length: 0,
+export const PROFILE_DEFAULT: PROFILE_TYPE = JSON.parse(
+  JSON.stringify({
+    geologic: [],
+    constructive: {
+      bole_hole: [],
+      well_screen: [],
+      surface_case: [],
+      well_case: [],
+      hole_fill: [],
+      cement_pad: {
+        type: '',
+        width: 0,
+        thickness: 0,
+        length: 0,
+      },
     },
-  },
-};
+  })
+);
 
 export const GEOLOGIC_COMPONENT_DEFAULT: GEOLOGIC_COMPONENT_TYPE = {
   from: 0,

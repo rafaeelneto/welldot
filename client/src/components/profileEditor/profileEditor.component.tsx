@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Button,
   IconButton,
@@ -192,10 +192,12 @@ const PerfilEditor = ({
 }: ProfileEditorProps) => {
   const inputFile = useRef(null);
 
-  const [profileState, setProfileState] = useState(PROFILE_DEFAULT);
+  const [profileState, setProfileState] = useState({
+    ...PROFILE_DEFAULT,
+    constructive: { ...PROFILE_DEFAULT.constructive },
+  });
   const [changesCounter, setChangesCounter] = useState(0);
 
-  // ! change
   const [openExport, setOpenExport] = useState(false);
 
   const [openImportErrorS, setOpenImportErrorS] = useState(false);
@@ -391,7 +393,7 @@ const PerfilEditor = ({
           e.target?.result
         );
         setcementPadChecked(cementPad);
-        setProfileState(perfilImported);
+        setProfileState({ ...perfilImported });
       } catch (error) {
         setOpenImportErrorS(true);
       }
@@ -406,15 +408,6 @@ const PerfilEditor = ({
 
   return (
     <div className={styles.root}>
-      {/* <div style={{ overflow: 'hidden', height: 0, width: 0 }}>
-        <PDFExport
-          profile={profileState}
-          render={shouldExport}
-          onRenderFinish={() => {
-            setShouldExport(false);
-          }}
-        />
-      </div> */}
       <div className={styles.wrapper}>
         <div className={styles.headerContainer}>
           <InputBase
@@ -445,7 +438,13 @@ const PerfilEditor = ({
             />
             <Button
               className={styles.mainBtns}
-              onClick={() => setProfileState(PROFILE_DEFAULT)}
+              onClick={() => {
+                console.log('LIMPAR');
+                setProfileState({
+                  ...PROFILE_DEFAULT,
+                  constructive: { ...PROFILE_DEFAULT.constructive },
+                });
+              }}
               color="primary"
             >
               Limpar perfil
@@ -567,7 +566,7 @@ const PerfilEditor = ({
                             constructive: {
                               ...profileState.constructive,
                               cement_pad: {
-                                ...PROFILE_DEFAULT.constructive.cement_pad,
+                                ...profileState.constructive.cement_pad,
                               },
                             },
                           };
