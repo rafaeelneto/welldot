@@ -5,6 +5,7 @@ import {
   InputAdornment,
   Autocomplete,
   Popover,
+  IconButton,
 } from '@mui/material';
 
 import Radio from '@mui/material/Radio';
@@ -14,6 +15,8 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 
 import { SketchPicker } from 'react-color';
+
+import { HelpCircle } from 'react-feather';
 
 import { LayerProps } from '../../types/profileEditor.types';
 
@@ -107,6 +110,18 @@ export const GeologicLayer = ({
           )}
         />
       </div>
+      <p className={styles.helpText}>
+        As texturas usadas nas camadas são do FGDC Digital Cartographic Standard
+        for Geologic Map Symbolization produzido pelo Serviço Geológico dos
+        Estados Unidos (USGS). Para consultar as texturas disponíveis bem como
+        suas descrições, acesso o{' '}
+        <a
+          href="https://rafaeelneto.github.io/wellProfiler_static/FGDCgeostdTM11A2web_PatternChart.pdf"
+          target="blank"
+        >
+          link
+        </a>
+      </p>
       <div className={`${styles.colorInput} ${styles.layerInput}`}>
         <span>Cor da Camada:</span>
         <div

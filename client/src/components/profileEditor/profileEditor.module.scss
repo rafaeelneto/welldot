@@ -163,11 +163,12 @@
   width: 100%;
   flex-direction: column;
   max-width: 300px;
+
   @include md {
     flex-direction: row;
   }
   .layerInput {
-    margin-top: none;
+    margin-top: auto;
   }
 }
 
@@ -180,6 +181,18 @@
   @include md {
     min-width: 200px;
   }
+}
+
+.geologicTextureWrapper {
+  flex-direction: row;
+  align-items: center;
+  display: inline-flex;
+}
+
+.helpText {
+  color: $gray1;
+  font-family: $fontOpenSans;
+  font-size: 11px;
 }
 
 .radioInput {

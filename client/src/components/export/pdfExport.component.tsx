@@ -69,7 +69,12 @@ const SortableList = ({
 
   return (
     <List className={styles.sortableList}>
-      <Container dragHandleSelector=".drag-handle" lockAxis="y" onDrop={onDrop}>
+      <Container
+        dragHandleSelector=".drag-handle"
+        lockAxis="y"
+        onDrop={onDrop}
+        dragBeginDelay={0.01}
+      >
         {itens.map((item, index) => (
           <Draggable key={index}>
             <ListItem>
@@ -90,7 +95,6 @@ const SortableList = ({
                   minWidth: 'auto',
                   marginRight: '5px',
                 }}
-                className="drag-handle"
               >
                 <XCircle />
               </ListItemIcon>
@@ -318,7 +322,7 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
         <span className={styles.componentTitle}>Infomações iniciais</span>
         <SortableList
           defaultItem={{ label: '', value: '' }}
-          itens={headingInfo}
+          itens={[...headingInfo]}
           limit={6}
           onChangeList={onChangeHeadingInfo}
           onChangeValues={handleHeadingInfoValueChange}
@@ -327,7 +331,7 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
         <span className={styles.componentTitle}>Infomações finais</span>
         <SortableList
           defaultItem={{ label: '', value: '' }}
-          itens={endInfo}
+          itens={[...endInfo]}
           onChangeList={onChangeEndInfo}
           onChangeValues={handleEndInfoValueChange}
         />
