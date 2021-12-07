@@ -178,6 +178,8 @@ const convertProfile = (jsonString) => {
     cementPad = true;
   }
 
+  console.log(perfilImported.name);
+
   return {
     perfilImported,
     cementPad,

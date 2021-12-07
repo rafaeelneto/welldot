@@ -4,10 +4,10 @@ import {
   IconButton,
   Collapse,
   TextField,
-  ListItemSecondaryAction,
+  Tooltip,
   InputAdornment,
   Snackbar,
-  Input,
+  Divider,
   InputBase,
 } from '@mui/material';
 
@@ -57,6 +57,9 @@ import {
 
 import styles from './profileEditor.module.scss';
 
+import { ReactComponent as DeleteWell } from '../../assets/delete_well_icon.svg';
+import { ReactComponent as ExampleWell } from '../../assets/example_well_icon.svg';
+
 import {
   onChangeValuesType,
   onChangeListType,
@@ -64,6 +67,7 @@ import {
 } from '../../types/profileEditor.types';
 
 import {
+  PROFILE_EXAMPLE,
   PROFILE_DEFAULT,
   BORE_HOLE_COMPONENT_DEFAULT,
   GEOLOGIC_COMPONENT_DEFAULT,
@@ -73,10 +77,7 @@ import {
   WELL_SCREEN_COMPONENT_DEFAULT,
 } from '../../defaults/profileDefaults';
 
-type ProfileEditorProps = {
-  wellName?: string;
-  onChangeWellName?: (newName: string) => void;
-};
+import { PROFILE_TYPE } from '../../types/profile.types';
 
 const SortableList = ({
   layers,
@@ -186,16 +187,14 @@ function a11yProps(index) {
   };
 }
 
-const PerfilEditor = ({
-  wellName = '',
-  onChangeWellName,
-}: ProfileEditorProps) => {
+const PerfilEditor = () => {
   const inputFile = useRef(null);
 
   const [profileState, setProfileState] = useState({
     ...PROFILE_DEFAULT,
     constructive: { ...PROFILE_DEFAULT.constructive },
   });
+
   const [changesCounter, setChangesCounter] = useState(0);
 
   const [openExport, setOpenExport] = useState(false);
@@ -229,7 +228,7 @@ const PerfilEditor = ({
     return newLayers;
   };
 
-  const onChangePerfilState = (newPerfilState) => {
+  const onChangePerfilState = (newPerfilState: PROFILE_TYPE) => {
     setProfileState(newPerfilState);
     setChangesCounter(changesCounter + 1);
     if (changesCounter > 30) {
@@ -408,18 +407,33 @@ const PerfilEditor = ({
 
   return (
     <div className={styles.root}>
+      <div>
+        <FullScreenDialog
+          open={openExport}
+          onResponse={() => setOpenExport(false)}
+          btnText={null}
+          title="Exportar Perfil"
+          alwaysFull
+        >
+          <PDFExport
+            profile={{ ...profileState }}
+            onChangeInfo={onChangePerfilState}
+          />
+        </FullScreenDialog>
+      </div>
       <div className={styles.wrapper}>
         <div className={styles.headerContainer}>
           <InputBase
             className={styles.wellNameInput}
             autoComplete="off"
-            value={wellName}
+            value={profileState.name || ''}
             placeholder="Nome do Poço"
             onChange={(event) => {
               // eslint-disable-next-line implicit-arrow-linebreak
-              if (onChangeWellName) {
-                onChangeWellName(event.target.value);
-              }
+              onChangePerfilState({
+                ...profileState,
+                name: event.target.value,
+              });
             }}
           />
 
@@ -436,18 +450,34 @@ const PerfilEditor = ({
               // eslint-disable-next-line no-useless-concat
               key={'top' + 'center'}
             />
+
+            <Tooltip title="Perfil Exemplo">
+              <IconButton
+                className={styles.mainBtns}
+                onClick={() => {
+                  setProfileState({
+                    ...PROFILE_EXAMPLE,
+                    constructive: { ...PROFILE_EXAMPLE.constructive },
+                  });
+                }}
+                color="primary"
+              >
+                <ExampleWell />
+              </IconButton>
+            </Tooltip>
+            <Divider orientation="vertical" />
             <Button
               className={styles.mainBtns}
               onClick={() => {
-                console.log('LIMPAR');
                 setProfileState({
                   ...PROFILE_DEFAULT,
                   constructive: { ...PROFILE_DEFAULT.constructive },
                 });
               }}
               color="primary"
+              startIcon={<DeleteWell />}
             >
-              Limpar perfil
+              Limpar Perfil
             </Button>
             <Button
               className={styles.mainBtns}
@@ -461,25 +491,11 @@ const PerfilEditor = ({
             >
               Exportar PDF
             </Button>
-            <div>
-              <FullScreenDialog
-                open={openExport}
-                onResponse={() => setOpenExport(false)}
-                btnText={null}
-                title="Exportar Perfil"
-                alwaysFull
-              >
-                <PDFExport
-                  profile={profileState}
-                  onChangeInfo={onChangePerfilState}
-                />
-              </FullScreenDialog>
-            </div>
+
             <Button
               className={styles.mainBtns}
               onClick={() => {
                 const profileToSave = { ...profileState };
-                if (wellName) profileState.name = wellName;
 
                 const perfilJSON = JSON.stringify(profileToSave);
 
@@ -489,7 +505,9 @@ const PerfilEditor = ({
 
                 download(
                   blob,
-                  `perfil_${wellName.replace(/ /g, '_').toLowerCase()}_${format(
+                  `perfil_${(profileState.name || '')
+                    .replace(/ /g, '_')
+                    .toLowerCase()}_${format(
                     new Date(),
                     'dd_MM_yyyy__hh_mm'
                   )}.json`,
@@ -523,7 +541,7 @@ const PerfilEditor = ({
         </div>
         <div className={styles.container}>
           <div className={`${styles.perfilContainer}`}>
-            <PerfilDrawer profile={profileState} />
+            <PerfilDrawer profile={{ ...profileState }} />
           </div>
           <div className={styles.dataContainer}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

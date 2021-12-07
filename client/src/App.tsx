@@ -1,22 +1,14 @@
-/* eslint-disable max-len */
-import React, { useState } from 'react';
+import React from 'react';
 import PerfilEditor from './components/profileEditor/profileEditor.component';
 import Header from './components/header/header.component';
 
 import './App.css';
 
 const App = () => {
-  const [name, setName] = useState<string>('');
-
   return (
     <div className="App">
       <Header />
-      <PerfilEditor
-        wellName={name}
-        onChangeWellName={(newWellName: string) => {
-          setName(newWellName);
-        }}
-      />
+      <PerfilEditor />
     </div>
   );
 };
