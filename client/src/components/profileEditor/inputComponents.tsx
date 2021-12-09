@@ -111,10 +111,13 @@ export const GeologicLayer = ({
         />
       </div>
       <p className={styles.helpText}>
-        As texturas usadas nas camadas são do FGDC Digital Cartographic Standard
-        for Geologic Map Symbolization produzido pelo Serviço Geológico dos
-        Estados Unidos (USGS). Para consultar as texturas disponíveis bem como
-        suas descrições, acesso o{' '}
+        As texturas usadas nas camadas são do{' '}
+        <i>
+          &quot;FGDC Digital Cartographic Standard for Geologic Map
+          Symbolization&quot;
+        </i>{' '}
+        produzido pelo Serviço Geológico dos Estados Unidos (USGS). Para
+        consultar as texturas disponíveis bem como suas descrições, acesse o{' '}
         <a
           href="https://rafaeelneto.github.io/wellProfiler_static/FGDCgeostdTM11A2web_PatternChart.pdf"
           target="blank"
