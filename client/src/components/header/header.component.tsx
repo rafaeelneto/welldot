@@ -1,4 +1,5 @@
 import React from 'react';
+import AnchorLink from 'react-anchor-link-smooth-scroll';
 
 import styles from './header.module.scss';
 
@@ -11,6 +12,7 @@ export default () => {
         <WPLogo className={styles.logo} />
       </span>
       <span className={styles.title}>Well Profiler</span>
+      <AnchorLink href="#about">Sobre</AnchorLink>
     </div>
   );
 };

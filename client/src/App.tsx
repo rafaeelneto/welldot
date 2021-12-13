@@ -21,7 +21,7 @@ const App = () => {
     <div className="App">
       <Header />
       <PerfilEditor />
-      <div className={`${styles.tile} ${styles.info}`}>
+      <div id="about" className={`${styles.tile} ${styles.info}`}>
         <div className={`${styles.tileContent} ${styles.infoContent}`}>
           <div className={`${styles.lWrapper}`} />
           <div className={`${styles.rWrapper}`}>

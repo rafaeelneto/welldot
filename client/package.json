@@ -37,6 +37,7 @@
     "prop-types": "^15.7.2",
     "raw-loader": "^4.0.2",
     "react": "^17.0.1",
+    "react-anchor-link-smooth-scroll": "^1.0.12",
     "react-color": "^2.19.3",
     "react-dom": "^17.0.1",
     "react-feather": "^2.0.9",
