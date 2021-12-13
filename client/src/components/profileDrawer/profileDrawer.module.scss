@@ -46,6 +46,11 @@
 .svgContainer {
   width: 100%;
   position: relative;
+
+  &.hide {
+    display: none;
+    visibility: hidden;
+  }
 }
 
 .noFilesMsg {

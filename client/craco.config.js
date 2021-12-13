@@ -11,6 +11,7 @@ module.exports = {
       const urlLoader = loaderByName('url-loader');
 
       const loaders = [
+        { test: /\.(png|jpg)$/, loader: 'url-loader' },
         {
           test: /\.afm$/,
           loader: 'raw-loader',

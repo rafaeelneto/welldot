@@ -201,8 +201,6 @@ const PerfilEditor = () => {
 
   const [openImportErrorS, setOpenImportErrorS] = useState(false);
 
-  const [cementPadChecked, setcementPadChecked] = useState(false);
-
   const [tabValue, setTabValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
@@ -391,7 +389,6 @@ const PerfilEditor = () => {
         const { perfilImported, cementPad } = profileConverter(
           e.target?.result
         );
-        setcementPadChecked(cementPad);
         setProfileState({ ...perfilImported });
       } catch (error) {
         setOpenImportErrorS(true);
@@ -403,6 +400,16 @@ const PerfilEditor = () => {
     } catch (e) {
       // user cancelled upload
     }
+  };
+
+  const checkCementPad = () => {
+    if (
+      profileState.constructive.cement_pad &&
+      profileState.constructive.cement_pad.thickness
+    ) {
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -560,7 +567,7 @@ const PerfilEditor = () => {
                   <span className={styles.componentTitle}>
                     Laje de Proteção Sanitária
                     <Checkbox
-                      checked={cementPadChecked}
+                      checked={checkCementPad()}
                       onChange={(event) => {
                         const { checked } = event.target;
 
@@ -584,20 +591,18 @@ const PerfilEditor = () => {
                             constructive: {
                               ...profileState.constructive,
                               cement_pad: {
-                                ...profileState.constructive.cement_pad,
+                                ...PROFILE_DEFAULT.constructive.cement_pad,
                               },
                             },
                           };
                           setProfileState(newPerfilState);
                         }
-
-                        setcementPadChecked(checked);
                       }}
                       inputProps={{ 'aria-label': 'primary checkbox' }}
                     />
                   </span>
 
-                  <Collapse in={cementPadChecked} unmountOnExit>
+                  <Collapse in={checkCementPad()} unmountOnExit>
                     <div>
                       <div className={styles.layerRow}>
                         <TextField

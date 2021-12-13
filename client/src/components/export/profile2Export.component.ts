@@ -642,7 +642,7 @@ const profile2Export = (
 
       // DRAW WELL CASE AND WELL SCREEN TIPS
 
-      const MARGINS_TIP = { top: 4, botton: 4, right: 3, left: 3 };
+      const MARGINS_TIP = { top: 4, botton: 4, right: 5, left: 5 };
 
       const getTipXPos = (margin: number, className) => {
         return (d) => {
@@ -715,7 +715,8 @@ const profile2Export = (
               // @ts-ignore
               .getBoundingClientRect().width || 0;
 
-          const xPos = textXPos - (textWidth + MARGINS_TIP.left);
+          const xPos =
+            textXPos - (textWidth + MARGINS_TIP.left + MARGINS_TIP.right / 2);
 
           // occupiedPositions.forEach((pos) => {
           //   if (

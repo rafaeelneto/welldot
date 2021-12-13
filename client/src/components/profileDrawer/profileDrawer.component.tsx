@@ -684,32 +684,18 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       profile.constructive.well_case.length === 0 &&
       profile.constructive.well_screen.length === 0;
   }
+  console.log(profile);
   return (
     <>
-      {/* {!noPerfil ? (
-        <div className={styles.scaleInput}>
-          Escala vertical mínima
-          <Slider
-            size="small"
-            defaultValue={scaleY}
-            onChange={(event, value) => {
-              setScaleY(value[0] || value);
-            }}
-            min={4}
-            max={15}
-            aria-label="Small"
-            valueLabelDisplay="auto"
-          />
-        </div>
-      ) : (
-        ''
-      )} */}
       {noPerfil ? (
         <span className={styles.noFilesMsg}>Perfil não configurado</span>
       ) : (
         ''
       )}
-      <svg className={`${styles.svgContainer}`} ref={svgContainer} />
+      <svg
+        className={`${styles.svgContainer} ${noPerfil ? styles.hide : ''}`}
+        ref={svgContainer}
+      />
     </>
   );
 };
