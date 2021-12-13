@@ -203,14 +203,33 @@ const PerfilEditor = () => {
 
   const [tabValue, setTabValue] = React.useState(0);
 
+  const firstRun = useRef(true);
+
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
   // SAVE BTN
   const handleSave = () => {
-    console.log('SAVE');
+    // SAVE ON LOCAL STORAGE
+    console.log('AUTO SAVE');
+    const profileJSon = JSON.stringify(profileState);
+    window.localStorage.setItem('profile', profileJSon);
   };
+
+  // CHECKS IF THERE IS A WELL ON LOCAL STORAGE AND IF IT IS THE FIRST RUN OF THE APP
+  // IF TRUE SETS THE PROFILE STATE TO THE PROFILE STORED ON LOCAL STORAGE
+  const savedProfileJson = window.localStorage.getItem('profile');
+
+  if (firstRun.current && savedProfileJson) {
+    try {
+      const { perfilImported } = profileConverter(savedProfileJson);
+      setProfileState({ ...perfilImported });
+    } catch (error) {
+      // error
+    }
+    firstRun.current = false;
+  }
 
   const reorderComponentsDepth = (newGeologicLayers) => {
     const newLayers: any[] = [];
@@ -229,7 +248,7 @@ const PerfilEditor = () => {
   const onChangePerfilState = (newPerfilState: PROFILE_TYPE) => {
     setProfileState(newPerfilState);
     setChangesCounter(changesCounter + 1);
-    if (changesCounter > 30) {
+    if (changesCounter > 20) {
       setChangesCounter(0);
       handleSave();
     }
