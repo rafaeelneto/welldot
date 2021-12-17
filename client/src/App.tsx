@@ -17,7 +17,7 @@ import './App.css';
 
 import styles from './App.module.scss';
 
-const TRACKING_ID = 'UA-257389652';
+const TRACKING_ID = 'UA-215620517-1';
 ReactGA.initialize(TRACKING_ID);
 
 const App = () => {
