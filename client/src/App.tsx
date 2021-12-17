@@ -3,6 +3,8 @@ import React from 'react';
 import { IconButton } from '@mui/material';
 import { Mail } from 'react-feather';
 
+import ReactGA from 'react-ga';
+
 import PerfilEditor from './components/profileEditor/profileEditor.component';
 import Header from './components/header/header.component';
 
@@ -14,6 +16,9 @@ import { ReactComponent as Email } from './assets/email_1.svg';
 import './App.css';
 
 import styles from './App.module.scss';
+
+const TRACKING_ID = 'UA-257389652';
+ReactGA.initialize(TRACKING_ID);
 
 const App = () => {
   return (
