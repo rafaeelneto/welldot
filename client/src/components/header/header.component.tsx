@@ -1,6 +1,7 @@
 import React from 'react';
 import AnchorLink from 'react-anchor-link-smooth-scroll';
 import { Button } from '@mui/material';
+import ReactGA from 'react-ga';
 
 import styles from './header.module.scss';
 
@@ -17,7 +18,15 @@ export default () => {
       </div>
 
       <div className={styles.btnsContainer}>
-        <Button className={styles.btn}>
+        <Button
+          className={styles.btn}
+          onClick={() => {
+            ReactGA.event({
+              category: 'User',
+              action: 'About Button',
+            });
+          }}
+        >
           <AnchorLink className={styles.btnLink} href="#about">
             Sobre
           </AnchorLink>
