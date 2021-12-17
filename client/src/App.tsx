@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { IconButton } from '@mui/material';
 import { Mail } from 'react-feather';
@@ -17,9 +17,24 @@ import './App.css';
 
 import styles from './App.module.scss';
 
-ReactGA.initialize('UA-215620517-1');
-
 const App = () => {
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      const scriptLink = document.createElement('script');
+      scriptLink.async = true;
+      scriptLink.src =
+        'https://www.googletagmanager.com/gtag/js?id=G-8TCQE1E5V8';
+      document.head.appendChild(scriptLink);
+      const scriptTag = document.createElement('script');
+      scriptTag.text = `window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', 'G-8TCQE1E5V8');`;
+      document.head.appendChild(scriptTag);
+    }
+  }, []);
   return (
     <div className="App">
       <Header />

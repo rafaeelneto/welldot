@@ -18,19 +18,25 @@ export default () => {
       </div>
 
       <div className={styles.btnsContainer}>
-        <Button
-          className={styles.btn}
-          onClick={() => {
-            ReactGA.event({
-              category: 'User',
-              action: 'About Button',
-            });
-          }}
-        >
-          <AnchorLink className={styles.btnLink} href="#about">
+        <AnchorLink className={styles.btnLink} href="#about">
+          <Button
+            className={styles.btn}
+            onClick={() => {
+              // @ts-ignore
+              if (window.gtag) {
+                // @ts-ignore
+                window.gtag(
+                  'event',
+                  'button clicked',
+                  'User Interaction',
+                  'about clicked'
+                );
+              }
+            }}
+          >
             Sobre
-          </AnchorLink>
-        </Button>
+          </Button>
+        </AnchorLink>
       </div>
     </div>
   );

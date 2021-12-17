@@ -237,6 +237,16 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
               undefined,
               false
             );
+            // @ts-ignore
+            if (window.gtag) {
+              // @ts-ignore
+              window.gtag(
+                'event',
+                'button clicked',
+                'User Interaction',
+                'download pdf'
+              );
+            }
           }}
           startIcon={<Download />}
           color="primary"
@@ -246,6 +256,16 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
         <Button
           className={styles.mainBtns}
           onClick={() => {
+            // @ts-ignore
+            if (window.gtag) {
+              // @ts-ignore
+              window.gtag(
+                'event',
+                'button clicked',
+                'User Interaction',
+                'print pdf'
+              );
+            }
             profile2Export(
               header,
               headingInfo,

@@ -481,6 +481,16 @@ const PerfilEditor = () => {
               <IconButton
                 className={styles.mainBtns}
                 onClick={() => {
+                  // @ts-ignore
+                  if (window.gtag) {
+                    // @ts-ignore
+                    window.gtag(
+                      'event',
+                      'button clicked',
+                      'User Interaction',
+                      'profile example'
+                    );
+                  }
                   setProfileState({
                     ...PROFILE_EXAMPLE,
                     constructive: { ...PROFILE_EXAMPLE.constructive },
@@ -513,6 +523,16 @@ const PerfilEditor = () => {
               onClick={() => {
                 // call pdf function
                 // pdfGenerate()
+                // @ts-ignore
+                if (window.gtag) {
+                  // @ts-ignore
+                  window.gtag(
+                    'event',
+                    'button clicked',
+                    'User Interaction',
+                    'export pdf button'
+                  );
+                }
                 setOpenExport(true);
               }}
               startIcon={<FileText />}
@@ -524,6 +544,16 @@ const PerfilEditor = () => {
             <Button
               className={styles.mainBtns}
               onClick={() => {
+                // @ts-ignore
+                if (window.gtag) {
+                  // @ts-ignore
+                  window.gtag(
+                    'event',
+                    'button clicked',
+                    'User Interaction',
+                    'download profile'
+                  );
+                }
                 const profileToSave = { ...profileState };
 
                 const perfilJSON = JSON.stringify(profileToSave);
