@@ -210,10 +210,10 @@ const PerfilEditor = () => {
   };
 
   // SAVE BTN
-  const handleSave = () => {
+  const handleSave = (profile2Save?: PROFILE_TYPE) => {
     // SAVE ON LOCAL STORAGE
     console.log('AUTO SAVE');
-    const profileJSon = JSON.stringify(profileState);
+    const profileJSon = JSON.stringify(profile2Save || profileState);
     window.localStorage.setItem('profile', profileJSon);
   };
 
@@ -498,6 +498,9 @@ const PerfilEditor = () => {
                 setProfileState({
                   ...PROFILE_DEFAULT,
                   constructive: { ...PROFILE_DEFAULT.constructive },
+                });
+                handleSave({
+                  ...PROFILE_DEFAULT,
                 });
               }}
               color="primary"

@@ -684,7 +684,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       profile.constructive.well_case.length === 0 &&
       profile.constructive.well_screen.length === 0;
   }
-  console.log(profile);
+
   return (
     <>
       {noPerfil ? (

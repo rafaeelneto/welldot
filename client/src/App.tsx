@@ -6,7 +6,6 @@ import { Mail } from 'react-feather';
 import PerfilEditor from './components/profileEditor/profileEditor.component';
 import Header from './components/header/header.component';
 
-import imgMockup from './assets/images/pdfs_profiles_mockup.png';
 import { ReactComponent as Behance } from './assets/behance_1.svg';
 import { ReactComponent as Linkedin } from './assets/linkedin_1.svg';
 
