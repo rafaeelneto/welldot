@@ -14,7 +14,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /*Overflow overlay to make overflow over the content*/
-  overflow: overlay;
+  min-height: 100vh;
 }
 
 .yAxis {

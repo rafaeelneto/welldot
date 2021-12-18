@@ -1,7 +1,8 @@
 import React from 'react';
 import AnchorLink from 'react-anchor-link-smooth-scroll';
 import { Button } from '@mui/material';
-import ReactGA from 'react-ga';
+
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 
 import styles from './header.module.scss';
 
@@ -18,25 +19,44 @@ export default () => {
       </div>
 
       <div className={styles.btnsContainer}>
-        <AnchorLink className={styles.btnLink} href="#about">
-          <Button
-            className={styles.btn}
-            onClick={() => {
+        <Button
+          className={styles.btn}
+          component={Link}
+          to="/"
+          onClick={() => {
+            // @ts-ignore
+            if (window.gtag) {
               // @ts-ignore
-              if (window.gtag) {
-                // @ts-ignore
-                window.gtag(
-                  'event',
-                  'button clicked',
-                  'User Interaction',
-                  'about clicked'
-                );
-              }
-            }}
-          >
-            Sobre
-          </Button>
-        </AnchorLink>
+              window.gtag(
+                'event',
+                'button clicked',
+                'User Interaction',
+                'home info'
+              );
+            }
+          }}
+        >
+          Home
+        </Button>
+        <Button
+          className={styles.btn}
+          component={Link}
+          to="/editor"
+          onClick={() => {
+            // @ts-ignore
+            if (window.gtag) {
+              // @ts-ignore
+              window.gtag(
+                'event',
+                'button clicked',
+                'User Interaction',
+                'editor'
+              );
+            }
+          }}
+        >
+          Edite seu perfil
+        </Button>
       </div>
     </div>
   );

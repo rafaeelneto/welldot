@@ -141,7 +141,7 @@ export const exportPdfProfile = (
         {
           columns: [
             {
-              columns: [{ image: 'logo_pdf_horizontal.png', width: 100 }],
+              columns: [{ image: 'logo_horizontal_pdf.png', width: 100 }],
               width: '*',
             },
             {

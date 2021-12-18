@@ -5,7 +5,7 @@
 
 .root {
   width: 100%;
-  height: 95%;
+  flex-grow: 1;
   padding: 0 10px 10px 10px;
   position: relative;
   display: flex;
@@ -59,14 +59,17 @@
 }
 
 .container {
-  display: flex;
-  position: relative;
-  flex-direction: column;
   height: 100%;
-
-  @include md {
-    overflow: hidden;
+  overflow-x: auto;
+  .containerWrapper {
+    display: flex;
+    position: relative;
+    height: 100%;
     flex-direction: row;
+    width: auto;
+    @include md {
+      overflow: hidden;
+    }
   }
 }
 
@@ -82,6 +85,8 @@
 .perfilContainer {
   margin-right: 10px;
   padding: 5px;
+  width: 100%;
+  min-width: 300px;
   position: relative;
   @include md {
     width: 35%;
@@ -98,7 +103,6 @@
 }
 
 .dataContainer {
-  margin-top: 5px;
   position: relative;
   @include md {
     margin-top: 0;

@@ -599,263 +599,279 @@ const PerfilEditor = () => {
           </div>
         </div>
         <div className={styles.container}>
-          <div className={`${styles.perfilContainer}`}>
-            <PerfilDrawer profile={{ ...profileState }} />
-          </div>
-          <div className={styles.dataContainer}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs
-                value={tabValue}
-                onChange={handleChange}
-                aria-label="basic tabs example"
-              >
-                <Tab label="Construtivo" {...a11yProps(0)} />
-                <Tab label="Geológico" {...a11yProps(1)} />
-              </Tabs>
-            </Box>
-            <TabPanel value={tabValue} index={0}>
-              <div className={styles.inputContainers}>
-                <div className={styles.componentContainer}>
-                  <span className={styles.componentTitle}>
-                    Laje de Proteção Sanitária
-                    <Checkbox
-                      checked={checkCementPad()}
-                      onChange={(event) => {
-                        const { checked } = event.target;
+          <div className={styles.containerWrapper}>
+            <div className={`${styles.perfilContainer}`}>
+              <PerfilDrawer profile={{ ...profileState }} />
+            </div>
+            <div className={styles.dataContainer}>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs
+                  value={tabValue}
+                  onChange={handleChange}
+                  aria-label="basic tabs example"
+                >
+                  <Tab label="Construtivo" {...a11yProps(0)} />
+                  <Tab label="Geológico" {...a11yProps(1)} />
+                </Tabs>
+              </Box>
+              <TabPanel value={tabValue} index={0}>
+                <div className={styles.inputContainers}>
+                  <div className={styles.componentContainer}>
+                    <span className={styles.componentTitle}>
+                      Laje de Proteção Sanitária
+                      <Checkbox
+                        checked={checkCementPad()}
+                        onChange={(event) => {
+                          const { checked } = event.target;
 
-                        if (checked) {
-                          const newPerfilState = {
-                            ...profileState,
-                            constructive: {
-                              ...profileState.constructive,
-                              cement_pad: {
-                                width: 3,
-                                thickness: 0.25,
-                                length: 3,
-                                type: 'Cimento',
+                          if (checked) {
+                            const newPerfilState = {
+                              ...profileState,
+                              constructive: {
+                                ...profileState.constructive,
+                                cement_pad: {
+                                  width: 3,
+                                  thickness: 0.25,
+                                  length: 3,
+                                  type: 'Cimento',
+                                },
                               },
-                            },
-                          };
-                          setProfileState(newPerfilState);
-                        } else {
-                          const newPerfilState = {
-                            ...profileState,
-                            constructive: {
-                              ...profileState.constructive,
-                              cement_pad: {
-                                ...PROFILE_DEFAULT.constructive.cement_pad,
+                            };
+                            setProfileState(newPerfilState);
+                          } else {
+                            const newPerfilState = {
+                              ...profileState,
+                              constructive: {
+                                ...profileState.constructive,
+                                cement_pad: {
+                                  ...PROFILE_DEFAULT.constructive.cement_pad,
+                                },
                               },
-                            },
-                          };
-                          setProfileState(newPerfilState);
-                        }
-                      }}
-                      inputProps={{ 'aria-label': 'primary checkbox' }}
-                    />
-                  </span>
+                            };
+                            setProfileState(newPerfilState);
+                          }
+                        }}
+                        inputProps={{ 'aria-label': 'primary checkbox' }}
+                      />
+                    </span>
 
-                  <Collapse in={checkCementPad()} unmountOnExit>
-                    <div>
-                      <div className={styles.layerRow}>
-                        <TextField
-                          size="small"
-                          variant="standard"
-                          className={styles.layerInput}
-                          id="standard-multiline-flexible"
-                          label="Largura"
-                          type="number"
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">m</InputAdornment>
-                            ),
-                          }}
-                          value={
-                            profileState &&
-                            profileState.constructive &&
-                            profileState.constructive.cement_pad &&
-                            profileState.constructive.cement_pad.width
-                              ? profileState.constructive.cement_pad.width
-                              : ''
-                          }
-                          onChange={(event) => {
-                            // eslint-disable-next-line implicit-arrow-linebreak
-                            handleCementPadChange('width', event.target.value);
-                          }}
-                        />
+                    <Collapse in={checkCementPad()} unmountOnExit>
+                      <div>
+                        <div className={styles.layerRow}>
+                          <TextField
+                            size="small"
+                            variant="standard"
+                            className={styles.layerInput}
+                            id="standard-multiline-flexible"
+                            label="Largura"
+                            type="number"
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  m
+                                </InputAdornment>
+                              ),
+                            }}
+                            value={
+                              profileState &&
+                              profileState.constructive &&
+                              profileState.constructive.cement_pad &&
+                              profileState.constructive.cement_pad.width
+                                ? profileState.constructive.cement_pad.width
+                                : ''
+                            }
+                            onChange={(event) => {
+                              // eslint-disable-next-line implicit-arrow-linebreak
+                              handleCementPadChange(
+                                'width',
+                                event.target.value
+                              );
+                            }}
+                          />
 
+                          <TextField
+                            size="small"
+                            variant="standard"
+                            className={styles.layerInput}
+                            id="standard-multiline-flexible"
+                            label="Comprimento"
+                            type="number"
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  m
+                                </InputAdornment>
+                              ),
+                            }}
+                            value={
+                              profileState &&
+                              profileState.constructive &&
+                              profileState.constructive.cement_pad &&
+                              profileState.constructive.cement_pad.length
+                                ? profileState.constructive.cement_pad.length
+                                : ''
+                            }
+                            onChange={(event) => {
+                              // eslint-disable-next-line implicit-arrow-linebreak
+                              handleCementPadChange(
+                                'length',
+                                event.target.value
+                              );
+                            }}
+                          />
+                          <TextField
+                            size="small"
+                            variant="standard"
+                            className={styles.layerInput}
+                            id="standard-multiline-flexible"
+                            label="Espessura"
+                            type="number"
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  m
+                                </InputAdornment>
+                              ),
+                            }}
+                            value={
+                              profileState &&
+                              profileState.constructive &&
+                              profileState.constructive.cement_pad &&
+                              profileState.constructive.cement_pad.thickness
+                                ? profileState.constructive.cement_pad.thickness
+                                : ''
+                            }
+                            onChange={(event) => {
+                              // eslint-disable-next-line implicit-arrow-linebreak
+                              handleCementPadChange(
+                                'thickness',
+                                event.target.value
+                              );
+                            }}
+                          />
+                        </div>
                         <TextField
                           size="small"
                           variant="standard"
                           className={styles.layerInput}
                           id="standard-multiline-flexible"
-                          label="Comprimento"
-                          type="number"
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">m</InputAdornment>
-                            ),
-                          }}
+                          label="Tipo"
                           value={
                             profileState &&
                             profileState.constructive &&
                             profileState.constructive.cement_pad &&
-                            profileState.constructive.cement_pad.length
-                              ? profileState.constructive.cement_pad.length
+                            profileState.constructive.cement_pad.type
+                              ? profileState.constructive.cement_pad.type
                               : ''
                           }
                           onChange={(event) => {
                             // eslint-disable-next-line implicit-arrow-linebreak
-                            handleCementPadChange('length', event.target.value);
-                          }}
-                        />
-                        <TextField
-                          size="small"
-                          variant="standard"
-                          className={styles.layerInput}
-                          id="standard-multiline-flexible"
-                          label="Espessura"
-                          type="number"
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">m</InputAdornment>
-                            ),
-                          }}
-                          value={
-                            profileState &&
-                            profileState.constructive &&
-                            profileState.constructive.cement_pad &&
-                            profileState.constructive.cement_pad.thickness
-                              ? profileState.constructive.cement_pad.thickness
-                              : ''
-                          }
-                          onChange={(event) => {
-                            // eslint-disable-next-line implicit-arrow-linebreak
-                            handleCementPadChange(
-                              'thickness',
-                              event.target.value
-                            );
+                            handleCementPadChange('type', event.target.value);
                           }}
                         />
                       </div>
-                      <TextField
-                        size="small"
-                        variant="standard"
-                        className={styles.layerInput}
-                        id="standard-multiline-flexible"
-                        label="Tipo"
-                        value={
-                          profileState &&
-                          profileState.constructive &&
-                          profileState.constructive.cement_pad &&
-                          profileState.constructive.cement_pad.type
-                            ? profileState.constructive.cement_pad.type
-                            : ''
-                        }
-                        onChange={(event) => {
-                          // eslint-disable-next-line implicit-arrow-linebreak
-                          handleCementPadChange('type', event.target.value);
-                        }}
+                    </Collapse>
+                  </div>
+                  <div className={styles.componentContainer}>
+                    <span className={styles.componentTitle}>Furo:</span>
+                    {profileState &&
+                    profileState.constructive &&
+                    profileState.constructive.bole_hole ? (
+                      <SortableList
+                        defaultComponent={BORE_HOLE_COMPONENT_DEFAULT}
+                        layers={profileState.constructive.bole_hole}
+                        component={BoreHoleLayer}
+                        onChangeList={reorderHandlers.bole_hole}
+                        onChangeValues={onChangeHandlers.bole_hole}
                       />
-                    </div>
-                  </Collapse>
+                    ) : (
+                      ''
+                    )}
+                  </div>
+                  <div className={styles.componentContainer}>
+                    <span className={styles.componentTitle}>
+                      Espaço Anelar:
+                    </span>
+                    {profileState &&
+                    profileState.constructive &&
+                    profileState.constructive.hole_fill ? (
+                      <SortableList
+                        defaultComponent={HOLE_FILL_COMPONENT_DEFAULT}
+                        layers={profileState.constructive.hole_fill}
+                        component={HoleFillLayer}
+                        onChangeList={reorderHandlers.hole_fill}
+                        onChangeValues={onChangeHandlers.hole_fill}
+                      />
+                    ) : (
+                      ''
+                    )}
+                  </div>
+                  <div className={styles.componentContainer}>
+                    <span className={styles.componentTitle}>Tubo de Boca:</span>
+                    {profileState &&
+                    profileState.constructive &&
+                    profileState.constructive.surface_case ? (
+                      <SortableList
+                        defaultComponent={SURFACE_CASE_COMPONENT_DEFAULT}
+                        layers={profileState.constructive.surface_case}
+                        component={SurfaceCaseLayer}
+                        onChangeList={reorderHandlers.surface_case}
+                        onChangeValues={onChangeHandlers.surface_case}
+                      />
+                    ) : (
+                      ''
+                    )}
+                  </div>
+                  <div className={styles.componentContainer}>
+                    <span className={styles.componentTitle}>Revestimento:</span>
+                    {profileState &&
+                    profileState.constructive &&
+                    profileState.constructive.well_case ? (
+                      <SortableList
+                        defaultComponent={WELL_CASE_COMPONENT_DEFAULT}
+                        layers={profileState.constructive.well_case}
+                        component={WellCaseLayer}
+                        onChangeList={reorderHandlers.well_case}
+                        onChangeValues={onChangeHandlers.well_case}
+                      />
+                    ) : (
+                      ''
+                    )}
+                  </div>
+                  <div className={styles.componentContainer}>
+                    <span className={styles.componentTitle}>Filtros:</span>
+                    {profileState &&
+                    profileState.constructive &&
+                    profileState.constructive.well_screen ? (
+                      <SortableList
+                        defaultComponent={WELL_SCREEN_COMPONENT_DEFAULT}
+                        layers={profileState.constructive.well_screen}
+                        component={WellScreenLayer}
+                        onChangeList={reorderHandlers.well_screen}
+                        onChangeValues={onChangeHandlers.well_screen}
+                      />
+                    ) : (
+                      ''
+                    )}
+                  </div>
                 </div>
-                <div className={styles.componentContainer}>
-                  <span className={styles.componentTitle}>Furo:</span>
-                  {profileState &&
-                  profileState.constructive &&
-                  profileState.constructive.bole_hole ? (
+              </TabPanel>
+              <TabPanel value={tabValue} index={1}>
+                <div className={styles.inputContainers}>
+                  {profileState && profileState.geologic ? (
                     <SortableList
-                      defaultComponent={BORE_HOLE_COMPONENT_DEFAULT}
-                      layers={profileState.constructive.bole_hole}
-                      component={BoreHoleLayer}
-                      onChangeList={reorderHandlers.bole_hole}
-                      onChangeValues={onChangeHandlers.bole_hole}
+                      defaultComponent={GEOLOGIC_COMPONENT_DEFAULT}
+                      layers={profileState.geologic}
+                      component={GeologicLayer}
+                      onChangeList={reorderHandlers.geologic}
+                      onChangeValues={onChangeHandlers.geologic}
                     />
                   ) : (
                     ''
                   )}
                 </div>
-                <div className={styles.componentContainer}>
-                  <span className={styles.componentTitle}>Espaço Anelar:</span>
-                  {profileState &&
-                  profileState.constructive &&
-                  profileState.constructive.hole_fill ? (
-                    <SortableList
-                      defaultComponent={HOLE_FILL_COMPONENT_DEFAULT}
-                      layers={profileState.constructive.hole_fill}
-                      component={HoleFillLayer}
-                      onChangeList={reorderHandlers.hole_fill}
-                      onChangeValues={onChangeHandlers.hole_fill}
-                    />
-                  ) : (
-                    ''
-                  )}
-                </div>
-                <div className={styles.componentContainer}>
-                  <span className={styles.componentTitle}>Tubo de Boca:</span>
-                  {profileState &&
-                  profileState.constructive &&
-                  profileState.constructive.surface_case ? (
-                    <SortableList
-                      defaultComponent={SURFACE_CASE_COMPONENT_DEFAULT}
-                      layers={profileState.constructive.surface_case}
-                      component={SurfaceCaseLayer}
-                      onChangeList={reorderHandlers.surface_case}
-                      onChangeValues={onChangeHandlers.surface_case}
-                    />
-                  ) : (
-                    ''
-                  )}
-                </div>
-                <div className={styles.componentContainer}>
-                  <span className={styles.componentTitle}>Revestimento:</span>
-                  {profileState &&
-                  profileState.constructive &&
-                  profileState.constructive.well_case ? (
-                    <SortableList
-                      defaultComponent={WELL_CASE_COMPONENT_DEFAULT}
-                      layers={profileState.constructive.well_case}
-                      component={WellCaseLayer}
-                      onChangeList={reorderHandlers.well_case}
-                      onChangeValues={onChangeHandlers.well_case}
-                    />
-                  ) : (
-                    ''
-                  )}
-                </div>
-                <div className={styles.componentContainer}>
-                  <span className={styles.componentTitle}>Filtros:</span>
-                  {profileState &&
-                  profileState.constructive &&
-                  profileState.constructive.well_screen ? (
-                    <SortableList
-                      defaultComponent={WELL_SCREEN_COMPONENT_DEFAULT}
-                      layers={profileState.constructive.well_screen}
-                      component={WellScreenLayer}
-                      onChangeList={reorderHandlers.well_screen}
-                      onChangeValues={onChangeHandlers.well_screen}
-                    />
-                  ) : (
-                    ''
-                  )}
-                </div>
-              </div>
-            </TabPanel>
-            <TabPanel value={tabValue} index={1}>
-              <div className={styles.inputContainers}>
-                {profileState && profileState.geologic ? (
-                  <SortableList
-                    defaultComponent={GEOLOGIC_COMPONENT_DEFAULT}
-                    layers={profileState.geologic}
-                    component={GeologicLayer}
-                    onChangeList={reorderHandlers.geologic}
-                    onChangeValues={onChangeHandlers.geologic}
-                  />
-                ) : (
-                  ''
-                )}
-              </div>
-            </TabPanel>
+              </TabPanel>
+            </div>
           </div>
         </div>
       </div>
