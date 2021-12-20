@@ -2,9 +2,6 @@ const { addBeforeLoader, loaderByName } = require('@craco/craco');
 
 module.exports = {
   webpack: {
-    alias: {
-      fs: 'pdfkit/js/virtual-fs.js',
-    },
     configure: (webpackConfig, { env, paths }) => {
       // add before url-loader
       // console.log(JSON.stringify(webpackConfig.module.rules, null, 2))

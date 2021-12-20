@@ -3,7 +3,7 @@ import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
 import { SvgInfo, infoType } from '../../types/profile2Export.types';
 
-import '../../register-files';
+// import '../../register-files';
 import { PROFILE_TYPE } from '../../types/profile.types';
 
 // @ts-ignore
