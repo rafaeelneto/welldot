@@ -55,7 +55,7 @@ export default () => {
             }
           }}
         >
-          Edite seu perfil
+          Editor
         </Button>
       </div>
     </div>

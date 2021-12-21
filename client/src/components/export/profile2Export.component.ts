@@ -465,13 +465,16 @@ const profile2Export = (
           .enter()
           .append('rect')
           .attr('class', 'cement_pad')
-          .attr('x', (POCO_CENTER - (POCO_WIDTH + 40)) / 2)
+          .attr(
+            'x',
+            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2
+          )
           .attr('y', (d: any) => {
-            return yScale(0) - yScale(d.thickness * 4);
+            return yScale(0) - yScale(d.thickness);
           })
-          .attr('width', POCO_WIDTH + 40)
+          .attr('width', (d: any) => xScale((d.width / 2) * 39.37))
           .attr('height', (d: any) => {
-            return yScale(d.thickness * 4);
+            return yScale(d.thickness);
           })
           .style('fill', (d) => {
             svg.call(profileTexture.pad);
@@ -552,8 +555,11 @@ const profile2Export = (
       newSurfaceCase
         // @ts-ignore
         .merge(surfaceCase)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr(
+          'x',
+          (d: any) => (POCO_CENTER - xScale(d.diam_pol + d.diam_pol * 0.1)) / 2
+        )
+        .attr('width', (d: any) => xScale(d.diam_pol + d.diam_pol * 0.1))
         .attr('y', getYPos(data.surface_case))
         .attr('height', (d: any) => {
           const depth =

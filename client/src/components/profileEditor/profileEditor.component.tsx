@@ -11,6 +11,8 @@ import {
   InputBase,
 } from '@mui/material';
 
+import Joyride from 'react-joyride';
+
 import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -41,6 +43,8 @@ import download from 'downloadjs';
 import FullScreenDialog from '../dialogs/fullScreenDialog.component';
 
 import PerfilDrawer from '../profileDrawer/profileDrawer.component';
+
+import Info from '../info/info.component';
 
 import profileConverter from '../../utils/profileConverter';
 
@@ -245,6 +249,14 @@ const PerfilEditor = () => {
     return newLayers;
   };
 
+  const reorderComponentsByFromDepth = (layers: any[]) => {
+    // const sortedComponents = layers.sort(
+    //   (a, b) => parseFloat(a.from) - parseFloat(b.from)
+    // );
+    // return sortedComponents;
+    return layers;
+  };
+
   const onChangePerfilState = (newPerfilState: PROFILE_TYPE) => {
     setProfileState(newPerfilState);
     setChangesCounter(changesCounter + 1);
@@ -289,24 +301,24 @@ const PerfilEditor = () => {
       };
       onChangePerfilState(newPerfilState);
     },
-    well_case: (newRevectComp) => {
-      // const newRevestList = reorderComponentsDepth(newRevectComp);
+    well_case: (newWC) => {
+      const newWCList = reorderComponentsByFromDepth(newWC);
       const newPerfilState = {
         ...profileState,
         constructive: {
           ...profileState.constructive,
-          well_case: newRevectComp,
+          well_case: newWCList,
         },
       };
       onChangePerfilState(newPerfilState);
     },
-    well_screen: (newComponents) => {
-      // const newRevestList = reorderComponentsDepth(newRevectComp);
+    well_screen: (newWS) => {
+      const newWSList = reorderComponentsByFromDepth(newWS);
       const newPerfilState = {
         ...profileState,
         constructive: {
           ...profileState.constructive,
-          well_screen: newComponents,
+          well_screen: newWSList,
         },
       };
       onChangePerfilState(newPerfilState);
@@ -362,22 +374,25 @@ const PerfilEditor = () => {
     well_case: (newRevest, index) => {
       const newLayers = [...profileState.constructive.well_case];
       newLayers[index] = newRevest;
-      // const newRevestList = reorderComponentsDepth(newLayers);
+      const newRevestList = reorderComponentsByFromDepth(newLayers);
 
       const newPerfilState = {
         ...profileState,
-        constructive: { ...profileState.constructive, well_case: newLayers },
+        constructive: {
+          ...profileState.constructive,
+          well_case: newRevestList,
+        },
       };
       onChangePerfilState(newPerfilState);
     },
     well_screen: (newComps, index) => {
       const newLayers = [...profileState.constructive.well_screen];
       newLayers[index] = newComps;
-      // const newRevestList = reorderComponentsDepth(newLayers);
+      const newWSList = reorderComponentsDepth(newLayers);
 
       const newPerfilState = {
         ...profileState,
-        constructive: { ...profileState.constructive, well_screen: newLayers },
+        constructive: { ...profileState.constructive, well_screen: newWSList },
       };
       onChangePerfilState(newPerfilState);
     },
@@ -431,8 +446,47 @@ const PerfilEditor = () => {
     return false;
   };
 
+  const steps = [
+    {
+      target: '#btn-example',
+      content: 'Clique neste botão para ver um perfil de exemplo',
+      disableBeacon: true,
+    },
+  ];
+
+  const tour = window.localStorage.getItem('tour');
+
   return (
     <div className={styles.root}>
+      {
+        // @ts-ignore
+        tour && tour === 'true' ? (
+          ''
+        ) : (
+          <Joyride
+            run
+            disableScrolling
+            hideBackButton
+            steps={steps}
+            locale={{ close: 'Ok' }}
+            callback={({ action }) => {
+              if (action === 'close' || action === 'reset') {
+                window.localStorage.setItem('tour', 'true');
+              }
+            }}
+            styles={{
+              options: {
+                primaryColor: '#02355a',
+                textColor: '#54575c',
+                zIndex: 1000,
+              },
+              buttonClose: {
+                display: 'none',
+              },
+            }}
+          />
+        )
+      }
       <div>
         <FullScreenDialog
           open={openExport}
@@ -480,6 +534,7 @@ const PerfilEditor = () => {
             <Tooltip title="Perfil Exemplo">
               <IconButton
                 className={styles.mainBtns}
+                id="btn-example"
                 onClick={() => {
                   // @ts-ignore
                   if (window.gtag) {
@@ -612,6 +667,7 @@ const PerfilEditor = () => {
                 >
                   <Tab label="Construtivo" {...a11yProps(0)} />
                   <Tab label="Geológico" {...a11yProps(1)} />
+                  <Tab label="Info" {...a11yProps(2)} />
                 </Tabs>
               </Box>
               <TabPanel value={tabValue} index={0}>
@@ -870,6 +926,9 @@ const PerfilEditor = () => {
                     ''
                   )}
                 </div>
+              </TabPanel>
+              <TabPanel value={tabValue} index={2}>
+                <Info profile={profileState} />
               </TabPanel>
             </div>
           </div>

@@ -131,6 +131,9 @@ const PerfilDrawer = ({ profile }: PDProps) => {
     const wellScreenGroup = constructionGroup
       .append('g')
       .attr('class', 'well-screen');
+    const conflictGroup = constructionGroup
+      .append('g')
+      .attr('class', 'conflict');
 
     drawLog();
   };
@@ -150,6 +153,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
 
     const profileTexture = {
       pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
+      conflict: textures.lines().heavier().stroke('#E52117'),
       seal: textures.lines().thicker().background('#ffffff'),
       gravel_pack: textures.circles().complement().background('#ffffff'),
       well_screen: textures
@@ -226,6 +230,7 @@ const PerfilDrawer = ({ profile }: PDProps) => {
     const holeFillGroup = constructionGroup.select('.hole-fill');
     const wellCaseGroup = constructionGroup.select('.well-case');
     const wellScreenGroup = constructionGroup.select('.well-screen');
+    const conflictGroup = constructionGroup.select('.conflict');
 
     const svgWidth: any = d3.select(svgContainer.current).attr('width');
     const svgHeight: any = d3.select(svgContainer.current).attr('height');
@@ -350,13 +355,16 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           .enter()
           .append('rect')
           .attr('class', 'cement_pad')
-          .attr('x', (POCO_CENTER - (POCO_WIDTH + 40)) / 2)
+          .attr(
+            'x',
+            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2
+          )
           .attr('y', (d: any) => {
-            return yScale(0) - yScale(d.thickness * 4);
+            return yScale(0) - yScale(parseFloat(d.thickness));
           })
-          .attr('width', POCO_WIDTH + 40)
+          .attr('width', (d: any) => xScale((d.width / 2) * 39.37))
           .attr('height', (d: any) => {
-            return yScale(d.thickness * 4);
+            return yScale(parseFloat(d.thickness));
           })
           .style('fill', (d) => {
             svg.call(profileTexture.pad);
@@ -445,8 +453,11 @@ const PerfilDrawer = ({ profile }: PDProps) => {
       newSurfaceCase
         // @ts-ignore
         .merge(surfaceCase)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr(
+          'x',
+          (d: any) => (POCO_CENTER - xScale(d.diam_pol + d.diam_pol * 0.1)) / 2
+        )
+        .attr('width', (d: any) => xScale(d.diam_pol + d.diam_pol * 0.1))
         // @ts-ignore
         .transition(transition)
         .attr('y', (d: any, i) => {
@@ -535,7 +546,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         // @ts-ignore
         .transition(transition)
         .attr('y', (d: any, i) => {
-          if (i === 0) return yScale(d.from);
           return yScale(d.from);
         })
         .attr('height', (d: any, i) => {
@@ -588,6 +598,141 @@ const PerfilDrawer = ({ profile }: PDProps) => {
           return yScale(d.from);
         })
         .attr('height', (d: any) => yScale(d.to - d.from));
+
+      // GET THE ARRAY FROM CONFLICT DETECTION
+      const conflictAreas: { from: number; to: number; diam: number }[] = [];
+
+      const getConflictAreas = (array1: any[], array2: any[]) => {
+        const conflicts: { from: number; to: number; diam: number }[] = [];
+        array1.forEach((item1) => {
+          array2.forEach((item2) => {
+            if (
+              (item2.from >= item1.from && item2.from < item1.to) ||
+              (item2.to <= item1.to && item2.to > item1.from)
+            ) {
+              // calculate ends of conflicts areas
+              const a = Math.max(item2.from, item1.from);
+              const b = Math.min(item2.to, item1.to);
+
+              conflicts.push({
+                from: a,
+                to: b,
+                diam: Math.max(item1.diam_pol, item2.diam_pol),
+              });
+            }
+          });
+        });
+        return conflicts;
+      };
+
+      // 1. ARRAY THROUGH WELL CASE OR WELL SCREEN
+      conflictAreas.push(...getConflictAreas(data.well_case, data.well_screen));
+      conflictAreas.push(...getConflictAreas(data.well_screen, data.well_case));
+
+      // 2. ADD SOME BUFFER AND MERGE TWO CLOSES AREAS
+      const mergeConflicts = (
+        conflicts: { from: number; to: number; diam: number }[],
+        buffer: number
+      ) => {
+        // SORT ARRAY BY THE FROM PROPERTY
+        const sortedConflicts = conflicts.sort(
+          // @ts-ignore
+          (a, b) => parseFloat(a.from) - parseFloat(b.from)
+        );
+
+        const mergedConflicts: { from: number; to: number; diam: number }[] =
+          [];
+
+        let index = 0;
+        while (index < sortedConflicts.length) {
+          const conflict = sortedConflicts[index];
+          console.log(index);
+
+          const { from, diam } = conflict;
+          let { to } = conflict;
+
+          let jumpTo = index + 1;
+
+          for (let i = index + 1; i < sortedConflicts.length; i++) {
+            const nextConflict = sortedConflicts[i];
+            // if (nextConflict.to < conflict.to) {
+            //   // eslint-disable-next-line no-continue
+            //   continue;
+            // }
+
+            if (nextConflict.from > conflict.to + buffer) {
+              jumpTo = i;
+              break;
+            }
+
+            if (
+              nextConflict.to > conflict.to &&
+              nextConflict.from >= conflict.from
+            ) {
+              to = nextConflict.to;
+            }
+          }
+
+          const nextConflict = sortedConflicts[index + 1];
+          if (
+            nextConflict &&
+            nextConflict.to === conflict.to &&
+            nextConflict.from === conflict.from
+          ) {
+            jumpTo++;
+          }
+
+          mergedConflicts.push({ from, to, diam });
+
+          index = jumpTo;
+        }
+        return mergedConflicts;
+      };
+
+      const mergedConflicts = mergeConflicts(conflictAreas, 1);
+
+      const tipConflict = d3
+        .tip()
+        .attr('class', styles.tooltip)
+        .direction('e')
+        .html((element, d) => {
+          return `
+        <span class="${styles.title}">CONFLITO</span>
+            <span class="${styles.primaryInfo}">De ${d.from} m até ${d.to} m</span>
+        `;
+        });
+
+      svg.call(tipConflict);
+
+      const conflict = conflictGroup.selectAll('rect').data(mergedConflicts);
+
+      conflict.exit().remove();
+
+      const newConflict = conflict
+        .enter()
+        .append('rect')
+        .style('stroke', '#E52117')
+        .style('stroke-width', '4px')
+        .style('fill', (d: any) => {
+          svg.call(profileTexture.conflict);
+          return profileTexture.conflict.url();
+        })
+        .on('mouseover', tipConflict.show)
+        .on('mouseout', tipConflict.hide);
+
+      newConflict
+        // @ts-ignore
+        .merge(conflict)
+        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam)) / 2)
+        .attr('width', (d: any) => xScale(d.diam))
+        // @ts-ignore
+        .transition(transition)
+        .attr('y', (d: any, i) => {
+          return yScale(d.from);
+        })
+        .attr('height', (d: any) => {
+          return yScale(d.to - d.from);
+        });
     };
 
     const geologicData = profile.geologic;
@@ -623,12 +768,12 @@ const PerfilDrawer = ({ profile }: PDProps) => {
     const gY = litoligicalGroup.select(`.${styles.yAxis}`).call(yAxis);
 
     const spanY = (d) => {
-      if (d.thickness) return yScaleGlobal(0) - yScaleGlobal(d.thickness * 4);
+      if (d.thickness) return yScaleGlobal(0) - yScaleGlobal(d.thickness);
       return yScaleGlobal(d.from);
     };
 
     const spanH = (d) => {
-      if (d.thickness) return yScaleGlobal(d.thickness * 4);
+      if (d.thickness) return yScaleGlobal(d.thickness);
       return yScaleGlobal(d.to - d.from);
     };
 

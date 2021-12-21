@@ -6,6 +6,12 @@ import { SvgInfo, infoType } from '../../types/profile2Export.types';
 // import '../../register-files';
 import { PROFILE_TYPE } from '../../types/profile.types';
 
+import {
+  calculateHoleFillVolume,
+  numberFormater,
+  numberFormaterInches,
+} from '../../utils/profilerCalculations';
+
 // @ts-ignore
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -44,77 +50,6 @@ pdfMake.tableLayouts = {
 };
 
 const MARGIN = 30;
-
-const numberFormater = new Intl.NumberFormat('pt-BR', {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2,
-});
-
-const numberFormaterInches = new Intl.NumberFormat('pt-BR', {
-  maximumFractionDigits: 2,
-});
-
-const calculateVolume = (diamPol: number, height: number) => {
-  return Math.PI * (diamPol / 39.37 / 2) ** 2 * height;
-};
-
-const calculateHoleFillVolume = (type: string, profile: PROFILE_TYPE) => {
-  let volume = 0;
-
-  const { well_case: wellCase, well_screen: wellScreen } = profile.constructive;
-
-  const holeFillType = profile.constructive.hole_fill.filter(
-    (el) => el.type === type
-  );
-
-  holeFillType.forEach((el) => {
-    // CALCULATE THE OUTER VOLUME
-    let outerVolume = calculateVolume(el.diam_pol, el.to - el.from);
-
-    // SUBTRACT THE OUTER VOLUME FROM THE VOLUME OF EACH WELL CASE SECTION
-    for (let i = 0; i < wellCase.length; i++) {
-      const wC = wellCase[i];
-
-      if (wC.from > el.to || wC.to < el.from) {
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-
-      // eslint-disable-next-line prefer-destructuring
-      let { from, to } = el;
-      if (wC.from > el.from) from = wC.from;
-      if (wC.to < el.to) to = wC.to;
-
-      const wellSectionVolume = calculateVolume(wC.diam_pol, to - from);
-
-      outerVolume -= wellSectionVolume;
-    }
-
-    // SUBTRACT THE OUTER VOLUME FROM THE VOLUME OF EACH WELL SCREEN SECTION
-    for (let i = 0; i < wellScreen.length; i++) {
-      const wS = wellScreen[i];
-
-      if (wS.from > el.to || wS.to < el.from) {
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-
-      // eslint-disable-next-line prefer-destructuring
-      let { from, to } = el;
-      if (wS.from > el.from) from = wS.from;
-      if (wS.to < el.to) to = wS.to;
-
-      const wellSectionVolume = calculateVolume(wS.diam_pol, to - from);
-
-      outerVolume -= wellSectionVolume;
-    }
-
-    // console.log(outerVolume);
-    volume += outerVolume;
-  });
-
-  return volume;
-};
 
 export const exportPdfProfile = (
   header = 'Perfil Geológico-Construtivo',
@@ -391,7 +326,7 @@ export const exportPdfProfile = (
               calculateHoleFillVolume(item.type, profile)
             )} m³`,
             style: 'sum_row',
-            aligment: 'right',
+            align: 'right',
           },
         ]);
       }
@@ -456,7 +391,7 @@ export const exportPdfProfile = (
           {
             text: `${numberFormater.format(totalHeight)} m`,
             style: 'sum_row',
-            aligment: 'right',
+            align: 'right',
           },
         ]);
       }
@@ -527,7 +462,7 @@ export const exportPdfProfile = (
           {
             text: `${numberFormater.format(totalHeight)} m`,
             style: 'sum_row',
-            aligment: 'right',
+            align: 'right',
           },
         ]);
       }

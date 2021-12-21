@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { IconButton, Button } from '@mui/material';
+import { IconButton, Button, Link as LinkMaterial } from '@mui/material';
 
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 
@@ -17,7 +17,7 @@ const Home = () => {
         <div className={`${styles.tileContent} ${styles.heroContent}`}>
           <div className={`${styles.lWrapper}`}>
             <h3 className={styles.tileTitle}>
-              Crie perfil geológicos e construtivos de poços e sondagens com
+              Crie perfis geológicos e construtivos de poços e sondagens com
               facilidade
             </h3>
             <Button
@@ -67,15 +67,67 @@ const Home = () => {
             Criado e desenvolvido por Rafael Gomes
           </p>
           <div className={styles.socialBtnsContainer}>
-            <IconButton className={styles.socialBtn}>
+            <LinkMaterial
+              className={styles.socialBtn}
+              component={IconButton}
+              onClick={() => {
+                // @ts-ignore
+                if (window.gtag) {
+                  // @ts-ignore
+                  window.gtag(
+                    'event',
+                    'button clicked',
+                    'Link to social media',
+                    'behance'
+                  );
+                }
+              }}
+              href="https://www.behance.net/rafaeelneto"
+              target="_blank"
+            >
               <Behance />
-            </IconButton>
-            <IconButton className={styles.socialBtn}>
+            </LinkMaterial>
+            <LinkMaterial
+              className={styles.socialBtn}
+              component={IconButton}
+              onClick={() => {
+                // @ts-ignore
+                if (window.gtag) {
+                  // @ts-ignore
+                  window.gtag(
+                    'event',
+                    'button clicked',
+                    'Link to social media',
+                    'linkedinho'
+                  );
+                }
+              }}
+              href="https://www.linkedin.com/in/rafaeelneto/"
+              target="_blank"
+            >
               <Linkedin />
-            </IconButton>
-            <IconButton className={styles.socialBtn}>
+            </LinkMaterial>
+
+            <LinkMaterial
+              className={styles.socialBtn}
+              component={IconButton}
+              onClick={() => {
+                // @ts-ignore
+                if (window.gtag) {
+                  // @ts-ignore
+                  window.gtag(
+                    'event',
+                    'button clicked',
+                    'Link to social media',
+                    'email'
+                  );
+                }
+              }}
+              href="mailto: rafaelneto.g@gmail.com"
+              target="_blank"
+            >
               <Email />
-            </IconButton>
+            </LinkMaterial>
           </div>
         </div>
       </footer>

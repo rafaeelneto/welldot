@@ -25,6 +25,7 @@
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
+    background-size: contain;
     height: 80%;
     @include md {
       background-repeat: no-repeat;
