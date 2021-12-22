@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 
-import { IconButton } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 
-import PerfilEditor from './components/profileEditor/profileEditor.component';
+import Loading from './components/loading/loading.component';
+
 import Header from './components/header/header.component';
 import Home from './components/home/home.component';
 
@@ -12,29 +14,32 @@ import './App.css';
 
 import styles from './App.module.scss';
 
-const App = () => {
-  // useEffect(() => {
-  //   const scriptLink = document.createElement('script');
-  //   scriptLink.async = true;
-  //   scriptLink.src = 'https://www.googletagmanager.com/gtag/js?id=G-8TCQE1E5V8';
-  //   document.head.appendChild(scriptLink);
-  //   const scriptTag = document.createElement('script');
-  //   scriptTag.text = `window.dataLayer = window.dataLayer || [];
-  //       function gtag() {
-  //         dataLayer.push(arguments);
-  //       }
-  //       gtag('js', new Date());
-  //       gtag('config', 'G-8TCQE1E5V8');`;
-  //   document.head.appendChild(scriptTag);
-  // }, []);
+const PerfilEditor = React.lazy(
+  () => import('./components/profileEditor/profileEditor.component')
+);
 
+const App = () => {
   return (
     <BrowserRouter>
       <div className="App">
         <Header />
         <Routes>
-          <Route path="editor" element={<PerfilEditor />} />
-          <Route index element={<Home />} />
+          <Route
+            path="editor"
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <PerfilEditor />
+              </React.Suspense>
+            }
+          />
+          <Route
+            index
+            element={
+              <React.Suspense fallback={<Loading />}>
+                <Home />
+              </React.Suspense>
+            }
+          />
         </Routes>
       </div>
     </BrowserRouter>

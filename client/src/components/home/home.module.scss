@@ -21,7 +21,7 @@
   }
 
   &.hero {
-    background: url('../../assets/images/perfis_ex_vertical.png');
+    background: url('../../assets/images/perfis_ex_vertical.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -29,7 +29,7 @@
     height: 80%;
     @include md {
       background-repeat: no-repeat;
-      background: url('../../assets/images/perfis_ex.png');
+      background: url('../../assets/images/perfis_ex.jpg');
     }
   }
 }
@@ -102,7 +102,7 @@
 }
 
 .infoContent {
-  background: url('../../assets/images/pdfs_profiles_mockup.png');
+  background: url('../../assets/images/pdfs_profiles_mockup.jpg');
   background-size: 100%;
   background-position: start;
   background-repeat: no-repeat;
