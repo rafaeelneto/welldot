@@ -1,5 +1,6 @@
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+import { format } from 'date-fns';
 
 import { SvgInfo, infoType } from '../../types/profile2Export.types';
 
@@ -554,7 +555,12 @@ export const downloadPdf = (
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-  pdfDocGenerator.download();
+  pdfDocGenerator.download(
+    `perfil_${(profile.name || '').replace(/ /g, '_').toLowerCase()}_${format(
+      new Date(),
+      'dd_MM_yyyy__hh_mm'
+    )}.pdf`
+  );
 };
 
 export default exportPdfProfile;

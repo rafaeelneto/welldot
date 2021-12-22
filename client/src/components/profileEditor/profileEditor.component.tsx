@@ -455,38 +455,44 @@ const PerfilEditor = () => {
   ];
 
   const tour = window.localStorage.getItem('tour');
+  // const tour = 'ffandsfa';
 
   return (
     <div className={styles.root}>
-      {
-        // @ts-ignore
-        tour && tour === 'true' ? (
-          ''
-        ) : (
-          <Joyride
-            run
-            disableScrolling
-            hideBackButton
-            steps={steps}
-            locale={{ close: 'Ok' }}
-            callback={({ action }) => {
-              if (action === 'close' || action === 'reset') {
-                window.localStorage.setItem('tour', 'true');
-              }
-            }}
-            styles={{
-              options: {
-                primaryColor: '#02355a',
-                textColor: '#54575c',
-                zIndex: 1000,
-              },
-              buttonClose: {
-                display: 'none',
-              },
-            }}
-          />
-        )
-      }
+      <div>
+        {
+          // @ts-ignore
+          tour && tour === 'true' ? (
+            ''
+          ) : (
+            <Joyride
+              run
+              disableScrolling
+              disableScrollParentFix
+              disableOverlay
+              hideBackButton
+              steps={steps}
+              locale={{ close: 'Ok' }}
+              callback={({ action }) => {
+                if (action === 'close' || action === 'reset') {
+                  window.localStorage.setItem('tour', 'true');
+                }
+              }}
+              styles={{
+                options: {
+                  primaryColor: '#02355a',
+                  textColor: '#54575c',
+                  zIndex: 1000,
+                },
+                buttonClose: {
+                  // display: 'none',
+                },
+                overlay: { height: '100%' },
+              }}
+            />
+          )
+        }
+      </div>
       <div>
         <FullScreenDialog
           open={openExport}
