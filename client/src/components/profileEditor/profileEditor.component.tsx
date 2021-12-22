@@ -374,13 +374,13 @@ const PerfilEditor = () => {
     well_case: (newRevest, index) => {
       const newLayers = [...profileState.constructive.well_case];
       newLayers[index] = newRevest;
-      const newRevestList = reorderComponentsByFromDepth(newLayers);
+      // const newRevestList = reorderComponentsByFromDepth(newLayers);
 
       const newPerfilState = {
         ...profileState,
         constructive: {
           ...profileState.constructive,
-          well_case: newRevestList,
+          well_case: newLayers,
         },
       };
       onChangePerfilState(newPerfilState);
@@ -388,11 +388,11 @@ const PerfilEditor = () => {
     well_screen: (newComps, index) => {
       const newLayers = [...profileState.constructive.well_screen];
       newLayers[index] = newComps;
-      const newWSList = reorderComponentsDepth(newLayers);
+      // const newWSList = reorderComponentsDepth(newLayers);
 
       const newPerfilState = {
         ...profileState,
-        constructive: { ...profileState.constructive, well_screen: newWSList },
+        constructive: { ...profileState.constructive, well_screen: newLayers },
       };
       onChangePerfilState(newPerfilState);
     },
