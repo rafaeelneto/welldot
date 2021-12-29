@@ -224,7 +224,7 @@ export const exportPdfProfile = (
 
     const endingInfoBody: any[][] = [
       [
-        { text: 'Diamêtro' },
+        { text: 'Diâmetro' },
         { text: 'De (m)', style: 'column_right' },
         { text: 'Até (m)', style: 'column_right' },
       ],
@@ -259,7 +259,7 @@ export const exportPdfProfile = (
 
     const endingInfoBody: any[][] = [
       [
-        { text: 'Diamêtro' },
+        { text: 'Diâmetro' },
         { text: 'De (m)', style: 'column_right' },
         { text: 'Até (m)', style: 'column_right' },
       ],
@@ -295,7 +295,7 @@ export const exportPdfProfile = (
     const endingInfoBody: any[][] = [
       [
         { text: 'Descrição' },
-        { text: 'Diamêtro', style: 'column_right' },
+        { text: 'Diâmetro', style: 'column_right' },
         { text: 'De (m)', style: 'column_right' },
         { text: 'Até (m)', style: 'column_right' },
       ],
@@ -353,7 +353,7 @@ export const exportPdfProfile = (
     const endingInfoBody: any[][] = [
       [
         { text: 'Tipo' },
-        { text: 'Diamêtro', style: 'column_right' },
+        { text: 'Diâmetro', style: 'column_right' },
         { text: 'De (m)', style: 'column_right' },
         { text: 'Até (m)', style: 'column_right' },
       ],
@@ -418,7 +418,7 @@ export const exportPdfProfile = (
     const endingInfoBody: any[][] = [
       [
         { text: 'Tipo' },
-        { text: 'Diamêtro', style: 'column_right' },
+        { text: 'Diâmetro', style: 'column_right' },
         { text: 'Ranhura (mm)', style: 'column_right' },
         { text: 'De (m)', style: 'column_right' },
         { text: 'Até (m)', style: 'column_right' },
