@@ -197,6 +197,10 @@ const profile2Export = (
   let currentDepth = 0;
 
   const drawLog = (svgInfo: SvgInfo) => {
+    const getTextLabelSelector = (from: number) => {
+      return `text-${from * 1000}`;
+    };
+
     const svg = d3.select(`#${svgInfo.id}`);
 
     svg.attr('height', svgInfo.height + MARGINS.TOP + MARGINS.BOTTOM);
@@ -351,7 +355,7 @@ const profile2Export = (
       labels
         .enter()
         .append('text')
-        .attr('class', (d) => `text-${d.from}`)
+        .attr('class', (d) => `${getTextLabelSelector(d.from)}`)
         .attr('x', GEOLOGY_X_POS_DIV_2)
         .attr('dy', '.15em')
         .attr('font-size', 7.5)
@@ -365,7 +369,7 @@ const profile2Export = (
             const lastTextHeight =
               // @ts-ignore
               (d3
-                .select(`.text-${data[i - 1].from}`)
+                .select(`.${getTextLabelSelector(data[i - 1].from)}`)
                 .node()
                 // @ts-ignore
                 .getBoundingClientRect().height || 0) +
@@ -414,7 +418,7 @@ const profile2Export = (
             const lastTextHeight =
               // @ts-ignore
               (d3
-                .select(`.text-${data[i - 1].from}`)
+                .select(`.${getTextLabelSelector(data[i - 1].from)}`)
                 .node()
                 // @ts-ignore
                 .getBoundingClientRect().height || 0) +
