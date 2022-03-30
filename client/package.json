@@ -48,6 +48,7 @@
     "react-smooth-dnd": "^0.11.1",
     "sass": "^1.45.0",
     "sass-material-colors": "0.0.5",
+    "shx": "^0.3.4",
     "textures": "^1.2.3",
     "transform-loader": "^0.2.4",
     "typescript": "^4.2.2",
