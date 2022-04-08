@@ -1,0 +1,281 @@
+@import './fonts';
+@import './colors';
+@import './breakpoints';
+@import './app.global.scss';
+
+.container {
+  padding: 0 2rem;
+}
+
+.main {
+  min-height: 100vh;
+  padding: 4rem 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer {
+  display: flex;
+  flex: 1;
+  padding: 2rem 0;
+  border-top: 1px solid #eaeaea;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.title a {
+  color: #0070f3;
+  text-decoration: none;
+}
+
+.title a:hover,
+.title a:focus,
+.title a:active {
+  text-decoration: underline;
+}
+
+.title {
+  margin: 0;
+  line-height: 1.15;
+  font-size: 4rem;
+}
+
+.title,
+.description {
+  text-align: center;
+}
+
+.description {
+  margin: 4rem 0;
+  line-height: 1.5;
+  font-size: 1.5rem;
+}
+
+.code {
+  background: #fafafa;
+  border-radius: 5px;
+  padding: 0.75rem;
+  font-size: 1.1rem;
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace;
+}
+
+.grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 800px;
+}
+
+.card {
+  margin: 1rem;
+  padding: 1.5rem;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  max-width: 300px;
+}
+
+.card:hover,
+.card:focus,
+.card:active {
+  color: #0070f3;
+  border-color: #0070f3;
+}
+
+.card h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+}
+
+.card p {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.logo {
+  height: 1em;
+  margin-left: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .grid {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+// ==============================================================================================
+
+.root {
+  width: 100%;
+  height: calc(100% - 5%);
+  overflow-y: auto;
+}
+
+.tile {
+  height: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &.info {
+    background-color: #a5d2d8;
+    height: calc(100% - 100px);
+  }
+
+  &.hero {
+    background: url('../public/assets/images/perfis_ex_vertical.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    height: 80%;
+    @include md {
+      background-repeat: no-repeat;
+      background: url('../public/assets/images/perfis_ex.jpg');
+    }
+  }
+}
+
+.tileContent {
+  height: 100%;
+  width: 100%;
+  max-width: 1024px;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  flex-direction: column;
+
+  @include md {
+    flex-direction: row;
+  }
+
+  .tileTitle {
+    font-size: 24px;
+    font-family: $fontPoppins;
+    font-weight: 500;
+    color: $gray2;
+    margin: 10px;
+  }
+  .tileText {
+    margin: 10px;
+    color: $gray2;
+  }
+}
+
+.heroContent {
+  justify-content: end;
+  .tileTitle {
+    color: white;
+  }
+  .rWrapper {
+    width: 0;
+  }
+  .lWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: $colorPrimary;
+    height: auto;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  @include md {
+    align-items: center;
+    justify-content: left;
+    .lWrapper {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+
+      height: auto;
+      border-radius: 10px;
+      padding: 20px;
+    }
+  }
+
+  .btn {
+    color: white;
+    border-radius: 50px;
+    border-color: white;
+  }
+}
+
+.infoContent {
+  background: url('../public/assets/images/pdfs_profiles_mockup.jpg');
+  background-size: 100%;
+  background-position: start;
+  background-repeat: no-repeat;
+  justify-content: flex-end;
+  .lWrapper {
+    width: 0;
+  }
+  .rWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    height: auto;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  @include md {
+    align-items: center;
+    background-position: center;
+    .lWrapper,
+    .rWrapper {
+      width: 50%;
+      height: 100%;
+    }
+    .rWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      height: auto;
+      border-radius: 10px;
+      padding: 20px;
+    }
+  }
+}
+
+.imgMockup {
+  height: 100%;
+}
+
+.tile.about {
+  height: 100px;
+
+  background-color: $gray3;
+}
+
+.socialBtnsContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.socialBtn {
+  color: $gray2;
+}
+
