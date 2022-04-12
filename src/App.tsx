@@ -8,7 +8,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Loading from './components/loading/loading.component';
 
 import Header from './components/header/header.component';
-import Home from './components/home/home.component';
+import Home from './pages/home/home.component';
 
 import './App.css';
 
