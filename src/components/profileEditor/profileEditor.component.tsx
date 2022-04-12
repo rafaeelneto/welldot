@@ -57,6 +57,7 @@ import {
   GeologicLayer,
   WellCaseLayer,
   SurfaceCaseLayer,
+  GeologicSheet,
 } from './inputComponents';
 
 import styles from './profileEditor.module.scss';
@@ -921,14 +922,18 @@ const PerfilEditor = () => {
               <TabPanel value={tabValue} index={1}>
                 <div className={styles.inputContainers}>
                   {profileState && profileState.geologic ? (
-                    <SortableList
-                      defaultComponent={GEOLOGIC_COMPONENT_DEFAULT}
-                      layers={profileState.geologic}
-                      component={GeologicLayer}
-                      onChangeList={reorderHandlers.geologic}
-                      onChangeValues={onChangeHandlers.geologic}
+                    <GeologicSheet
+                      data={profileState.geologic}
+                      onChangeValues={reorderHandlers.geologic}
                     />
                   ) : (
+                    // <SortableList
+                    //   defaultComponent={GEOLOGIC_COMPONENT_DEFAULT}
+                    //   layers={profileState.geologic}
+                    //   component={GeologicLayer}
+                    //   onChangeList={reorderHandlers.geologic}
+                    //   onChangeValues={onChangeHandlers.geologic}
+                    // />
                     ''
                   )}
                 </div>

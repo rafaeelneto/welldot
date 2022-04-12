@@ -1,8 +1,8 @@
 import React from 'react';
-import AnchorLink from 'react-anchor-link-smooth-scroll';
+
 import { Button } from '@mui/material';
 
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import styles from './header.module.scss';
 
@@ -12,10 +12,12 @@ export default () => {
   return (
     <div className={styles.root}>
       <div className={styles.logoContainer}>
-        <span>
-          <WPLogo className={styles.logo} />
-        </span>
-        <span className={styles.title}>Well Profiler</span>
+        <Link to="/">
+          <span>
+            <WPLogo className={styles.logo} />
+          </span>
+          <span className={styles.title}>Well Profiler</span>
+        </Link>
       </div>
 
       <div className={styles.btnsContainer}>

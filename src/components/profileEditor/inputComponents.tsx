@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 
 import {
   TextField,
@@ -6,6 +6,7 @@ import {
   Autocomplete,
   Popover,
   IconButton,
+  gridClasses,
 } from '@mui/material';
 
 import Radio from '@mui/material/Radio';
@@ -15,6 +16,19 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 
 import { SketchPicker } from 'react-color';
+
+import {
+  DataSheetGrid,
+  createTextColumn,
+  checkboxColumn,
+  textColumn,
+  floatColumn,
+  keyColumn,
+  CellProps,
+} from 'react-datasheet-grid';
+
+// Import the style only once in your app!
+import 'react-datasheet-grid/dist/style.css';
 
 import { HelpCircle } from 'react-feather';
 
@@ -32,6 +46,117 @@ const FGDC_TEXTURES = [
   704, 705, 706, 707, 708, 709, 710, 711, 712, 713, 714, 715, 716, 717, 718,
   719, 720, 721, 722, 723, 724, 725, 726, 727, 728, 729, 730, 731, 732, 733,
 ];
+
+const ColorPicker = ({
+  focus,
+  rowData,
+  setRowData,
+  stopEditing,
+}: CellProps) => {
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  const ref = useRef<any>(null);
+
+  // This function will be called only when `focus` changes
+  useLayoutEffect(() => {
+    if (focus) {
+      ref.current?.focus();
+    } else {
+      ref.current?.blur();
+    }
+  }, [focus]);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popover' : undefined;
+  return (
+    <div className={`${styles.colorContainer} ${styles.layerInput}`}>
+      <input
+        ref={ref}
+        className={styles.colorInput}
+        onFocus={handleClick}
+        style={{ background: 'white' }}
+        value={rowData}
+        onChange={(event) => {
+          setRowData(event.target.value);
+          setTimeout(stopEditing, 0);
+        }}
+      />
+      <div
+        aria-describedby={id}
+        style={{ backgroundColor: rowData }}
+        className={styles.colorBtn}
+        onClick={handleClick}
+      />
+      <Popover
+        id={id}
+        open={focus}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <SketchPicker
+          className={styles.colorPicker}
+          disableAlpha
+          color={rowData}
+          onChange={(newColor, event) => {
+            setRowData(newColor.hex);
+            setTimeout(stopEditing, 0);
+          }}
+        />
+      </Popover>
+    </div>
+  );
+};
+
+export const GeologicSheet = ({ data, onChangeValues }) => {
+  const columns = [
+    {
+      ...keyColumn('from', floatColumn),
+      title: 'De',
+      maxWidth: 20,
+      continuousUpdates: false,
+    },
+    {
+      ...keyColumn('to', floatColumn),
+      title: 'Até',
+      maxWidth: 20,
+      continuousUpdates: false,
+    },
+    {
+      ...keyColumn('color', { component: ColorPicker }),
+      title: 'Cor',
+      maxWidth: 50,
+    },
+    {
+      ...keyColumn('geologic_unit', textColumn),
+      title: 'Unid. Geológica',
+    },
+    {
+      ...keyColumn('description', textColumn),
+      title: 'Descrição',
+    },
+  ];
+
+  return (
+    <DataSheetGrid
+      value={data}
+      onChange={onChangeValues}
+      columns={columns}
+      gutterColumn={false}
+    />
+  );
+};
 
 export const GeologicLayer = ({
   component,
@@ -60,41 +185,6 @@ export const GeologicLayer = ({
   return (
     <div style={{ width: '100%' }}>
       <div className={styles.layerRow}>
-        <TextField
-          size="small"
-          variant="standard"
-          className={styles.layerInput}
-          id="standard-multiline-flexible"
-          label="De"
-          type="number"
-          InputProps={{
-            endAdornment: <InputAdornment position="end">m</InputAdornment>,
-          }}
-          value={from}
-          onChange={(event) => {
-            // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({
-              ...component,
-              from: parseFloat(event.target.value),
-            });
-          }}
-        />
-        <TextField
-          size="small"
-          variant="standard"
-          className={styles.layerInput}
-          id="standard-multiline-flexible"
-          label="Até"
-          type="number"
-          InputProps={{
-            endAdornment: <InputAdornment position="end">m</InputAdornment>,
-          }}
-          value={to}
-          onChange={(event) => {
-            // eslint-disable-next-line implicit-arrow-linebreak
-            updateValues({ ...component, to: parseFloat(event.target.value) });
-          }}
-        />
         <Autocomplete
           id="combo-box-demo"
           className={styles.layerInput}
