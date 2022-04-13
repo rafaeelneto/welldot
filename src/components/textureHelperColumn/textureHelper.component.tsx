@@ -7,14 +7,15 @@ import styles from './textureHelper.module.scss';
 
 const TextureHelper = () => (
   <div className={styles.textureHeaderContainner}>
-    Textura
+    Texturas
     <IconButton
       className={`${styles.helpBtn}`}
       onClick={() => {
+        console.log('fkfa');
         // @ts-ignore
         window
           .open(
-            `https://rafaeelneto.github.io/wellProfiler_static/FGDCgeostdTM11A2web_PatternChart.pdf`,
+            process.env.PUBLIC_URL + '/FGDCgeostdTM11A2web_PatternChart.pdf',
             '_blank'
           )
           .focus();
