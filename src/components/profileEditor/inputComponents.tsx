@@ -32,122 +32,18 @@ import 'react-datasheet-grid/dist/style.css';
 
 import { HelpCircle } from 'react-feather';
 
+import {
+  colorPickerColumn,
+  customSelectColumn,
+} from '../../utils/customColumns';
+
 import { LayerProps } from '../../types/profileEditor.types';
 
 import styles from './profileEditor.module.scss';
 
-const FGDC_TEXTURES = [
-  120, 123, 132, 601, 602, 603, 605, 606, 607, 608, 609, 610, 611, 612, 613,
-  614, 616, 617, 618, 619, 620, 621, 622, 623, 624, 625, 626, 627, 628, 629,
-  630, 631, 632, 633, 634, 635, 636, 637, 638, 639, 640, 641, 642, 643, 644,
-  645, 646, 647, 648, 649, 650, 651, 652, 653, 654, 655, 656, 657, 658, 659,
-  660, 661, 662, 663, 664, 665, 666, 667, 668, 669, 670, 671, 672, 673, 674,
-  675, 676, 677, 678, 679, 680, 681, 682, 683, 684, 685, 686, 701, 702, 703,
-  704, 705, 706, 707, 708, 709, 710, 711, 712, 713, 714, 715, 716, 717, 718,
-  719, 720, 721, 722, 723, 724, 725, 726, 727, 728, 729, 730, 731, 732, 733,
-];
+import { FGDC_TEXTURES_OPTIONS } from '../../utils/fgdcTextures';
 
-const ColorPicker = ({
-  focus,
-  rowData,
-  setRowData,
-  stopEditing,
-}: CellProps) => {
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-  const ref = useRef<any>(null);
-
-  // This function will be called only when `focus` changes
-  useLayoutEffect(() => {
-    if (focus) {
-      ref.current?.focus();
-    } else {
-      ref.current?.blur();
-    }
-  }, [focus]);
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
-  return (
-    <div className={`${styles.colorContainer} ${styles.layerInput}`}>
-      <input
-        ref={ref}
-        className={styles.colorInput}
-        onFocus={handleClick}
-        style={{ background: 'white' }}
-        value={rowData}
-        onChange={(event) => {
-          setRowData(event.target.value);
-          setTimeout(stopEditing, 0);
-        }}
-      />
-      <div
-        aria-describedby={id}
-        style={{ backgroundColor: rowData }}
-        className={styles.colorBtn}
-        onClick={handleClick}
-      />
-      <Popover
-        id={id}
-        open={focus}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-      >
-        <SketchPicker
-          className={styles.colorPicker}
-          disableAlpha
-          color={rowData}
-          onChange={(newColor, event) => {
-            setRowData(newColor.hex);
-            setTimeout(stopEditing, 0);
-          }}
-        />
-      </Popover>
-    </div>
-  );
-};
-
-export const GeologicSheet = ({ data, onChangeValues }) => {
-  const columns = [
-    {
-      ...keyColumn('from', floatColumn),
-      title: 'De',
-      maxWidth: 20,
-      continuousUpdates: false,
-    },
-    {
-      ...keyColumn('to', floatColumn),
-      title: 'Até',
-      maxWidth: 20,
-      continuousUpdates: false,
-    },
-    {
-      ...keyColumn('color', { component: ColorPicker }),
-      title: 'Cor',
-      maxWidth: 50,
-    },
-    {
-      ...keyColumn('geologic_unit', textColumn),
-      title: 'Unid. Geológica',
-    },
-    {
-      ...keyColumn('description', textColumn),
-      title: 'Descrição',
-    },
-  ];
-
+export const GeologicSheet = ({ data, onChangeValues, columns }) => {
   return (
     <DataSheetGrid
       value={data}
@@ -155,124 +51,6 @@ export const GeologicSheet = ({ data, onChangeValues }) => {
       columns={columns}
       gutterColumn={false}
     />
-  );
-};
-
-export const GeologicLayer = ({
-  component,
-  index,
-  onChangeValues,
-}: LayerProps) => {
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
-
-  const { from, to, color, fgdc_texture, description, geologic_unit } =
-    component;
-  const updateValues = (newLayer) => {
-    onChangeValues(newLayer, index);
-  };
-
-  return (
-    <div style={{ width: '100%' }}>
-      <div className={styles.layerRow}>
-        <Autocomplete
-          id="combo-box-demo"
-          className={styles.layerInput}
-          options={FGDC_TEXTURES}
-          value={fgdc_texture}
-          onChange={(event, newValue) => {
-            updateValues({ ...component, fgdc_texture: newValue });
-          }}
-          getOptionLabel={(option) => option.toString()}
-          // style={{ width: 300 }}
-          renderInput={(params) => (
-            <TextField {...params} variant="standard" label="Textura" />
-          )}
-        />
-      </div>
-      <p className={styles.helpText}>
-        As texturas usadas nas camadas são do{' '}
-        <i>
-          &quot;FGDC Digital Cartographic Standard for Geologic Map
-          Symbolization&quot;
-        </i>{' '}
-        produzido pelo Serviço Geológico dos Estados Unidos (USGS). Para
-        consultar as texturas disponíveis bem como suas descrições, acesse o{' '}
-        <a
-          href="https://rafaeelneto.github.io/wellProfiler_static/FGDCgeostdTM11A2web_PatternChart.pdf"
-          target="blank"
-        >
-          link
-        </a>
-      </p>
-      <div className={`${styles.colorInput} ${styles.layerInput}`}>
-        <span>Cor da Camada:</span>
-        <div
-          aria-describedby={id}
-          style={{ backgroundColor: color }}
-          className={styles.colorBtn}
-          onClick={handleClick}
-        />
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
-          }}
-        >
-          <SketchPicker
-            className={styles.colorPicker}
-            disableAlpha
-            color={color}
-            onChange={(newColor, event) => {
-              updateValues({ ...component, color: newColor.hex });
-            }}
-          />
-        </Popover>
-      </div>
-
-      <TextField
-        size="small"
-        variant="standard"
-        className={styles.layerInput}
-        id="standard-multiline-flexible"
-        label="Unidade Geológica"
-        style={{ width: '100%' }}
-        multiline
-        value={geologic_unit}
-        onChange={(event) => {
-          // eslint-disable-next-line implicit-arrow-linebreak
-          updateValues({ ...component, geologic_unit: event.target.value });
-        }}
-      />
-      <TextField
-        size="small"
-        variant="standard"
-        className={styles.layerInput}
-        id="standard-multiline-flexible"
-        label="Descrição"
-        style={{ width: '100%' }}
-        multiline
-        value={description}
-        onChange={(event) => {
-          // eslint-disable-next-line implicit-arrow-linebreak
-          updateValues({ ...component, description: event.target.value });
-        }}
-      />
-    </div>
   );
 };
 

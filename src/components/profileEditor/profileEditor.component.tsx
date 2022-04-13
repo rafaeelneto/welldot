@@ -54,11 +54,13 @@ import {
   BoreHoleLayer,
   HoleFillLayer,
   WellScreenLayer,
-  GeologicLayer,
   WellCaseLayer,
   SurfaceCaseLayer,
   GeologicSheet,
 } from './inputComponents';
+
+import DataSheet from '../dataSheetComponent/dataSheet.component';
+import { geologyColumns, boreHoleColumns } from '../dataSheetComponent/columns';
 
 import styles from './profileEditor.module.scss';
 
@@ -173,7 +175,7 @@ function TabPanel(props) {
   if (value !== index) return <></>;
 
   return (
-    <div style={{ height: '90%', overflowY: 'auto' }} hidden={value !== index}>
+    <div style={{ height: '90%' }} hidden={value !== index}>
       {value === index ? <>{children}</> : ''}
     </div>
   );
@@ -840,12 +842,10 @@ const PerfilEditor = () => {
                     {profileState &&
                     profileState.constructive &&
                     profileState.constructive.bole_hole ? (
-                      <SortableList
-                        defaultComponent={BORE_HOLE_COMPONENT_DEFAULT}
-                        layers={profileState.constructive.bole_hole}
-                        component={BoreHoleLayer}
-                        onChangeList={reorderHandlers.bole_hole}
-                        onChangeValues={onChangeHandlers.bole_hole}
+                      <DataSheet
+                        data={profileState.constructive.bole_hole}
+                        onChangeValues={reorderHandlers.bole_hole}
+                        columns={boreHoleColumns}
                       />
                     ) : (
                       ''
@@ -920,23 +920,15 @@ const PerfilEditor = () => {
                 </div>
               </TabPanel>
               <TabPanel value={tabValue} index={1}>
-                <div className={styles.inputContainers}>
-                  {profileState && profileState.geologic ? (
-                    <GeologicSheet
-                      data={profileState.geologic}
-                      onChangeValues={reorderHandlers.geologic}
-                    />
-                  ) : (
-                    // <SortableList
-                    //   defaultComponent={GEOLOGIC_COMPONENT_DEFAULT}
-                    //   layers={profileState.geologic}
-                    //   component={GeologicLayer}
-                    //   onChangeList={reorderHandlers.geologic}
-                    //   onChangeValues={onChangeHandlers.geologic}
-                    // />
-                    ''
-                  )}
-                </div>
+                {profileState && profileState.geologic ? (
+                  <DataSheet
+                    data={profileState.geologic}
+                    onChangeValues={reorderHandlers.geologic}
+                    columns={geologyColumns}
+                  />
+                ) : (
+                  ''
+                )}
               </TabPanel>
               <TabPanel value={tabValue} index={2}>
                 <Info profile={profileState} />

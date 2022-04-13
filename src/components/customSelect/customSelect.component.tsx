@@ -1,0 +1,83 @@
+/* eslint-disable jsx-a11y/no-autofocus */
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { DataSheetGrid, CellProps, Column } from 'react-datasheet-grid';
+import {
+  TextField,
+  InputAdornment,
+  Autocomplete,
+  Popover,
+  IconButton,
+  gridClasses,
+} from '@mui/material';
+
+import Select, { components, DropdownIndicatorProps } from 'react-select';
+
+import { HelpCircle } from 'react-feather';
+
+import { SelectOptions } from '../../types/customColumns.types';
+
+import styles from './customSelect.module.scss';
+
+const CustomSelect = ({
+  active,
+  rowData,
+  setRowData,
+  focus,
+  stopEditing,
+  columnData,
+}: CellProps<string | null, SelectOptions>) => {
+  const ref = useRef<any>(null);
+
+  useLayoutEffect(() => {
+    if (focus) {
+      ref.current?.focus();
+    } else {
+      ref.current?.blur();
+    }
+  }, [focus]);
+
+  return (
+    <Select
+      ref={ref}
+      styles={{
+        container: (provided) => ({
+          ...provided,
+          flex: 1,
+          alignSelf: 'stretch',
+          pointerEvents: focus ? undefined : 'none',
+        }),
+        control: (provided) => ({
+          ...provided,
+          height: '100%',
+          border: 'none',
+          boxShadow: 'none',
+          background: 'none',
+        }),
+        indicatorSeparator: (provided) => ({
+          ...provided,
+          opacity: 0,
+        }),
+        indicatorsContainer: (provided) => ({
+          ...provided,
+          opacity: active ? 1 : 0,
+        }),
+        placeholder: (provided) => ({
+          ...provided,
+          opacity: active ? 1 : 0,
+        }),
+      }}
+      isDisabled={columnData.disabled}
+      value={columnData.options.find(({ value }) => value === rowData) ?? null}
+      menuPortalTarget={document.body}
+      menuIsOpen={focus}
+      onChange={({ value }) => {
+        setRowData(value);
+        setTimeout(stopEditing, 0);
+      }}
+      onMenuClose={() => stopEditing({ nextRow: false })}
+      options={columnData.options}
+    />
+  );
+};
+
+export default CustomSelect;
