@@ -59,19 +59,16 @@ export const boreHoleColumns = [
   {
     ...keyColumn('from', floatColumn),
     title: 'De (m)',
-    maxWidth: 20,
     continuousUpdates: false,
   },
   {
     ...keyColumn('to', floatColumn),
     title: 'Até (m)',
-    maxWidth: 20,
     continuousUpdates: false,
   },
   {
     ...keyColumn('diam_pol', floatColumn),
     title: 'Diâmetro (pol)',
-    maxWidth: 20,
   },
 ];
 
@@ -115,19 +112,16 @@ export const surfaceCaseColumns = [
   {
     ...keyColumn('from', floatColumn),
     title: 'De (m)',
-    maxWidth: 20,
     continuousUpdates: false,
   },
   {
     ...keyColumn('to', floatColumn),
     title: 'Até (m)',
-    maxWidth: 20,
     continuousUpdates: false,
   },
   {
     ...keyColumn('diam_pol', floatColumn),
     title: 'Diâmetro (pol)',
-    maxWidth: 20,
   },
 ];
 
@@ -174,14 +168,14 @@ export const wellScreenColumns = [
     maxWidth: 20,
   },
   {
-    ...keyColumn('type', textColumn),
-    title: 'Tipo',
-  },
-  {
     ...keyColumn('screen_slot_mm', floatColumn),
     title: 'Ranhura (mm)',
     maxWidth: 20,
     continuousUpdates: false,
+  },
+  {
+    ...keyColumn('type', textColumn),
+    title: 'Tipo',
   },
 ];
 

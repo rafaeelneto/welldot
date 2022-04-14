@@ -675,6 +675,7 @@ const PerfilEditor = () => {
                         onChangeValues={reorderHandlers.bole_hole}
                         columns={boreHoleColumns}
                         defaultValue={() => BORE_HOLE_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -692,6 +693,7 @@ const PerfilEditor = () => {
                         onChangeValues={reorderHandlers.hole_fill}
                         columns={holeFillColumns}
                         defaultValue={() => HOLE_FILL_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -707,6 +709,7 @@ const PerfilEditor = () => {
                         onChangeValues={reorderHandlers.surface_case}
                         columns={surfaceCaseColumns}
                         defaultValue={() => SURFACE_CASE_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -722,6 +725,7 @@ const PerfilEditor = () => {
                         onChangeValues={reorderHandlers.well_case}
                         columns={wellCaseColumns}
                         defaultValue={() => WELL_CASE_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -737,6 +741,7 @@ const PerfilEditor = () => {
                         onChangeValues={reorderHandlers.well_screen}
                         columns={wellScreenColumns}
                         defaultValue={() => WELL_SCREEN_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''

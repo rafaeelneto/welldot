@@ -59,6 +59,7 @@ type dataSheetProps = {
   onChangeValues: any;
   columns: any;
   defaultValue?: (() => any) | undefined;
+  customHeight?: number;
 };
 
 const DataSheet = ({
@@ -66,6 +67,7 @@ const DataSheet = ({
   onChangeValues,
   columns,
   defaultValue = undefined,
+  customHeight,
 }: dataSheetProps) => {
   const ref = useRef<any>(null);
   const [height, setHeight] = useState(400);
@@ -80,9 +82,9 @@ const DataSheet = ({
     <div ref={ref} className={styles.dataSheetContainer}>
       <DataSheetGrid
         createRow={defaultValue || undefined}
-        className={styles.dataSheet}
+        className={!customHeight ? styles.dataSheet : ''}
         value={data}
-        height={height - 50}
+        height={customHeight || height - 50}
         onChange={onChangeValues}
         columns={columns}
         gutterColumn={false}
