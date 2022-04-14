@@ -22,13 +22,13 @@ import TextureHelper from '../textureHelperColumn/textureHelper.component';
 export const geologyColumns = [
   {
     ...keyColumn('from', floatColumn),
-    title: 'De',
+    title: 'De (m)',
     maxWidth: 20,
     continuousUpdates: false,
   },
   {
     ...keyColumn('to', floatColumn),
-    title: 'Até',
+    title: 'Até (m)',
     maxWidth: 20,
     continuousUpdates: false,
   },
@@ -54,27 +54,142 @@ export const geologyColumns = [
     title: 'Descrição',
   },
 ];
+
 export const boreHoleColumns = [
   {
     ...keyColumn('from', floatColumn),
-    title: 'De',
+    title: 'De (m)',
     maxWidth: 20,
     continuousUpdates: false,
   },
   {
     ...keyColumn('to', floatColumn),
-    title: 'Até',
+    title: 'Até (m)',
     maxWidth: 20,
     continuousUpdates: false,
   },
   {
     ...keyColumn('diam_pol', floatColumn),
-    title: 'Diâmetro',
+    title: 'Diâmetro (pol)',
     maxWidth: 20,
   },
 ];
 
+export const holeFillColumns = [
+  {
+    ...keyColumn('from', floatColumn),
+    title: 'De (m)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn('to', floatColumn),
+    title: 'Até (m)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn('diam_pol', floatColumn),
+    title: 'Diâmetro (pol)',
+    maxWidth: 20,
+  },
+  {
+    ...keyColumn(
+      'type',
+      customSelectColumn({
+        options: [
+          { value: 'seal', label: 'Cimento' },
+          { value: 'gravel_pack', label: 'Seixo' },
+        ],
+      })
+    ),
+    title: 'Tipo',
+  },
+  {
+    ...keyColumn('description', textColumn),
+    title: 'Descrição',
+  },
+];
+
+export const surfaceCaseColumns = [
+  {
+    ...keyColumn('from', floatColumn),
+    title: 'De (m)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn('to', floatColumn),
+    title: 'Até (m)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn('diam_pol', floatColumn),
+    title: 'Diâmetro (pol)',
+    maxWidth: 20,
+  },
+];
+
+export const wellCaseColumns = [
+  {
+    ...keyColumn('from', floatColumn),
+    title: 'De (m)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn('to', floatColumn),
+    title: 'Até (m)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn('diam_pol', floatColumn),
+    title: 'Diâmetro (pol)',
+    maxWidth: 20,
+  },
+  {
+    ...keyColumn('type', textColumn),
+    title: 'Tipo',
+  },
+];
+
+export const wellScreenColumns = [
+  {
+    ...keyColumn('from', floatColumn),
+    title: 'De (m)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn('to', floatColumn),
+    title: 'Até (m)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn('diam_pol', floatColumn),
+    title: 'Diâmetro (pol)',
+    maxWidth: 20,
+  },
+  {
+    ...keyColumn('type', textColumn),
+    title: 'Tipo',
+  },
+  {
+    ...keyColumn('screen_slot_mm', floatColumn),
+    title: 'Ranhura (mm)',
+    maxWidth: 20,
+    continuousUpdates: false,
+  },
+];
+
 export default {
-  GeologyColumns: geologyColumns,
-  BoreHoleColumns: boreHoleColumns,
+  geologyColumns,
+  boreHoleColumns,
+  holeFillColumns,
+  surfaceCaseColumns,
+  wellCaseColumns,
+  wellScreenColumns,
 };

@@ -7,7 +7,7 @@ import styles from './textureHelper.module.scss';
 
 const TextureHelper = () => (
   <div className={styles.textureHeaderContainner}>
-    Texturas
+    Textura
     <IconButton
       className={`${styles.helpBtn}`}
       onClick={() => {

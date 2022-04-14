@@ -54,9 +54,21 @@ export const CustomAddButton = ({ addRows }: AddRowsComponentProps) => {
   );
 };
 
-const DataSheet = ({ data, onChangeValues, columns }) => {
+type dataSheetProps = {
+  data: any[];
+  onChangeValues: any;
+  columns: any;
+  defaultValue?: (() => any) | undefined;
+};
+
+const DataSheet = ({
+  data,
+  onChangeValues,
+  columns,
+  defaultValue = undefined,
+}: dataSheetProps) => {
   const ref = useRef<any>(null);
-  const [height, setHeight] = useState(600);
+  const [height, setHeight] = useState(400);
 
   useEffect(() => {
     if (ref.current) {
@@ -67,9 +79,10 @@ const DataSheet = ({ data, onChangeValues, columns }) => {
   return (
     <div ref={ref} className={styles.dataSheetContainer}>
       <DataSheetGrid
+        createRow={defaultValue || undefined}
         className={styles.dataSheet}
         value={data}
-        height={height}
+        height={height - 50}
         onChange={onChangeValues}
         columns={columns}
         gutterColumn={false}
