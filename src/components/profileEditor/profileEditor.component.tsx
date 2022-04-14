@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Button,
   IconButton,
@@ -20,23 +20,9 @@ import Box from '@mui/material/Box';
 
 import { format } from 'date-fns';
 
-import { Container, Draggable } from 'react-smooth-dnd';
-import { arrayMoveImmutable } from 'array-move';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-
 import Checkbox from '@mui/material/Checkbox';
 
-import {
-  Trash,
-  PlusCircle,
-  Upload,
-  Download,
-  XCircle,
-  FileText,
-} from 'react-feather';
+import { Upload, Download, FileText } from 'react-feather';
 
 import download from 'downloadjs';
 
@@ -50,14 +36,15 @@ import profileConverter from '../../utils/profileConverter';
 
 import PDFExport from '../export/pdfExport.component';
 
+import DataSheet from '../dataSheetComponent/dataSheet.component';
 import {
-  BoreHoleLayer,
-  HoleFillLayer,
-  WellScreenLayer,
-  GeologicLayer,
-  WellCaseLayer,
-  SurfaceCaseLayer,
-} from './inputComponents';
+  geologyColumns,
+  boreHoleColumns,
+  holeFillColumns,
+  surfaceCaseColumns,
+  wellCaseColumns,
+  wellScreenColumns,
+} from '../dataSheetComponent/columns';
 
 import styles from './profileEditor.module.scss';
 
@@ -83,96 +70,13 @@ import {
 
 import { PROFILE_TYPE } from '../../types/profile.types';
 
-const SortableList = ({
-  layers,
-  defaultComponent,
-  component,
-  onChangeList,
-  onChangeValues,
-}: {
-  layers: any[];
-  component: any;
-  defaultComponent: any;
-  onChangeList: onChangeListType;
-  onChangeValues: onChangeValuesType;
-}) => {
-  const onDrop = ({ removedIndex, addedIndex }) => {
-    onChangeList(arrayMoveImmutable(layers, removedIndex, addedIndex));
-  };
-  const onDelete = (index) => {
-    const newLayers = [...layers];
-    newLayers.splice(index, 1);
-    onChangeList(newLayers);
-  };
-  const onAdd = () => {
-    const newLayers = [...layers];
-    newLayers.push(defaultComponent);
-    onChangeList(newLayers);
-  };
-
-  const LayerComponent: React.FC<LayerProps> = component;
-
-  return (
-    <List className={styles.sortableList}>
-      <Container dragHandleSelector=".drag-handle" lockAxis="y" onDrop={onDrop}>
-        {layers.map((item, index) => (
-          <Draggable key={index}>
-            <ListItem>
-              <ListItemIcon
-                style={{
-                  height: '24px',
-                  minWidth: 'auto',
-                  marginRight: '5px',
-                }}
-                className="drag-handle"
-              >
-                <DragIndicatorIcon />
-              </ListItemIcon>
-              <ListItemIcon
-                onClick={() => onDelete(index)}
-                style={{
-                  height: '24px',
-                  minWidth: 'auto',
-                  marginRight: '5px',
-                }}
-                className="drag-handle"
-              >
-                <XCircle />
-              </ListItemIcon>
-
-              <LayerComponent
-                component={item}
-                index={index}
-                onChangeValues={onChangeValues}
-              />
-            </ListItem>
-          </Draggable>
-        ))}
-        <ListItem
-          className={styles.btnAdd}
-          dense
-          button
-          onClick={() => onAdd()}
-        >
-          <ListItemIcon
-            style={{ height: '24px', minWidth: 'auto', marginRight: '5px' }}
-          >
-            <PlusCircle />
-          </ListItemIcon>
-          Adicionar
-        </ListItem>
-      </Container>
-    </List>
-  );
-};
-
 function TabPanel(props) {
   const { children, value, index } = props;
 
   if (value !== index) return <></>;
 
   return (
-    <div style={{ height: '90%', overflowY: 'auto' }} hidden={value !== index}>
+    <div style={{ height: '90%' }} hidden={value !== index}>
       {value === index ? <>{children}</> : ''}
     </div>
   );
@@ -325,79 +229,6 @@ const PerfilEditor = () => {
     },
   };
 
-  const onChangeHandlers = {
-    geologic: (newLayer, index) => {
-      const newLayers = [...profileState.geologic];
-      newLayers[index] = newLayer;
-      const newPerfilState = {
-        ...profileState,
-        geologic: reorderComponentsDepth(newLayers),
-      };
-      onChangePerfilState(newPerfilState);
-    },
-    hole_fill: (newEA, index) => {
-      const newLayers = [...profileState.constructive.hole_fill];
-      newLayers[index] = newEA;
-      const newEAList = reorderComponentsDepth(newLayers);
-
-      const newPerfilState = {
-        ...profileState,
-        constructive: { ...profileState.constructive, hole_fill: newEAList },
-      };
-      onChangePerfilState(newPerfilState);
-    },
-    surface_case: (newTB, index) => {
-      const newLayers = [...profileState.constructive.surface_case];
-      newLayers[index] = newTB;
-      const newTBList = reorderComponentsDepth(newLayers);
-
-      const newPerfilState = {
-        ...profileState,
-        constructive: { ...profileState.constructive, surface_case: newTBList },
-      };
-      onChangePerfilState(newPerfilState);
-    },
-    bole_hole: (newbole_holes, index) => {
-      const newLayers = [...profileState.constructive.bole_hole];
-      newLayers[index] = newbole_holes;
-      const newBoleHoleList = reorderComponentsDepth(newLayers);
-
-      const newPerfilState = {
-        ...profileState,
-        constructive: {
-          ...profileState.constructive,
-          bole_hole: newBoleHoleList,
-        },
-      };
-      onChangePerfilState(newPerfilState);
-    },
-    well_case: (newRevest, index) => {
-      const newLayers = [...profileState.constructive.well_case];
-      newLayers[index] = newRevest;
-      // const newRevestList = reorderComponentsByFromDepth(newLayers);
-
-      const newPerfilState = {
-        ...profileState,
-        constructive: {
-          ...profileState.constructive,
-          well_case: newLayers,
-        },
-      };
-      onChangePerfilState(newPerfilState);
-    },
-    well_screen: (newComps, index) => {
-      const newLayers = [...profileState.constructive.well_screen];
-      newLayers[index] = newComps;
-      // const newWSList = reorderComponentsDepth(newLayers);
-
-      const newPerfilState = {
-        ...profileState,
-        constructive: { ...profileState.constructive, well_screen: newLayers },
-      };
-      onChangePerfilState(newPerfilState);
-    },
-  };
-
   const handleCementPadChange = (property, value) => {
     const newcementPad = { ...profileState.constructive.cement_pad };
     newcementPad[property] = value;
@@ -413,6 +244,7 @@ const PerfilEditor = () => {
     // @ts-ignore
     inputFile.current.click();
   };
+
   const handleChangeInputFile = (event) => {
     const fileUploaded = event.target.files[0];
     const reader = new FileReader();
@@ -455,7 +287,6 @@ const PerfilEditor = () => {
   ];
 
   const tour = window.localStorage.getItem('tour');
-  // const tour = 'ffandsfa';
 
   return (
     <div className={styles.root}>
@@ -839,12 +670,12 @@ const PerfilEditor = () => {
                     {profileState &&
                     profileState.constructive &&
                     profileState.constructive.bole_hole ? (
-                      <SortableList
-                        defaultComponent={BORE_HOLE_COMPONENT_DEFAULT}
-                        layers={profileState.constructive.bole_hole}
-                        component={BoreHoleLayer}
-                        onChangeList={reorderHandlers.bole_hole}
-                        onChangeValues={onChangeHandlers.bole_hole}
+                      <DataSheet
+                        data={profileState.constructive.bole_hole}
+                        onChangeValues={reorderHandlers.bole_hole}
+                        columns={boreHoleColumns}
+                        defaultValue={() => BORE_HOLE_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -857,12 +688,12 @@ const PerfilEditor = () => {
                     {profileState &&
                     profileState.constructive &&
                     profileState.constructive.hole_fill ? (
-                      <SortableList
-                        defaultComponent={HOLE_FILL_COMPONENT_DEFAULT}
-                        layers={profileState.constructive.hole_fill}
-                        component={HoleFillLayer}
-                        onChangeList={reorderHandlers.hole_fill}
-                        onChangeValues={onChangeHandlers.hole_fill}
+                      <DataSheet
+                        data={profileState.constructive.hole_fill}
+                        onChangeValues={reorderHandlers.hole_fill}
+                        columns={holeFillColumns}
+                        defaultValue={() => HOLE_FILL_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -873,12 +704,12 @@ const PerfilEditor = () => {
                     {profileState &&
                     profileState.constructive &&
                     profileState.constructive.surface_case ? (
-                      <SortableList
-                        defaultComponent={SURFACE_CASE_COMPONENT_DEFAULT}
-                        layers={profileState.constructive.surface_case}
-                        component={SurfaceCaseLayer}
-                        onChangeList={reorderHandlers.surface_case}
-                        onChangeValues={onChangeHandlers.surface_case}
+                      <DataSheet
+                        data={profileState.constructive.surface_case}
+                        onChangeValues={reorderHandlers.surface_case}
+                        columns={surfaceCaseColumns}
+                        defaultValue={() => SURFACE_CASE_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -889,12 +720,12 @@ const PerfilEditor = () => {
                     {profileState &&
                     profileState.constructive &&
                     profileState.constructive.well_case ? (
-                      <SortableList
-                        defaultComponent={WELL_CASE_COMPONENT_DEFAULT}
-                        layers={profileState.constructive.well_case}
-                        component={WellCaseLayer}
-                        onChangeList={reorderHandlers.well_case}
-                        onChangeValues={onChangeHandlers.well_case}
+                      <DataSheet
+                        data={profileState.constructive.well_case}
+                        onChangeValues={reorderHandlers.well_case}
+                        columns={wellCaseColumns}
+                        defaultValue={() => WELL_CASE_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -905,12 +736,12 @@ const PerfilEditor = () => {
                     {profileState &&
                     profileState.constructive &&
                     profileState.constructive.well_screen ? (
-                      <SortableList
-                        defaultComponent={WELL_SCREEN_COMPONENT_DEFAULT}
-                        layers={profileState.constructive.well_screen}
-                        component={WellScreenLayer}
-                        onChangeList={reorderHandlers.well_screen}
-                        onChangeValues={onChangeHandlers.well_screen}
+                      <DataSheet
+                        data={profileState.constructive.well_screen}
+                        onChangeValues={reorderHandlers.well_screen}
+                        columns={wellScreenColumns}
+                        defaultValue={() => WELL_SCREEN_COMPONENT_DEFAULT}
+                        customHeight={400}
                       />
                     ) : (
                       ''
@@ -919,19 +750,16 @@ const PerfilEditor = () => {
                 </div>
               </TabPanel>
               <TabPanel value={tabValue} index={1}>
-                <div className={styles.inputContainers}>
-                  {profileState && profileState.geologic ? (
-                    <SortableList
-                      defaultComponent={GEOLOGIC_COMPONENT_DEFAULT}
-                      layers={profileState.geologic}
-                      component={GeologicLayer}
-                      onChangeList={reorderHandlers.geologic}
-                      onChangeValues={onChangeHandlers.geologic}
-                    />
-                  ) : (
-                    ''
-                  )}
-                </div>
+                {profileState && profileState.geologic ? (
+                  <DataSheet
+                    data={profileState.geologic}
+                    onChangeValues={reorderHandlers.geologic}
+                    columns={geologyColumns}
+                    defaultValue={() => GEOLOGIC_COMPONENT_DEFAULT}
+                  />
+                ) : (
+                  ''
+                )}
               </TabPanel>
               <TabPanel value={tabValue} index={2}>
                 <Info profile={profileState} />
