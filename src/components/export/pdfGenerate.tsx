@@ -11,7 +11,7 @@ import {
   calculateHoleFillVolume,
   numberFormater,
   numberFormaterInches,
-} from '../../utils/profilerCalculations';
+} from '../../utils/profileCalculations';
 
 // @ts-ignore
 pdfMake.vfs = pdfFonts.pdfMake.vfs;

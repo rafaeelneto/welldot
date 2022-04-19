@@ -1,24 +1,10 @@
-import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-import {
-  DataSheetGrid,
-  createTextColumn,
-  checkboxColumn,
-  textColumn,
-  floatColumn,
-  keyColumn,
-  CellProps,
-  AddRowsComponentProps,
-} from 'react-datasheet-grid';
+import { DataSheetGrid, AddRowsComponentProps } from 'react-datasheet-grid';
 
-// Import the style only once in your app!
 import 'react-datasheet-grid/dist/style.css';
 
 import styles from './dataSheet.module.scss';
-
-// import './dataSheetCustomStyles.css';
-
-import { FGDC_TEXTURES_OPTIONS } from '../../utils/fgdcTextures';
 
 export const CustomAddButton = ({ addRows }: AddRowsComponentProps) => {
   const [value, setValue] = useState<number>(1);
@@ -74,23 +60,25 @@ const DataSheet = ({
 
   useEffect(() => {
     if (ref.current) {
-      setHeight(ref.current.clientHeight);
+      setHeight(
+        (document.querySelector(`.${styles.dataSheet}`)?.clientHeight || 400) -
+          40
+      );
     }
   }, [ref]);
 
   return (
-    <div ref={ref} className={styles.dataSheetContainer}>
-      <DataSheetGrid
-        createRow={defaultValue || undefined}
-        className={!customHeight ? styles.dataSheet : ''}
-        value={data}
-        height={customHeight || height - 50}
-        onChange={onChangeValues}
-        columns={columns}
-        gutterColumn={false}
-        addRowsComponent={CustomAddButton}
-      />
-    </div>
+    <DataSheetGrid
+      createRow={defaultValue || undefined}
+      ref={ref}
+      className={styles.dataSheet}
+      value={data}
+      height={customHeight || height}
+      onChange={onChangeValues}
+      columns={columns}
+      gutterColumn={false}
+      addRowsComponent={CustomAddButton}
+    />
   );
 };
 

@@ -1,11 +1,4 @@
-import {
-  DataSheetGrid,
-  createTextColumn,
-  checkboxColumn,
-  textColumn,
-  floatColumn,
-  keyColumn,
-} from 'react-datasheet-grid';
+import { textColumn, floatColumn, keyColumn } from 'react-datasheet-grid';
 
 // Import the style only once in your app!
 import 'react-datasheet-grid/dist/style.css';

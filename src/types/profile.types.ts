@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 export type GEOLOGIC_COMPONENT_TYPE = {
   from: number;
   to: number;

@@ -1,4 +1,4 @@
-import { PROFILE_DEFAULT } from '../defaults/profileDefaults';
+import { PROFILE_DEFAULT } from './profileDefaults';
 
 const convertProfile = (jsonString) => {
   let perfilImported = JSON.parse(jsonString);

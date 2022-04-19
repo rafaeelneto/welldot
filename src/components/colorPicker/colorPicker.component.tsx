@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 
 import { Popover } from '@mui/material';
 
@@ -73,7 +73,7 @@ export const ColorPicker = ({
           className={styles.colorPicker}
           disableAlpha
           color={rowData}
-          onChange={(newColor, event) => {
+          onChange={(newColor, _event) => {
             setRowData(newColor.hex);
           }}
         />

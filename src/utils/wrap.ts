@@ -1,9 +1,9 @@
+/* eslint-disable no-unused-vars */
 import * as d3 from 'd3';
 
 export default function wrap(textSet, width) {
-  textSet.each(function (textEl) {
+  textSet.each(function wordIterator(textEl) {
     // @ts-ignore
-    // eslint-disable-next-line no-shadow
     const text = d3.select(this);
     const words = text.text().split(/\s+/).reverse();
     let word: any | never = '';
