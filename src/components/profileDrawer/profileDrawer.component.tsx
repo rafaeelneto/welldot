@@ -10,8 +10,6 @@ import textures from 'textures';
 
 import fdgcTextures from '../../utils/fgdcTextures';
 
-import { APIPost, API_ENDPOINTS } from '../../utils/fetchAPI';
-
 import {
   GEOLOGIC_COMPONENT_TYPE,
   BORE_HOLE_COMPONENT_TYPE,

@@ -1,12 +1,4 @@
-.dataSheetContainer {
-  height: 100%;
-  width: 100%;
-}
 .dataSheet {
   height: 100%;
   width: 100%;
-
-  :global(.dsg-container) {
-    height: 100% !important;
-  }
 }

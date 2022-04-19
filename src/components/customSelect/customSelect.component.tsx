@@ -1,18 +1,8 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-import React, { useLayoutEffect, useRef, useState } from 'react';
-import { DataSheetGrid, CellProps, Column } from 'react-datasheet-grid';
-import {
-  TextField,
-  InputAdornment,
-  Autocomplete,
-  Popover,
-  IconButton,
-  gridClasses,
-} from '@mui/material';
+import React, { useLayoutEffect, useRef } from 'react';
+import { CellProps } from 'react-datasheet-grid';
 
-import Select, { components, DropdownIndicatorProps } from 'react-select';
-
-import { HelpCircle } from 'react-feather';
+import Select from 'react-select';
 
 import { SelectOptions } from '../../types/customColumns.types';
 

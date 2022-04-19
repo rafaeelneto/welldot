@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Button,
   IconButton,
@@ -66,7 +66,7 @@ import {
   SURFACE_CASE_COMPONENT_DEFAULT,
   WELL_CASE_COMPONENT_DEFAULT,
   WELL_SCREEN_COMPONENT_DEFAULT,
-} from '../../defaults/profileDefaults';
+} from '../../utils/profileDefaults';
 
 import { PROFILE_TYPE } from '../../types/profile.types';
 
