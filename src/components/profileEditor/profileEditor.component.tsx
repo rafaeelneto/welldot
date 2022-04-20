@@ -26,9 +26,11 @@ import { Upload, Download, FileText } from 'react-feather';
 
 import download from 'downloadjs';
 
+import Profile from '../../model/Profile';
+
 import FullScreenDialog from '../dialogs/fullScreenDialog.component';
 
-import PerfilDrawer from '../profileDrawer/profileDrawer.component';
+import ProfileDrawer from '../profileDrawer/profileDrawer.component';
 
 import Info from '../info/info.component';
 
@@ -288,6 +290,10 @@ const PerfilEditor = () => {
 
   const tour = window.localStorage.getItem('tour');
 
+  const profile = new Profile(profileState);
+
+  console.log(profile);
+
   return (
     <div className={styles.root}>
       <div>
@@ -493,7 +499,7 @@ const PerfilEditor = () => {
         <div className={styles.container}>
           <div className={styles.containerWrapper}>
             <div className={`${styles.perfilContainer}`}>
-              <PerfilDrawer profile={{ ...profileState }} />
+              <ProfileDrawer profile={{ ...profileState }} />
             </div>
             <div className={styles.dataContainer}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

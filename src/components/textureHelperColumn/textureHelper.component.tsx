@@ -11,7 +11,6 @@ const TextureHelper = () => (
     <IconButton
       className={`${styles.helpBtn}`}
       onClick={() => {
-        console.log('fkfa');
         // @ts-ignore
         window
           .open(

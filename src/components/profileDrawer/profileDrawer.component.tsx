@@ -11,6 +11,11 @@ import textures from 'textures';
 import fdgcTextures from '../../utils/fgdcTextures';
 
 import {
+  responsivefy,
+  getLithologicalFill,
+} from '../../utils/d3ProfilerDrawer';
+
+import {
   GEOLOGIC_COMPONENT_TYPE,
   BORE_HOLE_COMPONENT_TYPE,
   CEMENT_PAD_COMPONENT_TYPE,
@@ -33,37 +38,7 @@ type PDProps = {
   profile: PROFILE_TYPE;
 };
 
-const getLithologicalFill = (data) => {
-  const profileTextures: (number | string)[] = [];
-  data.forEach((element) => {
-    const texture: number | string = element.fgdc_texture;
-    if (profileTextures.indexOf(texture) < 0) {
-      profileTextures.push(texture);
-    }
-  });
-
-  const litologicalFill = {};
-  const texturesLoaded = {};
-
-  profileTextures.forEach((textureCode) => {
-    if (fdgcTextures[textureCode]) {
-      texturesLoaded[textureCode] = fdgcTextures[textureCode];
-    }
-  });
-
-  data.forEach((d) => {
-    litologicalFill[`${d.fgdc_texture}.${d.from}`] = textures
-      .paths()
-      .d((s) => texturesLoaded[d.fgdc_texture])
-      .size(150)
-      .strokeWidth(0.8)
-      .stroke('#303030')
-      .background(d.color);
-  });
-  return litologicalFill;
-};
-
-const PerfilDrawer = ({ profile }: PDProps) => {
+const ProfileDrawer = ({ profile }: PDProps) => {
   // console.log(profile);
   const svgContainer = useRef(null);
 
@@ -162,46 +137,6 @@ const PerfilDrawer = ({ profile }: PDProps) => {
         .thicker(2)
         .background('#fff'),
     };
-
-    function responsivefy(svg) {
-      // container will be the DOM element
-      // that the svg is appended to
-      // we then measure the container
-      // and find its aspect ratio
-      const container = d3.select(svg.node().parentNode);
-
-      const width = svg.style('width');
-      const height = svg.style('height');
-
-      // set viewBox attribute to the initial size
-      // control scaling with preserveAspectRatio
-      // resize svg on inital page load
-      svg
-        .attr('viewBox', `0 0 ${width} ${height}`)
-        .attr('preserveAspectRatio', 'xMinYMid')
-        .call(resize);
-
-      // add a listener so the chart will be resized
-      // when the window resizes
-      // multiple listeners for the same event type
-      // requires a namespace, i.e., 'click.foo'
-      // api docs: https://goo.gl/F3ZCFr
-      d3.select(window).on('resize.' + container.attr('id'), resize);
-
-      // this is the code that resizes the chart
-      // it will be called on load
-      // and in response to window resizes
-      // gets the width of the container
-      // and resizes the svg to fill it
-      // while maintaining a consistent aspect ratio
-      function resize() {
-        const h = parseInt(container.style('height').slice(0, -2));
-        const w = parseInt(container.style('width').slice(0, -2));
-
-        svg.attr('width', w);
-        svg.attr('height', h);
-      }
-    }
 
     const svg = d3
       .select(svgContainer.current)
@@ -843,4 +778,4 @@ const PerfilDrawer = ({ profile }: PDProps) => {
   );
 };
 
-export default PerfilDrawer;
+export default ProfileDrawer;

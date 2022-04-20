@@ -25,42 +25,14 @@ import {
 
 import { SvgInfo, infoType } from '../../types/profile2Export.types';
 
+import { getLithologicalFill } from '../../utils/d3ProfilerDrawer';
+
 const d3 = {
   ...d3module,
   tip: d3tip,
 };
 
 const DARK_GRAY = '#303030';
-
-const getLithologicalFill = (data) => {
-  const profileTextures: (number | string)[] = [];
-  data.forEach((element) => {
-    const texture: number | string = element.fgdc_texture;
-    if (profileTextures.indexOf(texture) < 0) {
-      profileTextures.push(texture);
-    }
-  });
-
-  const litologicalFill = {};
-  const texturesLoaded = {};
-
-  profileTextures.forEach((textureCode) => {
-    if (fdgcTextures[textureCode]) {
-      texturesLoaded[textureCode] = fdgcTextures[textureCode];
-    }
-  });
-
-  data.forEach((d) => {
-    litologicalFill[`${d.fgdc_texture}.${d.from}`] = textures
-      .paths()
-      .d((s) => texturesLoaded[d.fgdc_texture])
-      .size(150)
-      .strokeWidth(0.8)
-      .stroke(DARK_GRAY)
-      .background(d.color);
-  });
-  return litologicalFill;
-};
 
 const profile2Export = (
   header: string,
