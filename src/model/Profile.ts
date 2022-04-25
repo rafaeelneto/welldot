@@ -6,13 +6,13 @@ import {
 } from '../types/profile.types';
 
 export default class Profile {
-  name?: string;
+  name?: string = '';
 
   geologic: GEOLOGIC_COMPONENT_TYPE[] = [];
 
-  construtive: CONSTRUCTIVE_COMPONENT_TYPE = {
+  constructive: CONSTRUCTIVE_COMPONENT_TYPE = {
     hole_fill: [],
-    bole_hole: [],
+    bore_hole: [],
     cement_pad: {
       length: 0,
       thickness: 0,
@@ -30,29 +30,45 @@ export default class Profile {
     if (profile) {
       this.name = profile.name;
       this.geologic = profile.geologic;
-      this.construtive = profile.constructive;
+      this.constructive = profile.constructive;
       this.info = profile.info;
     }
   }
 
-  get componentsFinalDepth() {
+  getComponentsFinalDepths() {
     return [
       this.geologic.length === 0
         ? 0
         : this.geologic[this.geologic.length - 1].to,
-      this.construtive.bole_hole.length === 0
+      this.constructive.bore_hole.length === 0
         ? 0
-        : this.construtive.bole_hole[this.construtive.bole_hole.length - 1].to,
-      this.construtive.hole_fill.length === 0
-        ? 0
-        : this.construtive.hole_fill[this.construtive.hole_fill.length - 1].to,
-      this.construtive.well_case.length === 0
-        ? 0
-        : this.construtive.well_case[this.construtive.well_case.length - 1].to,
-      this.construtive.well_screen.length === 0
-        ? 0
-        : this.construtive.well_screen[this.construtive.well_screen.length - 1]
+        : this.constructive.bore_hole[this.constructive.bore_hole.length - 1]
             .to,
+      this.constructive.hole_fill.length === 0
+        ? 0
+        : this.constructive.hole_fill[this.constructive.hole_fill.length - 1]
+            .to,
+      this.constructive.well_case.length === 0
+        ? 0
+        : this.constructive.well_case[this.constructive.well_case.length - 1]
+            .to,
+      this.constructive.well_screen.length === 0
+        ? 0
+        : this.constructive.well_screen[
+            this.constructive.well_screen.length - 1
+          ].to,
     ];
+  }
+
+  isEmpty(): boolean {
+    if (!this.constructive && !this.geologic) return true;
+
+    const isProfileEmpty =
+      this.geologic.length === 0 &&
+      this.constructive.bore_hole.length === 0 &&
+      this.constructive.hole_fill.length === 0 &&
+      this.constructive.well_case.length === 0 &&
+      this.constructive.well_screen.length === 0;
+    return isProfileEmpty;
   }
 }

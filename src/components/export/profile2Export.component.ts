@@ -49,7 +49,7 @@ const profile2Export = (
 
   const noPerfil =
     profile.geologic.length === 0 &&
-    profile.constructive.bole_hole.length === 0 &&
+    profile.constructive.bore_hole.length === 0 &&
     profile.constructive.hole_fill.length === 0 &&
     profile.constructive.well_case.length === 0 &&
     profile.constructive.well_screen.length === 0;
@@ -64,9 +64,9 @@ const profile2Export = (
   // calculate max depth on the profile
   const depthValues = [
     geologicData.length === 0 ? 0 : geologicData[geologicData.length - 1].to,
-    constructionData.bole_hole.length === 0
+    constructionData.bore_hole.length === 0
       ? 0
-      : constructionData.bole_hole[constructionData.bole_hole.length - 1].to,
+      : constructionData.bore_hole[constructionData.bore_hole.length - 1].to,
     constructionData.hole_fill.length === 0
       ? 0
       : constructionData.hole_fill[constructionData.hole_fill.length - 1].to,
@@ -90,7 +90,7 @@ const profile2Export = (
   const GEOLOGY_TIP_WIDTH = 200;
 
   const maxDiamValues = [
-    ...constructionData.bole_hole.map(
+    ...constructionData.bore_hole.map(
       (d: BORE_HOLE_COMPONENT_TYPE) =>
         // divide by 1 to convert text to number
         // eslint-disable-next-line implicit-arrow-linebreak
@@ -496,7 +496,7 @@ const profile2Export = (
         };
       };
 
-      const hole = holeGroup.selectAll('rect').data(data.bole_hole);
+      const hole = holeGroup.selectAll('rect').data(data.bore_hole);
 
       hole.exit().remove();
 
@@ -514,8 +514,8 @@ const profile2Export = (
         .merge(hole)
         .attr('x', getXPos())
         .attr('width', getWidth())
-        .attr('y', getYPos(data.bole_hole))
-        .attr('height', getHeight(data.bole_hole));
+        .attr('y', getYPos(data.bore_hole))
+        .attr('height', getHeight(data.bore_hole));
 
       const surfaceCase = surfaceCaseGroup
         .selectAll('rect')
@@ -907,7 +907,7 @@ const profile2Export = (
 
       const drawConstructionData: CONSTRUCTIVE_COMPONENT_TYPE = {
         cement_pad: constructionData.cement_pad,
-        bole_hole: constructionData.bole_hole.filter(filterByDepth),
+        bore_hole: constructionData.bore_hole.filter(filterByDepth),
         hole_fill: constructionData.hole_fill.filter(filterByDepth),
         surface_case: constructionData.surface_case.filter(filterByDepth),
         well_case: constructionData.well_case.filter(filterByDepth),

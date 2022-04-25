@@ -31,7 +31,7 @@ const convertProfile = (jsonString) => {
         });
       }
       if (perfilImported.construtivo.furo.length > 0) {
-        perfilConverted.constructive.bole_hole =
+        perfilConverted.constructive.bore_hole =
           perfilImported.construtivo.furo.map((camada) => {
             return {
               from: parseFloat(camada.de),

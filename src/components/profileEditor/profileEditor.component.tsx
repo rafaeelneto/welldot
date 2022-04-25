@@ -292,7 +292,7 @@ const PerfilEditor = () => {
 
   const profile = new Profile(profileState);
 
-  console.log(profile);
+  console.log(JSON.stringify(profile));
 
   return (
     <div className={styles.root}>
@@ -499,7 +499,7 @@ const PerfilEditor = () => {
         <div className={styles.container}>
           <div className={styles.containerWrapper}>
             <div className={`${styles.perfilContainer}`}>
-              <ProfileDrawer profile={{ ...profileState }} />
+              <ProfileDrawer profile={profileState} />
             </div>
             <div className={styles.dataContainer}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -675,9 +675,9 @@ const PerfilEditor = () => {
                     <span className={styles.componentTitle}>Furo:</span>
                     {profileState &&
                     profileState.constructive &&
-                    profileState.constructive.bole_hole ? (
+                    profileState.constructive.bore_hole ? (
                       <DataSheet
-                        data={profileState.constructive.bole_hole}
+                        data={profileState.constructive.bore_hole}
                         onChangeValues={reorderHandlers.bole_hole}
                         columns={boreHoleColumns}
                         defaultValue={() => BORE_HOLE_COMPONENT_DEFAULT}

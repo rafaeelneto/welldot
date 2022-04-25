@@ -218,7 +218,7 @@ export const exportPdfProfile = (
     });
   }
 
-  if (profile.constructive.bole_hole.length > 0) {
+  if (profile.constructive.bore_hole.length > 0) {
     content.push({ text: ' ' });
     content.push({ text: 'Furo', style: 'title' });
 
@@ -230,8 +230,8 @@ export const exportPdfProfile = (
       ],
     ];
 
-    for (let i = 0; i < profile.constructive.bole_hole.length; i++) {
-      const item = profile.constructive.bole_hole[i];
+    for (let i = 0; i < profile.constructive.bore_hole.length; i++) {
+      const item = profile.constructive.bore_hole[i];
 
       endingInfoBody.push([
         { text: `${numberFormaterInches.format(item.diam_pol)}"` },

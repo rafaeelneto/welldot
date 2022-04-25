@@ -8,6 +8,8 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
+import Profile from '../../model/Profile';
+
 import fdgcTextures from '../../utils/fgdcTextures';
 
 import {
@@ -41,8 +43,6 @@ type PDProps = {
 const ProfileDrawer = ({ profile }: PDProps) => {
   // console.log(profile);
   const svgContainer = useRef(null);
-
-  const [firstRender, setFirstRender] = useState(true);
 
   const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 50 };
   const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
@@ -117,7 +117,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
 
     const noPerfil =
       profile.geologic.length === 0 &&
-      profile.constructive.bole_hole.length === 0 &&
+      profile.constructive.bore_hole.length === 0 &&
       profile.constructive.hole_fill.length === 0 &&
       profile.constructive.well_case.length === 0 &&
       profile.constructive.well_screen.length === 0;
@@ -229,7 +229,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
 
     const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
       const maxXValues = [
-        ...data.bole_hole.map(
+        ...data.bore_hole.map(
           (d: BORE_HOLE_COMPONENT_TYPE) =>
             // divide by 1 to convert text to number
             // eslint-disable-next-line implicit-arrow-linebreak
@@ -323,7 +323,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
 
       svg.call(tipHole);
 
-      const hole = holeGroup.selectAll('rect').data(data.bole_hole);
+      const hole = holeGroup.selectAll('rect').data(data.bore_hole);
 
       hole.exit().remove();
 
@@ -346,7 +346,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
         .transition(transition)
         .attr('y', (d: any, i) => {
           if (i === 0) return yScale(d.from);
-          return yScale(data.bole_hole[i - 1].to);
+          return yScale(data.bore_hole[i - 1].to);
         })
         .attr('height', (d: any) => yScale(d.to - d.from));
 
@@ -673,9 +673,9 @@ const ProfileDrawer = ({ profile }: PDProps) => {
 
     const maxValues = [
       geologicData.length === 0 ? 0 : geologicData[geologicData.length - 1].to,
-      constructionData.bole_hole.length === 0
+      constructionData.bore_hole.length === 0
         ? 0
-        : constructionData.bole_hole[constructionData.bole_hole.length - 1].to,
+        : constructionData.bore_hole[constructionData.bore_hole.length - 1].to,
       constructionData.hole_fill.length === 0
         ? 0
         : constructionData.hole_fill[constructionData.hole_fill.length - 1].to,
@@ -757,7 +757,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
   if (profile.geologic && profile.constructive) {
     noPerfil =
       profile.geologic.length === 0 &&
-      profile.constructive.bole_hole.length === 0 &&
+      profile.constructive.bore_hole.length === 0 &&
       profile.constructive.hole_fill.length === 0 &&
       profile.constructive.well_case.length === 0 &&
       profile.constructive.well_screen.length === 0;

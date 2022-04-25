@@ -273,7 +273,7 @@ export const PROFILE_EXAMPLE: PROFILE_TYPE = {
     },
   ],
   constructive: {
-    bole_hole: [
+    bore_hole: [
       {
         from: 0,
         to: 20,

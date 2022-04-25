@@ -52,7 +52,7 @@ export type CEMENT_PAD_COMPONENT_TYPE = {
 };
 
 export type CONSTRUCTIVE_COMPONENT_TYPE = {
-  bole_hole: BORE_HOLE_COMPONENT_TYPE[];
+  bore_hole: BORE_HOLE_COMPONENT_TYPE[];
   well_case: WELL_CASE_COMPONENT_TYPE[];
   well_screen: WELL_SCREEN_COMPONENT_TYPE[];
   surface_case: SURFACE_CASE_COMPONENT_TYPE[];

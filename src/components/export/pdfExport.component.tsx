@@ -31,6 +31,8 @@ import {
 import { PROFILE_TYPE } from '../../types/profile.types';
 import { infoType } from '../../types/profile2Export.types';
 
+import Profile from '../../model/Profile';
+
 import styles from './pdfExport.module.scss';
 
 import profile2Export from './profile2Export.component';
