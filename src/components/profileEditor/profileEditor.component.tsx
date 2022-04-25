@@ -26,15 +26,13 @@ import { Upload, Download, FileText } from 'react-feather';
 
 import download from 'downloadjs';
 
-import Profile from '../../model/Profile';
-
 import FullScreenDialog from '../dialogs/fullScreenDialog.component';
 
 import ProfileDrawer from '../profileDrawer/profileDrawer.component';
 
 import Info from '../info/info.component';
 
-import profileConverter from '../../utils/profileConverter';
+import { convertProfile } from '../../utils/profile.utils';
 
 import PDFExport from '../export/pdfExport.component';
 
@@ -133,7 +131,7 @@ const PerfilEditor = () => {
 
   if (firstRun.current && savedProfileJson) {
     try {
-      const { perfilImported } = profileConverter(savedProfileJson);
+      const { perfilImported } = convertProfile(savedProfileJson);
       setProfileState({ ...perfilImported });
     } catch (error) {
       // error
@@ -254,9 +252,7 @@ const PerfilEditor = () => {
       if (!e) return;
 
       try {
-        const { perfilImported, cementPad } = profileConverter(
-          e.target?.result
-        );
+        const { perfilImported, cementPad } = convertProfile(e.target?.result);
         setProfileState({ ...perfilImported });
       } catch (error) {
         setOpenImportErrorS(true);
@@ -289,10 +285,6 @@ const PerfilEditor = () => {
   ];
 
   const tour = window.localStorage.getItem('tour');
-
-  const profile = new Profile(profileState);
-
-  console.log(JSON.stringify(profile));
 
   return (
     <div className={styles.root}>

@@ -416,7 +416,7 @@ export const PROFILE_DEFAULT: PROFILE_TYPE = JSON.parse(
   JSON.stringify({
     geologic: [],
     constructive: {
-      bole_hole: [],
+      bore_hole: [],
       well_screen: [],
       surface_case: [],
       well_case: [],

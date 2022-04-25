@@ -13,7 +13,7 @@ import {
   numberFormater,
   numberFormaterInches,
   calculateHoleFillVolume,
-} from '../../utils/profileCalculations';
+} from '../../utils/profile.utils';
 
 import styles from './info.module.scss';
 

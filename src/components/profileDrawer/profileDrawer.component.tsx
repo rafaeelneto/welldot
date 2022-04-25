@@ -8,14 +8,14 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
-import Profile from '../../model/Profile';
-
 import fdgcTextures from '../../utils/fgdcTextures';
 
 import {
-  responsivefy,
-  getLithologicalFill,
-} from '../../utils/d3ProfilerDrawer';
+  isProfileEmpty,
+  getProfileDiamValues,
+  getProfileLastItemsDepths,
+} from '../../utils/profile.utils';
+import { responsivefy, getLithologicalFill } from '../../utils/profileD3.utils';
 
 import {
   GEOLOGIC_COMPONENT_TYPE,
@@ -113,16 +113,8 @@ const ProfileDrawer = ({ profile }: PDProps) => {
 
   const drawLog = () => {
     if (!svgContainer.current) return;
-    if (!profile.constructive || !profile.geologic) return;
 
-    const noPerfil =
-      profile.geologic.length === 0 &&
-      profile.constructive.bore_hole.length === 0 &&
-      profile.constructive.hole_fill.length === 0 &&
-      profile.constructive.well_case.length === 0 &&
-      profile.constructive.well_screen.length === 0;
-
-    if (noPerfil) return;
+    if (isProfileEmpty(profile)) return;
 
     const profileTexture = {
       pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
@@ -197,7 +189,6 @@ const ProfileDrawer = ({ profile }: PDProps) => {
       const newLayers = rects
         .enter()
         .append('rect')
-        .attr('x', POCO_CENTER)
         .attr('x', 10)
         .attr('width', svgWidth - 100)
         .style('stroke', '#101010')
@@ -228,28 +219,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
     };
 
     const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
-      const maxXValues = [
-        ...data.bore_hole.map(
-          (d: BORE_HOLE_COMPONENT_TYPE) =>
-            // divide by 1 to convert text to number
-            // eslint-disable-next-line implicit-arrow-linebreak
-            // @ts-ignore
-            parseFloat(d.diam_pol)
-          // eslint-disable-next-line function-paren-newline
-        ),
-        ...data.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
-          // @ts-ignore
-          parseFloat(d.diam_pol)
-        ),
-        ...data.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
-          // @ts-ignore
-          parseFloat(d.diam_pol)
-        ),
-        ...data.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
-          // @ts-ignore
-          parseFloat(d.diam_pol)
-        ),
-      ];
+      const maxXValues = getProfileDiamValues(data);
 
       const maxValues = d3.max(maxXValues) || 0;
 
@@ -626,7 +596,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
 
       const tipConflict = d3
         .tip()
-        .attr('class', styles.tooltip)
+        .attr('class', `${styles.tooltip} ${styles.conflict}`)
         .direction('e')
         .html((element, d) => {
           return `
@@ -753,25 +723,17 @@ const ProfileDrawer = ({ profile }: PDProps) => {
     drawLog();
   }, [profile, svgContainer.current]);
 
-  let noPerfil = true;
-  if (profile.geologic && profile.constructive) {
-    noPerfil =
-      profile.geologic.length === 0 &&
-      profile.constructive.bore_hole.length === 0 &&
-      profile.constructive.hole_fill.length === 0 &&
-      profile.constructive.well_case.length === 0 &&
-      profile.constructive.well_screen.length === 0;
-  }
+  const noProfile = isProfileEmpty(profile);
 
   return (
     <>
-      {noPerfil ? (
+      {noProfile ? (
         <span className={styles.noFilesMsg}>Perfil não configurado</span>
       ) : (
         ''
       )}
       <svg
-        className={`${styles.svgContainer} ${noPerfil ? styles.hide : ''}`}
+        className={`${styles.svgContainer} ${noProfile ? styles.hide : ''}`}
         ref={svgContainer}
       />
     </>

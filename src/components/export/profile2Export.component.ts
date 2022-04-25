@@ -12,6 +12,12 @@ import { innerRenderPdf, printPdf, downloadPdf } from './pdfGenerate';
 import fdgcTextures from '../../utils/fgdcTextures';
 
 import {
+  getProfileLastItemsDepths,
+  getProfileDiamValues,
+  isProfileEmpty,
+} from '../../utils/profile.utils';
+
+import {
   GEOLOGIC_COMPONENT_TYPE,
   BORE_HOLE_COMPONENT_TYPE,
   CEMENT_PAD_COMPONENT_TYPE,
@@ -25,7 +31,7 @@ import {
 
 import { SvgInfo, infoType } from '../../types/profile2Export.types';
 
-import { getLithologicalFill } from '../../utils/d3ProfilerDrawer';
+import { getLithologicalFill } from '../../utils/profileD3.utils';
 
 const d3 = {
   ...d3module,
@@ -44,17 +50,7 @@ const profile2Export = (
   iframeId?: string,
   print?: boolean
 ) => {
-  // check if profile is empty
-  if (!profile.constructive || !profile.geologic) return;
-
-  const noPerfil =
-    profile.geologic.length === 0 &&
-    profile.constructive.bore_hole.length === 0 &&
-    profile.constructive.hole_fill.length === 0 &&
-    profile.constructive.well_case.length === 0 &&
-    profile.constructive.well_screen.length === 0;
-
-  if (noPerfil) return;
+  if (isProfileEmpty(profile)) return;
 
   const MARGINS = { TOP: 15, RIGHT: 30, BOTTOM: 30, LEFT: 20 };
 
@@ -62,22 +58,7 @@ const profile2Export = (
   const constructionData = profile.constructive;
 
   // calculate max depth on the profile
-  const depthValues = [
-    geologicData.length === 0 ? 0 : geologicData[geologicData.length - 1].to,
-    constructionData.bore_hole.length === 0
-      ? 0
-      : constructionData.bore_hole[constructionData.bore_hole.length - 1].to,
-    constructionData.hole_fill.length === 0
-      ? 0
-      : constructionData.hole_fill[constructionData.hole_fill.length - 1].to,
-    constructionData.well_case.length === 0
-      ? 0
-      : constructionData.well_case[constructionData.well_case.length - 1].to,
-    constructionData.well_screen.length === 0
-      ? 0
-      : constructionData.well_screen[constructionData.well_screen.length - 1]
-          .to,
-  ];
+  const depthValues = getProfileLastItemsDepths(profile);
 
   const maxYValues = d3.max(depthValues) || 0;
 
@@ -89,28 +70,7 @@ const profile2Export = (
   const GEOLOGY_X_POS_DIV_2 = GEOLOGY_X_POS_DIV_1 + 20;
   const GEOLOGY_TIP_WIDTH = 200;
 
-  const maxDiamValues = [
-    ...constructionData.bore_hole.map(
-      (d: BORE_HOLE_COMPONENT_TYPE) =>
-        // divide by 1 to convert text to number
-        // eslint-disable-next-line implicit-arrow-linebreak
-        // @ts-ignore
-        parseFloat(d.diam_pol)
-      // eslint-disable-next-line function-paren-newline
-    ),
-    ...constructionData.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
-      // @ts-ignore
-      parseFloat(d.diam_pol)
-    ),
-    ...constructionData.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
-      // @ts-ignore
-      parseFloat(d.diam_pol)
-    ),
-    ...constructionData.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
-      // @ts-ignore
-      parseFloat(d.diam_pol)
-    ),
-  ];
+  const maxDiamValues = getProfileDiamValues(profile.constructive);
 
   const maxXValues = d3.max(maxDiamValues) || 0;
 

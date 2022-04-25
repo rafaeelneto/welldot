@@ -1,6 +1,156 @@
+import {
+  PROFILE_TYPE,
+  CONSTRUCTIVE_COMPONENT_TYPE,
+  HOLE_FILL_COMPONENT_TYPE,
+  BORE_HOLE_COMPONENT_TYPE,
+  CEMENT_PAD_COMPONENT_TYPE,
+  SURFACE_CASE_COMPONENT_TYPE,
+  WELL_CASE_COMPONENT_TYPE,
+  WELL_SCREEN_COMPONENT_TYPE,
+} from '../types/profile.types';
 import { PROFILE_DEFAULT } from './profileDefaults';
 
-const convertProfile = (jsonString) => {
+export const getProfileLastItemsDepths = (profile: PROFILE_TYPE): number[] => {
+  return [
+    profile.geologic.length === 0
+      ? 0
+      : profile.geologic[profile.geologic.length - 1].to,
+    profile.constructive.bore_hole.length === 0
+      ? 0
+      : profile.constructive.bore_hole[
+          profile.constructive.bore_hole.length - 1
+        ].to,
+    profile.constructive.hole_fill.length === 0
+      ? 0
+      : profile.constructive.hole_fill[
+          profile.constructive.hole_fill.length - 1
+        ].to,
+    profile.constructive.well_case.length === 0
+      ? 0
+      : profile.constructive.well_case[
+          profile.constructive.well_case.length - 1
+        ].to,
+    profile.constructive.well_screen.length === 0
+      ? 0
+      : profile.constructive.well_screen[
+          profile.constructive.well_screen.length - 1
+        ].to,
+  ];
+};
+
+export const getProfileDiamValues = (
+  constructionData: CONSTRUCTIVE_COMPONENT_TYPE
+): number[] => [
+  ...constructionData.bore_hole.map(
+    (d: BORE_HOLE_COMPONENT_TYPE) =>
+      // divide by 1 to convert text to number
+      // eslint-disable-next-line implicit-arrow-linebreak
+      // @ts-ignore
+      parseFloat(d.diam_pol)
+    // eslint-disable-next-line function-paren-newline
+  ),
+  ...constructionData.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
+    // @ts-ignore
+    parseFloat(d.diam_pol)
+  ),
+  ...constructionData.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
+    // @ts-ignore
+    parseFloat(d.diam_pol)
+  ),
+  ...constructionData.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
+    // @ts-ignore
+    parseFloat(d.diam_pol)
+  ),
+];
+
+export const isProfileEmpty = (profile: PROFILE_TYPE): boolean => {
+  if (!profile.constructive && !profile.geologic) return true;
+
+  const noComponent =
+    profile.geologic.length === 0 &&
+    profile.constructive.bore_hole.length === 0 &&
+    profile.constructive.hole_fill.length === 0 &&
+    profile.constructive.well_case.length === 0 &&
+    profile.constructive.well_screen.length === 0;
+
+  return noComponent;
+};
+
+export const numberFormater = new Intl.NumberFormat('pt-BR', {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+});
+
+export const numberFormaterInches = new Intl.NumberFormat('pt-BR', {
+  maximumFractionDigits: 2,
+});
+
+export const calculateVolume = (diamPol: number, height: number) => {
+  return Math.PI * (diamPol / 39.37 / 2) ** 2 * height;
+};
+
+export const calculateHoleFillVolume = (
+  type: string,
+  profile: PROFILE_TYPE
+) => {
+  let volume = 0;
+
+  const { well_case: wellCase, well_screen: wellScreen } = profile.constructive;
+
+  const holeFillType = profile.constructive.hole_fill.filter(
+    (el) => el.type === type
+  );
+
+  holeFillType.forEach((el) => {
+    // CALCULATE THE OUTER VOLUME
+    let outerVolume = calculateVolume(el.diam_pol, el.to - el.from);
+
+    // SUBTRACT THE OUTER VOLUME FROM THE VOLUME OF EACH WELL CASE SECTION
+    for (let i = 0; i < wellCase.length; i++) {
+      const wC = wellCase[i];
+
+      if (wC.from > el.to || wC.to < el.from) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      // eslint-disable-next-line prefer-destructuring
+      let { from, to } = el;
+      if (wC.from > el.from) from = wC.from;
+      if (wC.to < el.to) to = wC.to;
+
+      const wellSectionVolume = calculateVolume(wC.diam_pol, to - from);
+
+      outerVolume -= wellSectionVolume;
+    }
+
+    // SUBTRACT THE OUTER VOLUME FROM THE VOLUME OF EACH WELL SCREEN SECTION
+    for (let i = 0; i < wellScreen.length; i++) {
+      const wS = wellScreen[i];
+
+      if (wS.from > el.to || wS.to < el.from) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      // eslint-disable-next-line prefer-destructuring
+      let { from, to } = el;
+      if (wS.from > el.from) from = wS.from;
+      if (wS.to < el.to) to = wS.to;
+
+      const wellSectionVolume = calculateVolume(wS.diam_pol, to - from);
+
+      outerVolume -= wellSectionVolume;
+    }
+
+    // console.log(outerVolume);
+    volume += outerVolume;
+  });
+
+  return volume;
+};
+
+export const convertProfile = (jsonString) => {
   let perfilImported = JSON.parse(jsonString);
 
   let noPerfil = true;
@@ -183,5 +333,3 @@ const convertProfile = (jsonString) => {
     cementPad,
   };
 };
-
-export default convertProfile;
