@@ -43,7 +43,6 @@ type PDProps = {
 const ProfileDrawer = ({ profile }: PDProps) => {
   // console.log(profile);
   const svgContainer = useRef(null);
-
   const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 50 };
   const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
   const WIDTH = 200 - MARGINS.LEFT - MARGINS.RIGHT;

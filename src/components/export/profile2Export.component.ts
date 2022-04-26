@@ -872,6 +872,7 @@ const profile2Export = (
         surface_case: constructionData.surface_case.filter(filterByDepth),
         well_case: constructionData.well_case.filter(filterByDepth),
         well_screen: constructionData.well_screen.filter(filterByDepth),
+        reduction: constructionData.reduction.filter(filterByDepth),
       };
 
       if (constructionData) updatePoco(drawConstructionData, yScaleLocal);
