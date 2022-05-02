@@ -8,6 +8,7 @@ import {
   WELL_CASE_COMPONENT_TYPE,
   WELL_SCREEN_COMPONENT_TYPE,
 } from '../types/profile.types';
+
 import { PROFILE_DEFAULT } from './profileDefaults';
 
 export const getProfileLastItemsDepths = (profile: PROFILE_TYPE): number[] => {
@@ -64,6 +65,7 @@ export const getProfileDiamValues = (
 ];
 
 export const isProfileEmpty = (profile: PROFILE_TYPE): boolean => {
+  if (!profile) return true;
   if (!profile.constructive && !profile.geologic) return true;
 
   const noComponent =
