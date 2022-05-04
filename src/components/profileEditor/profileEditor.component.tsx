@@ -28,11 +28,11 @@ import download from 'downloadjs';
 
 import FullScreenDialog from '../dialogs/fullScreenDialog.component';
 
-import PerfilDrawer from '../profileDrawer/profileDrawer.component';
+import ProfileDrawer from '../profileDrawer/profileDrawer.component';
 
 import Info from '../info/info.component';
 
-import profileConverter from '../../utils/profileConverter';
+import { convertProfile } from '../../utils/profile.utils';
 
 import PDFExport from '../export/pdfExport.component';
 
@@ -131,7 +131,7 @@ const PerfilEditor = () => {
 
   if (firstRun.current && savedProfileJson) {
     try {
-      const { perfilImported } = profileConverter(savedProfileJson);
+      const { perfilImported } = convertProfile(savedProfileJson);
       setProfileState({ ...perfilImported });
     } catch (error) {
       // error
@@ -162,6 +162,7 @@ const PerfilEditor = () => {
   };
 
   const onChangePerfilState = (newPerfilState: PROFILE_TYPE) => {
+    console.log(newPerfilState);
     setProfileState(newPerfilState);
     setChangesCounter(changesCounter + 1);
     if (changesCounter > 20) {
@@ -194,13 +195,13 @@ const PerfilEditor = () => {
       };
       onChangePerfilState(newPerfilState);
     },
-    bole_hole: (newRevectComp) => {
+    bore_hole: (newRevectComp) => {
       const newBoreHoleList = reorderComponentsDepth(newRevectComp);
       const newPerfilState = {
         ...profileState,
         constructive: {
           ...profileState.constructive,
-          bole_hole: newBoreHoleList,
+          bore_hole: newBoreHoleList,
         },
       };
       onChangePerfilState(newPerfilState);
@@ -252,9 +253,7 @@ const PerfilEditor = () => {
       if (!e) return;
 
       try {
-        const { perfilImported, cementPad } = profileConverter(
-          e.target?.result
-        );
+        const { perfilImported, cementPad } = convertProfile(e.target?.result);
         setProfileState({ ...perfilImported });
       } catch (error) {
         setOpenImportErrorS(true);
@@ -493,7 +492,7 @@ const PerfilEditor = () => {
         <div className={styles.container}>
           <div className={styles.containerWrapper}>
             <div className={`${styles.perfilContainer}`}>
-              <PerfilDrawer profile={{ ...profileState }} />
+              <ProfileDrawer profile={profileState} />
             </div>
             <div className={styles.dataContainer}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -669,10 +668,10 @@ const PerfilEditor = () => {
                     <span className={styles.componentTitle}>Furo:</span>
                     {profileState &&
                     profileState.constructive &&
-                    profileState.constructive.bole_hole ? (
+                    profileState.constructive.bore_hole ? (
                       <DataSheet
-                        data={profileState.constructive.bole_hole}
-                        onChangeValues={reorderHandlers.bole_hole}
+                        data={profileState.constructive.bore_hole}
+                        onChangeValues={reorderHandlers.bore_hole}
                         columns={boreHoleColumns}
                         defaultValue={() => BORE_HOLE_COMPONENT_DEFAULT}
                         customHeight={400}

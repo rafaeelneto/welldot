@@ -13,7 +13,7 @@ import {
   numberFormater,
   numberFormaterInches,
   calculateHoleFillVolume,
-} from '../../utils/profileCalculations';
+} from '../../utils/profile.utils';
 
 import styles from './info.module.scss';
 
@@ -37,7 +37,7 @@ type TableType = {
 export const Info = ({ profile }: InfoProps) => {
   const tables: TableType[] = [];
 
-  if (profile.constructive.bole_hole.length > 0) {
+  if (profile.constructive.bore_hole.length > 0) {
     // @ts-ignore
     const table: TableType = {
       title: 'Furo',
@@ -50,8 +50,8 @@ export const Info = ({ profile }: InfoProps) => {
 
     const rows: RowType[][] = [];
 
-    for (let i = 0; i < profile.constructive.bole_hole.length; i++) {
-      const item = profile.constructive.bole_hole[i];
+    for (let i = 0; i < profile.constructive.bore_hole.length; i++) {
+      const item = profile.constructive.bore_hole[i];
 
       rows.push([
         { text: `${numberFormaterInches.format(item.diam_pol)}"` },

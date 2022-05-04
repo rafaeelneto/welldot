@@ -12,6 +12,12 @@ import { innerRenderPdf, printPdf, downloadPdf } from './pdfGenerate';
 import fdgcTextures from '../../utils/fgdcTextures';
 
 import {
+  getProfileLastItemsDepths,
+  getProfileDiamValues,
+  isProfileEmpty,
+} from '../../utils/profile.utils';
+
+import {
   GEOLOGIC_COMPONENT_TYPE,
   BORE_HOLE_COMPONENT_TYPE,
   CEMENT_PAD_COMPONENT_TYPE,
@@ -25,42 +31,14 @@ import {
 
 import { SvgInfo, infoType } from '../../types/profile2Export.types';
 
+import { getLithologicalFillList } from '../../utils/profileD3.utils';
+
 const d3 = {
   ...d3module,
   tip: d3tip,
 };
 
 const DARK_GRAY = '#303030';
-
-const getLithologicalFill = (data) => {
-  const profileTextures: (number | string)[] = [];
-  data.forEach((element) => {
-    const texture: number | string = element.fgdc_texture;
-    if (profileTextures.indexOf(texture) < 0) {
-      profileTextures.push(texture);
-    }
-  });
-
-  const litologicalFill = {};
-  const texturesLoaded = {};
-
-  profileTextures.forEach((textureCode) => {
-    if (fdgcTextures[textureCode]) {
-      texturesLoaded[textureCode] = fdgcTextures[textureCode];
-    }
-  });
-
-  data.forEach((d) => {
-    litologicalFill[`${d.fgdc_texture}.${d.from}`] = textures
-      .paths()
-      .d((s) => texturesLoaded[d.fgdc_texture])
-      .size(150)
-      .strokeWidth(0.8)
-      .stroke(DARK_GRAY)
-      .background(d.color);
-  });
-  return litologicalFill;
-};
 
 const profile2Export = (
   header: string,
@@ -72,17 +50,7 @@ const profile2Export = (
   iframeId?: string,
   print?: boolean
 ) => {
-  // check if profile is empty
-  if (!profile.constructive || !profile.geologic) return;
-
-  const noPerfil =
-    profile.geologic.length === 0 &&
-    profile.constructive.bole_hole.length === 0 &&
-    profile.constructive.hole_fill.length === 0 &&
-    profile.constructive.well_case.length === 0 &&
-    profile.constructive.well_screen.length === 0;
-
-  if (noPerfil) return;
+  if (isProfileEmpty(profile)) return;
 
   const MARGINS = { TOP: 15, RIGHT: 30, BOTTOM: 30, LEFT: 20 };
 
@@ -90,22 +58,7 @@ const profile2Export = (
   const constructionData = profile.constructive;
 
   // calculate max depth on the profile
-  const depthValues = [
-    geologicData.length === 0 ? 0 : geologicData[geologicData.length - 1].to,
-    constructionData.bole_hole.length === 0
-      ? 0
-      : constructionData.bole_hole[constructionData.bole_hole.length - 1].to,
-    constructionData.hole_fill.length === 0
-      ? 0
-      : constructionData.hole_fill[constructionData.hole_fill.length - 1].to,
-    constructionData.well_case.length === 0
-      ? 0
-      : constructionData.well_case[constructionData.well_case.length - 1].to,
-    constructionData.well_screen.length === 0
-      ? 0
-      : constructionData.well_screen[constructionData.well_screen.length - 1]
-          .to,
-  ];
+  const depthValues = getProfileLastItemsDepths(profile);
 
   const maxYValues = d3.max(depthValues) || 0;
 
@@ -117,28 +70,7 @@ const profile2Export = (
   const GEOLOGY_X_POS_DIV_2 = GEOLOGY_X_POS_DIV_1 + 20;
   const GEOLOGY_TIP_WIDTH = 200;
 
-  const maxDiamValues = [
-    ...constructionData.bole_hole.map(
-      (d: BORE_HOLE_COMPONENT_TYPE) =>
-        // divide by 1 to convert text to number
-        // eslint-disable-next-line implicit-arrow-linebreak
-        // @ts-ignore
-        parseFloat(d.diam_pol)
-      // eslint-disable-next-line function-paren-newline
-    ),
-    ...constructionData.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
-      // @ts-ignore
-      parseFloat(d.diam_pol)
-    ),
-    ...constructionData.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
-      // @ts-ignore
-      parseFloat(d.diam_pol)
-    ),
-    ...constructionData.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
-      // @ts-ignore
-      parseFloat(d.diam_pol)
-    ),
-  ];
+  const maxDiamValues = getProfileDiamValues(profile.constructive);
 
   const maxXValues = d3.max(maxDiamValues) || 0;
 
@@ -280,7 +212,7 @@ const profile2Export = (
     };
 
     const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
-      const litologicalFill = getLithologicalFill(data);
+      const litologicalFill = getLithologicalFillList(data);
 
       const layerGroup = litoligicalGroup.append('g');
 
@@ -524,7 +456,7 @@ const profile2Export = (
         };
       };
 
-      const hole = holeGroup.selectAll('rect').data(data.bole_hole);
+      const hole = holeGroup.selectAll('rect').data(data.bore_hole);
 
       hole.exit().remove();
 
@@ -542,8 +474,8 @@ const profile2Export = (
         .merge(hole)
         .attr('x', getXPos())
         .attr('width', getWidth())
-        .attr('y', getYPos(data.bole_hole))
-        .attr('height', getHeight(data.bole_hole));
+        .attr('y', getYPos(data.bore_hole))
+        .attr('height', getHeight(data.bore_hole));
 
       const surfaceCase = surfaceCaseGroup
         .selectAll('rect')
@@ -935,11 +867,14 @@ const profile2Export = (
 
       const drawConstructionData: CONSTRUCTIVE_COMPONENT_TYPE = {
         cement_pad: constructionData.cement_pad,
-        bole_hole: constructionData.bole_hole.filter(filterByDepth),
+        bore_hole: constructionData.bore_hole.filter(filterByDepth),
         hole_fill: constructionData.hole_fill.filter(filterByDepth),
         surface_case: constructionData.surface_case.filter(filterByDepth),
         well_case: constructionData.well_case.filter(filterByDepth),
         well_screen: constructionData.well_screen.filter(filterByDepth),
+        reduction: constructionData.reduction
+          ? constructionData.reduction.filter(filterByDepth)
+          : [],
       };
 
       if (constructionData) updatePoco(drawConstructionData, yScaleLocal);

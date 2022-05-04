@@ -38,6 +38,16 @@
       font-weight: 600;
     }
   }
+
+  &.conflict {
+    background-color: $error-main;
+    border: 2px solid $error-dark;
+    .title,
+    .primaryInfo,
+    .secondaryInfo {
+      color: white;
+    }
+  }
 }
 
 .d3Container {

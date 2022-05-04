@@ -171,15 +171,19 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
   useEffect(() => {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
-      profile2Export(
-        header,
-        headingInfo,
-        endInfo,
-        { ...profile },
-        breakPages,
-        zoomValue,
-        IFRAME_ID
-      );
+      try {
+        profile2Export(
+          header,
+          headingInfo,
+          endInfo,
+          { ...profile },
+          breakPages,
+          zoomValue,
+          IFRAME_ID
+        );
+      } catch (e) {
+        console.log(`There was a error while generating your PDF file`);
+      }
 
       onChangeInfo({ ...profile, info: { headingInfo, endInfo } });
     }, 1000);

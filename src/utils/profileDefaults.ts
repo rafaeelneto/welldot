@@ -273,7 +273,7 @@ export const PROFILE_EXAMPLE: PROFILE_TYPE = {
     },
   ],
   constructive: {
-    bole_hole: [
+    bore_hole: [
       {
         from: 0,
         to: 20,
@@ -308,6 +308,7 @@ export const PROFILE_EXAMPLE: PROFILE_TYPE = {
         screen_slot_mm: 0.75,
       },
     ],
+    reduction: [],
     surface_case: [
       {
         from: 0,
@@ -410,17 +411,22 @@ export const PROFILE_EXAMPLE: PROFILE_TYPE = {
     ],
   },
   name: 'P4 - CDP',
+  units: {
+    diam_unit: 'imperial',
+    depth_unit: 'metric',
+  },
 };
 
 export const PROFILE_DEFAULT: PROFILE_TYPE = JSON.parse(
   JSON.stringify({
     geologic: [],
     constructive: {
-      bole_hole: [],
+      bore_hole: [],
       well_screen: [],
       surface_case: [],
       well_case: [],
       hole_fill: [],
+      reduction: [],
       cement_pad: {
         type: '',
         width: 0,
