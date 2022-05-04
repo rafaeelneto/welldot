@@ -157,11 +157,16 @@ export const convertProfile = (jsonString) => {
 
   let noPerfil = true;
   if (perfilImported.geologic && perfilImported.constructive) {
-    noPerfil =
-      perfilImported.geologic.length === 0 &&
-      perfilImported.constructive.bole_hole.length === 0 &&
-      perfilImported.constructive.hole_fill.length === 0 &&
-      perfilImported.constructive.well_screen.length === 0;
+    if (perfilImported.constructive.bole_hole) {
+      perfilImported.constructive = {
+        ...perfilImported.constructive,
+        bore_hole: [...perfilImported.constructive.bole_hole],
+      };
+
+      delete perfilImported.constructive.bole_hole;
+    }
+
+    noPerfil = isProfileEmpty(perfilImported);
   }
 
   if (noPerfil) {
@@ -252,6 +257,7 @@ export const convertProfile = (jsonString) => {
           length: parseFloat(perfilImported.construtivo.laje.comprimento),
         };
       }
+
       perfilImported = { ...perfilConverted };
     } else {
       throw new Error('Erro ao carregar perfil');
@@ -262,8 +268,8 @@ export const convertProfile = (jsonString) => {
     return { ...layer, from: parseFloat(layer.from), to: parseFloat(layer.to) };
   });
 
-  perfilImported.constructive.bole_hole =
-    perfilImported.constructive.bole_hole.map((item) => {
+  perfilImported.constructive.bore_hole =
+    perfilImported.constructive.bore_hole.map((item) => {
       return {
         ...item,
         from: parseFloat(item.from),
@@ -311,6 +317,23 @@ export const convertProfile = (jsonString) => {
         diam_pol: parseFloat(item.diam_pol),
       };
     });
+
+  if (perfilImported.constructive.reduction) {
+    perfilImported.constructive.reduction =
+      perfilImported.constructive.reduction.map((item) => {
+        return {
+          ...item,
+          from: parseFloat(item.from),
+          to: parseFloat(item.to),
+          diam_from: parseFloat(item.diam_from),
+          diam_to: parseFloat(item.diam_to),
+        };
+      });
+  }
+
+  perfilImported.constructive.intake_depth = parseFloat(
+    perfilImported.constructive.intake_depth
+  );
 
   perfilImported.constructive.cement_pad = {
     ...perfilImported.constructive.cement_pad,

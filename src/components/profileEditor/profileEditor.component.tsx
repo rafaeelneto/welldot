@@ -162,6 +162,7 @@ const PerfilEditor = () => {
   };
 
   const onChangePerfilState = (newPerfilState: PROFILE_TYPE) => {
+    console.log(newPerfilState);
     setProfileState(newPerfilState);
     setChangesCounter(changesCounter + 1);
     if (changesCounter > 20) {
@@ -194,13 +195,13 @@ const PerfilEditor = () => {
       };
       onChangePerfilState(newPerfilState);
     },
-    bole_hole: (newRevectComp) => {
+    bore_hole: (newRevectComp) => {
       const newBoreHoleList = reorderComponentsDepth(newRevectComp);
       const newPerfilState = {
         ...profileState,
         constructive: {
           ...profileState.constructive,
-          bole_hole: newBoreHoleList,
+          bore_hole: newBoreHoleList,
         },
       };
       onChangePerfilState(newPerfilState);
@@ -670,7 +671,7 @@ const PerfilEditor = () => {
                     profileState.constructive.bore_hole ? (
                       <DataSheet
                         data={profileState.constructive.bore_hole}
-                        onChangeValues={reorderHandlers.bole_hole}
+                        onChangeValues={reorderHandlers.bore_hole}
                         columns={boreHoleColumns}
                         defaultValue={() => BORE_HOLE_COMPONENT_DEFAULT}
                         customHeight={400}

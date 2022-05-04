@@ -19,7 +19,7 @@ import {
   getProfileDiamValues,
   getProfileLastItemsDepths,
 } from './profile.utils';
-import { responsivefy, getLithologicalFill } from './profileD3.utils';
+import { responsivefy, getLithologicalFillList } from './profileD3.utils';
 
 const d3 = {
   ...d3module,
@@ -60,6 +60,20 @@ const DEFAULT_COMPONENTS_CLASS_NAMES = {
   wellCaseGroup: 'well-case',
   wellScreenGroup: 'well-screen',
   conflictGroup: 'conflict',
+};
+
+const DEFAULTS_TEXTURES = {
+  pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
+  conflict: textures.lines().heavier().stroke('#E52117'),
+  seal: textures.lines().thicker().background('#ffffff'),
+  gravel_pack: textures.circles().complement().background('#ffffff'),
+  well_screen: textures
+    .paths()
+    .d((s) => `M ${s / 4} ${s / 4} l ${s / 2} 0 `)
+    .size(40)
+    .strokeWidth(2)
+    .thicker(2)
+    .background('#fff'),
 };
 
 const getConflictAreas = (array1: any[], array2: any[]) => {
@@ -139,20 +153,6 @@ const mergeConflicts = (
   return mergedConflicts;
 };
 
-const DEFAULTS_TEXTURES = {
-  pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
-  conflict: textures.lines().heavier().stroke('#E52117'),
-  seal: textures.lines().thicker().background('#ffffff'),
-  gravel_pack: textures.circles().complement().background('#ffffff'),
-  well_screen: textures
-    .paths()
-    .d((s) => `M ${s / 4} ${s / 4} l ${s / 2} 0 `)
-    .size(40)
-    .strokeWidth(2)
-    .thicker(2)
-    .background('#fff'),
-};
-
 const getYAxisFunctions = (yScale: any) => {
   return {
     getHeight: ({ from, to }: { from: number; to: number }) => {
@@ -164,7 +164,16 @@ const getYAxisFunctions = (yScale: any) => {
   };
 };
 
-class ProfileDrawer {}
+const getLithologyFiller = (geologyData: GEOLOGIC_COMPONENT_TYPE[], svg) => {
+  const litologicalFill = getLithologicalFillList(geologyData);
+  return (d: GEOLOGIC_COMPONENT_TYPE) => {
+    if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
+      return litologicalFill[`${d.fgdc_texture}.${d.from}`];
+    }
+    svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
+    return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
+  };
+};
 
 export class DinamicDrawer {
   private svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
@@ -359,7 +368,8 @@ export class DinamicDrawer {
     const tooltips = this.populateTooltips();
 
     const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
-      const litologicalFill = getLithologicalFill(data);
+      const { getHeight, getYPos } = getYAxisFunctions(yScale);
+      const getLithologyFill = getLithologyFiller(data, svg);
 
       const rects = litoligicalGroup.selectAll('rect').data(data);
 
@@ -379,22 +389,11 @@ export class DinamicDrawer {
         // @ts-ignore
         .merge(rects)
 
-        .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-          if (i === 0) return yScale(d.from);
-          return yScale(data[i - 1].to);
-        })
+        .attr('y', getYPos)
         // @ts-ignore
         .transition(transition)
-        .attr('height', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
-          return yScale(d.to - d.from);
-        })
-        .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
-          if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
-            return litologicalFill[`${d.fgdc_texture}.${d.from}`];
-          }
-          svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
-          return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
-        });
+        .attr('height', getHeight)
+        .style('fill', getLithologyFill);
     };
 
     const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {

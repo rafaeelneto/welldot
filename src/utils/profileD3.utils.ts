@@ -52,7 +52,7 @@ export function responsivefy(svg) {
   d3.select(window).on('resize.' + container.attr('id'), resize);
 }
 
-export const getLithologicalFill = (data: GEOLOGIC_COMPONENT_TYPE[]) => {
+export const getLithologicalFillList = (data: GEOLOGIC_COMPONENT_TYPE[]) => {
   const profileTextures: (number | string)[] = [];
   data.forEach((element) => {
     const texture: number | string = element.fgdc_texture;
@@ -84,5 +84,5 @@ export const getLithologicalFill = (data: GEOLOGIC_COMPONENT_TYPE[]) => {
 
 export default {
   responsivefy,
-  getLithologicalFill,
+  getLithologicalFillList,
 };

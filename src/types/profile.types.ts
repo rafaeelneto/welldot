@@ -80,6 +80,20 @@ export type DRILLING_METHOD = {
 
 export type PROFILE_TYPE = {
   name?: string;
+  units: {
+    diam_unit: 'metric' | 'imperial';
+    depth_unit: 'metric' | 'imperial';
+  };
+  info?: {
+    headingInfo?: INFO_TYPE[];
+    endInfo?: INFO_TYPE[];
+  };
+  geologic: GEOLOGIC_COMPONENT_TYPE[];
+  constructive: CONSTRUCTIVE_COMPONENT_TYPE;
+};
+
+export type PROFILE_TYPE_1 = {
+  name?: string;
   well_driller?: string;
   construction_date?: string; // * stored in ISO format
   drilling_method?: DRILLING_METHOD[];

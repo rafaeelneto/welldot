@@ -31,7 +31,7 @@ import {
 
 import { SvgInfo, infoType } from '../../types/profile2Export.types';
 
-import { getLithologicalFill } from '../../utils/profileD3.utils';
+import { getLithologicalFillList } from '../../utils/profileD3.utils';
 
 const d3 = {
   ...d3module,
@@ -212,7 +212,7 @@ const profile2Export = (
     };
 
     const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
-      const litologicalFill = getLithologicalFill(data);
+      const litologicalFill = getLithologicalFillList(data);
 
       const layerGroup = litoligicalGroup.append('g');
 
@@ -872,7 +872,9 @@ const profile2Export = (
         surface_case: constructionData.surface_case.filter(filterByDepth),
         well_case: constructionData.well_case.filter(filterByDepth),
         well_screen: constructionData.well_screen.filter(filterByDepth),
-        reduction: constructionData.reduction.filter(filterByDepth),
+        reduction: constructionData.reduction
+          ? constructionData.reduction.filter(filterByDepth)
+          : [],
       };
 
       if (constructionData) updatePoco(drawConstructionData, yScaleLocal);
