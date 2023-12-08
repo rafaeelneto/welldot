@@ -10,7 +10,7 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
-import Slide from '@mui/material/Slide';
+import Slide, { SlideProps } from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
 
 import styles from './fullScreenDialog.module.scss';
@@ -19,8 +19,8 @@ const Transition = React.forwardRef(
   // eslint-disable-next-line react/require-default-props
   (
     props: TransitionProps & { children?: React.ReactElement },
-    ref: React.Ref<unknown>
-  ) => <Slide direction="up" ref={ref} {...props} />
+    ref: React.Ref<unknown>,
+  ) => <Slide dir="up" ref={ref} {...(props as SlideProps)} />,
 );
 
 export default function FullScreenDialog({

@@ -10,7 +10,7 @@ import { ReactComponent as Email } from '../../assets/email_1.svg';
 
 import styles from './home.module.scss';
 
-const Home = () => {
+function Home() {
   return (
     <div className={styles.root}>
       <div id="about" className={`${styles.tile} ${styles.hero}`}>
@@ -33,7 +33,7 @@ const Home = () => {
                     'event',
                     'button clicked',
                     'User Interaction',
-                    'editor'
+                    'editor',
                   );
                 }
               }}
@@ -69,7 +69,6 @@ const Home = () => {
           <div className={styles.socialBtnsContainer}>
             <LinkMaterial
               className={styles.socialBtn}
-              component={IconButton}
               onClick={() => {
                 // @ts-ignore
                 if (window.gtag) {
@@ -78,7 +77,7 @@ const Home = () => {
                     'event',
                     'button clicked',
                     'Link to social media',
-                    'behance'
+                    'behance',
                   );
                 }
               }}
@@ -89,7 +88,6 @@ const Home = () => {
             </LinkMaterial>
             <LinkMaterial
               className={styles.socialBtn}
-              component={IconButton}
               onClick={() => {
                 // @ts-ignore
                 if (window.gtag) {
@@ -98,7 +96,7 @@ const Home = () => {
                     'event',
                     'button clicked',
                     'Link to social media',
-                    'linkedinho'
+                    'linkedinho',
                   );
                 }
               }}
@@ -110,7 +108,6 @@ const Home = () => {
 
             <LinkMaterial
               className={styles.socialBtn}
-              component={IconButton}
               onClick={() => {
                 // @ts-ignore
                 if (window.gtag) {
@@ -119,7 +116,7 @@ const Home = () => {
                     'event',
                     'button clicked',
                     'Link to social media',
-                    'email'
+                    'email',
                   );
                 }
               }}
@@ -133,6 +130,6 @@ const Home = () => {
       </footer>
     </div>
   );
-};
+}
 
 export default Home;

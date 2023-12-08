@@ -1,3 +1,4 @@
+/* @ts-ignore */
 /* eslint-disable one-var */
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -40,7 +41,7 @@ type PDFEProps = {
   onChangeInfo: (newPerfilState: any) => void;
 };
 
-const SortableList = ({
+function SortableList({
   itens,
   defaultItem,
   onChangeList,
@@ -52,7 +53,7 @@ const SortableList = ({
   onChangeList: (newComponents: infoType[]) => void;
   onChangeValues: (newComponent: infoType, index: number) => void;
   limit?: number | null;
-}) => {
+}) {
   const onDrop = ({ removedIndex, addedIndex }) => {
     onChangeList(arrayMoveImmutable(itens, removedIndex, addedIndex));
   };
@@ -69,6 +70,7 @@ const SortableList = ({
 
   return (
     <List className={styles.sortableList}>
+      {/* @ts-ignore */}
       <Container
         dragHandleSelector=".drag-handle"
         lockAxis="y"
@@ -76,6 +78,7 @@ const SortableList = ({
         dragBeginDelay={0.01}
       >
         {itens.map((item, index) => (
+          // @ts-ignore
           <Draggable key={index}>
             <ListItem>
               <ListItemIcon
@@ -112,7 +115,7 @@ const SortableList = ({
                         ...item,
                         label: event.target.value,
                       },
-                      index
+                      index,
                     );
                   }}
                 />
@@ -129,7 +132,7 @@ const SortableList = ({
                         ...item,
                         value: event.target.value,
                       },
-                      index
+                      index,
                     );
                   }}
                 />
@@ -154,9 +157,9 @@ const SortableList = ({
       </Container>
     </List>
   );
-};
+}
 
-const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
+function PDFExport({ profile, onChangeInfo }: PDFEProps) {
   const timeoutRef = useRef<any>();
   const IFRAME_ID = 'ÏFRAME_PDF_ID';
 
@@ -179,7 +182,7 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
           { ...profile },
           breakPages,
           zoomValue,
-          IFRAME_ID
+          IFRAME_ID,
         );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`);
@@ -239,7 +242,7 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
               breakPages,
               zoomValue,
               undefined,
-              false
+              false,
             );
             // @ts-ignore
             if (window.gtag) {
@@ -248,7 +251,7 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
                 'event',
                 'button clicked',
                 'User Interaction',
-                'download pdf'
+                'download pdf',
               );
             }
           }}
@@ -267,7 +270,7 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
                 'event',
                 'button clicked',
                 'User Interaction',
-                'print pdf'
+                'print pdf',
               );
             }
             profile2Export(
@@ -278,7 +281,7 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
               breakPages,
               zoomValue,
               undefined,
-              true
+              true,
             );
           }}
           startIcon={<Printer />}
@@ -371,6 +374,6 @@ const PDFExport = ({ profile, onChangeInfo }: PDFEProps) => {
       </div>
     </div>
   );
-};
+}
 
 export default PDFExport;
