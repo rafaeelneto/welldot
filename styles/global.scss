@@ -46,32 +46,32 @@
   padding-bottom: 10px;
 }
 
-:global {
-  .MuiButton-root,
-  .MuiButtonBase-root {
-    @extend %btn;
-    box-shadow: none;
-  }
+// :global {
+//   .MuiButton-root,
+//   .MuiButtonBase-root {
+//     @extend %btn;
+//     box-shadow: none;
+//   }
 
-  .errorSnackBar {
-    border-radius: 10px;
-    * {
-      background-color: $error-main;
-    }
-    color: white;
-    font-family: $fontOpenSans;
-    font-size: 16px;
-    font-weight: 700;
-  }
+//   .errorSnackBar {
+//     border-radius: 10px;
+//     * {
+//       background-color: $error-main;
+//     }
+//     color: white;
+//     font-family: $fontOpenSans;
+//     font-size: 16px;
+//     font-weight: 700;
+//   }
 
-  .warningSnackBar {
-    border-radius: 10px;
-    * {
-      background-color: $warning-main;
-    }
-    color: white;
-    font-family: $fontOpenSans;
-    font-size: 16px;
-    font-weight: 700;
-  }
-}
+//   .warningSnackBar {
+//     border-radius: 10px;
+//     * {
+//       background-color: $warning-main;
+//     }
+//     color: white;
+//     font-family: $fontOpenSans;
+//     font-size: 16px;
+//     font-weight: 700;
+//   }
+// }
