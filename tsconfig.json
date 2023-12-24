@@ -6,11 +6,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
@@ -18,26 +14,22 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true,
     "strict": true,
     "incremental": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"
       }
     ]
   },
-  "include": [
-    "./src/*",
-    "src/components/types",
-    ".next/types/**/*.ts"
-, "styles"  ],
-  "exclude": [
-    "node_modules/*"
-  ],
-  "noImplicitAny": false,
-  "strictNullChecks": true,
-  "noImplicitThis": true,
-  "alwaysStrict": true
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules/*"]
 }

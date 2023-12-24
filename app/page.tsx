@@ -3,11 +3,11 @@ import React from 'react';
 import NextLink from 'next/link';
 import NextImage from 'next/image';
 
-import Behance from '../public/assets/behance_1.svg';
-import Linkedin from '../public/assets/linkedin_1.svg';
-import Email from '../public/assets/email_1.svg';
+import Behance from '@/public/assets/behance_1.svg';
+import Linkedin from '@/public/assets/linkedin_1.svg';
+import Email from '@/public/assets/email_1.svg';
 
-import styles from './home.module.scss';
+import styles from '@/app/home.module.scss';
 
 function Home() {
   return (
