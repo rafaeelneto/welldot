@@ -2,6 +2,12 @@
   "name": "well_profiler",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest"
+  },
   "dependencies": {
     "@craco/craco": "^7.1.0",
     "@emotion/react": "^11.11.1",
@@ -14,20 +20,7 @@
     "@mantine/hooks": "^7.3.2",
     "@mantine/modals": "^7.3.2",
     "@mantine/notifications": "^7.3.2",
-    "@testing-library/jest-dom": "^6.1.5",
-    "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
-    "@types/downloadjs": "^1.4.6",
-    "@types/jest": "^29.5.11",
-    "@types/pdfkit": "^0.13.3",
-    "@types/pdfmake": "^0.2.8",
-    "@types/react": "^18.2.42",
-    "@types/react-color": "^3.0.10",
-    "@types/react-dom": "^18.2.17",
-    "@types/react-joyride": "^2.0.5",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/voilab-pdf-table": "^0.5.6",
-    "@vitejs/plugin-react": "^4.2.1",
     "array-move": "^4.0.0",
     "arraybuffer-loader": "^1.0.8",
     "axios": "^1.6.2",
@@ -39,7 +32,6 @@
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
     "downloadjs": "^1.4.7",
-    "jsdom": "^23.0.1",
     "material-ui-popup-state": "^5.0.10",
     "next": "^14.0.4",
     "pdfmake": "^0.2.8",
@@ -66,11 +58,6 @@
     "voilab-pdf-table": "^0.5.1",
     "web-vitals": "^3.5.0"
   },
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -84,10 +71,21 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/react": "^14.1.2",
+    "@types/downloadjs": "^1.4.6",
+    "@types/pdfkit": "^0.13.3",
+    "@types/pdfmake": "^0.2.8",
+    "@types/react": "^18.2.42",
+    "@types/react-color": "^3.0.10",
+    "@types/react-dom": "^18.2.17",
+    "@types/react-joyride": "^2.0.5",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/voilab-pdf-table": "^0.5.6",
     "@types/d3": "^7.4.3",
     "@types/node": "^20.10.4",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
+    "@vitejs/plugin-react": "^4.2.1",
     "eslint": "^8.55.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-next": "^14.0.4",
@@ -99,10 +97,12 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "grunt-dump-dir": "^0.1.2",
+    "jsdom": "^23.0.1",
     "postcss": "^8.4.32",
     "postcss-preset-mantine": "^1.12.2",
     "postcss-simple-vars": "^7.0.1",
     "prettier": "^3.1.0",
-    "sass": "^1.69.5"
+    "sass": "^1.69.5",
+    "vitest": "^1.1.0"
   }
 }
