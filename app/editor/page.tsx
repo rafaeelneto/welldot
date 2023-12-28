@@ -64,7 +64,7 @@ import {
   WELL_CASE_COMPONENT_DEFAULT,
   WELL_SCREEN_COMPONENT_DEFAULT,
 } from '@/src/utils/profileDefaults';
-
+import { getWindow } from '@/utils/window';
 import { PROFILE_TYPE } from '@/src/types/profile.types';
 import styles from './profileEditor.module.scss';
 
@@ -95,12 +95,12 @@ function PerfilEditor() {
     // SAVE ON LOCAL STORAGE
     console.log('AUTO SAVE');
     const profileJSon = JSON.stringify(profile2Save || profileState);
-    window.localStorage.setItem('profile', profileJSon);
+    getWindow()?.localStorage.setItem('profile', profileJSon);
   };
 
   // CHECKS IF THERE IS A WELL ON LOCAL STORAGE AND IF IT IS THE FIRST RUN OF THE APP
   // IF TRUE SETS THE PROFILE STATE TO THE PROFILE STORED ON LOCAL STORAGE
-  const savedProfileJson = window.localStorage.getItem('profile');
+  const savedProfileJson = getWindow()?.localStorage.getItem('profile');
 
   if (firstRun.current && savedProfileJson) {
     try {
@@ -265,7 +265,7 @@ function PerfilEditor() {
     },
   ];
 
-  const tour = window.localStorage.getItem('tour');
+  const tour = getWindow()?.localStorage.getItem('tour');
 
   return (
     <div className={styles.root}>
@@ -285,7 +285,7 @@ function PerfilEditor() {
               locale={{ close: 'Ok' }}
               callback={({ action }) => {
                 if (action === 'close' || action === 'reset') {
-                  window.localStorage.setItem('tour', 'true');
+                  getWindow()?.localStorage.setItem('tour', 'true');
                 }
               }}
               styles={{
@@ -344,9 +344,9 @@ function PerfilEditor() {
                 id="btn-example"
                 onClick={() => {
                   // @ts-ignore
-                  if (window.gtag) {
+                  if (getWindow()?.gtag) {
                     // @ts-ignore
-                    window.gtag(
+                    getWindow()?.gtag(
                       'event',
                       'button clicked',
                       'User Interaction',
@@ -386,9 +386,9 @@ function PerfilEditor() {
                 // call pdf function
                 // pdfGenerate()
                 // @ts-ignore
-                if (window.gtag) {
+                if (getWindow()?.gtag) {
                   // @ts-ignore
-                  window.gtag(
+                  getWindow()?.gtag(
                     'event',
                     'button clicked',
                     'User Interaction',
@@ -407,9 +407,9 @@ function PerfilEditor() {
               className={styles.mainBtns}
               onClick={() => {
                 // @ts-ignore
-                if (window.gtag) {
+                if (getWindow()?.gtag) {
                   // @ts-ignore
-                  window.gtag(
+                  getWindow()?.gtag(
                     'event',
                     'button clicked',
                     'User Interaction',
