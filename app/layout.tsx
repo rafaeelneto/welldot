@@ -1,5 +1,12 @@
 import React from 'react';
-// import './global.css'
+
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+// import '@/app/global.css';
+
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+
 export default function RootLayout({
   children,
 }: {
@@ -7,7 +14,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body>
+        <div
+          style={{ overflow: 'hidden', height: 0, width: 0 }}
+          id="svgDraftContainer"
+        ></div>
+
+        <MantineProvider>
+          <Notifications />
+          {children}
+        </MantineProvider>
+      </body>
     </html>
   );
 }

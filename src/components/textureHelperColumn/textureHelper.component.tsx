@@ -1,6 +1,16 @@
 import React from 'react';
 
-import { IconButton } from '@mui/material';
+import {
+  ActionIcon as IconButton,
+  Collapse,
+  TextInput as TextField,
+  Tooltip,
+  Divider,
+  Tabs,
+  Checkbox,
+  Input as InputBase,
+  Box,
+} from '@mantine/core';
 import { HelpCircle } from 'react-feather';
 
 import styles from './textureHelper.module.scss';
@@ -15,7 +25,7 @@ const TextureHelper = () => (
         window
           .open(
             process.env.PUBLIC_URL + '/FGDCgeostdTM11A2web_PatternChart.pdf',
-            '_blank'
+            '_blank',
           )
           .focus();
       }}

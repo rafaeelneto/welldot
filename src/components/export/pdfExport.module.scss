@@ -1,7 +1,19 @@
-@import '../../styles/colors';
-@import '../../styles/app.global.scss';
-@import '../../styles/fonts';
-@import '../../styles/breakpoints';
+@import '@/styles/colors';
+@import '@/styles/global.scss';
+@import '@/styles/fonts';
+@import '@/styles/breakpoints';
+
+.listItem {
+  :global{
+    .mantine-List-itemIcon {
+      background-color: blue;
+      width: auto;
+      max-width: auto;
+      display: flex;
+      flex-direction: row;
+    }
+  }
+}
 
 .root {
   display: flex;

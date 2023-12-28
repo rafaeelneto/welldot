@@ -1,24 +1,22 @@
 /* @ts-ignore */
 /* eslint-disable one-var */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 
 import {
-  Input,
   Button,
   Slider,
-  FormControlLabel,
-  FormGroup,
   Checkbox,
   Divider,
-  TextField,
-} from '@mui/material';
+  TextInput as TextField,
+  List,
+  ListItem,
+  Input,
+} from '@mantine/core';
 
 import { Container, Draggable } from 'react-smooth-dnd';
 import { arrayMoveImmutable } from 'array-move';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+
+import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
 
 import {
   Trash,
@@ -54,10 +52,16 @@ function SortableList({
   onChangeValues: (newComponent: infoType, index: number) => void;
   limit?: number | null;
 }) {
-  const onDrop = ({ removedIndex, addedIndex }) => {
+  const onDrop = ({
+    removedIndex,
+    addedIndex,
+  }: {
+    removedIndex: any;
+    addedIndex: any;
+  }) => {
     onChangeList(arrayMoveImmutable(itens, removedIndex, addedIndex));
   };
-  const onDelete = (index) => {
+  const onDelete = (index: number) => {
     const newLayers = [...itens];
     newLayers.splice(index, 1);
     onChangeList(newLayers);
@@ -80,27 +84,15 @@ function SortableList({
         {itens.map((item, index) => (
           // @ts-ignore
           <Draggable key={index}>
-            <ListItem>
-              <ListItemIcon
-                style={{
-                  height: '24px',
-                  minWidth: 'auto',
-                  marginRight: '5px',
-                }}
-                className="drag-handle"
-              >
-                <DragIndicatorIcon />
-              </ListItemIcon>
-              <ListItemIcon
-                onClick={() => onDelete(index)}
-                style={{
-                  height: '24px',
-                  minWidth: 'auto',
-                  marginRight: '5px',
-                }}
-              >
-                <XCircle />
-              </ListItemIcon>
+            <List.Item
+              className={styles.listItem}
+              icon={
+                <>
+                  <ChevronUpDownIcon className="drag-handle" />
+                  <XCircle />
+                </>
+              }
+            >
               <div className={styles.layerRow}>
                 <Input
                   className={styles.layerInput}
@@ -108,7 +100,7 @@ function SortableList({
                   placeholder="Nome"
                   style={{ width: '100%' }}
                   value={item.label}
-                  onChange={(event) => {
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
                     // eslint-disable-next-line implicit-arrow-linebreak
                     onChangeValues(
                       {
@@ -125,7 +117,7 @@ function SortableList({
                   placeholder="Valor"
                   style={{ width: '100%' }}
                   value={item.value}
-                  onChange={(event) => {
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
                     // eslint-disable-next-line implicit-arrow-linebreak
                     onChangeValues(
                       {
@@ -137,23 +129,19 @@ function SortableList({
                   }}
                 />
               </div>
-            </ListItem>
+            </List.Item>
           </Draggable>
         ))}
-        <ListItem
+        <List.Item
           className={styles.btnAdd}
-          dense
-          disabled={(limit && itens.length > limit - 1) || false}
-          button
+          aria-disabled={(limit && itens.length > limit - 1) || false}
           onClick={() => onAdd()}
         >
-          <ListItemIcon
-            style={{ height: '24px', minWidth: 'auto', marginRight: '5px' }}
-          >
+          <div style={{ height: '24px', minWidth: 'auto', marginRight: '5px' }}>
             <PlusCircle />
-          </ListItemIcon>
+          </div>
           Adicionar
-        </ListItem>
+        </List.Item>
       </Container>
     </List>
   );
@@ -166,10 +154,10 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
   const headingInfo = profile.info?.headingInfo || [];
   const endInfo = profile.info?.endInfo || [];
 
-  const [zoomValue, setZoomValue] = useState(500);
-  const [header, setHeader] = useState('PERFIL GEOLÓGICO CONSTRUTIVO');
+  const [zoomValue, setZoomValue] = useState<number>(500);
+  const [header, setHeader] = useState<string>('PERFIL GEOLÓGICO CONSTRUTIVO');
 
-  const [breakPages, setBreakPages] = useState(false);
+  const [breakPages, setBreakPages] = useState<boolean>(false);
 
   useEffect(() => {
     clearTimeout(timeoutRef.current);
@@ -192,36 +180,36 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     }, 1000);
   }, [headingInfo, header, endInfo, breakPages, zoomValue]);
 
-  const handleBreakChange = (event) => {
+  const handleBreakChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBreakPages(event.target.checked);
   };
 
-  const handleZoomChange = (event, newValue) => {
+  const handleZoomChange = (newValue: number) => {
     setZoomValue(newValue);
   };
 
-  const onChangeHeadingInfo = (newHeadingInfo) => {
+  const onChangeHeadingInfo = (newHeadingInfo: infoType[]) => {
     onChangeInfo({
       ...profile,
       info: { headingInfo: newHeadingInfo, endInfo },
     });
   };
 
-  const handleHeadingInfoValueChange = (newValue, index) => {
+  const handleHeadingInfoValueChange = (newValue: infoType, index: number) => {
     const newHeadingInfo = [...headingInfo];
     newHeadingInfo[index] = newValue;
 
     onChangeHeadingInfo(newHeadingInfo);
   };
 
-  const onChangeEndInfo = (newEndInfo) => {
+  const onChangeEndInfo = (newEndInfo: infoType[]) => {
     onChangeInfo({
       ...profile,
       info: { headingInfo, endInfo: newEndInfo },
     });
   };
 
-  const handleEndInfoValueChange = (newValue, index) => {
+  const handleEndInfoValueChange = (newValue: infoType, index: number) => {
     const newEndInfo = [...endInfo];
     newEndInfo[index] = newValue;
 
@@ -255,7 +243,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               );
             }
           }}
-          startIcon={<Download />}
+          leftSection={<Download />}
           color="primary"
         >
           Baixar PDF
@@ -284,7 +272,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               true,
             );
           }}
-          startIcon={<Printer />}
+          leftSection={<Printer />}
           color="primary"
         >
           Imprimir
@@ -297,25 +285,20 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           label="Cabeçalho"
           variant="standard"
           value={header}
-          onChange={(event) => {
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
             // eslint-disable-next-line implicit-arrow-linebreak
             setHeader(event.target.value);
           }}
         />
 
         {/* break pages checkbox */}
-        <FormGroup>
-          <FormControlLabel
-            label="Quebra de páginas"
-            control={
-              <Checkbox
-                defaultChecked
-                checked={breakPages}
-                onChange={handleBreakChange}
-              />
-            }
-          />
-        </FormGroup>
+
+        <Checkbox
+          label="Quebra de páginas"
+          defaultChecked
+          checked={breakPages}
+          onChange={handleBreakChange}
+        />
         <Divider />
         {/* scale slider */}
         <span className={styles.componentTitle}>Escala</span>
@@ -326,7 +309,6 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
             onChange={handleZoomChange}
             max={850}
             min={1}
-            valueLabelDisplay="auto"
           />
           <div className={`${styles.inputContainer}`}>
             1:
@@ -336,7 +318,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               type="number"
               // placeholder="Escala"
               value={zoomValue}
-              onChange={(event) => {
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 // eslint-disable-next-line implicit-arrow-linebreak
                 setZoomValue(parseFloat(event.target.value));
               }}

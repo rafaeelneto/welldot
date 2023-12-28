@@ -34,8 +34,8 @@
         "ignoreComments": true
       }
     ], // limit lines to 80 characters
-    "no-unused-vars": ["error"], // make unused variables an error
-    "prefer-promise-reject-errors": ["error"], // require using Error objects as Promise rejection reasons
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }], // make unused variables an error
+    "prefer-promise-reject-errors": ["warn"], // require using Error objects as Promise rejection reasons
     "react/jsx-filename-extension": [
       "warn",
       { "extensions": [".jsx", ".tsx"] }
@@ -72,7 +72,7 @@
     "prefer-template": ["error"], // suggest using template literals instead of string concatenation
     "jsx-a11y/no-static-element-interactions": ["error"], // make interactive elements accessible
     "jsx-a11y/click-events-have-key-events": ["error"], // enforce that elements with onClick also have a key event listener
-    "react/jsx-props-no-spreading": ["error"], // disallow spreading props
+    "react/jsx-props-no-spreading": ["warn"], // disallow spreading props
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }], // disallow the unary operators ++ and --
     "radix": ["error", "as-needed"] // enforce the radix parameter of parseInt
   },

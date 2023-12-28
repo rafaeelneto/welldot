@@ -25,11 +25,11 @@ export const CustomAddButton = ({ addRows }: AddRowsComponentProps) => {
         onBlur={() => setRawValue(String(value))}
         type="number"
         min={1}
-        onChange={(e) => {
+        onChange={e => {
           setRawValue(e.target.value);
           setValue(Math.max(1, Math.round(parseInt(e.target.value) || 0)));
         }}
-        onKeyPress={(event) => {
+        onKeyPress={event => {
           if (event.key === 'Enter') {
             addRows(value);
           }
@@ -62,7 +62,7 @@ const DataSheet = ({
     if (ref.current) {
       setHeight(
         (document.querySelector(`.${styles.dataSheet}`)?.clientHeight || 400) -
-          40
+          40,
       );
     }
   }, [ref]);
