@@ -6,7 +6,7 @@ import 'react-datasheet-grid/dist/style.css';
 
 import styles from './dataSheet.module.scss';
 
-export const CustomAddButton = ({ addRows }: AddRowsComponentProps) => {
+export function CustomAddButton({ addRows }: AddRowsComponentProps) {
   const [value, setValue] = useState<number>(1);
   const [rawValue, setRawValue] = useState<string>(String(value));
 
@@ -38,7 +38,7 @@ export const CustomAddButton = ({ addRows }: AddRowsComponentProps) => {
       linhas
     </div>
   );
-};
+}
 
 type dataSheetProps = {
   data: any[];
@@ -48,13 +48,13 @@ type dataSheetProps = {
   customHeight?: number;
 };
 
-const DataSheet = ({
+function DataSheet({
   data,
   onChangeValues,
   columns,
   defaultValue = undefined,
   customHeight,
-}: dataSheetProps) => {
+}: dataSheetProps) {
   const ref = useRef<any>(null);
   const [height, setHeight] = useState(400);
 
@@ -80,6 +80,6 @@ const DataSheet = ({
       addRowsComponent={CustomAddButton}
     />
   );
-};
+}
 
 export default DataSheet;
