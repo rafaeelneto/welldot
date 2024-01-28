@@ -2,7 +2,7 @@ import React from 'react';
 
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-// import '@/app/global.css';
+import '@/app/global.css';
 
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
@@ -21,7 +21,7 @@ export default function RootLayout({
         <div
           style={{ overflow: 'hidden', height: 0, width: 0 }}
           id="svgDraftContainer"
-        ></div>
+        />
 
         <MantineProvider>
           <Notifications />

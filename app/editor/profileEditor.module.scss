@@ -3,76 +3,6 @@
 @import '@/styles/fonts';
 @import '@/styles/breakpoints';
 
-.root {
-  width: 100%;
-  flex-grow: 1;
-  padding: 0 10px 10px 10px;
-  position: relative;
-  display: flex;
-  overflow-y: auto;
-  flex-direction: column;
-  background-color: #f2f2f2;
-}
-
-.wrapper {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.headerContainer {
-  display: flex;
-  flex-direction: column-reverse;
-
-  @include lg {
-    justify-content: space-between;
-    max-height: 60px;
-    flex-direction: row;
-  }
-}
-
-.wellNameInput {
-  background-color: transparent;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 32px;
-  border: none;
-  margin: 5px 0 5px 0;
-  font-family: $fontPoppins;
-  font-weight: 700;
-  color: $gray2;
-}
-
-.btnContainer {
-  height: auto;
-  padding: 10px 0 10px 0;
-  display: flex;
-  flex-direction: row;
-  justify-content: start;
-  gap: 12px;
-
-  overflow-x: auto;
-  @include lg {
-    overflow-x: hidden;
-    justify-content: end;
-  }
-}
-
-.container {
-  height: 100%;
-  overflow-x: auto;
-  .containerWrapper {
-    display: flex;
-    position: relative;
-    height: 100%;
-    flex-direction: row;
-    width: auto;
-    @include md {
-      overflow: hidden;
-    }
-  }
-}
-
 .perfilContainer,
 .dataContainer {
   width: 100%;
@@ -90,15 +20,6 @@
   position: relative;
   @include md {
     width: 35%;
-  }
-}
-
-.mainBtns {
-  // margin: 0 7.5px 0 7.5px;
-  min-width: fit-content;
-
-  @include lg {
-    min-width: auto;
   }
 }
 
@@ -211,12 +132,6 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-
-  // :global {
-  //   .MuiFormControlLabel-root {
-  //     color: red;
-  //   }
-  // }
 }
 
 .inputContainers {

@@ -135,7 +135,6 @@ function PerfilEditor() {
   };
 
   const onChangePerfilState = (newPerfilState: PROFILE_TYPE) => {
-    console.log(newPerfilState);
     setProfileState(newPerfilState);
     setChangesCounter(changesCounter + 1);
     if (changesCounter > 20) {
@@ -268,7 +267,7 @@ function PerfilEditor() {
   const tour = getWindow()?.localStorage.getItem('tour');
 
   return (
-    <div className={styles.root}>
+    <div className="w-full h-full p-2 relative flex flex-grow overflow-y-auto flex-col bg-gray-100">
       <div>
         {
           // @ts-ignore
@@ -325,10 +324,10 @@ function PerfilEditor() {
           </Modal.Content>
         </Modal.Root>
       </div>
-      <div className={styles.wrapper}>
-        <div className={styles.headerContainer}>
-          <InputBase
-            className={styles.wellNameInput}
+      <div className="h-full flex flex-col">
+        <div className="flex flex-col-reverse lg:flex-row lg:justify-between lg:max-h-15">
+          <input
+            className="bg-transparent rounded-lg p-2 text-4xl border-none m-1 font-semibold text-gray-500"
             autoComplete="off"
             value={profileState.name || ''}
             placeholder="Nome do Poço"
@@ -341,12 +340,11 @@ function PerfilEditor() {
             }}
           />
 
-          <div className={styles.btnContainer}>
+          <div className="h-auto py-2 flex flex-row justify-start space-x-3 overflow-x-auto lg:overflow-x-hidden lg:justify-end">
             <Tooltip label="Perfil Exemplo">
               <IconButton
                 variant="filled"
                 aria-label="Settings"
-                className={styles.mainBtns}
                 id="btn-example"
                 onClick={() => {
                   // @ts-ignore
@@ -371,7 +369,6 @@ function PerfilEditor() {
             </Tooltip>
             <Divider orientation="vertical" />
             <Button
-              className={styles.mainBtns}
               onClick={() => {
                 setProfileState({
                   ...PROFILE_DEFAULT,
@@ -387,7 +384,6 @@ function PerfilEditor() {
               Limpar Perfil
             </Button>
             <Button
-              className={styles.mainBtns}
               onClick={() => {
                 // call pdf function
                 // pdfGenerate()
@@ -410,7 +406,6 @@ function PerfilEditor() {
             </Button>
 
             <Button
-              className={styles.mainBtns}
               onClick={() => {
                 // @ts-ignore
                 if (getWindow()?.gtag) {
@@ -447,7 +442,6 @@ function PerfilEditor() {
               Exportar Dados
             </Button>
             <Button
-              className={styles.mainBtns}
               onClick={handleClickFile}
               leftSection={<Upload />}
               color="primary"
@@ -464,13 +458,14 @@ function PerfilEditor() {
             />
           </div>
         </div>
-        <div className={styles.container}>
-          <div className={styles.containerWrapper}>
+        <div className="h-full overflow-x-auto">
+          <div className="flex relative h-full flex-row w-auto md:overflow-hidden">
             <div className={`${styles.perfilContainer}`} id="profileContainer">
               <ProfileDrawer profile={profileState} />
             </div>
-            <div className={styles.dataContainer}>
+            <div className="w-full h-full p-5 bg-white rounded-lg relative md:w-2/3">
               <Tabs
+                className="h-full"
                 defaultValue="constructive"
                 value={tabValue}
                 onChange={handleChange}
