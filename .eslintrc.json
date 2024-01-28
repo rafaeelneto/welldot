@@ -34,7 +34,11 @@
         "ignoreComments": true
       }
     ], // limit lines to 80 characters
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }], // make unused variables an error
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_" }
+    ],
     "prefer-promise-reject-errors": ["warn"], // require using Error objects as Promise rejection reasons
     "react/jsx-filename-extension": [
       "warn",

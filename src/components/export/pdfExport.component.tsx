@@ -1,5 +1,3 @@
-/* @ts-ignore */
-/* eslint-disable one-var */
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 
 import {
@@ -9,14 +7,16 @@ import {
   Divider,
   TextInput as TextField,
   List,
-  ListItem,
   Input,
+  ActionIcon,
 } from '@mantine/core';
 
-import { Container, Draggable } from 'react-smooth-dnd';
-import { arrayMoveImmutable } from 'array-move';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, useSortable } from '@dnd-kit/sortable';
 
 import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
+
+import { CSS } from '@dnd-kit/utilities';
 
 import {
   Trash,
@@ -39,111 +39,122 @@ type PDFEProps = {
   onChangeInfo: (newPerfilState: any) => void;
 };
 
+function SortableItem({ id, children }: { id: any; children: any }) {
+  const { setNodeRef, listeners, transform, transition, attributes } =
+    useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+  return (
+    <List.Item
+      ref={setNodeRef}
+      className={styles.listItem}
+      style={style}
+      icon={<ChevronUpDownIcon className="drag-handle" {...listeners} />}
+      {...attributes}
+    >
+      <div className={styles.layerRow}>{children}</div>
+    </List.Item>
+  );
+}
+
 function SortableList({
-  itens,
+  items,
   defaultItem,
   onChangeList,
   onChangeValues,
   limit,
 }: {
-  itens: infoType[];
+  items: infoType[];
   defaultItem: infoType;
   onChangeList: (newComponents: infoType[]) => void;
   onChangeValues: (newComponent: infoType, index: number) => void;
   limit?: number | null;
 }) {
-  const onDrop = ({
-    removedIndex,
-    addedIndex,
-  }: {
-    removedIndex: any;
-    addedIndex: any;
-  }) => {
-    onChangeList(arrayMoveImmutable(itens, removedIndex, addedIndex));
+  const dragEndEvent = (e: DragEndEvent) => {
+    const { over, active } = e;
+    console.log(over?.id, active.id);
+    onChangeList(
+      arrayMove(items, (active.id as number) - 1, (over?.id as number) - 1),
+    );
   };
+
   const onDelete = (index: number) => {
-    const newLayers = [...itens];
+    const newLayers = [...items];
     newLayers.splice(index, 1);
     onChangeList(newLayers);
   };
   const onAdd = () => {
-    const newLayers = [...itens];
+    const newLayers = [...items];
     newLayers.push(defaultItem);
     onChangeList(newLayers);
   };
 
   return (
-    <List className={styles.sortableList}>
-      {/* @ts-ignore */}
-      <Container
-        dragHandleSelector=".drag-handle"
-        lockAxis="y"
-        onDrop={onDrop}
-        dragBeginDelay={0.01}
+    <>
+      <List className={styles.sortableList} listStyleType="none">
+        <DndContext onDragEnd={dragEndEvent}>
+          <SortableContext items={items.map((_item, index) => index + 1)}>
+            {items.map((item, index) => (
+              <>
+                <SortableItem key={item.label} id={index + 1}>
+                  <Input
+                    className={styles.layerInput}
+                    id="standard-multiline-flexible"
+                    placeholder="Nome"
+                    style={{ width: '100%' }}
+                    value={item.label}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      // eslint-disable-next-line implicit-arrow-linebreak
+                      onChangeValues(
+                        {
+                          ...item,
+                          label: event.target.value,
+                        },
+                        index,
+                      );
+                    }}
+                  />
+                  <Input
+                    className={styles.layerInput}
+                    id="standard-multiline-flexible"
+                    placeholder="Valor"
+                    style={{ width: '100%' }}
+                    value={item.value}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      // eslint-disable-next-line implicit-arrow-linebreak
+                      onChangeValues(
+                        {
+                          ...item,
+                          value: event.target.value,
+                        },
+                        index,
+                      );
+                    }}
+                  />
+                  <ActionIcon
+                    onClick={() => onDelete(index)}
+                    variant="transparent"
+                  >
+                    <XCircle />
+                  </ActionIcon>
+                </SortableItem>
+                {index < items.length - 1 && <Divider />}
+              </>
+            ))}
+          </SortableContext>
+        </DndContext>
+      </List>
+      <Button
+        className={styles.addBtn}
+        aria-disabled={(limit && items.length > limit - 1) || false}
+        onClick={() => onAdd()}
+        leftSection={<PlusCircle />}
       >
-        {itens.map((item, index) => (
-          // @ts-ignore
-          <Draggable key={index}>
-            <List.Item
-              className={styles.listItem}
-              icon={
-                <>
-                  <ChevronUpDownIcon className="drag-handle" />
-                  <XCircle />
-                </>
-              }
-            >
-              <div className={styles.layerRow}>
-                <Input
-                  className={styles.layerInput}
-                  id="standard-multiline-flexible"
-                  placeholder="Nome"
-                  style={{ width: '100%' }}
-                  value={item.label}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    // eslint-disable-next-line implicit-arrow-linebreak
-                    onChangeValues(
-                      {
-                        ...item,
-                        label: event.target.value,
-                      },
-                      index,
-                    );
-                  }}
-                />
-                <Input
-                  className={styles.layerInput}
-                  id="standard-multiline-flexible"
-                  placeholder="Valor"
-                  style={{ width: '100%' }}
-                  value={item.value}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                    // eslint-disable-next-line implicit-arrow-linebreak
-                    onChangeValues(
-                      {
-                        ...item,
-                        value: event.target.value,
-                      },
-                      index,
-                    );
-                  }}
-                />
-              </div>
-            </List.Item>
-          </Draggable>
-        ))}
-        <List.Item
-          className={styles.btnAdd}
-          aria-disabled={(limit && itens.length > limit - 1) || false}
-          onClick={() => onAdd()}
-        >
-          <div style={{ height: '24px', minWidth: 'auto', marginRight: '5px' }}>
-            <PlusCircle />
-          </div>
-          Adicionar
-        </List.Item>
-      </Container>
-    </List>
+        Adicionar
+      </Button>
+    </>
   );
 }
 
@@ -163,15 +174,15 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       try {
-        profile2Export(
-          header,
-          headingInfo,
-          endInfo,
-          { ...profile },
-          breakPages,
-          zoomValue,
-          IFRAME_ID,
-        );
+        // profile2Export(
+        //   header,
+        //   headingInfo,
+        //   endInfo,
+        //   { ...profile },
+        //   breakPages,
+        //   zoomValue,
+        //   IFRAME_ID,
+        // );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`);
       }
@@ -222,16 +233,16 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
         <Button
           className={styles.mainBtns}
           onClick={() => {
-            profile2Export(
-              header,
-              headingInfo,
-              endInfo,
-              { ...profile },
-              breakPages,
-              zoomValue,
-              undefined,
-              false,
-            );
+            // profile2Export(
+            //   header,
+            //   headingInfo,
+            //   endInfo,
+            //   { ...profile },
+            //   breakPages,
+            //   zoomValue,
+            //   undefined,
+            //   false,
+            // );
             // @ts-ignore
             if (window.gtag) {
               // @ts-ignore
@@ -244,7 +255,6 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
             }
           }}
           leftSection={<Download />}
-          color="primary"
         >
           Baixar PDF
         </Button>
@@ -261,19 +271,18 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
                 'print pdf',
               );
             }
-            profile2Export(
-              header,
-              headingInfo,
-              endInfo,
-              { ...profile },
-              breakPages,
-              zoomValue,
-              undefined,
-              true,
-            );
+            // profile2Export(
+            //   header,
+            //   headingInfo,
+            //   endInfo,
+            //   { ...profile },
+            //   breakPages,
+            //   zoomValue,
+            //   undefined,
+            //   true,
+            // );
           }}
           leftSection={<Printer />}
-          color="primary"
         >
           Imprimir
         </Button>
@@ -304,7 +313,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
         <span className={styles.componentTitle}>Escala</span>
         <div className={styles.scaleRow}>
           <Slider
-            aria-label="Volume"
+            label="Escala"
             value={zoomValue}
             onChange={handleZoomChange}
             max={850}
@@ -331,7 +340,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
         <span className={styles.componentTitle}>Infomações iniciais</span>
         <SortableList
           defaultItem={{ label: '', value: '' }}
-          itens={[...headingInfo]}
+          items={[...headingInfo]}
           limit={6}
           onChangeList={onChangeHeadingInfo}
           onChangeValues={handleHeadingInfoValueChange}
@@ -340,7 +349,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
         <span className={styles.componentTitle}>Infomações finais</span>
         <SortableList
           defaultItem={{ label: '', value: '' }}
-          itens={[...endInfo]}
+          items={[...endInfo]}
           onChangeList={onChangeEndInfo}
           onChangeValues={handleEndInfoValueChange}
         />

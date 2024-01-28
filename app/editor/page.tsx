@@ -304,20 +304,26 @@ function PerfilEditor() {
         }
       </div>
       <div>
-        <Modal
+        <Modal.Root
           opened={openExport}
           onClose={() => setOpenExport(false)}
-          title="Exportar Perfil"
           fullScreen
           radius={0}
-          transitionProps={{ transition: 'fade', duration: 200 }}
+          transitionProps={{ transition: 'slide-up', duration: 400 }}
         >
-          <PDFExport
-            profile={{ ...profileState }}
-            onChangeInfo={onChangePerfilState}
-          />
-          miaaay
-        </Modal>
+          <Modal.Content style={{ overflow: 'hidden' }}>
+            <Modal.Header>
+              <Modal.Title>Exportar Perfil</Modal.Title>
+              <Modal.CloseButton />
+            </Modal.Header>
+            <Modal.Body style={{ height: 'calc(100% - 60px)' }}>
+              <PDFExport
+                profile={{ ...profileState }}
+                onChangeInfo={onChangePerfilState}
+              />
+            </Modal.Body>
+          </Modal.Content>
+        </Modal.Root>
       </div>
       <div className={styles.wrapper}>
         <div className={styles.headerContainer}>
@@ -460,7 +466,7 @@ function PerfilEditor() {
         </div>
         <div className={styles.container}>
           <div className={styles.containerWrapper}>
-            <div className={`${styles.perfilContainer}`}>
+            <div className={`${styles.perfilContainer}`} id="profileContainer">
               <ProfileDrawer profile={profileState} />
             </div>
             <div className={styles.dataContainer}>
