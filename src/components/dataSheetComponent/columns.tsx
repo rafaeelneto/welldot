@@ -16,35 +16,42 @@ export const geologyColumns = [
   {
     ...keyColumn('from', floatColumn),
     title: 'De (m)',
-    maxWidth: 20,
+    minWidth: 40,
+    maxWidth: 80,
     continuousUpdates: false,
   },
   {
     ...keyColumn('to', floatColumn),
     title: 'Até (m)',
-    maxWidth: 20,
+    minWidth: 40,
+    maxWidth: 80,
     continuousUpdates: false,
   },
   {
     ...keyColumn('color', colorPickerColumn()),
     title: 'Cor',
-    maxWidth: 20,
+    minWidth: 20,
+    maxWidth: 60,
   },
   {
     ...keyColumn(
       'fgdc_texture',
-      customSelectColumn({ options: FGDC_TEXTURES_OPTIONS })
+      customSelectColumn({ options: FGDC_TEXTURES_OPTIONS }),
     ),
     title: TextureHelper(),
-    maxWidth: 30,
+    minWidth: 40,
   },
   {
     ...keyColumn('geologic_unit', textColumn),
     title: 'Unid. Geológica',
+    grow: 1,
+    minWidth: 100,
   },
   {
     ...keyColumn('description', textColumn),
     title: 'Descrição',
+    grow: 2,
+    minWidth: 300,
   },
 ];
 
@@ -91,7 +98,7 @@ export const holeFillColumns = [
           { value: 'seal', label: 'Cimento' },
           { value: 'gravel_pack', label: 'Seixo' },
         ],
-      })
+      }),
     ),
     title: 'Tipo',
   },

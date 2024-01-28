@@ -60,10 +60,9 @@ function DataSheet({
 
   useEffect(() => {
     if (ref.current) {
-      setHeight(
-        (document.querySelector(`.${styles.dataSheet}`)?.clientHeight || 400) -
-          40,
-      );
+      // setHeight(
+      //   (document.querySelector(`.dataSheet`)?.clientHeight || 400) - 40,
+      // );
     }
   }, [ref]);
 
@@ -71,7 +70,7 @@ function DataSheet({
     <DataSheetGrid
       createRow={defaultValue || undefined}
       ref={ref}
-      className={styles.dataSheet}
+      className="dataSheet h-full w-full"
       value={data}
       height={customHeight || height}
       onChange={onChangeValues}
