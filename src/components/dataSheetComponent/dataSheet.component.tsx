@@ -56,23 +56,15 @@ function DataSheet({
   customHeight,
 }: dataSheetProps) {
   const ref = useRef<any>(null);
-  const [height, setHeight] = useState(400);
-
-  useEffect(() => {
-    if (ref.current) {
-      // setHeight(
-      //   (document.querySelector(`.dataSheet`)?.clientHeight || 400) - 40,
-      // );
-    }
-  }, [ref]);
+  const DEFAULT_HEIGHT = 400;
 
   return (
     <DataSheetGrid
       createRow={defaultValue || undefined}
       ref={ref}
-      className="dataSheet h-full w-full"
+      className="dataSheet h-full"
       value={data}
-      height={customHeight || height}
+      height={customHeight || DEFAULT_HEIGHT}
       onChange={onChangeValues}
       columns={columns}
       gutterColumn={false}

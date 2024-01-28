@@ -476,8 +476,11 @@ function PerfilEditor() {
                   <Tabs.Tab value="geology">Geológico</Tabs.Tab>
                   <Tabs.Tab value="info">Info</Tabs.Tab>
                 </Tabs.List>
-                <Tabs.Panel value="constructive">
-                  <div className={styles.inputContainers}>
+                <Tabs.Panel
+                  value="constructive"
+                  className="h-full overflow-y-auto"
+                >
+                  <div className="h-full">
                     <div className={styles.componentContainer}>
                       <span className={styles.componentTitle}>
                         Laje de Proteção Sanitária
