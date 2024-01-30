@@ -3,12 +3,6 @@
 @import '@/styles/breakpoints';
 @import '@/styles/global.scss';
 
-.root {
-  width: 100%;
-  height: calc(100% - 5%);
-  overflow-y: auto;
-}
-
 .tile {
   height: auto;
   width: 100%;

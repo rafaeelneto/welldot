@@ -2,6 +2,8 @@ import React from 'react';
 
 import NextLink from 'next/link';
 
+import { Button } from '@mantine/core';
+
 import Behance from '@/public/assets/icons/behance_1.svg';
 import Linkedin from '@/public/assets/icons/linkedin_1.svg';
 import Email from '@/public/assets/icons/email_1.svg';
@@ -10,7 +12,7 @@ import styles from '@/app/home.module.scss';
 
 function Home() {
   return (
-    <div className={styles.root}>
+    <div className="w-full h-[calc(100%-50px)] overflow-y-auto">
       <div id="about" className={`${styles.tile} ${styles.hero}`}>
         <div className={`${styles.tileContent} ${styles.heroContent}`}>
           <div className={`${styles.lWrapper}`}>
@@ -18,26 +20,27 @@ function Home() {
               Crie perfis geológicos e construtivos de poços e sondagens com
               facilidade
             </h3>
-            {/* <Button
-                            variant="outlined"
-                            className={styles.btn}
-                            component={NextLink}
-                            href="/editor"
-                            onClick={() => {
-                                // @ts-ignore
-                                if (window.gtag) {
-                                    // @ts-ignore
-                                    window.gtag(
-                                        'event',
-                                        'button clicked',
-                                        'User Interaction',
-                                        'editor',
-                                    );
-                                }
-                            }}
-                        >
-                            Edite seu perfil
-                        </Button> */}
+            <Button
+              color="white"
+              variant="outline"
+              radius="xl"
+              component={NextLink}
+              href="/editor"
+              // onClick={() => {
+              //   // @ts-ignore
+              //   if (window.gtag) {
+              //     // @ts-ignore
+              //     window.gtag(
+              //       'event',
+              //       'button clicked',
+              //       'User Interaction',
+              //       'editor',
+              //     );
+              //   }
+              // }}
+            >
+              Edite seu perfil
+            </Button>
           </div>
           <div className={`${styles.rWrapper}`} />
         </div>

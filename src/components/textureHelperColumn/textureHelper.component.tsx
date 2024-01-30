@@ -1,38 +1,25 @@
 import React from 'react';
 
-import {
-  ActionIcon as IconButton,
-  Collapse,
-  TextInput as TextField,
-  Tooltip,
-  Divider,
-  Tabs,
-  Checkbox,
-  Input as InputBase,
-  Box,
-} from '@mantine/core';
+import { ActionIcon } from '@mantine/core';
 import { HelpCircle } from 'react-feather';
 
-import styles from './textureHelper.module.scss';
+function TextureHelperButton() {
+  return (
+    <div className="flex items-center justify-center w-full flex-row">
+      Textura
+      <ActionIcon
+        className="ml-3"
+        variant="transparent"
+        onClick={() => {
+          window
+            .open(`/FGDCgeostdTM11A2web_PatternChart.pdf`, '_blank')
+            ?.focus();
+        }}
+      >
+        <HelpCircle />
+      </ActionIcon>
+    </div>
+  );
+}
 
-const TextureHelper = () => (
-  <div className={styles.textureHeaderContainner}>
-    Textura
-    <IconButton
-      className={`${styles.helpBtn}`}
-      onClick={() => {
-        // @ts-ignore
-        window
-          .open(
-            process.env.PUBLIC_URL + '/FGDCgeostdTM11A2web_PatternChart.pdf',
-            '_blank',
-          )
-          .focus();
-      }}
-    >
-      <HelpCircle />
-    </IconButton>
-  </div>
-);
-
-export default TextureHelper;
+export default TextureHelperButton;
