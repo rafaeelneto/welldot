@@ -11,6 +11,7 @@ import {
   MantineColorsTuple,
 } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+import Header from '@/src/components/header/header.component';
 
 const myColor: MantineColorsTuple = [
   '#ebf8ff',
@@ -51,6 +52,7 @@ export default function RootLayout({
 
         <MantineProvider theme={theme}>
           <Notifications />
+          <Header />
           {children}
         </MantineProvider>
       </body>

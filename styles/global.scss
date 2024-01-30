@@ -1,23 +1,6 @@
 @import './_fonts.scss';
 @import './_colors.scss';
 
-%btn {
-  font-family: $fontPoppins;
-  font-weight: 600;
-  text-transform: none;
-  text-decoration: none;
-}
-
-%btn-secondary {
-  @extend %btn;
-  background-color: $colorSecondary;
-  color: white;
-}
-
-%btn-active {
-  color: $colorSecondaryLight;
-}
-
 %titles,
 %subtitle {
   font-family: $fontPoppins;
