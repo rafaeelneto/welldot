@@ -2,19 +2,17 @@
 
 import React, { useState, useRef } from 'react';
 
-import NextImage from 'next/image';
-
 import {
   Modal,
   Button,
   ActionIcon as IconButton,
   Collapse,
-  TextInput as TextField,
+  NumberInput,
+  TextInput,
   Tooltip,
   Divider,
   Tabs,
   Checkbox,
-  Input as InputBase,
 } from '@mantine/core';
 
 import { notifications } from '@mantine/notifications';
@@ -45,8 +43,8 @@ import {
   wellScreenColumns,
 } from '@/src/components/dataSheetComponent/columns';
 
-import DeleteWell from '@/public/assets/delete_well_icon.svg';
-import ExampleWell from '@/public/assets/example_well_icon.svg';
+import DeleteWell from '@/public/assets/icons/delete_well_icon.svg';
+import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
 
 import {
   onChangeValuesType,
@@ -340,10 +338,11 @@ function PerfilEditor() {
             }}
           />
 
-          <div className="h-auto py-2 flex flex-row justify-start space-x-3 overflow-x-auto lg:overflow-x-hidden lg:justify-end">
+          <div className="h-auto py-2 flex flex-row justify-start items-center space-x-3 overflow-x-auto lg:overflow-x-hidden lg:justify-end">
             <Tooltip label="Perfil Exemplo">
               <IconButton
-                variant="filled"
+                variant="light"
+                size="lg"
                 aria-label="Settings"
                 id="btn-example"
                 onClick={() => {
@@ -362,13 +361,13 @@ function PerfilEditor() {
                     constructive: { ...PROFILE_EXAMPLE.constructive },
                   });
                 }}
-                color="primary"
               >
-                <NextImage src={ExampleWell} alt="example well" />
+                <ExampleWell />
               </IconButton>
             </Tooltip>
             <Divider orientation="vertical" />
             <Button
+              variant="light"
               onClick={() => {
                 setProfileState({
                   ...PROFILE_DEFAULT,
@@ -378,8 +377,7 @@ function PerfilEditor() {
                   ...PROFILE_DEFAULT,
                 });
               }}
-              color="primary"
-              leftSection={<NextImage src={DeleteWell} alt="example well" />}
+              leftSection={<DeleteWell />}
             >
               Limpar Perfil
             </Button>
@@ -400,7 +398,6 @@ function PerfilEditor() {
                 setOpenExport(true);
               }}
               leftSection={<FileText />}
-              color="primary"
             >
               Exportar PDF
             </Button>
@@ -437,15 +434,10 @@ function PerfilEditor() {
                 );
               }}
               leftSection={<Download />}
-              color="primary"
             >
               Exportar Dados
             </Button>
-            <Button
-              onClick={handleClickFile}
-              leftSection={<Upload />}
-              color="primary"
-            >
+            <Button onClick={handleClickFile} leftSection={<Upload />}>
               Importar Dados
             </Button>
 
@@ -522,13 +514,10 @@ function PerfilEditor() {
                       <Collapse in={checkCementPad()}>
                         <div>
                           <div className={styles.layerRow}>
-                            <TextField
-                              size="small"
-                              variant="standard"
+                            <NumberInput
                               className={styles.layerInput}
                               id="standard-multiline-flexible"
                               label="Largura"
-                              type="number"
                               value={
                                 profileState &&
                                 profileState.constructive &&
@@ -537,22 +526,15 @@ function PerfilEditor() {
                                   ? profileState.constructive.cement_pad.width
                                   : ''
                               }
-                              onChange={event => {
-                                // eslint-disable-next-line implicit-arrow-linebreak
-                                handleCementPadChange(
-                                  'width',
-                                  event.target.value,
-                                );
+                              onChange={value => {
+                                handleCementPadChange('width', value as string);
                               }}
                             />
 
-                            <TextField
-                              size="small"
-                              variant="standard"
+                            <NumberInput
                               className={styles.layerInput}
                               id="standard-multiline-flexible"
                               label="Comprimento"
-                              type="number"
                               value={
                                 profileState &&
                                 profileState.constructive &&
@@ -561,21 +543,17 @@ function PerfilEditor() {
                                   ? profileState.constructive.cement_pad.length
                                   : ''
                               }
-                              onChange={event => {
-                                // eslint-disable-next-line implicit-arrow-linebreak
+                              onChange={value => {
                                 handleCementPadChange(
                                   'length',
-                                  event.target.value,
+                                  value as string,
                                 );
                               }}
                             />
-                            <TextField
-                              size="small"
-                              variant="standard"
+                            <NumberInput
                               className={styles.layerInput}
                               id="standard-multiline-flexible"
                               label="Espessura"
-                              type="number"
                               value={
                                 profileState &&
                                 profileState.constructive &&
@@ -585,18 +563,15 @@ function PerfilEditor() {
                                       .thickness
                                   : ''
                               }
-                              onChange={event => {
-                                // eslint-disable-next-line implicit-arrow-linebreak
+                              onChange={value => {
                                 handleCementPadChange(
                                   'thickness',
-                                  event.target.value,
+                                  value as string,
                                 );
                               }}
                             />
                           </div>
-                          <TextField
-                            size="small"
-                            variant="standard"
+                          <TextInput
                             className={styles.layerInput}
                             id="standard-multiline-flexible"
                             label="Tipo"
@@ -609,8 +584,10 @@ function PerfilEditor() {
                                 : ''
                             }
                             onChange={event => {
-                              // eslint-disable-next-line implicit-arrow-linebreak
-                              handleCementPadChange('type', event.target.value);
+                              handleCementPadChange(
+                                'type',
+                                event.currentTarget.value,
+                              );
                             }}
                           />
                         </div>

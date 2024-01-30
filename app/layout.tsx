@@ -4,8 +4,34 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import '@/app/global.css';
 
-import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import {
+  ColorSchemeScript,
+  MantineProvider,
+  createTheme,
+  MantineColorsTuple,
+} from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+
+const myColor: MantineColorsTuple = [
+  '#ebf8ff',
+  '#d6eefa',
+  '#a8ddf8',
+  '#77caf6',
+  '#57baf5',
+  '#46b0f5',
+  '#3dabf6',
+  '#3196db',
+  '#2485c4',
+  '#0073ad',
+];
+
+const theme = createTheme({
+  primaryColor: 'myColor',
+  primaryShade: 9,
+  colors: {
+    myColor,
+  },
+});
 
 export default function RootLayout({
   children,
@@ -23,7 +49,7 @@ export default function RootLayout({
           id="svgDraftContainer"
         />
 
-        <MantineProvider>
+        <MantineProvider theme={theme}>
           <Notifications />
           {children}
         </MantineProvider>
