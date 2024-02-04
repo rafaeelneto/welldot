@@ -21,7 +21,11 @@ import Joyride from 'react-joyride';
 
 import { format } from 'date-fns';
 
-import { Upload, Download, FileText } from 'react-feather';
+import {
+  ArrowUpTrayIcon,
+  ArrowDownTrayIcon,
+  DocumentTextIcon,
+} from '@heroicons/react/24/solid';
 
 import download from 'downloadjs';
 
@@ -362,7 +366,7 @@ function PerfilEditor() {
                   });
                 }}
               >
-                <ExampleWell />
+                <ExampleWell className="h-4 w-4" />
               </IconButton>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -377,7 +381,7 @@ function PerfilEditor() {
                   ...PROFILE_DEFAULT,
                 });
               }}
-              leftSection={<DeleteWell />}
+              leftSection={<DeleteWell className="h-4 w-4" />}
             >
               Limpar Perfil
             </Button>
@@ -397,7 +401,7 @@ function PerfilEditor() {
                 }
                 setOpenExport(true);
               }}
-              leftSection={<FileText />}
+              leftSection={<DocumentTextIcon className="h-4 w-4" />}
             >
               Exportar PDF
             </Button>
@@ -433,11 +437,14 @@ function PerfilEditor() {
                   'application/json',
                 );
               }}
-              leftSection={<Download />}
+              leftSection={<ArrowDownTrayIcon className="h-4 w-4" />}
             >
               Exportar Dados
             </Button>
-            <Button onClick={handleClickFile} leftSection={<Upload />}>
+            <Button
+              onClick={handleClickFile}
+              leftSection={<ArrowUpTrayIcon className="h-4 w-4" />}
+            >
               Importar Dados
             </Button>
 
@@ -455,7 +462,7 @@ function PerfilEditor() {
             <div className={`${styles.perfilContainer}`} id="profileContainer">
               <ProfileDrawer profile={profileState} />
             </div>
-            <div className="w-full h-full p-5 bg-white rounded-lg relative md:w-2/3">
+            <div className="w-full h-full bg-white rounded-lg relative md:w-2/3">
               <Tabs
                 className="h-full"
                 defaultValue="constructive"
@@ -463,20 +470,21 @@ function PerfilEditor() {
                 onChange={handleChange}
                 aria-label="basic tabs example"
               >
-                <Tabs.List>
+                <Tabs.List className="pt-2 pb-0 pl-2 pr-2">
                   <Tabs.Tab value="constructive">Construtivo</Tabs.Tab>
                   <Tabs.Tab value="geology">Geológico</Tabs.Tab>
                   <Tabs.Tab value="info">Info</Tabs.Tab>
                 </Tabs.List>
                 <Tabs.Panel
                   value="constructive"
-                  className="h-full overflow-y-auto"
+                  className="h-[calc(100%-50px)] overflow-y-auto"
                 >
-                  <div className="h-full">
-                    <div className={styles.componentContainer}>
-                      <span className={styles.componentTitle}>
+                  <div>
+                    <div className="flex flex-col p-2.5">
+                      <span className="text-lg font-bold text-[#55575D] flex flex-row items-center mb-2">
                         Laje de Proteção Sanitária
                         <Checkbox
+                          className="ml-2"
                           checked={checkCementPad()}
                           onChange={event => {
                             const { checked } = event.target;
@@ -513,6 +521,25 @@ function PerfilEditor() {
 
                       <Collapse in={checkCementPad()}>
                         <div>
+                          <TextInput
+                            className={`${styles.layerInput}`}
+                            id="standard-multiline-flexible"
+                            label="Tipo"
+                            value={
+                              profileState &&
+                              profileState.constructive &&
+                              profileState.constructive.cement_pad &&
+                              profileState.constructive.cement_pad.type
+                                ? profileState.constructive.cement_pad.type
+                                : ''
+                            }
+                            onChange={event => {
+                              handleCementPadChange(
+                                'type',
+                                event.currentTarget.value,
+                              );
+                            }}
+                          />
                           <div className={styles.layerRow}>
                             <NumberInput
                               className={styles.layerInput}
@@ -571,99 +598,84 @@ function PerfilEditor() {
                               }}
                             />
                           </div>
-                          <TextInput
-                            className={styles.layerInput}
-                            id="standard-multiline-flexible"
-                            label="Tipo"
-                            value={
-                              profileState &&
-                              profileState.constructive &&
-                              profileState.constructive.cement_pad &&
-                              profileState.constructive.cement_pad.type
-                                ? profileState.constructive.cement_pad.type
-                                : ''
-                            }
-                            onChange={event => {
-                              handleCementPadChange(
-                                'type',
-                                event.currentTarget.value,
-                              );
-                            }}
-                          />
                         </div>
                       </Collapse>
                     </div>
-                    <div className={styles.componentContainer}>
-                      <span className={styles.componentTitle}>Furo:</span>
-                      {profileState &&
-                      profileState.constructive &&
-                      profileState.constructive.bore_hole ? (
-                        <DataSheet
-                          data={profileState.constructive.bore_hole}
-                          onChangeValues={reorderHandlers.bore_hole}
-                          columns={boreHoleColumns}
-                          defaultValue={() => BORE_HOLE_COMPONENT_DEFAULT}
-                          customHeight={400}
-                        />
-                      ) : (
-                        ''
-                      )}
-                    </div>
-                    <div className={styles.componentContainer}>
-                      <span className={styles.componentTitle}>
-                        Espaço Anelar:
-                      </span>
-                      {profileState &&
-                      profileState.constructive &&
-                      profileState.constructive.hole_fill ? (
-                        <DataSheet
-                          data={profileState.constructive.hole_fill}
-                          onChangeValues={reorderHandlers.hole_fill}
-                          columns={holeFillColumns}
-                          defaultValue={() => HOLE_FILL_COMPONENT_DEFAULT}
-                          customHeight={400}
-                        />
-                      ) : (
-                        ''
-                      )}
-                    </div>
-                    <div className={styles.componentContainer}>
-                      <span className={styles.componentTitle}>
-                        Tubo de Boca:
-                      </span>
-                      {profileState &&
-                      profileState.constructive &&
-                      profileState.constructive.surface_case ? (
-                        <DataSheet
-                          data={profileState.constructive.surface_case}
-                          onChangeValues={reorderHandlers.surface_case}
-                          columns={surfaceCaseColumns}
-                          defaultValue={() => SURFACE_CASE_COMPONENT_DEFAULT}
-                          customHeight={400}
-                        />
-                      ) : (
-                        ''
-                      )}
-                    </div>
-                    <div className={styles.componentContainer}>
-                      <span className={styles.componentTitle}>
-                        Revestimento:
-                      </span>
-                      {profileState &&
-                      profileState.constructive &&
-                      profileState.constructive.well_case ? (
-                        <DataSheet
-                          data={profileState.constructive.well_case}
-                          onChangeValues={reorderHandlers.well_case}
-                          columns={wellCaseColumns}
-                          defaultValue={() => WELL_CASE_COMPONENT_DEFAULT}
-                          customHeight={400}
-                        />
-                      ) : (
-                        ''
-                      )}
-                    </div>
-                    <div className={styles.componentContainer}>
+                    <section className="grid grid-cols-1 xl:grid-cols-[300px_auto]">
+                      <div className="flex flex-col p-2.5">
+                        <span className={styles.componentTitle}>Furo:</span>
+                        {profileState &&
+                        profileState.constructive &&
+                        profileState.constructive.bore_hole ? (
+                          <DataSheet
+                            data={profileState.constructive.bore_hole}
+                            onChangeValues={reorderHandlers.bore_hole}
+                            columns={boreHoleColumns}
+                            defaultValue={() => BORE_HOLE_COMPONENT_DEFAULT}
+                            // customHeight={400}
+                          />
+                        ) : (
+                          ''
+                        )}
+                      </div>
+                      <div className="flex flex-col p-2.5">
+                        <span className={styles.componentTitle}>
+                          Espaço Anelar:
+                        </span>
+                        {profileState &&
+                        profileState.constructive &&
+                        profileState.constructive.hole_fill ? (
+                          <DataSheet
+                            data={profileState.constructive.hole_fill}
+                            onChangeValues={reorderHandlers.hole_fill}
+                            columns={holeFillColumns}
+                            defaultValue={() => HOLE_FILL_COMPONENT_DEFAULT}
+                            // customHeight={400}
+                          />
+                        ) : (
+                          ''
+                        )}
+                      </div>
+                    </section>
+                    <section className="grid grid-cols-1 xl:grid-cols-[300px_auto]">
+                      <div className="flex flex-col p-2.5">
+                        <span className={styles.componentTitle}>
+                          Tubo de Boca:
+                        </span>
+                        {profileState &&
+                        profileState.constructive &&
+                        profileState.constructive.surface_case ? (
+                          <DataSheet
+                            data={profileState.constructive.surface_case}
+                            onChangeValues={reorderHandlers.surface_case}
+                            columns={surfaceCaseColumns}
+                            defaultValue={() => SURFACE_CASE_COMPONENT_DEFAULT}
+                            customHeight={400}
+                          />
+                        ) : (
+                          ''
+                        )}
+                      </div>
+                      <div className="flex flex-col p-2.5">
+                        <span className={styles.componentTitle}>
+                          Revestimento:
+                        </span>
+                        {profileState &&
+                        profileState.constructive &&
+                        profileState.constructive.well_case ? (
+                          <DataSheet
+                            data={profileState.constructive.well_case}
+                            onChangeValues={reorderHandlers.well_case}
+                            columns={wellCaseColumns}
+                            defaultValue={() => WELL_CASE_COMPONENT_DEFAULT}
+                            customHeight={400}
+                          />
+                        ) : (
+                          ''
+                        )}
+                      </div>
+                    </section>
+                    <div className="flex flex-col p-2.5">
                       <span className={styles.componentTitle}>Filtros:</span>
                       {profileState &&
                       profileState.constructive &&
@@ -681,17 +693,22 @@ function PerfilEditor() {
                     </div>
                   </div>
                 </Tabs.Panel>
-                <Tabs.Panel value="geology">
-                  {profileState && profileState.geologic ? (
-                    <DataSheet
-                      data={profileState.geologic}
-                      onChangeValues={reorderHandlers.geologic}
-                      columns={geologyColumns}
-                      defaultValue={() => GEOLOGIC_COMPONENT_DEFAULT}
-                    />
-                  ) : (
-                    ''
-                  )}
+                <Tabs.Panel
+                  value="geology"
+                  className="h-[calc(100%-50px)] overflow-y-auto"
+                >
+                  <div className="flex flex-col p-2.5">
+                    {profileState && profileState.geologic ? (
+                      <DataSheet
+                        data={profileState.geologic}
+                        onChangeValues={reorderHandlers.geologic}
+                        columns={geologyColumns}
+                        defaultValue={() => GEOLOGIC_COMPONENT_DEFAULT}
+                      />
+                    ) : (
+                      ''
+                    )}
+                  </div>
                 </Tabs.Panel>
                 {/* <Tabs.Panel value="info">
                 <Info profile={profileState} />

@@ -1,41 +1,42 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 
 import { DataSheetGrid, AddRowsComponentProps } from 'react-datasheet-grid';
 
-import 'react-datasheet-grid/dist/style.css';
+import { Button, NumberInput } from '@mantine/core';
 
-import styles from './dataSheet.module.scss';
+import { PlusCircle } from 'react-feather';
+
+import 'react-datasheet-grid/dist/style.css';
 
 export function CustomAddButton({ addRows }: AddRowsComponentProps) {
   const [value, setValue] = useState<number>(1);
   const [rawValue, setRawValue] = useState<string>(String(value));
 
   return (
-    <div className="dsg-add-row">
-      <button
-        type="button"
-        className="dsg-add-row-btn"
+    <div className="flex mt-2 flex-row items-center">
+      <Button
+        variant="light"
+        leftSection={<PlusCircle />}
         onClick={() => addRows(value)}
       >
         Adicionar
-      </button>{' '}
-      <input
-        className="dsg-add-row-input"
+      </Button>
+      <NumberInput
+        className="ml-2 max-w-[100px]"
+        suffix=" linhas"
         value={rawValue}
         onBlur={() => setRawValue(String(value))}
-        type="number"
         min={1}
-        onChange={e => {
-          setRawValue(e.target.value);
-          setValue(Math.max(1, Math.round(parseInt(e.target.value) || 0)));
+        onChange={newValue => {
+          setRawValue(newValue as string);
+          setValue(Math.max(1, Math.round(parseInt(newValue as string) || 0)));
         }}
         onKeyPress={event => {
           if (event.key === 'Enter') {
             addRows(value);
           }
         }}
-      />{' '}
-      linhas
+      />
     </div>
   );
 }
@@ -62,7 +63,7 @@ function DataSheet({
     <DataSheetGrid
       createRow={defaultValue || undefined}
       ref={ref}
-      className="dataSheet h-full"
+      className="dataSheet h-full !text-sm"
       value={data}
       height={customHeight || DEFAULT_HEIGHT}
       onChange={onChangeValues}

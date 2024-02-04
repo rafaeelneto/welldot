@@ -1,5 +1,5 @@
 <svg  xmlns="http://www.w3.org/2000/svg"
-	 viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
+	 viewBox="0 0 24 24" min-width="24px" min-height="24px" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
 
 <path class="st0" d="M15.4,8.1v4.5c0,0.3-0.3,0.7-0.7,0.7l0,0c-0.3,0-0.7,0.3-0.7,0.7v4.5c0,0.3-0.3,0.7-0.7,0.7h-2.7
 	c-0.3,0-0.7-0.3-0.7-0.7v-4.5c0-0.3-0.3-0.7-0.7-0.7l0,0c-0.3,0-0.7-0.3-0.7-0.7V8.1"/>

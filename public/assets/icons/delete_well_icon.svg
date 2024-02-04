@@ -1,6 +1,6 @@
 
 <svg  xmlns="http://www.w3.org/2000/svg"
-	 viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
+	 viewBox="0 0 24 24" min-width="24px" min-height="24px" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
 
 <line stroke="currentColor"  x1="17.2" y1="6.8" x2="22.7" y2="12.3"/>
 <line stroke="currentColor"  x1="22.7" y1="6.8" x2="17.2" y2="12.3"/>

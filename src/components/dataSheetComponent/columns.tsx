@@ -95,7 +95,7 @@ export const holeFillColumns = [
   {
     ...keyColumn('diam_pol', floatColumn),
     title: 'Diâmetro (pol)',
-    minWidth: 60,
+    minWidth: 80,
     maxWidth: 80,
   },
   {
@@ -109,7 +109,7 @@ export const holeFillColumns = [
       }),
     ),
     title: 'Tipo',
-    minWidth: 60,
+    minWidth: 120,
     maxWidth: 120,
   },
   {
