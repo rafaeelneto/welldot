@@ -10,13 +10,10 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci && cp pdfmake/pdfmake.js node_modules/pdfmake/build/pdfmake.js && cp pdfmake/vfs_fonts.js node_modules/pdfmake/build/vfs_fonts.js && npm run build
-        env:
-          CI: false
+      - uses: actions/checkout@v4
+      - run: npm run setup
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          entrypoint: .
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_WELLPROFILER }}'
           channelId: live
