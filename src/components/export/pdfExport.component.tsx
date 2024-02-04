@@ -51,7 +51,9 @@ function SortableItem({ id, children }: { id: any; children: any }) {
       ref={setNodeRef}
       className={styles.listItem}
       style={style}
-      icon={<ChevronUpDownIcon className="drag-handle" {...listeners} />}
+      icon={
+        <ChevronUpDownIcon className="drag-handle h-4 w-4" {...listeners} />
+      }
       {...attributes}
     >
       <div className={styles.layerRow}>{children}</div>
@@ -137,7 +139,7 @@ function SortableList({
                     onClick={() => onDelete(index)}
                     variant="transparent"
                   >
-                    <XCircle />
+                    <XCircle className="h-4 w-4" />
                   </ActionIcon>
                 </SortableItem>
                 {index < items.length - 1 && <Divider />}
@@ -150,7 +152,7 @@ function SortableList({
         className={styles.addBtn}
         aria-disabled={(limit && items.length > limit - 1) || false}
         onClick={() => onAdd()}
-        leftSection={<PlusCircle />}
+        leftSection={<PlusCircle className="h-4 w-4" />}
       >
         Adicionar
       </Button>
@@ -231,7 +233,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     <div className={styles.root}>
       <div className={styles.settingsPanel}>
         <Button
-          className={styles.mainBtns}
+          className="mr-2"
           onClick={() => {
             // profile2Export(
             //   header,
@@ -254,12 +256,11 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               );
             }
           }}
-          leftSection={<Download />}
+          leftSection={<Download className="h-4 w-4" />}
         >
           Baixar PDF
         </Button>
         <Button
-          className={styles.mainBtns}
           onClick={() => {
             // @ts-ignore
             if (window.gtag) {
@@ -282,27 +283,23 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
             //   true,
             // );
           }}
-          leftSection={<Printer />}
+          leftSection={<Printer className="h-4 w-4" />}
         >
           Imprimir
         </Button>
 
         <TextField
-          className={`${styles.layerInput} ${styles.headerInput}`}
+          className="mb-2 mt-2"
           id="standard-multiline-flexible"
-          // placeholder="Cabeçalho"
           label="Cabeçalho"
-          variant="standard"
           value={header}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            // eslint-disable-next-line implicit-arrow-linebreak
             setHeader(event.target.value);
           }}
         />
 
-        {/* break pages checkbox */}
-
         <Checkbox
+          className="mb-2"
           label="Quebra de páginas"
           defaultChecked
           checked={breakPages}
@@ -310,19 +307,22 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
         />
         <Divider />
         {/* scale slider */}
-        <span className={styles.componentTitle}>Escala</span>
-        <div className={styles.scaleRow}>
+        <span className="text-lg font-bold text-[#55575D] mt-4 block">
+          Escala
+        </span>
+        <div className="flex flex-row w-full my-3 items-center">
           <Slider
+            className="flex-grow"
             label="Escala"
             value={zoomValue}
             onChange={handleZoomChange}
             max={850}
             min={1}
           />
-          <div className={`${styles.inputContainer}`}>
-            1:
+          <div className="mx-2 flex flex-row items-center">
+            <span className="block">1:</span>
             <Input
-              className={styles.scaleInput}
+              className={`${styles.scaleInput} min-w-16`}
               id="standard-multiline-flexible"
               type="number"
               // placeholder="Escala"
