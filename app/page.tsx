@@ -1,6 +1,7 @@
 import React from 'react';
 
 import NextLink from 'next/link';
+import type { Metadata } from 'next';
 
 import { Button } from '@mantine/core';
 
@@ -9,6 +10,12 @@ import Linkedin from '@/public/assets/icons/linkedin_1.svg';
 import Email from '@/public/assets/icons/email_1.svg';
 
 import styles from '@/app/home.module.scss';
+
+export const metadata: Metadata = {
+  title: 'Well Profiler',
+  description:
+    'Web app dedicado a construção de perfis geológicos e construtivos de poços de água subterrânea',
+};
 
 function Home() {
   return (
