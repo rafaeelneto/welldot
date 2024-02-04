@@ -143,6 +143,7 @@ const mergeConflicts = (
       nextConflict.to === conflict.to &&
       nextConflict.from === conflict.from
     ) {
+      // eslint-disable-next-line no-plusplus
       jumpTo++;
     }
 
@@ -312,6 +313,7 @@ export class DinamicDrawer {
 
     Object.getOwnPropertyNames(tipsText).forEach(tipTextKey => {
       tooltips[tipTextKey] = d3
+        // @ts-ignore
         .tip()
         .attr('class', this.customClassNames.tooltip)
         .direction('e')
@@ -412,6 +414,7 @@ export class DinamicDrawer {
 
       if (data.cement_pad && data.cement_pad.thickness) {
         const tipCP = d3
+          // @ts-ignore
           .tip()
           .attr('class', this.customClassNames.tooltip)
           .direction('e')
@@ -607,6 +610,7 @@ export class DinamicDrawer {
       const mergedConflicts = mergeConflicts(conflictAreas, 1);
 
       const tipConflict = d3
+        // @ts-ignore
         .tip()
         // ! CHANGE
         .attr('class', `${this.customClassNames.tooltip} conflic`)

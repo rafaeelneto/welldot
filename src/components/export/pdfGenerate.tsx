@@ -14,9 +14,11 @@ import {
 } from '../../utils/profile.utils';
 
 // @ts-ignore
+// eslint-disable-next-line no-import-assign
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 // @ts-ignore
+// eslint-disable-next-line no-import-assign
 pdfMake.fonts = {
   openSans: {
     normal: 'OpenSans-Regular.ttf',
@@ -35,16 +37,17 @@ pdfMake.fonts = {
 };
 
 // @ts-ignore
+// eslint-disable-next-line no-import-assign
 pdfMake.tableLayouts = {
   infoLayout: {
-    hLineWidth: (i, node) => {
+    hLineWidth: (i: any, node: any) => {
       if (i === node.table.body.length || i === 0) return 1;
       return 0;
     },
-    vLineWidth: (i) => {
+    vLineWidth: (i: any) => {
       return 0;
     },
-    hLineColor: (i, node) => {
+    hLineColor: (i: any, node: any) => {
       return '#3d3d3d';
     },
   },
@@ -53,12 +56,12 @@ pdfMake.tableLayouts = {
 const MARGIN = 30;
 
 export const exportPdfProfile = (
-  header = 'Perfil Geológico-Construtivo',
   profile: PROFILE_TYPE,
   headingInfo: infoType[],
   endInfo: infoType[],
   svgs: SvgInfo[],
-  breakPages: boolean
+  breakPages: boolean,
+  header = 'Perfil Geológico-Construtivo',
 ) => {
   const docDefinition: any = {
     defaultStyle: {
@@ -71,7 +74,7 @@ export const exportPdfProfile = (
       height: breakPages ? 841.89 : 'auto',
     },
     pageMargins: [MARGIN, MARGIN + 10, MARGIN, MARGIN],
-    header: (currentPage, _pageCount, pageSize) => {
+    header: (currentPage: any, _pageCount: any, pageSize: any) => {
       // you can apply any logic and return any valid pdfmake element
       return [
         {
@@ -140,14 +143,14 @@ export const exportPdfProfile = (
 
     content.push({
       layout: {
-        hLineWidth: (i, node) => {
+        hLineWidth: (i: any, node: any) => {
           if (i === node.table.body.length || i === 0) return 1;
           return 0;
         },
-        vLineWidth: (i) => {
+        vLineWidth: (i: any) => {
           return 0;
         },
-        hLineColor: (i, node) => {
+        hLineColor: (i: any, node: any) => {
           return '#3d3d3d';
         },
       },
@@ -198,14 +201,14 @@ export const exportPdfProfile = (
 
     content.push({
       layout: {
-        hLineWidth: (i, node) => {
+        hLineWidth: (i: any, node: any) => {
           if (i === node.table.body.length || i === 0) return 1;
           return 0;
         },
-        vLineWidth: (i) => {
+        vLineWidth: (i: any) => {
           return 0;
         },
-        hLineColor: (i, node) => {
+        hLineColor: (i: any, node: any) => {
           return '#3d3d3d';
         },
       },
@@ -324,7 +327,7 @@ export const exportPdfProfile = (
           {},
           {
             text: `${numberFormater.format(
-              calculateHoleFillVolume(item.type, profile)
+              calculateHoleFillVolume(item.type, profile),
             )} m³`,
             style: 'sum_row',
             align: 'right',
@@ -378,10 +381,10 @@ export const exportPdfProfile = (
       ) {
         let totalHeight = 0;
         const filteredWC = profile.constructive.well_case.filter(
-          (el) => el.type === item.type && el.diam_pol === item.diam_pol
+          el => el.type === item.type && el.diam_pol === item.diam_pol,
         );
 
-        filteredWC.forEach((el) => {
+        filteredWC.forEach(el => {
           totalHeight += el.to - el.from;
         });
 
@@ -448,10 +451,10 @@ export const exportPdfProfile = (
       ) {
         let totalHeight = 0;
         const filteredWC = profile.constructive.well_screen.filter(
-          (el) => el.type === item.type && el.diam_pol === item.diam_pol
+          el => el.type === item.type && el.diam_pol === item.diam_pol,
         );
 
-        filteredWC.forEach((el) => {
+        filteredWC.forEach(el => {
           totalHeight += el.to - el.from;
         });
 
@@ -489,25 +492,25 @@ export const exportPdfProfile = (
 };
 
 export const innerRenderPdf = (
-  header = 'Perfil Geológico-Construtivo',
   profile: PROFILE_TYPE,
   headingInfo: infoType[],
   endInfo: infoType[],
   svgs: SvgInfo[],
   breakPages: boolean,
-  iframeId: string
+  iframeId: string,
+  header = 'Perfil Geológico-Construtivo',
 ) => {
   const docDefinition = exportPdfProfile(
-    header,
     profile,
     headingInfo,
     endInfo,
     svgs,
-    breakPages
+    breakPages,
+    header,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-  pdfDocGenerator.getDataUrl((dataUrl) => {
+  pdfDocGenerator.getDataUrl(dataUrl => {
     if (iframeId) {
       const iframe = document.getElementById(iframeId);
       // @ts-ignore
@@ -517,20 +520,20 @@ export const innerRenderPdf = (
 };
 
 export const printPdf = (
-  header = 'Perfil Geológico-Construtivo',
   profile: PROFILE_TYPE,
   headingInfo: infoType[],
   endInfo: infoType[],
   svgs: SvgInfo[],
-  breakPages: boolean
+  breakPages: boolean,
+  header = 'Perfil Geológico-Construtivo',
 ) => {
   const docDefinition = exportPdfProfile(
-    header,
     profile,
     headingInfo,
     endInfo,
     svgs,
-    breakPages
+    breakPages,
+    header,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
@@ -538,28 +541,28 @@ export const printPdf = (
 };
 
 export const downloadPdf = (
-  header = 'Perfil Geológico-Construtivo',
   profile: PROFILE_TYPE,
   headingInfo: infoType[],
   endInfo: infoType[],
   svgs: SvgInfo[],
-  breakPages: boolean
+  breakPages: boolean,
+  header = 'Perfil Geológico-Construtivo',
 ) => {
   const docDefinition = exportPdfProfile(
-    header,
     profile,
     headingInfo,
     endInfo,
     svgs,
-    breakPages
+    breakPages,
+    header,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
   pdfDocGenerator.download(
     `perfil_${(profile.name || '').replace(/ /g, '_').toLowerCase()}_${format(
       new Date(),
-      'dd_MM_yyyy__hh_mm'
-    )}.pdf`
+      'dd_MM_yyyy__hh_mm',
+    )}.pdf`,
   );
 };
 

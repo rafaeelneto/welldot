@@ -160,6 +160,9 @@ devDependencies:
   '@types/d3':
     specifier: ^7.4.3
     version: 7.4.3
+  '@types/d3-tip':
+    specifier: ^3.5.8
+    version: 3.5.8
   '@types/downloadjs':
     specifier: ^1.4.6
     version: 1.4.6
@@ -3023,6 +3026,12 @@ packages:
     resolution: {integrity: sha512-Ps3T8E8dZDam6fUyNiMkekK3XUsaUEik+idO9/YjPtfj2qruF8tFBXS7XhtE4iIXBLxhmLjP3SXpLhVf21I9Lw==}
     dev: true
 
+  /@types/d3-tip@3.5.8:
+    resolution: {integrity: sha512-wulonUo5oVC3YFfXVCElar8ZC5zhVxrDaPiJ1y2YJOFLlF/nETrLJDwSDzR3DQn1E+IoX5NRJpm2XkSpkJIaDQ==}
+    dependencies:
+      '@types/d3': 3.5.53
+    dev: true
+
   /@types/d3-transition@3.0.8:
     resolution: {integrity: sha512-ew63aJfQ/ms7QQ4X7pk5NxQ9fZH/z+i24ZfJ6tJSfqxJMrYLiK01EAs2/Rtw/JreGUsS3pLPNV644qXFGnoZNQ==}
     dependencies:
@@ -3034,6 +3043,10 @@ packages:
     dependencies:
       '@types/d3-interpolate': 3.0.4
       '@types/d3-selection': 3.0.10
+    dev: true
+
+  /@types/d3@3.5.53:
+    resolution: {integrity: sha512-8yKQA9cAS6+wGsJpBysmnhlaaxlN42Qizqkw+h2nILSlS+MAG2z4JdO6p+PJrJ+ACvimkmLJL281h157e52psQ==}
     dev: true
 
   /@types/d3@7.4.3:

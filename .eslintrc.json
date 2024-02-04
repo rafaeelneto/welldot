@@ -78,7 +78,8 @@
     "jsx-a11y/click-events-have-key-events": ["error"], // enforce that elements with onClick also have a key event listener
     "react/jsx-props-no-spreading": ["warn"], // disallow spreading props
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }], // disallow the unary operators ++ and --
-    "radix": ["error", "as-needed"] // enforce the radix parameter of parseInt
+    "radix": ["error", "as-needed"], // enforce the radix parameter of parseInt
+    "no-explicit-any": "warn"
   },
   "settings": {
     "import/resolver": {

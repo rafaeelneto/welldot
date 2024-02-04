@@ -1,8 +1,8 @@
 import React from 'react';
 
+import '@/app/global.css';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-import '@/app/global.css';
 
 import {
   ColorSchemeScript,
@@ -40,11 +40,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-br" style={{height: '100vh'}}>
+    <html lang="pt-br" style={{ height: '100vh' }}>
       <head>
         <ColorSchemeScript />
       </head>
-      <body style={{height: '100%'}}>
+      <body style={{ height: '100%' }}>
         <div
           style={{ overflow: 'hidden', height: 0, width: 0 }}
           id="svgDraftContainer"

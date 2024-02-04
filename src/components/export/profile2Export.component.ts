@@ -48,7 +48,7 @@ const profile2Export = (
   breakPages: boolean,
   zoomLevel: number,
   iframeId?: string,
-  print?: boolean
+  print?: boolean,
 ) => {
   if (isProfileEmpty(profile)) return;
 
@@ -121,7 +121,7 @@ const profile2Export = (
   const divContainer = d3.select('#svgDraftContainer');
   divContainer.selectAll('svg').remove();
 
-  svgs.forEach((svgInfo) => {
+  svgs.forEach(svgInfo => {
     const svgEl = divContainer.append('svg');
     svgEl.attr('id', svgInfo.id);
   });
@@ -204,7 +204,7 @@ const profile2Export = (
       gravel_pack: textures.circles().complement().background('#ffffff'),
       well_screen: textures
         .paths()
-        .d((s) => `M ${s / 4} ${s / 4} l ${s / 2} 0 `)
+        .d(s => `M ${s / 4} ${s / 4} l ${s / 2} 0 `)
         .size(40)
         .strokeWidth(2)
         .thicker(2)
@@ -262,12 +262,12 @@ const profile2Export = (
       depthTip
         .enter()
         .append('text')
-        .attr('class', (d) => `depthTip-${d.from}`)
+        .attr('class', d => `depthTip-${d.from}`)
         .attr('x', GEOLOGY_X_POS - 5)
         .attr('dy', '.35em')
         .attr('font-size', 7.5)
         .attr('text-anchor', 'end')
-        .text((d) => {
+        .text(d => {
           if (d.to > maxSvgDepth) return null;
           return `${d.to}`;
         })
@@ -287,11 +287,11 @@ const profile2Export = (
       labels
         .enter()
         .append('text')
-        .attr('class', (d) => `${getTextLabelSelector(d.from)}`)
+        .attr('class', d => `${getTextLabelSelector(d.from)}`)
         .attr('x', GEOLOGY_X_POS_DIV_2)
         .attr('dy', '.15em')
         .attr('font-size', 7.5)
-        .text((d) => {
+        .text(d => {
           // if (d.from < currentDepth) return null;
           return d.description;
         })
@@ -403,7 +403,7 @@ const profile2Export = (
           .attr('class', 'cement_pad')
           .attr(
             'x',
-            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2
+            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2,
           )
           .attr('y', (d: any) => {
             return yScale(0) - yScale(d.thickness);
@@ -412,7 +412,7 @@ const profile2Export = (
           .attr('height', (d: any) => {
             return yScale(d.thickness);
           })
-          .style('fill', (d) => {
+          .style('fill', d => {
             svg.call(profileTexture.pad);
             return profileTexture.pad.url();
           })
@@ -427,7 +427,7 @@ const profile2Export = (
         return (d: any) => xScale(d.diam_pol);
       };
 
-      const getYPos = (dataInner) => {
+      const getYPos = dataInner => {
         return (d, i) => {
           if (i === 0) {
             const depth = d.from < currentDepth ? currentDepth : d.from;
@@ -439,14 +439,14 @@ const profile2Export = (
         };
       };
 
-      const getYPosUnconnected = (dataInner) => {
+      const getYPosUnconnected = dataInner => {
         return (d, i) => {
           const depth = d.from < currentDepth ? currentDepth : d.from;
           return yScale(depth);
         };
       };
 
-      const getHeight = (dataInner) => {
+      const getHeight = dataInner => {
         return (d, i) => {
           const depth =
             (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
@@ -493,7 +493,7 @@ const profile2Export = (
         .merge(surfaceCase)
         .attr(
           'x',
-          (d: any) => (POCO_CENTER - xScale(d.diam_pol + d.diam_pol * 0.1)) / 2
+          (d: any) => (POCO_CENTER - xScale(d.diam_pol + d.diam_pol * 0.1)) / 2,
         )
         .attr('width', (d: any) => xScale(d.diam_pol + d.diam_pol * 0.1))
         .attr('y', getYPos(data.surface_case))
@@ -587,7 +587,7 @@ const profile2Export = (
       const MARGINS_TIP = { top: 4, botton: 4, right: 5, left: 5 };
 
       const getTipXPos = (margin: number, className) => {
-        return (d) => {
+        return d => {
           const yDepth = d.from < currentDepth ? currentDepth : d.from;
 
           const depth =
@@ -597,7 +597,7 @@ const profile2Export = (
           const textHeight =
             // @ts-ignore
             d3
-              .select(`.${className}${parseInt(d.from, 10)}`)
+              .select(`.${className}${parseInt(d.from)}`)
               .node()
               // @ts-ignore
               .getBoundingClientRect().height || 0;
@@ -606,7 +606,7 @@ const profile2Export = (
 
           let xPos = getXPos()(d) - margin;
 
-          occupiedPositions.forEach((pos) => {
+          occupiedPositions.forEach(pos => {
             if (
               (yPos < pos.to && yPos > pos.from) ||
               (yPos + textHeight < pos.to && yPos + textHeight > pos.from)
@@ -623,7 +623,7 @@ const profile2Export = (
           const textHeight =
             // @ts-ignore
             d3
-              .select(`.${className}${parseInt(d.from, 10)}`)
+              .select(`.${className}${parseInt(d.from)}`)
               .node()
               // @ts-ignore
               .getBoundingClientRect().height || 0;
@@ -642,17 +642,17 @@ const profile2Export = (
       };
 
       const getRectXPos = (margin: number, className) => {
-        return (d) => {
+        return d => {
           const textXPos =
             // @ts-ignore
             parseFloat(
-              d3.select(`.${className}${parseInt(d.from, 10)}`).attr('x')
+              d3.select(`.${className}${parseInt(d.from)}`).attr('x'),
             ) || 0;
 
           const textWidth =
             // @ts-ignore
             d3
-              .select(`.${className}${parseInt(d.from, 10)}`)
+              .select(`.${className}${parseInt(d.from)}`)
               .node()
               // @ts-ignore
               .getBoundingClientRect().width || 0;
@@ -671,12 +671,12 @@ const profile2Export = (
         };
       };
 
-      const getRectHeight = (className) => {
+      const getRectHeight = className => {
         return (d, i) => {
           const textHeight =
             // @ts-ignore
             d3
-              .select(`.${className}${parseInt(d.from, 10)}`)
+              .select(`.${className}${parseInt(d.from)}`)
               .node()
               // @ts-ignore
               .getBoundingClientRect().height || 0;
@@ -685,12 +685,12 @@ const profile2Export = (
         };
       };
 
-      const getRectWidth = (className) => {
+      const getRectWidth = className => {
         return (d, i) => {
           const textWidth =
             // @ts-ignore
             d3
-              .select(`.${className}${parseInt(d.from, 10)}`)
+              .select(`.${className}${parseInt(d.from)}`)
               .node()
               // @ts-ignore
               .getBoundingClientRect().width || 0;
@@ -706,7 +706,7 @@ const profile2Export = (
           const textHeight =
             // @ts-ignore
             d3
-              .select(`.${className}${parseInt(d.from, 10)}`)
+              .select(`.${className}${parseInt(d.from)}`)
               .node()
               // @ts-ignore
               .getBoundingClientRect().height || 0;
@@ -736,7 +736,7 @@ const profile2Export = (
 
       let lastDiam = 0;
 
-      const wellCaseFiltered = data.well_case.filter((item) => {
+      const wellCaseFiltered = data.well_case.filter(item => {
         if (item.diam_pol !== lastDiam) {
           lastDiam = item.diam_pol;
           return true;
@@ -746,7 +746,7 @@ const profile2Export = (
 
       lastDiam = 0;
 
-      const wellScreenFiltered = data.well_screen.filter((item) => {
+      const wellScreenFiltered = data.well_screen.filter(item => {
         if (item.diam_pol !== lastDiam) {
           lastDiam = item.diam_pol;
           return true;
@@ -766,13 +766,13 @@ const profile2Export = (
         .attr(
           'class',
           // @ts-ignore
-          (d) => `${WELL_CASE_TIP_CLASS_NAME}${parseInt(d.from, 10)}`
+          d => `${WELL_CASE_TIP_CLASS_NAME}${parseInt(d.from)}`,
         )
         .attr('dy', '.35em')
         .attr('font-size', 7.5)
         .attr('fill', DARK_GRAY)
 
-        .text((d) => {
+        .text(d => {
           // if (d.to > maxSvgDepth) return null;
           return `Revest. ${d.diam_pol}" ${d.type}`;
         })
@@ -816,12 +816,12 @@ const profile2Export = (
         .attr(
           'class',
           // @ts-ignore
-          (d) => `${WELL_SCREEN_TIP_CLASS_NAME}${parseInt(d.from, 10)}`
+          d => `${WELL_SCREEN_TIP_CLASS_NAME}${parseInt(d.from)}`,
         )
         .attr('dy', '.35em')
         .attr('font-size', 7.5)
         .attr('fill', DARK_GRAY)
-        .text((d) => {
+        .text(d => {
           // if (d.to > maxSvgDepth) return null;
           return `Filtro ${d.diam_pol}" ${d.type} \n Ranhura: ${d.screen_slot_mm}mm`;
         })
@@ -850,10 +850,11 @@ const profile2Export = (
         .attr('y', getRectYpos(wellScreenFiltered, WELL_SCREEN_TIP_CLASS_NAME));
     };
 
+    // eslint-disable-next-line no-use-before-define
     drawProfile();
 
     function drawProfile() {
-      const filterByDepth = (l) => {
+      const filterByDepth = l => {
         if (l.to < currentDepth && l.from < currentDepth) return false;
 
         if (l.to > maxSvgDepth && l.from > maxSvgDepth) return false;
@@ -882,25 +883,25 @@ const profile2Export = (
   };
 
   // iterates through the array to render the visualization
-  svgs.forEach((svgInfo) => {
+  svgs.forEach(svgInfo => {
     drawLog(svgInfo);
     currentDepth += yScaleGlobal.invert(svgInfo.height);
   });
 
   if (iframeId) {
     innerRenderPdf(
-      header,
       profile,
       headingInfo,
       endInfo,
       svgs,
       breakPages,
-      iframeId
+      iframeId,
+      header,
     );
   } else if (print) {
-    printPdf(header, profile, headingInfo, endInfo, svgs, breakPages);
+    printPdf(profile, headingInfo, endInfo, svgs, breakPages, header);
   } else {
-    downloadPdf(header, profile, headingInfo, endInfo, svgs, breakPages);
+    downloadPdf(profile, headingInfo, endInfo, svgs, breakPages, header);
   }
 };
 

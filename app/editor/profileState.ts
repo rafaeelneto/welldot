@@ -1,13 +1,14 @@
+import { PROFILE_TYPE } from '@/src/types/profile.types';
 import { useState } from 'react';
 
-const saveProfileOnLocalStorage = (profile2Save?: PROFILE_TYPE) => {
-  // SAVE ON LOCAL STORAGE
-  console.log('AUTO SAVE');
-  const profileJSon = JSON.stringify(profile2Save || profileState);
-  window.localStorage.setItem('profile', profileJSon);
-};
+// const saveProfileOnLocalStorage = (profile2Save?: PROFILE_TYPE) => {
+//   // SAVE ON LOCAL STORAGE
+//   console.log('AUTO SAVE');
+//   const profileJSon = JSON.stringify(profile2Save || '');
+//   window.localStorage.setItem('profile', profileJSon);
+// };
 
-const profileStateManager = () => {
+function useProfileStateManager() {
   const [cementPad, setCementPadState] = useState();
   const [boreHole, setBoreHole] = useState();
   const [holeFill, setHoleFill] = useState();
@@ -15,6 +16,6 @@ const profileStateManager = () => {
   const [wellScreen, setWellScreen] = useState();
 
   return { cementPad, setCementPadState };
-};
+}
 
-export default profileStateManager;
+export default useProfileStateManager;

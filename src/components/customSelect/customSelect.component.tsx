@@ -27,28 +27,28 @@ function CustomSelect({
   }, [focus]);
 
   const customStyles = {
-    container: (provided) => ({
+    container: (provided: any) => ({
       ...provided,
       flex: 1,
       alignSelf: 'stretch',
       pointerEvents: focus ? undefined : 'none',
     }),
-    control: (provided) => ({
+    control: (provided: any) => ({
       ...provided,
       height: '100%',
       border: 'none',
       boxShadow: 'none',
       background: 'none',
     }),
-    indicatorSeparator: (provided) => ({
+    indicatorSeparator: (provided: any) => ({
       ...provided,
       opacity: 0,
     }),
-    indicatorsContainer: (provided) => ({
+    indicatorsContainer: (provided: any) => ({
       ...provided,
       opacity: active ? 1 : 0,
     }),
-    placeholder: (provided) => ({
+    placeholder: (provided: any) => ({
       ...provided,
       opacity: active ? 1 : 0,
     }),

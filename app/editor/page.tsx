@@ -230,7 +230,9 @@ function PerfilEditor() {
       if (!e) return;
 
       try {
-        const { perfilImported, cementPad } = convertProfile(e.target?.result);
+        const { perfilImported, cementPad } = convertProfile(
+          e.target?.result as string,
+        );
         setProfileState({ ...perfilImported });
       } catch (error) {
         notifications.show({
