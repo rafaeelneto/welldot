@@ -1,8 +1,5 @@
 import React, { useEffect } from 'react';
 
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
-
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 
 import Loading from './components/loading/loading.component';
@@ -15,7 +12,7 @@ import './App.css';
 import styles from './App.module.scss';
 
 const PerfilEditor = React.lazy(
-  () => import('./components/profileEditor/profileEditor.component')
+  () => import('./components/profileEditor/profileEditor.component'),
 );
 
 const App = () => {

@@ -1,44 +1,45 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 
 import { DataSheetGrid, AddRowsComponentProps } from 'react-datasheet-grid';
 
+import { Button, NumberInput } from '@mantine/core';
+
+import { PlusCircle } from 'react-feather';
+
 import 'react-datasheet-grid/dist/style.css';
 
-import styles from './dataSheet.module.scss';
-
-export const CustomAddButton = ({ addRows }: AddRowsComponentProps) => {
+export function CustomAddButton({ addRows }: AddRowsComponentProps) {
   const [value, setValue] = useState<number>(1);
   const [rawValue, setRawValue] = useState<string>(String(value));
 
   return (
-    <div className="dsg-add-row">
-      <button
-        type="button"
-        className="dsg-add-row-btn"
+    <div className="flex mt-2 flex-row items-center">
+      <Button
+        variant="light"
+        leftSection={<PlusCircle />}
         onClick={() => addRows(value)}
       >
         Adicionar
-      </button>{' '}
-      <input
-        className="dsg-add-row-input"
+      </Button>
+      <NumberInput
+        className="ml-2 max-w-[100px]"
+        suffix=" linhas"
         value={rawValue}
         onBlur={() => setRawValue(String(value))}
-        type="number"
         min={1}
-        onChange={(e) => {
-          setRawValue(e.target.value);
-          setValue(Math.max(1, Math.round(parseInt(e.target.value) || 0)));
+        onChange={newValue => {
+          setRawValue(newValue as string);
+          setValue(Math.max(1, Math.round(parseInt(newValue as string) || 0)));
         }}
-        onKeyPress={(event) => {
+        onKeyPress={event => {
           if (event.key === 'Enter') {
             addRows(value);
           }
         }}
-      />{' '}
-      linhas
+      />
     </div>
   );
-};
+}
 
 type dataSheetProps = {
   data: any[];
@@ -48,38 +49,29 @@ type dataSheetProps = {
   customHeight?: number;
 };
 
-const DataSheet = ({
+function DataSheet({
   data,
   onChangeValues,
   columns,
   defaultValue = undefined,
   customHeight,
-}: dataSheetProps) => {
+}: dataSheetProps) {
   const ref = useRef<any>(null);
-  const [height, setHeight] = useState(400);
-
-  useEffect(() => {
-    if (ref.current) {
-      setHeight(
-        (document.querySelector(`.${styles.dataSheet}`)?.clientHeight || 400) -
-          40
-      );
-    }
-  }, [ref]);
+  const DEFAULT_HEIGHT = 400;
 
   return (
     <DataSheetGrid
       createRow={defaultValue || undefined}
       ref={ref}
-      className={styles.dataSheet}
+      className="dataSheet h-full !text-sm"
       value={data}
-      height={customHeight || height}
+      height={customHeight || DEFAULT_HEIGHT}
       onChange={onChangeValues}
       columns={columns}
       gutterColumn={false}
       addRowsComponent={CustomAddButton}
     />
   );
-};
+}
 
 export default DataSheet;

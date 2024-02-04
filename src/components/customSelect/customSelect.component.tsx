@@ -8,14 +8,14 @@ import { SelectOptions } from '../../types/customColumns.types';
 
 import styles from './customSelect.module.scss';
 
-const CustomSelect = ({
+function CustomSelect({
   active,
   rowData,
   setRowData,
   focus,
   stopEditing,
   columnData,
-}: CellProps<string | null, SelectOptions>) => {
+}: CellProps<string | null, SelectOptions>) {
   const ref = useRef<any>(null);
 
   useLayoutEffect(() => {
@@ -26,36 +26,38 @@ const CustomSelect = ({
     }
   }, [focus]);
 
+  const customStyles = {
+    container: (provided: any) => ({
+      ...provided,
+      flex: 1,
+      alignSelf: 'stretch',
+      pointerEvents: focus ? undefined : 'none',
+    }),
+    control: (provided: any) => ({
+      ...provided,
+      height: '100%',
+      border: 'none',
+      boxShadow: 'none',
+      background: 'none',
+    }),
+    indicatorSeparator: (provided: any) => ({
+      ...provided,
+      opacity: 0,
+    }),
+    indicatorsContainer: (provided: any) => ({
+      ...provided,
+      opacity: active ? 1 : 0,
+    }),
+    placeholder: (provided: any) => ({
+      ...provided,
+      opacity: active ? 1 : 0,
+    }),
+  };
+
   return (
     <Select
       ref={ref}
-      styles={{
-        container: (provided) => ({
-          ...provided,
-          flex: 1,
-          alignSelf: 'stretch',
-          pointerEvents: focus ? undefined : 'none',
-        }),
-        control: (provided) => ({
-          ...provided,
-          height: '100%',
-          border: 'none',
-          boxShadow: 'none',
-          background: 'none',
-        }),
-        indicatorSeparator: (provided) => ({
-          ...provided,
-          opacity: 0,
-        }),
-        indicatorsContainer: (provided) => ({
-          ...provided,
-          opacity: active ? 1 : 0,
-        }),
-        placeholder: (provided) => ({
-          ...provided,
-          opacity: active ? 1 : 0,
-        }),
-      }}
+      styles={customStyles}
       isDisabled={columnData.disabled}
       value={columnData.options.find(({ value }) => value === rowData) ?? null}
       menuPortalTarget={document.body}
@@ -68,6 +70,6 @@ const CustomSelect = ({
       options={columnData.options}
     />
   );
-};
+}
 
 export default CustomSelect;

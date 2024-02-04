@@ -1,7 +1,7 @@
-@import '../../styles/colors';
-@import '../../styles/app.global.scss';
-@import '../../styles/fonts';
-@import '../../styles/breakpoints';
+@import '@/styles/colors';
+@import '@/styles/global.scss';
+@import '@/styles/fonts';
+@import '@/styles/breakpoints';
 
 .root {
   width: 100%;
@@ -129,7 +129,7 @@
   align-items: center;
   width: 100%;
   padding: 10px;
-  justify-content: flex-start;
+  justify-content: start;
 
   font-family: $fontPoppins;
   font-size: 18px;

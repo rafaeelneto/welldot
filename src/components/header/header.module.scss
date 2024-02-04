@@ -1,22 +1,7 @@
-@import '../../styles/fonts';
-@import '../../styles/colors';
-@import '../../styles/breakpoints';
-@import '../../styles/app.global.scss';
-.root {
-  height: auto;
-  min-height: 5%;
-  background-color: white;
-  width: 100%;
-  padding: 10px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
-
-  @include md {
-    height: 5%;
-  }
-}
+@import '@/styles/fonts';
+@import '@/styles/colors';
+@import '@/styles/breakpoints';
+@import '@/styles/global.scss';
 
 .logo {
   height: 30px;

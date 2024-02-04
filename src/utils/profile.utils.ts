@@ -40,27 +40,27 @@ export const getProfileLastItemsDepths = (profile: PROFILE_TYPE): number[] => {
 };
 
 export const getProfileDiamValues = (
-  constructionData: CONSTRUCTIVE_COMPONENT_TYPE
+  constructionData: CONSTRUCTIVE_COMPONENT_TYPE,
 ): number[] => [
   ...constructionData.bore_hole.map(
     (d: BORE_HOLE_COMPONENT_TYPE) =>
       // divide by 1 to convert text to number
       // eslint-disable-next-line implicit-arrow-linebreak
       // @ts-ignore
-      parseFloat(d.diam_pol)
+      parseFloat(d.diam_pol),
     // eslint-disable-next-line function-paren-newline
   ),
   ...constructionData.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
     // @ts-ignore
-    parseFloat(d.diam_pol)
+    parseFloat(d.diam_pol),
   ),
   ...constructionData.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
     // @ts-ignore
-    parseFloat(d.diam_pol)
+    parseFloat(d.diam_pol),
   ),
   ...constructionData.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
     // @ts-ignore
-    parseFloat(d.diam_pol)
+    parseFloat(d.diam_pol),
   ),
 ];
 
@@ -93,17 +93,17 @@ export const calculateVolume = (diamPol: number, height: number) => {
 
 export const calculateHoleFillVolume = (
   type: string,
-  profile: PROFILE_TYPE
+  profile: PROFILE_TYPE,
 ) => {
   let volume = 0;
 
   const { well_case: wellCase, well_screen: wellScreen } = profile.constructive;
 
   const holeFillType = profile.constructive.hole_fill.filter(
-    (el) => el.type === type
+    el => el.type === type,
   );
 
-  holeFillType.forEach((el) => {
+  holeFillType.forEach(el => {
     // CALCULATE THE OUTER VOLUME
     let outerVolume = calculateVolume(el.diam_pol, el.to - el.from);
 
@@ -152,7 +152,7 @@ export const calculateHoleFillVolume = (
   return volume;
 };
 
-export const convertProfile = (jsonString) => {
+export const convertProfile = (jsonString: string) => {
   let perfilImported = JSON.parse(jsonString);
 
   let noPerfil = true;
@@ -176,20 +176,22 @@ export const convertProfile = (jsonString) => {
     };
     if (perfilImported.geologico || perfilImported.construtivo) {
       if (perfilImported.geologico.length > 0) {
-        perfilConverted.geologic = perfilImported.geologico.map((camada) => {
-          return {
-            from: parseFloat(camada.de),
-            to: parseFloat(camada.ate),
-            fgdc_texture: camada.fgdc_texture || '',
-            color: camada.color || '',
-            description: camada.descricao || '',
-            geologic_unit: camada.unidade_geologica || '',
-          };
-        });
+        perfilConverted.geologic = perfilImported.geologico.map(
+          (camada: any) => {
+            return {
+              from: parseFloat(camada.de),
+              to: parseFloat(camada.ate),
+              fgdc_texture: camada.fgdc_texture || '',
+              color: camada.color || '',
+              description: camada.descricao || '',
+              geologic_unit: camada.unidade_geologica || '',
+            };
+          },
+        );
       }
       if (perfilImported.construtivo.furo.length > 0) {
         perfilConverted.constructive.bore_hole =
-          perfilImported.construtivo.furo.map((camada) => {
+          perfilImported.construtivo.furo.map((camada: any) => {
             return {
               from: parseFloat(camada.de),
               to: parseFloat(camada.ate),
@@ -199,7 +201,7 @@ export const convertProfile = (jsonString) => {
       }
       if (perfilImported.construtivo.espaco_anelar.length > 0) {
         perfilConverted.constructive.hole_fill =
-          perfilImported.construtivo.espaco_anelar.map((camada) => {
+          perfilImported.construtivo.espaco_anelar.map((camada: any) => {
             let tipo = 'gravel_pack';
             if (camada.tipo === 'cimento') {
               tipo = 'seal';
@@ -216,7 +218,7 @@ export const convertProfile = (jsonString) => {
       }
       if (perfilImported.construtivo.filtros.length > 0) {
         perfilConverted.constructive.well_screen =
-          perfilImported.construtivo.filtros.map((camada) => {
+          perfilImported.construtivo.filtros.map((camada: any) => {
             return {
               from: parseFloat(camada.de),
               to: parseFloat(camada.ate),
@@ -228,7 +230,7 @@ export const convertProfile = (jsonString) => {
       }
       if (perfilImported.construtivo.revestimento.length > 0) {
         perfilConverted.constructive.well_case =
-          perfilImported.construtivo.revestimento.map((camada) => {
+          perfilImported.construtivo.revestimento.map((camada: any) => {
             return {
               from: parseFloat(camada.de),
               to: parseFloat(camada.ate),
@@ -239,7 +241,7 @@ export const convertProfile = (jsonString) => {
       }
       if (perfilImported.construtivo.tubo_boca.length > 0) {
         perfilConverted.constructive.surface_case =
-          perfilImported.construtivo.tubo_boca.map((camada) => {
+          perfilImported.construtivo.tubo_boca.map((camada: any) => {
             const depth =
               parseFloat(camada.altura) || parseFloat(camada.depth) || 0;
             return {
@@ -264,12 +266,12 @@ export const convertProfile = (jsonString) => {
     }
   }
 
-  perfilImported.geologic = perfilImported.geologic.map((layer) => {
+  perfilImported.geologic = perfilImported.geologic.map((layer: any) => {
     return { ...layer, from: parseFloat(layer.from), to: parseFloat(layer.to) };
   });
 
   perfilImported.constructive.bore_hole =
-    perfilImported.constructive.bore_hole.map((item) => {
+    perfilImported.constructive.bore_hole.map((item: any) => {
       return {
         ...item,
         from: parseFloat(item.from),
@@ -279,7 +281,7 @@ export const convertProfile = (jsonString) => {
     });
 
   perfilImported.constructive.well_case =
-    perfilImported.constructive.well_case.map((item) => {
+    perfilImported.constructive.well_case.map((item: any) => {
       return {
         ...item,
         from: parseFloat(item.from),
@@ -289,7 +291,7 @@ export const convertProfile = (jsonString) => {
     });
 
   perfilImported.constructive.well_screen =
-    perfilImported.constructive.well_screen.map((item) => {
+    perfilImported.constructive.well_screen.map((item: any) => {
       return {
         ...item,
         from: parseFloat(item.from),
@@ -300,7 +302,7 @@ export const convertProfile = (jsonString) => {
     });
 
   perfilImported.constructive.surface_case =
-    perfilImported.constructive.surface_case.map((item) => {
+    perfilImported.constructive.surface_case.map((item: any) => {
       return {
         ...item,
         from: parseFloat(item.from),
@@ -309,7 +311,7 @@ export const convertProfile = (jsonString) => {
       };
     });
   perfilImported.constructive.hole_fill =
-    perfilImported.constructive.hole_fill.map((item) => {
+    perfilImported.constructive.hole_fill.map((item: any) => {
       return {
         ...item,
         from: parseFloat(item.from),
@@ -320,7 +322,7 @@ export const convertProfile = (jsonString) => {
 
   if (perfilImported.constructive.reduction) {
     perfilImported.constructive.reduction =
-      perfilImported.constructive.reduction.map((item) => {
+      perfilImported.constructive.reduction.map((item: any) => {
         return {
           ...item,
           from: parseFloat(item.from),
@@ -332,7 +334,7 @@ export const convertProfile = (jsonString) => {
   }
 
   perfilImported.constructive.intake_depth = parseFloat(
-    perfilImported.constructive.intake_depth
+    perfilImported.constructive.intake_depth,
   );
 
   perfilImported.constructive.cement_pad = {

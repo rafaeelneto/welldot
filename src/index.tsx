@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 
-import theme from './styles/theme';
+import theme from '../styles/theme';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';

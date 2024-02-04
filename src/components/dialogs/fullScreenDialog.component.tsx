@@ -1,73 +1,64 @@
 import React from 'react';
-/* eslint-disable max-len */
-/* eslint-disable react/jsx-props-no-spreading */
-import { useMediaQuery } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import CloseIcon from '@mui/icons-material/Close';
-import Slide from '@mui/material/Slide';
-import { TransitionProps } from '@mui/material/transitions';
+import {
+  Button,
+  AppShell,
+  ActionIcon as IconButton,
+  Title,
+} from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+
+import { X } from 'react-feather';
+import { Transition } from 'react-transition-group';
 
 import styles from './fullScreenDialog.module.scss';
 
-const Transition = React.forwardRef(
-  // eslint-disable-next-line react/require-default-props
-  (
-    props: TransitionProps & { children?: React.ReactElement },
-    ref: React.Ref<unknown>
-  ) => <Slide direction="up" ref={ref} {...props} />
-);
-
-export default function FullScreenDialog({
+const FullScreenDialog = ({
   open,
   onResponse,
   title,
   btnText,
   alwaysFull = false,
   ...otherProps
-}) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm')) || alwaysFull;
+}) => {
+  const fullScreen = useMediaQuery('(min-width: 56.25em)') || alwaysFull;
 
   return (
     <div>
-      <Dialog
-        fullScreen={fullScreen}
-        open={open}
-        onClose={() => onResponse(false)}
-        TransitionComponent={Transition}
-      >
-        <AppBar className={styles.appBar}>
-          <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={() => onResponse(false)}
-              aria-label="close"
-            >
-              <CloseIcon className={styles.closeIcon} />
-            </IconButton>
-            <Typography variant="h6" className={styles.title}>
-              {title}
-            </Typography>
-            {btnText ? (
-              <Button color="inherit" onClick={() => onResponse(true)}>
-                {btnText}
-              </Button>
-            ) : (
-              ''
-            )}
-          </Toolbar>
-        </AppBar>
-        <div style={{ height: '100%', overflow: 'hidden' }}>
-          {otherProps.children}
-        </div>
-      </Dialog>
+      <Transition in={open} timeout={300} mountOnEnter unmountOnExit>
+        {(state: any) => (
+          <div
+            className={styles.dialog}
+            style={{
+              transition: 'opacity 300ms ease-in-out',
+              opacity: state === 'entered' ? 1 : 0,
+            }}
+          >
+            <AppShell className={styles.appBar}>
+              <AppShell.Header>
+                <IconButton
+                  onClick={() => onResponse(false)}
+                  aria-label="close"
+                >
+                  <X className={styles.closeIcon} />
+                </IconButton>
+                <Title variant="h6" className={styles.title}>
+                  {title}
+                </Title>
+                {btnText ? (
+                  <Button onClick={() => onResponse(true)}>{btnText}</Button>
+                ) : (
+                  ''
+                )}
+              </AppShell.Header>
+            </AppShell>
+            <div style={{ height: '100%', overflow: 'hidden' }}>
+              {otherProps.children}
+            </div>
+          </div>
+        )}
+      </Transition>
     </div>
   );
-}
+};
+
+export default FullScreenDialog;

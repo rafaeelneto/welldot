@@ -1,0 +1,155 @@
+@import '@/styles/fonts';
+@import '@/styles/colors';
+@import '@/styles/breakpoints';
+@import '@/styles/global.scss';
+
+.tile {
+  height: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &.info {
+    background-color: #a5d2d8;
+    height: calc(100% - 100px);
+  }
+
+  &.hero {
+    background: url('/assets/images/perfis_ex_vertical.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    height: 80%;
+    @include md {
+      background-repeat: no-repeat;
+      background: url('/assets/images/perfis_ex.jpg');
+    }
+  }
+}
+
+.tileContent {
+  height: 100%;
+  width: 100%;
+  max-width: 1024px;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  flex-direction: column;
+
+  @include md {
+    flex-direction: row;
+  }
+
+  .tileTitle {
+    font-size: 24px;
+    font-family: $fontPoppins;
+    font-weight: 500;
+    color: $gray2;
+    margin: 10px;
+  }
+  .tileText {
+    margin: 10px;
+    color: $gray2;
+  }
+}
+
+.heroContent {
+  justify-content: end;
+  .tileTitle {
+    color: white;
+  }
+  .rWrapper {
+    width: 0;
+  }
+  .lWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: $colorPrimary;
+    height: auto;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  @include md {
+    align-items: center;
+    justify-content: left;
+    .lWrapper {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+
+      height: auto;
+      border-radius: 10px;
+      padding: 20px;
+    }
+  }
+
+  .btn {
+    color: white;
+    border-radius: 50px;
+    border-color: white;
+  }
+}
+
+.infoContent {
+  background: url('/assets/images/pdfs_profiles_mockup.jpg');
+  background-size: 100%;
+  background-position: start;
+  background-repeat: no-repeat;
+  justify-content: flex-end;
+  .lWrapper {
+    width: 0;
+  }
+  .rWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    height: auto;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  @include md {
+    align-items: center;
+    background-position: center;
+    .lWrapper,
+    .rWrapper {
+      width: 50%;
+      height: 100%;
+    }
+    .rWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      height: auto;
+      border-radius: 10px;
+      padding: 20px;
+    }
+  }
+}
+
+.imgMockup {
+  height: 100%;
+}
+
+.tile.about {
+  height: 100px;
+
+  background-color: $gray3;
+}
+
+.socialBtnsContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.socialBtn {
+  color: $gray2;
+}

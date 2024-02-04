@@ -69,7 +69,7 @@ const DEFAULTS_TEXTURES = {
   gravel_pack: textures.circles().complement().background('#ffffff'),
   well_screen: textures
     .paths()
-    .d((s) => `M ${s / 4} ${s / 4} l ${s / 2} 0 `)
+    .d(s => `M ${s / 4} ${s / 4} l ${s / 2} 0 `)
     .size(40)
     .strokeWidth(2)
     .thicker(2)
@@ -78,8 +78,8 @@ const DEFAULTS_TEXTURES = {
 
 const getConflictAreas = (array1: any[], array2: any[]) => {
   const conflicts: { from: number; to: number; diam: number }[] = [];
-  array1.forEach((item1) => {
-    array2.forEach((item2) => {
+  array1.forEach(item1 => {
+    array2.forEach(item2 => {
       if (
         (item2.from >= item1.from && item2.from < item1.to) ||
         (item2.to <= item1.to && item2.to > item1.from)
@@ -101,12 +101,12 @@ const getConflictAreas = (array1: any[], array2: any[]) => {
 
 const mergeConflicts = (
   conflicts: { from: number; to: number; diam: number }[],
-  buffer: number
+  buffer: number,
 ) => {
   // SORT ARRAY BY THE FROM PROPERTY
   const sortedConflicts = conflicts.sort(
     // @ts-ignore
-    (a, b) => parseFloat(a.from) - parseFloat(b.from)
+    (a, b) => parseFloat(a.from) - parseFloat(b.from),
   );
 
   const mergedConflicts: { from: number; to: number; diam: number }[] = [];
@@ -143,6 +143,7 @@ const mergeConflicts = (
       nextConflict.to === conflict.to &&
       nextConflict.from === conflict.from
     ) {
+      // eslint-disable-next-line no-plusplus
       jumpTo++;
     }
 
@@ -190,7 +191,7 @@ export class DinamicDrawer {
       TOP: number;
       BOTTOM: number;
     },
-    customClassNames?: componentsClassNames
+    customClassNames?: componentsClassNames,
   ) {
     if (customClassNames) {
       this.customClassNames = {
@@ -310,8 +311,9 @@ export class DinamicDrawer {
 
     const tooltips: any = {};
 
-    Object.getOwnPropertyNames(tipsText).forEach((tipTextKey) => {
+    Object.getOwnPropertyNames(tipsText).forEach(tipTextKey => {
       tooltips[tipTextKey] = d3
+        // @ts-ignore
         .tip()
         .attr('class', this.customClassNames.tooltip)
         .direction('e')
@@ -339,14 +341,14 @@ export class DinamicDrawer {
       .select(`.${this.customClassNames.lithologyGroup}`)
       .attr(
         'transform',
-        `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`
+        `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
       );
 
     const constructionGroup = svg
       .select('.const-group')
       .attr(
         'transform',
-        `translate(${this.MARGINS.LEFT + this.WIDTH / 2}, ${this.MARGINS.TOP})`
+        `translate(${this.MARGINS.LEFT + this.WIDTH / 2}, ${this.MARGINS.TOP})`,
       );
 
     const cementPadGroup = constructionGroup.select('.cement-pad');
@@ -412,6 +414,7 @@ export class DinamicDrawer {
 
       if (data.cement_pad && data.cement_pad.thickness) {
         const tipCP = d3
+          // @ts-ignore
           .tip()
           .attr('class', this.customClassNames.tooltip)
           .direction('e')
@@ -444,7 +447,7 @@ export class DinamicDrawer {
           .attr('class', 'cement_pad')
           .attr(
             'x',
-            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2
+            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2,
           )
           .attr('y', (d: any) => {
             return yScale(0) - yScale(parseFloat(d.thickness));
@@ -453,7 +456,7 @@ export class DinamicDrawer {
           .attr('height', (d: any) => {
             return yScale(parseFloat(d.thickness));
           })
-          .style('fill', (d) => {
+          .style('fill', d => {
             svg.call(DEFAULTS_TEXTURES.pad);
             return DEFAULTS_TEXTURES.pad.url();
           })
@@ -511,7 +514,7 @@ export class DinamicDrawer {
         .merge(surfaceCase)
         .attr(
           'x',
-          (d: any) => (POCO_CENTER - xScale(d.diam_pol + d.diam_pol * 0.1)) / 2
+          (d: any) => (POCO_CENTER - xScale(d.diam_pol + d.diam_pol * 0.1)) / 2,
         )
         .attr('width', (d: any) => xScale(d.diam_pol + d.diam_pol * 0.1))
         // @ts-ignore
@@ -607,6 +610,7 @@ export class DinamicDrawer {
       const mergedConflicts = mergeConflicts(conflictAreas, 1);
 
       const tipConflict = d3
+        // @ts-ignore
         .tip()
         // ! CHANGE
         .attr('class', `${this.customClassNames.tooltip} conflic`)
@@ -666,47 +670,48 @@ export class DinamicDrawer {
       // @ts-ignore
       .call(yAxis);
 
-    const spanY = (d) => {
+    const spanY = d => {
       if (d.thickness) return yScaleGlobal(0) - yScaleGlobal(d.thickness);
       return yScaleGlobal(d.from);
     };
 
-    const spanH = (d) => {
+    const spanH = d => {
       if (d.thickness) return yScaleGlobal(d.thickness);
       return yScaleGlobal(d.to - d.from);
     };
 
-    // @ts-ignore
-    const zoom = d3
-      .zoom()
-      .scaleExtent([0.2, 15])
-      .on('zoom', (e) => {
-        // eslint-disable-next-line prefer-destructuring
-        const transform = e.transform;
+    function zooming(e: any) {
+      // eslint-disable-next-line prefer-destructuring
+      const transform = e.transform;
 
-        // @ts-ignore
-        gY.call(yAxis.scale(transform.rescaleY(yScaleGlobal)));
-        pocoGroup
-          .selectAll('rect')
-          .attr('y', (d) => {
-            if (!d) return null;
-            return transform.applyY(spanY(d));
-          })
-          .attr('height', (d) => {
-            if (!d) return null;
-            return transform.k * spanH(d);
-          });
-      });
-
-    drawProfile();
-
-    // @ts-ignore
-    svg.call(zoom);
+      // @ts-ignore
+      gY.call(yAxis.scale(transform.rescaleY(yScaleGlobal)));
+      pocoGroup
+        .selectAll('rect')
+        .attr('y', (d: any) => {
+          if (!d) return null;
+          return transform.applyY(spanY(d));
+        })
+        .attr('height', d => {
+          if (!d) return null;
+          return transform.k * spanH(d);
+        });
+    }
 
     function drawProfile() {
       if (geologicData) updateGeology(geologicData, yScaleGlobal);
       if (constructionData) updatePoco(constructionData, yScaleGlobal);
     }
+
+    // @ts-ignore
+    const zoomNode = d3.zoom().on('zoom', zooming);
+    // const zoom = d3.zoom().scaleExtent([0.2, 15]).on('zoom', zooming);
+
+    drawProfile();
+    // @ts-ignore
+    this.svg.call(zoomNode).node();
+    // @ts-ignore
+    // svg.on('wheel', wheeled).call(zoom);
   }
 }
 

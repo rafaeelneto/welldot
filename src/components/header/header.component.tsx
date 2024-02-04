@@ -1,20 +1,19 @@
 import React from 'react';
 
-import { Button } from '@mui/material';
+import { Button } from '@mantine/core';
 
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
+import WellProfilerLogo from '@/public/assets/well_profiler_logo.svg';
 import styles from './header.module.scss';
 
-import { ReactComponent as WPLogo } from '../../assets/well_profiler_logo.svg';
-
-export default () => {
+function Header() {
   return (
-    <div className={styles.root}>
+    <div className="h-[50px] bg-white w-full p-2 flex flex-row justify-between shadow-md md:h-[50px]">
       <div className={styles.logoContainer}>
-        <Link to="/">
+        <Link href="/">
           <span>
-            <WPLogo className={styles.logo} />
+            <WellProfilerLogo className={styles.logo} />
           </span>
           <span className={styles.title}>Well Profiler</span>
         </Link>
@@ -22,44 +21,19 @@ export default () => {
 
       <div className={styles.btnsContainer}>
         <Button
+          variant="light"
           className={styles.btn}
           component={Link}
-          to="/"
-          onClick={() => {
-            // @ts-ignore
-            if (window.gtag) {
-              // @ts-ignore
-              window.gtag(
-                'event',
-                'button clicked',
-                'User Interaction',
-                'home info'
-              );
-            }
-          }}
+          href="/"
         >
           Home
         </Button>
-        <Button
-          className={styles.btn}
-          component={Link}
-          to="/editor"
-          onClick={() => {
-            // @ts-ignore
-            if (window.gtag) {
-              // @ts-ignore
-              window.gtag(
-                'event',
-                'button clicked',
-                'User Interaction',
-                'editor'
-              );
-            }
-          }}
-        >
+        <Button className={styles.btn} component={Link} href="/editor">
           Editor
         </Button>
       </div>
     </div>
   );
-};
+}
+
+export default Header;
