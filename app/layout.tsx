@@ -40,11 +40,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-br">
+    <html lang="pt-br" style={{height: '100vh'}}>
       <head>
         <ColorSchemeScript />
       </head>
-      <body>
+      <body style={{height: '100%'}}>
         <div
           style={{ overflow: 'hidden', height: 0, width: 0 }}
           id="svgDraftContainer"

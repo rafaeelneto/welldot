@@ -176,15 +176,15 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       try {
-        // profile2Export(
-        //   header,
-        //   headingInfo,
-        //   endInfo,
-        //   { ...profile },
-        //   breakPages,
-        //   zoomValue,
-        //   IFRAME_ID,
-        // );
+        profile2Export(
+          header,
+          headingInfo,
+          endInfo,
+          { ...profile },
+          breakPages,
+          zoomValue,
+          IFRAME_ID,
+        );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`);
       }
@@ -235,16 +235,16 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
         <Button
           className="mr-2"
           onClick={() => {
-            // profile2Export(
-            //   header,
-            //   headingInfo,
-            //   endInfo,
-            //   { ...profile },
-            //   breakPages,
-            //   zoomValue,
-            //   undefined,
-            //   false,
-            // );
+            profile2Export(
+              header,
+              headingInfo,
+              endInfo,
+              { ...profile },
+              breakPages,
+              zoomValue,
+              undefined,
+              false,
+            );
             // @ts-ignore
             if (window.gtag) {
               // @ts-ignore
@@ -272,16 +272,16 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
                 'print pdf',
               );
             }
-            // profile2Export(
-            //   header,
-            //   headingInfo,
-            //   endInfo,
-            //   { ...profile },
-            //   breakPages,
-            //   zoomValue,
-            //   undefined,
-            //   true,
-            // );
+            profile2Export(
+              header,
+              headingInfo,
+              endInfo,
+              { ...profile },
+              breakPages,
+              zoomValue,
+              undefined,
+              true,
+            );
           }}
           leftSection={<Printer className="h-4 w-4" />}
         >
