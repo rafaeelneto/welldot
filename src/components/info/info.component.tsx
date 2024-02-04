@@ -1,11 +1,5 @@
 import React from 'react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import { Table } from '@mantine/core';
 
 import { PROFILE_TYPE } from '../../types/profile.types';
 
@@ -34,7 +28,7 @@ type TableType = {
   rows: RowType[][];
 };
 
-export const Info = ({ profile }: InfoProps) => {
+function Info({ profile }: InfoProps) {
   const tables: TableType[] = [];
 
   if (profile.constructive.bore_hole.length > 0) {
@@ -130,7 +124,7 @@ export const Info = ({ profile }: InfoProps) => {
           { text: `Volume total`, classStyle: styles.sumCell, colSpan: 3 },
           {
             text: `${numberFormater.format(
-              calculateHoleFillVolume(item.type, profile)
+              calculateHoleFillVolume(item.type, profile),
             )} m³`,
             classStyle: styles.sumCell,
             align: 'right',
@@ -179,10 +173,10 @@ export const Info = ({ profile }: InfoProps) => {
       ) {
         let totalHeight = 0;
         const filteredWC = profile.constructive.well_case.filter(
-          (el) => el.type === item.type && el.diam_pol === item.diam_pol
+          el => el.type === item.type && el.diam_pol === item.diam_pol,
         );
 
-        filteredWC.forEach((el) => {
+        filteredWC.forEach(el => {
           totalHeight += el.to - el.from;
         });
 
@@ -242,10 +236,10 @@ export const Info = ({ profile }: InfoProps) => {
       ) {
         let totalHeight = 0;
         const filteredWC = profile.constructive.well_screen.filter(
-          (el) => el.type === item.type && el.diam_pol === item.diam_pol
+          el => el.type === item.type && el.diam_pol === item.diam_pol,
         );
 
-        filteredWC.forEach((el) => {
+        filteredWC.forEach(el => {
           totalHeight += el.to - el.from;
         });
 
@@ -266,56 +260,58 @@ export const Info = ({ profile }: InfoProps) => {
   }
 
   return (
-    <div className={styles.root}>
-      {tables.map((table) => {
+    <div className="w-full h-full overflow-y-auto">
+      {tables.map(table => {
         return (
-          <div className={styles.tableContainer}>
+          <div key={table.title} className={styles.tableContainer}>
             <h3 className={styles.tableTitle}>{table.title}</h3>
             <Table className={styles.table} aria-label="simple table">
-              <TableHead>
-                <TableRow className={styles.header}>
-                  {table.header.map((cell) => {
+              <Table.Thead>
+                <Table.Tr className={styles.header}>
+                  {table.header.map(cell => {
                     return (
-                      <TableCell
+                      <Table.Th
+                        key={cell.text}
                         className={styles.headerCell}
                         // @ts-ignore
                         align={cell.align || undefined}
                         colSpan={cell.colSpan}
                       >
                         {cell.text}
-                      </TableCell>
+                      </Table.Th>
                     );
                   })}
-                </TableRow>
-              </TableHead>
-              <TableBody className={styles.tableBody}>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody className={styles.tableBody}>
                 {table.rows.map((row, index) => (
-                  <TableRow
+                  <Table.Tr
                     className={styles.tableRow}
                     key={index}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
-                    {row.map((cell) => {
+                    {row.map(cell => {
                       return (
-                        <TableCell
+                        <Table.Th
+                          key={cell.text}
                           className={cell.classStyle}
                           // @ts-ignore
                           align={cell.align || undefined}
                           colSpan={cell.colSpan}
                         >
                           {cell.text}
-                        </TableCell>
+                        </Table.Th>
                       );
                     })}
-                  </TableRow>
+                  </Table.Tr>
                 ))}
-              </TableBody>
+              </Table.Tbody>
             </Table>
           </div>
         );
       })}
     </div>
   );
-};
+}
 
 export default Info;

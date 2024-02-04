@@ -31,7 +31,7 @@ import download from 'downloadjs';
 
 import ProfileDrawer from '@/src/components/profileDrawer/profileDrawer.component';
 
-// import Info from '@/src/components/info/info.component';
+import Info from '@/src/components/info/info.component';
 
 import { convertProfile } from '@/src/utils/profile.utils';
 
@@ -710,9 +710,12 @@ function PerfilEditor() {
                     )}
                   </div>
                 </Tabs.Panel>
-                {/* <Tabs.Panel value="info">
-                <Info profile={profileState} />
-              </Tabs.Panel> */}
+                <Tabs.Panel
+                  value="info"
+                  className="h-[calc(100%-50px)] overflow-y-auto"
+                >
+                  <Info profile={profileState} />
+                </Tabs.Panel>
               </Tabs>
             </div>
           </div>
