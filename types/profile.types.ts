@@ -11,7 +11,7 @@ export type BoreHole = {
   from: number;
   to: number;
   diameter: number;
-  drilling_method: string;
+  drilling_method?: string;
 };
 
 export type WellCase = {
