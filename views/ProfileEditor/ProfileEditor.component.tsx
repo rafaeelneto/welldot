@@ -34,7 +34,7 @@ import Info from '@/src/components/info/info.component';
 import PDFExport from '@/src/components/export/pdfExport.component';
 import DataSheet from '@/src/components/dataSheetComponent/dataSheet.component';
 
-import { convertProfile } from '@/src/utils/profile.utils';
+import { convertProfileFromJSON } from '@/utils/profile.utils';
 import {
   geologyColumns,
   boreHoleColumns,
@@ -57,7 +57,7 @@ import {
   WELL_CASE_COMPONENT_DEFAULT,
   WELL_SCREEN_COMPONENT_DEFAULT,
 } from '@/src/utils/profileDefaults';
-import { getWindow } from '@/utils/window';
+import { getWindow } from '@/utils/window.utils';
 
 import { Profile } from '@/types/profile.types';
 
@@ -99,8 +99,8 @@ function PerfilEditor() {
 
   if (firstRun.current && savedProfileJson) {
     try {
-      const { perfilImported } = convertProfile(savedProfileJson);
-      setProfileState({ ...perfilImported });
+      const importedWell = convertProfileFromJSON(savedProfileJson);
+      setProfileState({ ...importedWell });
     } catch (error) {
       // error
     }
@@ -223,10 +223,8 @@ function PerfilEditor() {
       if (!e) return;
 
       try {
-        const { perfilImported, cementPad } = convertProfile(
-          e.target?.result as string,
-        );
-        setProfileState({ ...perfilImported });
+        const importedWell = convertProfileFromJSON(e.target?.result as string);
+        setProfileState(importedWell);
       } catch (error) {
         notifications.show({
           title: 'Default notification',

@@ -102,5 +102,5 @@ export type Well = {
   lat?: number;
   lng?: number;
   elevation?: number;
-  obs: string;
+  obs?: string;
 } & Profile;

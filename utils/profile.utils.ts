@@ -8,45 +8,54 @@ import {
   Well,
   Reduction,
   Geologic,
+  SurfaceCase,
 } from '@/types/profile.types';
+
+type PointItem = {
+  depth: number;
+};
+
+type ExtensionItem = {
+  to: number;
+};
+
+function getLowestPointFromList(data: (PointItem | ExtensionItem)[]): number {
+  if (data.length === 0) return 0;
+
+  const lastItem = data[data.length - 1];
+
+  if ((lastItem as PointItem).depth) {
+    return (lastItem as PointItem).depth;
+  }
+
+  return (lastItem as ExtensionItem).to;
+}
 
 export const getProfileLastItemsDepths = (profile: Profile): number[] => {
   return [
-    profile.geologic.length === 0
-      ? 0
-      : profile.geologic[profile.geologic.length - 1].to,
-    profile.constructive.bore_hole.length === 0
-      ? 0
-      : profile.constructive.bore_hole[
-          profile.constructive.bore_hole.length - 1
-        ].to,
-    profile.constructive.hole_fill.length === 0
-      ? 0
-      : profile.constructive.hole_fill[
-          profile.constructive.hole_fill.length - 1
-        ].to,
-    profile.constructive.well_case.length === 0
-      ? 0
-      : profile.constructive.well_case[
-          profile.constructive.well_case.length - 1
-        ].to,
-    profile.constructive.well_screen.length === 0
-      ? 0
-      : profile.constructive.well_screen[
-          profile.constructive.well_screen.length - 1
-        ].to,
+    getLowestPointFromList(profile.geologic.lithology),
+    getLowestPointFromList(profile.geologic.fractures),
+    getLowestPointFromList(profile.geologic.caves),
+    getLowestPointFromList(profile.constructive.bore_hole),
+    getLowestPointFromList(profile.constructive.hole_fill),
+    getLowestPointFromList(profile.constructive.reduction),
+    getLowestPointFromList(profile.constructive.surface_case),
+    getLowestPointFromList(profile.constructive.well_case),
+    getLowestPointFromList(profile.constructive.well_screen),
   ];
 };
 
-// TODO: replace this function by bellow
 export const getProfileDiamValues = (
   constructionData: Constructive,
 ): number[] => [
   ...constructionData.bore_hole.map((d: BoreHole) => d.diameter),
   ...constructionData.hole_fill.map((d: HoleFill) => d.diameter),
+  ...constructionData.surface_case.map((d: SurfaceCase) => d.diameter),
   ...constructionData.well_screen.map((d: WellScreen) => d.diameter),
   ...constructionData.well_case.map((d: WellCase) => d.diameter),
-  ...constructionData.reduction.map((d: Reduction) => d.diam_from),
+  ...constructionData.reduction.reduce((acc: number[], cur: Reduction) => {
+    return acc.concat([cur.diam_from, cur.diam_to]);
+  }, []),
 ];
 
 export function getConstructivePropertySummary<T>(
@@ -58,6 +67,9 @@ export function getConstructivePropertySummary<T>(
       []),
     ...(constructionData?.hole_fill?.map((d: HoleFill | any) => d[property]) ||
       []),
+    ...(constructionData?.surface_case?.map(
+      (d: SurfaceCase | any) => d[property],
+    ) || []),
     ...(constructionData?.well_screen?.map(
       (d: WellScreen | any) => d[property],
     ) || []),
@@ -73,7 +85,9 @@ export const checkIfProfileIsEmpty = (profile: Profile | Well): boolean => {
   if (!profile.constructive && !profile.geologic) return true;
 
   const noComponent =
-    profile.geologic.length === 0 &&
+    profile.geologic.lithology.length === 0 &&
+    profile.geologic.fractures.length === 0 &&
+    profile.geologic.caves.length === 0 &&
     profile.constructive.bore_hole.length === 0 &&
     profile.constructive.hole_fill.length === 0 &&
     profile.constructive.well_case.length === 0 &&
@@ -93,7 +107,6 @@ export const numberFormaterInches = new Intl.NumberFormat('pt-BR', {
 });
 
 export const calculateCilindricVolume = (diameter: number, height: number) => {
-  // TODO: change calculate to metric
   return Math.PI * ((diameter * 1000) / 2) ** 2 * height;
 };
 
