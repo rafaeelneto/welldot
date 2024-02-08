@@ -30,14 +30,11 @@ import {
 import download from 'downloadjs';
 
 import ProfileDrawer from '@/src/components/profileDrawer/profileDrawer.component';
-
 import Info from '@/src/components/info/info.component';
+import PDFExport from '@/src/components/export/pdfExport.component';
+import DataSheet from '@/src/components/dataSheetComponent/dataSheet.component';
 
 import { convertProfile } from '@/src/utils/profile.utils';
-
-import PDFExport from '@/src/components/export/pdfExport.component';
-
-import DataSheet from '@/src/components/dataSheetComponent/dataSheet.component';
 import {
   geologyColumns,
   boreHoleColumns,
@@ -51,12 +48,6 @@ import DeleteWell from '@/public/assets/icons/delete_well_icon.svg';
 import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
 
 import {
-  onChangeValuesType,
-  onChangeListType,
-  LayerProps,
-} from '@/src/types/profileEditor.types';
-
-import {
   PROFILE_EXAMPLE,
   PROFILE_DEFAULT,
   BORE_HOLE_COMPONENT_DEFAULT,
@@ -67,7 +58,9 @@ import {
   WELL_SCREEN_COMPONENT_DEFAULT,
 } from '@/src/utils/profileDefaults';
 import { getWindow } from '@/utils/window';
-import { PROFILE_TYPE } from '@/src/types/profile.types';
+
+import { Profile } from '@/types/profile.types';
+
 import styles from './profileEditor.module.scss';
 
 function PerfilEditor() {
@@ -93,7 +86,7 @@ function PerfilEditor() {
   };
 
   // SAVE BTN
-  const handleSave = (profile2Save?: PROFILE_TYPE) => {
+  const handleSave = (profile2Save?: Profile) => {
     // SAVE ON LOCAL STORAGE
     console.log('AUTO SAVE');
     const profileJSon = JSON.stringify(profile2Save || profileState);
@@ -136,7 +129,7 @@ function PerfilEditor() {
     return layers;
   };
 
-  const onChangePerfilState = (newPerfilState: PROFILE_TYPE) => {
+  const onChangePerfilState = (newPerfilState: Profile) => {
     setProfileState(newPerfilState);
     setChangesCounter(changesCounter + 1);
     if (changesCounter > 20) {

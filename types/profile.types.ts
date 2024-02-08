@@ -11,6 +11,7 @@ export type BoreHole = {
   from: number;
   to: number;
   diameter: number;
+  drilling_method: string;
 };
 
 export type WellCase = {
@@ -67,12 +68,6 @@ export type Constructive = {
   cement_pad: CementPad;
 };
 
-export type DrillingMethod = {
-  from: number;
-  to: number;
-  drilling_method: string;
-};
-
 export type Fracture = {
   depth: number;
   water_intake: boolean;
@@ -104,7 +99,6 @@ export type Profile = {
 export type Well = {
   well_driller?: string;
   construction_date?: string;
-  drilling_method?: DrillingMethod[];
   lat?: number;
   lng?: number;
   elevation?: number;
