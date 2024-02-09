@@ -4,6 +4,7 @@ import { getEmptyProfile } from '@/data/profile/profile.data';
 import {
   BoreHole,
   Cave,
+  CementPad,
   Constructive,
   Fracture,
   Geologic,
@@ -15,6 +16,7 @@ import {
   WellCase,
   WellScreen,
 } from '@/types/profile.types';
+import { e } from 'vitest/dist/reporters-1evA5lom';
 
 // TODO move this function to utils
 function reorderComponentsDepth<T>(
@@ -37,6 +39,7 @@ interface IProfileState {
   profile: Profile;
   mutationCount: number;
   updateProfile: (newProfile: Profile) => void;
+  updateCementPad: (property: keyof CementPad, value: string | number) => void;
   getUpdateListingFeatures: <T extends ListingTypes>(
     property: ListingKeys,
   ) => (newFeatures: T[]) => void;
@@ -100,19 +103,35 @@ export const useProfileStore = create<IProfileState>((set, get) => ({
   },
   getUpdateListingFeatures: <T extends ListingTypes>(property: ListingKeys) => {
     function reorderConstructive(newFeatures: T[]) {
-      const newProfileState = { ...get().profile };
+      const currProfile = { ...get().profile };
 
-      newProfileState[property] = newFeatures as any;
+      currProfile[property] = newFeatures as any;
 
       if (CHAING_TYPES.has(property as ChainingKeys)) {
-        newProfileState[property] = reorderComponentsDepth<T>(
+        currProfile[property] = reorderComponentsDepth<T>(
           newFeatures as ChainingTypes[],
         ) as any;
       }
 
-      get().updateProfile(newProfileState);
+      get().updateProfile(currProfile);
     }
 
     return reorderConstructive;
+  },
+  updateCementPad: (property: keyof CementPad, value: string | number) => {
+    const currProfile = get().profile;
+    const newCementPad = { ...currProfile.cement_pad };
+
+    if (property === 'type') {
+      newCementPad.type = value as string;
+    } else {
+      newCementPad[property] = value as number;
+    }
+    const newPerfilState = {
+      ...currProfile,
+      cement_pad: newCementPad,
+    };
+
+    get().updateProfile(newPerfilState);
   },
 }));

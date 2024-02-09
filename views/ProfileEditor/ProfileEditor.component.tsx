@@ -6,13 +6,9 @@ import {
   Modal,
   Button,
   ActionIcon as IconButton,
-  Collapse,
-  NumberInput,
-  TextInput,
   Tooltip,
   Divider,
   Tabs,
-  Checkbox,
 } from '@mantine/core';
 
 import { notifications } from '@mantine/notifications';
@@ -32,74 +28,36 @@ import download from 'downloadjs';
 import ProfileDrawer from '@/src/components/profileDrawer/profileDrawer.component';
 import Info from '@/src/components/info/info.component';
 // import PDFExport from '@/src/components/export/pdfExport.component';
-import DataSheet from '@/src/components/dataSheetComponent/dataSheet.component';
+
+import TabConstructive from '@/views/ProfileEditor/ProfileEditor.constructive';
+import TabGeologic from '@/views/ProfileEditor/ProfileEditor.geologic';
 
 import { useProfileStore } from '@/store/profile/profile.store';
 
 import { convertProfileFromJSON } from '@/utils/profile.utils';
-import {
-  geologyColumns,
-  boreHoleColumns,
-  holeFillColumns,
-  surfaceCaseColumns,
-  wellCaseColumns,
-  wellScreenColumns,
-} from '@/src/components/dataSheetComponent/columns';
 
 import DeleteWell from '@/public/assets/icons/delete_well_icon.svg';
 import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
 
 import { getWindow } from '@/utils/window.utils';
 
-import {
-  BoreHole,
-  HoleFill,
-  Lithology,
-  Profile,
-  SurfaceCase,
-  WellCase,
-  WellScreen,
-} from '@/types/profile.types';
-
 import styles from './profileEditor.module.scss';
-import {
-  EMPTY_PROFILE,
-  BORE_HOLE_FEATURE_DEFAULT,
-  HOLE_FILL_FEATURE_DEFAULT,
-  WELL_SCREEN_FEATURE_DEFAULT,
-  SURFACE_CASE_FEATURE_DEFAULT,
-  WELL_CASE_FEATURE_DEFAULT,
-  LITHOLOGY_FEATURE_DEFAULT,
-} from '@/data/profile/profile.data';
+import { EMPTY_PROFILE } from '@/data/profile/profile.data';
 
 function ProfileEditor() {
   const inputFile = useRef(null);
+  const firstRun = useRef(true);
 
-  const { profile, clear, updateProfile, getUpdateListingFeatures } =
-    useProfileStore(state => ({
-      ...state,
-    }));
-
-  const [changesCounter, setChangesCounter] = useState(0);
+  const { profile, clear, updateProfile } = useProfileStore(state => ({
+    ...state,
+  }));
 
   const [openExport, setOpenExport] = useState(false);
 
-  const [openImportErrorS, setOpenImportErrorS] = useState(false);
-
   const [tabValue, setTabValue] = React.useState<string | null>('constructive');
 
-  const firstRun = useRef(true);
-
-  const handleChange = (newValue: string | null) => {
+  const changeTab = (newValue: string | null) => {
     setTabValue(newValue);
-  };
-
-  // SAVE BTN
-  const handleSave = (profile2Save?: Profile) => {
-    // SAVE ON LOCAL STORAGE
-    console.log('AUTO SAVE');
-    const profileJSon = JSON.stringify(profile2Save || profile);
-    getWindow()?.localStorage.setItem('profile', profileJSon);
   };
 
   // CHECKS IF THERE IS A WELL ON LOCAL STORAGE AND IF IT IS THE FIRST RUN OF THE APP
@@ -117,21 +75,8 @@ function ProfileEditor() {
     firstRun.current = false;
   }
 
-  const handleCementPadChange = (property: string, value: string) => {
-    const newcementPad = { ...profile.cement_pad };
-    // @ts-ignore
-    newcementPad[property] = value;
-
-    const newPerfilState = {
-      ...profile,
-      cement_pad: newcementPad,
-    };
-    updateProfile(newPerfilState);
-  };
-
   const handleClickFile = (_event: React.MouseEvent<HTMLButtonElement>) => {
-    // @ts-ignore
-    inputFile.current.click();
+    (inputFile?.current as HTMLButtonElement | null)?.click();
   };
 
   const handleChangeInputFile = (
@@ -151,7 +96,6 @@ function ProfileEditor() {
           title: 'Default notification',
           message: 'Hey there, your code is awesome! 🤥',
         });
-        setOpenImportErrorS(true);
       }
     };
 
@@ -160,13 +104,6 @@ function ProfileEditor() {
     } catch (e) {
       // user cancelled upload
     }
-  };
-
-  const checkCementPad = () => {
-    if (profile.cement_pad && profile.cement_pad.thickness) {
-      return true;
-    }
-    return false;
   };
 
   const steps = [
@@ -373,7 +310,7 @@ function ProfileEditor() {
                 className="h-full"
                 defaultValue="constructive"
                 value={tabValue}
-                onChange={handleChange}
+                onChange={changeTab}
                 aria-label="basic tabs example"
               >
                 <Tabs.List className="pt-2 pb-0 pl-2 pr-2">
@@ -385,174 +322,13 @@ function ProfileEditor() {
                   value="constructive"
                   className="h-[calc(100%-50px)] overflow-y-auto"
                 >
-                  <div>
-                    <div className="flex flex-col p-2.5">
-                      <span className="text-lg font-bold text-[#55575D] flex flex-row items-center mb-2">
-                        Laje de Proteção Sanitária
-                        <Checkbox
-                          className="ml-2"
-                          checked={checkCementPad()}
-                          onChange={event => {
-                            const { checked } = event.target;
-
-                            if (checked) {
-                              const newPerfilState = {
-                                ...profile,
-                                cement_pad: {
-                                  width: 3,
-                                  thickness: 0.25,
-                                  length: 3,
-                                  type: 'Cimento',
-                                },
-                              };
-                              updateProfile(newPerfilState);
-                            } else {
-                              const newPerfilState = {
-                                ...profile,
-                                cement_pad: {
-                                  ...EMPTY_PROFILE.cement_pad,
-                                },
-                              };
-                              updateProfile(newPerfilState);
-                            }
-                          }}
-                        />
-                      </span>
-
-                      <Collapse in={checkCementPad()}>
-                        <div>
-                          <TextInput
-                            className={`${styles.layerInput}`}
-                            id="standard-multiline-flexible"
-                            label="Tipo"
-                            value={profile.cement_pad.type || ''}
-                            onChange={event => {
-                              handleCementPadChange(
-                                'type',
-                                event.currentTarget.value,
-                              );
-                            }}
-                          />
-                          <div className={styles.layerRow}>
-                            <NumberInput
-                              className={styles.layerInput}
-                              id="standard-multiline-flexible"
-                              label="Largura"
-                              value={profile.cement_pad.width}
-                              onChange={value => {
-                                handleCementPadChange('width', value as string);
-                              }}
-                            />
-
-                            <NumberInput
-                              className={styles.layerInput}
-                              id="standard-multiline-flexible"
-                              label="Comprimento"
-                              value={profile.cement_pad.length}
-                              onChange={value => {
-                                handleCementPadChange(
-                                  'length',
-                                  value as string,
-                                );
-                              }}
-                            />
-                            <NumberInput
-                              className={styles.layerInput}
-                              id="standard-multiline-flexible"
-                              label="Espessura"
-                              value={profile.cement_pad.thickness}
-                              onChange={value => {
-                                handleCementPadChange(
-                                  'thickness',
-                                  value as string,
-                                );
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </Collapse>
-                    </div>
-                    <section className="grid grid-cols-1 xl:grid-cols-[600px_auto]">
-                      <div className="flex flex-col p-2.5">
-                        <span className={styles.componentTitle}>Furo:</span>
-                        <DataSheet
-                          data={profile.bore_hole}
-                          onChangeValues={getUpdateListingFeatures<BoreHole>(
-                            'bore_hole',
-                          )}
-                          columns={boreHoleColumns}
-                          defaultValue={() => BORE_HOLE_FEATURE_DEFAULT}
-                        />
-                      </div>
-                      <div className="flex flex-col p-2.5">
-                        <span className={styles.componentTitle}>
-                          Espaço Anelar:
-                        </span>
-                        <DataSheet
-                          data={profile.hole_fill}
-                          onChangeValues={getUpdateListingFeatures<HoleFill>(
-                            'hole_fill',
-                          )}
-                          columns={holeFillColumns}
-                          defaultValue={() => HOLE_FILL_FEATURE_DEFAULT}
-                        />
-                      </div>
-                    </section>
-                    <section className="grid grid-cols-1 xl:grid-cols-[300px_auto]">
-                      <div className="flex flex-col p-2.5">
-                        <span className={styles.componentTitle}>
-                          Tubo de Boca:
-                        </span>
-                        <DataSheet
-                          data={profile.surface_case}
-                          onChangeValues={getUpdateListingFeatures<SurfaceCase>(
-                            'surface_case',
-                          )}
-                          columns={surfaceCaseColumns}
-                          defaultValue={() => SURFACE_CASE_FEATURE_DEFAULT}
-                        />
-                      </div>
-                      <div className="flex flex-col p-2.5">
-                        <span className={styles.componentTitle}>
-                          Revestimento:
-                        </span>
-                        <DataSheet
-                          data={profile.well_case}
-                          onChangeValues={getUpdateListingFeatures<WellCase>(
-                            'well_case',
-                          )}
-                          columns={wellCaseColumns}
-                          defaultValue={() => WELL_CASE_FEATURE_DEFAULT}
-                        />
-                      </div>
-                    </section>
-                    <div className="flex flex-col p-2.5">
-                      <span className={styles.componentTitle}>Filtros:</span>
-                      <DataSheet
-                        data={profile.well_screen}
-                        onChangeValues={getUpdateListingFeatures<WellScreen>(
-                          'well_screen',
-                        )}
-                        columns={wellScreenColumns}
-                        defaultValue={() => WELL_SCREEN_FEATURE_DEFAULT}
-                      />
-                    </div>
-                  </div>
+                  <TabConstructive />
                 </Tabs.Panel>
                 <Tabs.Panel
                   value="geology"
                   className="h-[calc(100%-50px)] overflow-y-auto"
                 >
-                  <div className="flex flex-col p-2.5">
-                    <DataSheet
-                      data={profile.lithology}
-                      onChangeValues={getUpdateListingFeatures<Lithology>(
-                        'lithology',
-                      )}
-                      columns={geologyColumns}
-                      defaultValue={() => LITHOLOGY_FEATURE_DEFAULT}
-                    />
-                  </div>
+                  <TabGeologic />
                 </Tabs.Panel>
                 <Tabs.Panel
                   value="info"
