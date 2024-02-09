@@ -5,6 +5,7 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './views/**/*.{js,ts,jsx,tsx,mdx}',
+    './src_old/**/*.{js,ts,jsx,tsx,mdx}',
 
     // Or if using `src` directory:
     './src/**/*.{js,ts,jsx,tsx,mdx}',
