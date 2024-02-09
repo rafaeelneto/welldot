@@ -459,12 +459,12 @@ export class DinamicDrawer {
           .attr(
             'x',
             (d: CementPad) =>
-              (POCO_CENTER - xScale((d.width * 0.3 * 1000) / 2)) / 2,
+              (POCO_CENTER - xScale((d.width * 0.5 * 1000) / 2)) / 2,
           )
           .attr('y', (d: CementPad) => {
             return yScale(0) - yScale(d.thickness * 0.5);
           })
-          .attr('width', (d: CementPad) => xScale((d.width * 0.3 * 1000) / 2))
+          .attr('width', (d: CementPad) => xScale((d.width * 0.5 * 1000) / 2))
           .attr('height', (d: CementPad) => {
             return yScale(d.thickness * 0.5);
           })

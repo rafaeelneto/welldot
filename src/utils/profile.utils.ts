@@ -190,9 +190,10 @@ function checkIfDiameterIsImperial(importedProfile: any): any {
   if (!profile.constructive) return false;
 
   const diamPolValues = getConstructivePropertySummary<number>(
-    profile,
+    profile.constructive,
     OLD_DIAM_PROP_NAME,
   );
+
   const isOnImperial = diamPolValues.filter(i => i !== undefined).length > 0;
 
   return isOnImperial;
@@ -209,13 +210,14 @@ function replaceImperialDiamenter<T>(data: any[]): T[] {
 
     return {
       ...item,
-      diamenter: diamMM,
+      diameter: diamMM,
     };
   });
 }
 
 function convertImperialDiameters(importedProfile: any): any {
   const isOnImperial = checkIfDiameterIsImperial(importedProfile);
+  console.log(isOnImperial);
   if (!isOnImperial) return importedProfile;
 
   const profile = { ...importedProfile };
@@ -225,6 +227,9 @@ function convertImperialDiameters(importedProfile: any): any {
   );
   profile.constructive.hole_fill = replaceImperialDiamenter<HoleFill>(
     profile.constructive.hole_fill,
+  );
+  profile.constructive.surface_case = replaceImperialDiamenter<WellCase>(
+    profile.constructive.surface_case,
   );
   profile.constructive.well_screen = replaceImperialDiamenter<WellScreen>(
     profile.constructive.well_screen,
@@ -249,8 +254,10 @@ function convertConstructiveData(importedProfile: any) {
     ...transformedProfile.constructive,
   };
 
+  delete transformedProfile.constructive;
+
   return {
-    ...importedProfile,
+    ...transformedProfile,
     ...constructive,
   };
 }
@@ -266,6 +273,8 @@ function convertGeologicData(importedProfile: any) {
     caves: [],
   };
 
+  delete importedProfile.geologic;
+
   return {
     ...importedProfile,
     ...geologic,
@@ -275,16 +284,20 @@ function convertGeologicData(importedProfile: any) {
 export function convertProfileFromJSON(jsonString: string): Profile | null {
   let importedProfile = JSON.parse(jsonString);
 
-  const noProfile = checkIfProfileIsEmpty(importedProfile);
-
-  if (noProfile) {
-    throw new Error('Invalid or empty profile');
-  }
+  // TODO improve detection to non profile jsons
+  // TODO improve detection to non json files
 
   importedProfile = convertConstructiveData(importedProfile);
   importedProfile = convertGeologicData(importedProfile);
 
+  // const noProfile = checkIfProfileIsEmpty(importedProfile);
+
+  // if (noProfile) {
+  //   throw new Error('Invalid or empty profile');
+  // }
   const profile = JSON.parse(JSON.stringify(importedProfile)) as Profile;
+
+  console.log(profile);
 
   return profile;
 }

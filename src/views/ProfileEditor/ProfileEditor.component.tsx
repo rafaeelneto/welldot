@@ -93,6 +93,7 @@ function ProfileEditor() {
         if (!importedWell) return;
         updateProfile(importedWell);
       } catch (error) {
+        console.log(error);
         notifications.show({
           title: 'Default notification',
           message: 'Hey there, your code is awesome! 🤥',
