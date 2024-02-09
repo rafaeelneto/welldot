@@ -26,7 +26,7 @@ import {
 import download from 'downloadjs';
 
 // TODO reactive profileDrawer and info
-// import ProfileDrawer from '@/src_old/components/profileDrawer/profileDrawer.component';
+import ProfileDrawer from '@/src_old/components/profileDrawer/profileDrawer.component';
 // import Info from '@/src_old/components/info/info.component';
 // import PDFExport from '@/src/components/export/pdfExport.component';
 
@@ -303,8 +303,7 @@ function ProfileEditor() {
         <div className="h-full overflow-x-auto">
           <div className="flex relative h-full flex-row w-auto md:overflow-hidden">
             <div className={`${styles.perfilContainer}`} id="profileContainer">
-              {/* <ProfileDrawer profile={profile} /> */}
-              <div>kmifdmafa</div>
+              <ProfileDrawer profile={profile} />
             </div>
             <div className="w-full h-full bg-white rounded-lg relative md:w-2/3">
               <Tabs

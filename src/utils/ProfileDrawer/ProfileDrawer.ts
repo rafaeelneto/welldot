@@ -19,7 +19,10 @@ import {
   getProfileDiamValues,
   getProfileLastItemsDepths,
 } from './profile.utils';
-import { responsivefy, getLithologicalFillList } from './profileD3.utils';
+import {
+  responsivefy,
+  getLithologicalFillList,
+} from '../../../src_old/utils/profileD3.utils';
 
 const d3 = {
   ...d3module,
