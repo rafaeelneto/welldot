@@ -8,7 +8,7 @@ import {
   Reduction,
   Geologic,
   SurfaceCase,
-} from '@/types/profile.types';
+} from '@/src/types/profile.types';
 
 type PointItem = {
   depth: number;

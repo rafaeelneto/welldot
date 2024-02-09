@@ -9,7 +9,7 @@ import {
   HoleFill,
   Fracture,
   Cave,
-} from '@/types/profile.types';
+} from '@/src/types/profile.types';
 
 // export const PROFILE_EXAMPLE: Profile = {
 //   geologic: [

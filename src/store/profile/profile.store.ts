@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { getEmptyProfile } from '@/data/profile/profile.data';
+import { getEmptyProfile } from '@/src/data/profile/profile.data';
 import {
   BoreHole,
   Cave,
@@ -15,7 +15,7 @@ import {
   SurfaceCase,
   WellCase,
   WellScreen,
-} from '@/types/profile.types';
+} from '@/src/types/profile.types';
 import { e } from 'vitest/dist/reporters-1evA5lom';
 
 // TODO move this function to utils

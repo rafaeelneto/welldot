@@ -4,7 +4,7 @@ import { Collapse, NumberInput, TextInput, Checkbox } from '@mantine/core';
 
 import DataSheet from '@/src_old/components/dataSheetComponent/dataSheet.component';
 
-import { useProfileStore } from '@/store/profile/profile.store';
+import { useProfileStore } from '@/src/store/profile/profile.store';
 
 import {
   BoreHole,
@@ -12,7 +12,7 @@ import {
   SurfaceCase,
   WellCase,
   WellScreen,
-} from '@/types/profile.types';
+} from '@/src/types/profile.types';
 
 import {
   EMPTY_PROFILE,
@@ -21,7 +21,7 @@ import {
   WELL_SCREEN_FEATURE_DEFAULT,
   SURFACE_CASE_FEATURE_DEFAULT,
   WELL_CASE_FEATURE_DEFAULT,
-} from '@/data/profile/profile.data';
+} from '@/src/data/profile/profile.data';
 
 import {
   boreHoleColumns,

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import PerfilEditor from '@/views/ProfileEditor/ProfileEditor.component';
+import PerfilEditor from '@/src/views/ProfileEditor/ProfileEditor.component';
 
 export const metadata: Metadata = {
   title: 'Well Profiler | Editor',

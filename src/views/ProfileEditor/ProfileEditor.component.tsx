@@ -29,20 +29,20 @@ import ProfileDrawer from '@/src_old/components/profileDrawer/profileDrawer.comp
 import Info from '@/src_old/components/info/info.component';
 // import PDFExport from '@/src/components/export/pdfExport.component';
 
-import TabConstructive from '@/views/ProfileEditor/ProfileEditor.constructive';
-import TabGeologic from '@/views/ProfileEditor/ProfileEditor.geologic';
+import TabConstructive from '@/src/views/ProfileEditor/ProfileEditor.constructive';
+import TabGeologic from '@/src/views/ProfileEditor/ProfileEditor.geologic';
 
-import { useProfileStore } from '@/store/profile/profile.store';
+import { useProfileStore } from '@/src/store/profile/profile.store';
 
-import { convertProfileFromJSON } from '@/utils/profile.utils';
+import { convertProfileFromJSON } from '@/src/utils/profile.utils';
 
 import DeleteWell from '@/public/assets/icons/delete_well_icon.svg';
 import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
 
-import { getWindow } from '@/utils/window.utils';
+import { getWindow } from '@/src/utils/window.utils';
 
 import styles from './profileEditor.module.scss';
-import { EMPTY_PROFILE } from '@/data/profile/profile.data';
+import { EMPTY_PROFILE } from '@/src/data/profile/profile.data';
 
 function ProfileEditor() {
   const inputFile = useRef(null);
