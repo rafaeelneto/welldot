@@ -125,7 +125,7 @@ export default function ProfileEditorConstructive() {
           </div>
         </Collapse>
       </div>
-      <section className="grid grid-cols-1 xl:grid-cols-[600px_auto]">
+      <section className="grid grid-cols-1 xl:grid-cols-[300px_auto]">
         <div className="flex flex-col p-2.5">
           <span className={styles.componentTitle}>Furo:</span>
           <DataSheet

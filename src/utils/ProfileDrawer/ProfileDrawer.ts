@@ -429,7 +429,7 @@ export class DinamicDrawer {
           .tip()
           .attr('class', this.customClassNames.tooltip)
           .direction('e')
-          .html((element, d) => {
+          .html((element, d: CementPad) => {
             return `
             <span class="${this.customClassNames.tooltipTitle}">LAJE DE PROTEÇÃO</span>
             <span class="${this.customClassNames.tooltipPrimaryInfo}">${data.cement_pad.type}</span>
@@ -456,13 +456,17 @@ export class DinamicDrawer {
           .enter()
           .append('rect')
           .attr('class', 'cement_pad')
-          .attr('x', (d: CementPad) => (POCO_CENTER - xScale(d.width / 2)) / 2)
+          .attr(
+            'x',
+            (d: CementPad) =>
+              (POCO_CENTER - xScale((d.width * 0.3 * 1000) / 2)) / 2,
+          )
           .attr('y', (d: CementPad) => {
-            return yScale(0) - yScale(d.thickness);
+            return yScale(0) - yScale(d.thickness * 0.5);
           })
-          .attr('width', (d: CementPad) => xScale(d.width / 2))
+          .attr('width', (d: CementPad) => xScale((d.width * 0.3 * 1000) / 2))
           .attr('height', (d: CementPad) => {
-            return yScale(parseFloat(d.thickness.toString()));
+            return yScale(d.thickness * 0.5);
           })
           .style('fill', d => {
             svg.call(DEFAULTS_TEXTURES.pad);
