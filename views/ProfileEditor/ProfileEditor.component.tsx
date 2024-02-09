@@ -25,8 +25,8 @@ import {
 
 import download from 'downloadjs';
 
-import ProfileDrawer from '@/src/components/profileDrawer/profileDrawer.component';
-import Info from '@/src/components/info/info.component';
+import ProfileDrawer from '@/src_old/components/profileDrawer/profileDrawer.component';
+import Info from '@/src_old/components/info/info.component';
 // import PDFExport from '@/src/components/export/pdfExport.component';
 
 import TabConstructive from '@/views/ProfileEditor/ProfileEditor.constructive';
