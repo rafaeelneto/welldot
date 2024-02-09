@@ -8,17 +8,23 @@ import d3tip from 'd3-tip';
 import textures from 'textures';
 
 import {
-  PROFILE_TYPE,
-  GEOLOGIC_COMPONENT_TYPE,
-  CONSTRUCTIVE_COMPONENT_TYPE,
-  HOLE_FILL_COMPONENT_TYPE,
-} from '../types/profile.types';
+  Profile,
+  Geologic,
+  Constructive,
+  Lithology,
+  HoleFill,
+  CementPad,
+  BoreHole,
+  SurfaceCase,
+  WellCase,
+  WellScreen,
+} from '@/src/types/profile.types';
 
 import {
-  isProfileEmpty,
+  checkIfProfileIsEmpty,
   getProfileDiamValues,
   getProfileLastItemsDepths,
-} from './profile.utils';
+} from '@/src/utils/profile.utils';
 import {
   responsivefy,
   getLithologicalFillList,
@@ -46,6 +52,8 @@ type componentsClassNames = {
   wellScreenGroup?: string;
   conflictGroup?: string;
 };
+
+type Conflict = { from: number; to: number; diameter: number };
 
 const DEFAULT_COMPONENTS_CLASS_NAMES = {
   tooltip: 'tooltip',
@@ -80,7 +88,7 @@ const DEFAULTS_TEXTURES = {
 };
 
 const getConflictAreas = (array1: any[], array2: any[]) => {
-  const conflicts: { from: number; to: number; diam: number }[] = [];
+  const conflicts: { from: number; to: number; diameter: number }[] = [];
   array1.forEach(item1 => {
     array2.forEach(item2 => {
       if (
@@ -94,7 +102,7 @@ const getConflictAreas = (array1: any[], array2: any[]) => {
         conflicts.push({
           from: a,
           to: b,
-          diam: Math.max(item1.diam_pol, item2.diam_pol),
+          diameter: Math.max(item1.diamenter, item2.diameter),
         });
       }
     });
@@ -103,7 +111,7 @@ const getConflictAreas = (array1: any[], array2: any[]) => {
 };
 
 const mergeConflicts = (
-  conflicts: { from: number; to: number; diam: number }[],
+  conflicts: { from: number; to: number; diameter: number }[],
   buffer: number,
 ) => {
   // SORT ARRAY BY THE FROM PROPERTY
@@ -112,13 +120,13 @@ const mergeConflicts = (
     (a, b) => parseFloat(a.from) - parseFloat(b.from),
   );
 
-  const mergedConflicts: { from: number; to: number; diam: number }[] = [];
+  const mergedConflicts: { from: number; to: number; diameter: number }[] = [];
 
   let index = 0;
   while (index < sortedConflicts.length) {
     const conflict = sortedConflicts[index];
 
-    const { from, diam } = conflict;
+    const { from, diameter } = conflict;
     let { to } = conflict;
 
     let jumpTo = index + 1;
@@ -150,7 +158,7 @@ const mergeConflicts = (
       jumpTo++;
     }
 
-    mergedConflicts.push({ from, to, diam });
+    mergedConflicts.push({ from, to, diameter });
 
     index = jumpTo;
   }
@@ -168,9 +176,9 @@ const getYAxisFunctions = (yScale: any) => {
   };
 };
 
-const getLithologyFiller = (geologyData: GEOLOGIC_COMPONENT_TYPE[], svg) => {
+const getLithologyFiller = (geologyData: Lithology[], svg) => {
   const litologicalFill = getLithologicalFillList(geologyData);
-  return (d: GEOLOGIC_COMPONENT_TYPE) => {
+  return (d: Lithology) => {
     if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
       return litologicalFill[`${d.fgdc_texture}.${d.from}`];
     }
@@ -247,63 +255,63 @@ export class DinamicDrawer {
 
   populateTooltips() {
     const tipsText = {
-      geology: (element, d) => `
+      geology: (element, d: Lithology) => `
         <span class="${this.customClassNames.tooltipTitle}">Litologia</span>
         <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
         <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
       `,
-      hole: (element, d) => {
+      hole: (element, d: HoleFill) => {
         return `
         <span class="${this.customClassNames.tooltipTitle}">FURO</span>
         <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
-        <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
+        <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
         `;
       },
-      surfaceCase: (element, d) => {
+      surfaceCase: (element, d: SurfaceCase) => {
         return `
             <span class="${this.customClassNames.tooltipTitle}">TUBO DE BOCA</span>
             <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
-            <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
+            <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
           `;
       },
-      holeFill: (element, d) => {
+      holeFill: (element, d: HoleFill) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">ESP. ANELAR</span>
           <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
-          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diam_pol}"</span>
+          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
           <span class="${this.customClassNames.tooltipSecondaryInfo}">
             <strong>Descrição:</strong> ${d.description}
           </span>
           `;
       },
-      wellCase: (element, d) => {
+      wellCase: (element, d: WellCase) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">REVESTIMENTO</span>
               <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${d.diam_pol}"
+                <strong>Diâmetro:</strong> ${d.diameter} mm
               </span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
           `;
       },
-      wellScreen: (element, d) => {
+      wellScreen: (element, d: WellScreen) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">FILTROS</span>
               <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${d.diam_pol}"</span>
+                <strong>Diâmetro:</strong> ${d.diameter} mm</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
                 <strong>Ranhura:</strong> ${d.screen_slot_mm}mm
               </span>
           `;
       },
-      conflict: (element, d) => {
+      conflict: (element, d: any) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">FILTROS</span>
               <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${d.diam_pol}"</span>
+                <strong>Diâmetro:</strong> ${d.diameter} mm</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
                 <strong>Ranhura:</strong> ${d.screen_slot_mm}mm
@@ -328,10 +336,10 @@ export class DinamicDrawer {
     return tooltips;
   }
 
-  drawLog(profile: PROFILE_TYPE) {
+  drawLog(profile: Profile) {
     if (!this.svg) return;
 
-    if (isProfileEmpty(profile)) return;
+    if (checkIfProfileIsEmpty(profile)) return;
 
     const svg = this.svg
       .attr('height', this.HEIGHT + this.MARGINS.TOP + this.MARGINS.BOTTOM)
@@ -372,7 +380,7 @@ export class DinamicDrawer {
 
     const tooltips = this.populateTooltips();
 
-    const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
+    const updateGeology = async (data: Lithology[], yScale) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
       const getLithologyFill = getLithologyFiller(data, svg);
 
@@ -401,7 +409,7 @@ export class DinamicDrawer {
         .style('fill', getLithologyFill);
     };
 
-    const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
+    const updatePoco = (data: Constructive, yScale) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
 
       const maxXValues = getProfileDiamValues(data);
@@ -448,16 +456,13 @@ export class DinamicDrawer {
           .enter()
           .append('rect')
           .attr('class', 'cement_pad')
-          .attr(
-            'x',
-            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2,
-          )
-          .attr('y', (d: any) => {
-            return yScale(0) - yScale(parseFloat(d.thickness));
+          .attr('x', (d: CementPad) => (POCO_CENTER - xScale(d.width / 2)) / 2)
+          .attr('y', (d: CementPad) => {
+            return yScale(0) - yScale(d.thickness);
           })
-          .attr('width', (d: any) => xScale((d.width / 2) * 39.37))
-          .attr('height', (d: any) => {
-            return yScale(parseFloat(d.thickness));
+          .attr('width', (d: CementPad) => xScale(d.width / 2))
+          .attr('height', (d: CementPad) => {
+            return yScale(parseFloat(d.thickness.toString()));
           })
           .style('fill', d => {
             svg.call(DEFAULTS_TEXTURES.pad);
@@ -486,8 +491,8 @@ export class DinamicDrawer {
       newHole
         // @ts-ignore
         .merge(hole)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr('x', (d: BoreHole) => (POCO_CENTER - xScale(d.diameter)) / 2)
+        .attr('width', (d: BoreHole) => xScale(d.diameter))
         // @ts-ignore
         .transition(transition)
         .attr('y', getYPos)
@@ -517,9 +522,12 @@ export class DinamicDrawer {
         .merge(surfaceCase)
         .attr(
           'x',
-          (d: any) => (POCO_CENTER - xScale(d.diam_pol + d.diam_pol * 0.1)) / 2,
+          (d: SurfaceCase) =>
+            (POCO_CENTER - xScale(d.diameter + d.diameter * 0.1)) / 2,
         )
-        .attr('width', (d: any) => xScale(d.diam_pol + d.diam_pol * 0.1))
+        .attr('width', (d: SurfaceCase) =>
+          xScale(d.diameter + d.diameter * 0.1),
+        )
         // @ts-ignore
         .transition(transition)
         .attr('y', getYPos)
@@ -540,13 +548,13 @@ export class DinamicDrawer {
       newHoleFill
         // @ts-ignore
         .merge(holeFill)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr('x', (d: HoleFill) => (POCO_CENTER - xScale(d.diameter)) / 2)
+        .attr('width', (d: HoleFill) => xScale(d.diameter))
         // @ts-ignore
         .transition(transition)
         .attr('y', getYPos)
         .attr('height', getHeight)
-        .style('fill', (d: HOLE_FILL_COMPONENT_TYPE) => {
+        .style('fill', (d: HoleFill) => {
           svg.call(DEFAULTS_TEXTURES[d.type]);
           return DEFAULTS_TEXTURES[d.type].url();
         });
@@ -567,8 +575,8 @@ export class DinamicDrawer {
       newWellCase
         // @ts-ignore
         .merge(wellCase)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr('x', (d: WellCase) => (POCO_CENTER - xScale(d.diameter)) / 2)
+        .attr('width', (d: WellCase) => xScale(d.diameter))
         // @ts-ignore
         .transition(transition)
         .attr('y', getYPos)
@@ -585,7 +593,7 @@ export class DinamicDrawer {
         .append('rect')
         .style('stroke', '#303030')
         .style('stroke-width', '2px')
-        .style('fill', (d: any) => {
+        .style('fill', () => {
           svg.call(DEFAULTS_TEXTURES.well_screen);
           return DEFAULTS_TEXTURES.well_screen.url();
         })
@@ -595,15 +603,15 @@ export class DinamicDrawer {
       newWellScreen
         // @ts-ignore
         .merge(wellScreen)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr('x', (d: WellScreen) => (POCO_CENTER - xScale(d.diameter)) / 2)
+        .attr('width', (d: WellScreen) => xScale(d.diameter))
         // @ts-ignore
         .transition(transition)
         .attr('y', getYPos)
         .attr('height', getHeight);
 
       // GET THE ARRAY FROM CONFLICT DETECTION
-      const conflictAreas: { from: number; to: number; diam: number }[] = [];
+      const conflictAreas: Conflict[] = [];
 
       // 1. ARRAY THROUGH WELL CASE OR WELL SCREEN
       conflictAreas.push(...getConflictAreas(data.well_case, data.well_screen));
@@ -615,10 +623,10 @@ export class DinamicDrawer {
       const tipConflict = d3
         // @ts-ignore
         .tip()
-        // ! CHANGE
+        // TODO ! CHANGE
         .attr('class', `${this.customClassNames.tooltip} conflic`)
         .direction('e')
-        .html((element, d) => {
+        .html((_, d) => {
           return `
         <span class="${this.customClassNames.tooltipTitle}">CONFLITO</span>
             <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
@@ -636,7 +644,7 @@ export class DinamicDrawer {
         .append('rect')
         .style('stroke', '#E52117')
         .style('stroke-width', '4px')
-        .style('fill', (d: any) => {
+        .style('fill', () => {
           svg.call(DEFAULTS_TEXTURES.conflict);
           return DEFAULTS_TEXTURES.conflict.url();
         })
@@ -646,16 +654,24 @@ export class DinamicDrawer {
       newConflict
         // @ts-ignore
         .merge(conflict)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam)) / 2)
-        .attr('width', (d: any) => xScale(d.diam))
+        .attr('x', (d: Conflict) => (POCO_CENTER - xScale(d.diameter)) / 2)
+        .attr('width', (d: Conflict) => xScale(d.diameter))
         // @ts-ignore
         .transition(transition)
         .attr('y', getYPos)
         .attr('height', getHeight);
     };
 
-    const geologicData = profile.geologic;
-    const constructionData = profile.constructive;
+    const geologicData = profile.lithology;
+    const constructionData = {
+      cement_pad: profile.cement_pad,
+      bore_hole: profile.bore_hole,
+      hole_fill: profile.hole_fill,
+      surface_case: profile.surface_case,
+      well_case: profile.well_case,
+      well_screen: profile.well_screen,
+      reduction: profile.reduction,
+    } as Constructive;
 
     const maxValues = getProfileLastItemsDepths(profile);
 
@@ -691,7 +707,7 @@ export class DinamicDrawer {
       gY.call(yAxis.scale(transform.rescaleY(yScaleGlobal)));
       pocoGroup
         .selectAll('rect')
-        .attr('y', (d: any) => {
+        .attr('y', d => {
           if (!d) return null;
           return transform.applyY(spanY(d));
         })
