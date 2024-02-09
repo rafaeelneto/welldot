@@ -5,7 +5,6 @@ import {
   BoreHole,
   WellCase,
   WellScreen,
-  Well,
   Reduction,
   Geologic,
   SurfaceCase,
@@ -33,15 +32,15 @@ function getLowestPointFromList(data: (PointItem | ExtensionItem)[]): number {
 
 export const getProfileLastItemsDepths = (profile: Profile): number[] => {
   return [
-    getLowestPointFromList(profile.geologic.lithology),
-    getLowestPointFromList(profile.geologic.fractures),
-    getLowestPointFromList(profile.geologic.caves),
-    getLowestPointFromList(profile.constructive.bore_hole),
-    getLowestPointFromList(profile.constructive.hole_fill),
-    getLowestPointFromList(profile.constructive.reduction),
-    getLowestPointFromList(profile.constructive.surface_case),
-    getLowestPointFromList(profile.constructive.well_case),
-    getLowestPointFromList(profile.constructive.well_screen),
+    getLowestPointFromList(profile.lithology),
+    getLowestPointFromList(profile.fractures),
+    getLowestPointFromList(profile.caves),
+    getLowestPointFromList(profile.bore_hole),
+    getLowestPointFromList(profile.hole_fill),
+    getLowestPointFromList(profile.reduction),
+    getLowestPointFromList(profile.surface_case),
+    getLowestPointFromList(profile.well_case),
+    getLowestPointFromList(profile.well_screen),
   ];
 };
 
@@ -80,18 +79,17 @@ export function getConstructivePropertySummary<T>(
   ];
 }
 
-export const checkIfProfileIsEmpty = (profile: Profile | Well): boolean => {
+export const checkIfProfileIsEmpty = (profile: Profile): boolean => {
   if (!profile) return true;
-  if (!profile.constructive && !profile.geologic) return true;
 
   const noComponent =
-    profile.geologic.lithology.length === 0 &&
-    profile.geologic.fractures.length === 0 &&
-    profile.geologic.caves.length === 0 &&
-    profile.constructive.bore_hole.length === 0 &&
-    profile.constructive.hole_fill.length === 0 &&
-    profile.constructive.well_case.length === 0 &&
-    profile.constructive.well_screen.length === 0;
+    profile.lithology.length === 0 &&
+    profile.fractures.length === 0 &&
+    profile.caves.length === 0 &&
+    profile.bore_hole.length === 0 &&
+    profile.hole_fill.length === 0 &&
+    profile.well_case.length === 0 &&
+    profile.well_screen.length === 0;
 
   return noComponent;
 };
@@ -113,11 +111,9 @@ export const calculateCilindricVolume = (diameter: number, height: number) => {
 export const calculateHoleFillVolume = (type: string, profile: Profile) => {
   let volume = 0;
 
-  const { well_case: wellCase, well_screen: wellScreen } = profile.constructive;
+  const { well_case: wellCase, well_screen: wellScreen } = profile;
 
-  const holeFillType = profile.constructive.hole_fill.filter(
-    el => el.type === type,
-  );
+  const holeFillType = profile.hole_fill.filter(el => el.type === type);
 
   holeFillType.forEach(el => {
     // CALCULATE THE OUTER VOLUME
@@ -240,6 +236,25 @@ function convertImperialDiameters(importedProfile: any): any {
   return profile;
 }
 
+function convertConstructiveData(importedProfile: any) {
+  if (!importedProfile.constructive) {
+    return importedProfile;
+  }
+
+  let transformedProfile = { ...importedProfile };
+  transformedProfile = convertBoleHole(transformedProfile);
+  transformedProfile = convertImperialDiameters(transformedProfile);
+
+  const constructive: Constructive = {
+    ...transformedProfile.constructive,
+  };
+
+  return {
+    ...importedProfile,
+    ...constructive,
+  };
+}
+
 function convertGeologicData(importedProfile: any) {
   if (!importedProfile.geologic || !importedProfile.geologic[0]) {
     return importedProfile;
@@ -253,11 +268,11 @@ function convertGeologicData(importedProfile: any) {
 
   return {
     ...importedProfile,
-    geologic,
+    ...geologic,
   };
 }
 
-export function convertProfileFromJSON(jsonString: string): Well | null {
+export function convertProfileFromJSON(jsonString: string): Profile | null {
   let importedProfile = JSON.parse(jsonString);
 
   const noProfile = checkIfProfileIsEmpty(importedProfile);
@@ -266,11 +281,10 @@ export function convertProfileFromJSON(jsonString: string): Well | null {
     throw new Error('Invalid or empty profile');
   }
 
-  importedProfile = convertBoleHole(importedProfile);
-  importedProfile = convertImperialDiameters(importedProfile);
+  importedProfile = convertConstructiveData(importedProfile);
   importedProfile = convertGeologicData(importedProfile);
 
-  const profile = JSON.parse(JSON.stringify(importedProfile)) as Well;
+  const profile = JSON.parse(JSON.stringify(importedProfile)) as Profile;
 
   return profile;
 }

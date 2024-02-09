@@ -1,12 +1,3 @@
-export type GeologicLayer = {
-  from: number;
-  to: number;
-  description: string;
-  color: string;
-  fgdc_texture: string | number;
-  geologic_unit: string;
-};
-
 export type BoreHole = {
   from: number;
   to: number;
@@ -58,14 +49,13 @@ export type CementPad = {
   length: number;
 };
 
-export type Constructive = {
-  bore_hole: BoreHole[];
-  well_case: WellCase[];
-  reduction: Reduction[];
-  well_screen: WellScreen[];
-  surface_case: SurfaceCase[];
-  hole_fill: HoleFill[];
-  cement_pad: CementPad;
+export type Lithology = {
+  from: number;
+  to: number;
+  description: string;
+  color: string;
+  fgdc_texture: string | number;
+  geologic_unit: string;
 };
 
 export type Fracture = {
@@ -84,23 +74,42 @@ export type Cave = {
   description?: string;
 };
 
-export type Geologic = {
-  lithology: GeologicLayer[];
-  fractures: Fracture[];
-  caves: Cave[];
-};
-
 export type Profile = {
   name?: string;
-  geologic: Geologic;
-  constructive: Constructive;
-};
-
-export type Well = {
   well_driller?: string;
   construction_date?: string;
   lat?: number;
   lng?: number;
   elevation?: number;
   obs?: string;
-} & Profile;
+
+  // Constructive
+  bore_hole: BoreHole[];
+  well_case: WellCase[];
+  reduction: Reduction[];
+  well_screen: WellScreen[];
+  surface_case: SurfaceCase[];
+  hole_fill: HoleFill[];
+  cement_pad: CementPad;
+
+  // Geologic
+  lithology: Lithology[];
+  fractures: Fracture[];
+  caves: Cave[];
+};
+
+export type Geologic = {
+  lithology: Lithology[];
+  fractures: Fracture[];
+  caves: Cave[];
+};
+
+export type Constructive = {
+  bore_hole: BoreHole[];
+  well_case: WellCase[];
+  reduction: Reduction[];
+  well_screen: WellScreen[];
+  surface_case: SurfaceCase[];
+  hole_fill: HoleFill[];
+  cement_pad: CementPad;
+};

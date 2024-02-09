@@ -71,8 +71,8 @@ export const boreHoleColumns = [
     continuousUpdates: false,
   },
   {
-    ...keyColumn('diam_pol', floatColumn),
-    title: 'Diâmetro (pol)',
+    ...keyColumn('diameter', floatColumn),
+    title: 'Diâmetro',
     minWidth: 60,
   },
 ];

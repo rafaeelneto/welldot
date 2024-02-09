@@ -1,13 +1,14 @@
 /* eslint-disable max-len */
 import {
   Profile,
-  GeologicLayer,
+  Lithology,
   BoreHole,
   WellCase,
   WellScreen,
   SurfaceCase,
   HoleFill,
-  Well,
+  Fracture,
+  Cave,
 } from '@/types/profile.types';
 
 // export const PROFILE_EXAMPLE: Profile = {
@@ -418,31 +419,34 @@ import {
 //   },
 // };
 
-export const PROFILE_DEFAULT: Well = JSON.parse(
+export const EMPTY_PROFILE: Profile = JSON.parse(
   JSON.stringify({
-    geologic: {
-      lithology: [],
-      caves: [],
-      fractures: [],
+    // Constructive
+    bore_hole: [],
+    well_screen: [],
+    surface_case: [],
+    well_case: [],
+    hole_fill: [],
+    reduction: [],
+    cement_pad: {
+      type: '',
+      width: 0,
+      thickness: 0,
+      length: 0,
     },
-    constructive: {
-      bore_hole: [],
-      well_screen: [],
-      surface_case: [],
-      well_case: [],
-      hole_fill: [],
-      reduction: [],
-      cement_pad: {
-        type: '',
-        width: 0,
-        thickness: 0,
-        length: 0,
-      },
-    },
-  } as Well),
+
+    // Geologic
+    lithology: [],
+    caves: [],
+    fractures: [],
+  } as Profile),
 );
 
-export const GEOLOGIC_COMPONENT_DEFAULT: GeologicLayer = {
+export function getEmptyProfile(): Profile {
+  return JSON.parse(JSON.stringify(EMPTY_PROFILE)) as Profile;
+}
+
+export const LITHOLOGY_FEATURE_DEFAULT: Lithology = {
   from: 0,
   to: 10,
   description: '',
@@ -451,37 +455,56 @@ export const GEOLOGIC_COMPONENT_DEFAULT: GeologicLayer = {
   geologic_unit: '',
 };
 
-export const BORE_HOLE_COMPONENT_DEFAULT: BoreHole = {
+export const FRACTURE_FEATURE_DEFAULT: Fracture = {
+  depth: 10,
+  water_intake: false,
+  azimuth: 0,
+  dip: 0,
+  swarm: false,
+  description: '',
+};
+
+export const CAVE_FEATURE_DEFAULT: Cave = {
+  from: 0,
+  to: 10,
+  water_intake: true,
+  description: '',
+};
+
+export const BORE_HOLE_FEATURE_DEFAULT: BoreHole = {
   from: 0,
   to: 10,
   diameter: 254,
   drilling_method: '',
 };
-export const WELL_CASE_COMPONENT_DEFAULT: WellCase = {
-  from: 0,
-  to: 10,
-  type: '',
-  diameter: 254,
-};
 
-export const WELL_SCREEN_COMPONENT_DEFAULT: WellScreen = {
-  from: 0,
-  to: 10,
-  type: '',
-  diameter: 254,
-  screen_slot_mm: 0.75,
-};
-export const HOLE_FILL_COMPONENT_DEFAULT: HoleFill = {
+export const HOLE_FILL_FEATURE_DEFAULT: HoleFill = {
   from: 0,
   to: 10,
   type: 'seal',
   diameter: 254,
   description: '',
 };
-export const SURFACE_CASE_COMPONENT_DEFAULT: SurfaceCase = {
+
+export const SURFACE_CASE_FEATURE_DEFAULT: SurfaceCase = {
   from: 0,
   to: 20,
   diameter: 254,
 };
 
-export default PROFILE_DEFAULT;
+export const WELL_CASE_FEATURE_DEFAULT: WellCase = {
+  from: 0,
+  to: 10,
+  type: '',
+  diameter: 254,
+};
+
+export const WELL_SCREEN_FEATURE_DEFAULT: WellScreen = {
+  from: 0,
+  to: 10,
+  type: '',
+  diameter: 254,
+  screen_slot_mm: 0.75,
+};
+
+export default EMPTY_PROFILE;
