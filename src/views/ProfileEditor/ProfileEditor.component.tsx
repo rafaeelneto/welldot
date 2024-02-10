@@ -27,15 +27,13 @@ import download from 'downloadjs';
 
 // TODO reactive profileDrawer and info
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
-// import Info from '@/src_old/components/info/info.component';
+import Info from '@/src/components/organisms/Info/Info.component';
 // import PDFExport from '@/src/components/export/pdfExport.component';
 
 import TabConstructive from '@/src/views/ProfileEditor/ProfileEditor.constructive';
 import TabGeologic from '@/src/views/ProfileEditor/ProfileEditor.geologic';
 
 import { useProfileStore } from '@/src/store/profile/profile.store';
-
-import { convertProfileFromJSON } from '@/src/utils/profile.utils';
 
 import DeleteWell from '@/public/assets/icons/delete_well_icon.svg';
 import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
@@ -320,8 +318,7 @@ function ProfileEditor() {
                   value="info"
                   className="h-[calc(100%-50px)] overflow-y-auto"
                 >
-                  fdafa
-                  {/* <Info profile={profile} /> */}
+                  <Info profile={profile} />
                 </Tabs.Panel>
               </Tabs>
             </div>

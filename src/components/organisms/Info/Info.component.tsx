@@ -1,18 +1,17 @@
 import React from 'react';
 import { Table } from '@mantine/core';
 
-import { PROFILE_TYPE } from '../../types/profile.types';
+import { Profile } from '@/src/types/profile.types';
 
 import {
   numberFormater,
-  numberFormaterInches,
   calculateHoleFillVolume,
-} from '../../utils/profile.utils';
+} from '@/src/utils/profile.utils';
 
 import styles from './info.module.scss';
 
 type InfoProps = {
-  profile: PROFILE_TYPE;
+  profile: Profile;
 };
 
 type RowType = {
@@ -31,7 +30,7 @@ type TableType = {
 function Info({ profile }: InfoProps) {
   const tables: TableType[] = [];
 
-  if (profile.constructive.bore_hole.length > 0) {
+  if (profile.bore_hole.length > 0) {
     // @ts-ignore
     const table: TableType = {
       title: 'Furo',
@@ -44,11 +43,11 @@ function Info({ profile }: InfoProps) {
 
     const rows: RowType[][] = [];
 
-    for (let i = 0; i < profile.constructive.bore_hole.length; i++) {
-      const item = profile.constructive.bore_hole[i];
+    for (let i = 0; i < profile.bore_hole.length; i++) {
+      const item = profile.bore_hole[i];
 
       rows.push([
-        { text: `${numberFormaterInches.format(item.diam_pol)}"` },
+        { text: `${numberFormater.format(item.diameter)} mm` },
         { text: `${numberFormater.format(item.from)}`, align: 'right' },
         { text: `${numberFormater.format(item.to)}`, align: 'right' },
       ]);
@@ -59,7 +58,7 @@ function Info({ profile }: InfoProps) {
     tables.push(table);
   }
 
-  if (profile.constructive.surface_case.length > 0) {
+  if (profile.surface_case.length > 0) {
     // @ts-ignore
     const table: TableType = {
       title: 'Tubo de Boca',
@@ -72,11 +71,11 @@ function Info({ profile }: InfoProps) {
 
     const rows: RowType[][] = [];
 
-    for (let i = 0; i < profile.constructive.surface_case.length; i++) {
-      const item = profile.constructive.surface_case[i];
+    for (let i = 0; i < profile.surface_case.length; i++) {
+      const item = profile.surface_case[i];
 
       rows.push([
-        { text: `${numberFormaterInches.format(item.diam_pol)}"` },
+        { text: `${numberFormater.format(item.diameter)} mm` },
         { text: `${numberFormater.format(item.from)}`, align: 'right' },
         { text: `${numberFormater.format(item.to)}`, align: 'right' },
       ]);
@@ -87,7 +86,7 @@ function Info({ profile }: InfoProps) {
     tables.push(table);
   }
 
-  if (profile.constructive.hole_fill.length > 0) {
+  if (profile.hole_fill.length > 0) {
     // @ts-ignore
     const table: TableType = {
       title: 'Espaço Anelar',
@@ -101,15 +100,15 @@ function Info({ profile }: InfoProps) {
 
     const rows: RowType[][] = [];
 
-    for (let i = 0; i < profile.constructive.hole_fill.length; i++) {
-      const item = profile.constructive.hole_fill[i];
+    for (let i = 0; i < profile.hole_fill.length; i++) {
+      const item = profile.hole_fill[i];
 
       rows.push([
         {
           text: `${item.description ? item.description : item.type}`,
         },
         {
-          text: `${numberFormaterInches.format(item.diam_pol)}"`,
+          text: `${numberFormater.format(item.diameter)} mm`,
           align: 'right',
         },
         { text: `${numberFormater.format(item.from)}`, align: 'right' },
@@ -117,8 +116,8 @@ function Info({ profile }: InfoProps) {
       ]);
 
       if (
-        item.type !== profile.constructive.hole_fill[i + 1]?.type ||
-        i === profile.constructive.hole_fill.length - 1
+        item.type !== profile.hole_fill[i + 1]?.type ||
+        i === profile.hole_fill.length - 1
       ) {
         rows.push([
           { text: `Volume total`, classStyle: styles.sumCell, colSpan: 3 },
@@ -138,7 +137,7 @@ function Info({ profile }: InfoProps) {
     tables.push(table);
   }
 
-  if (profile.constructive.well_case.length > 0) {
+  if (profile.well_case.length > 0) {
     // @ts-ignore
     const table: TableType = {
       title: 'Revestimento',
@@ -152,15 +151,15 @@ function Info({ profile }: InfoProps) {
 
     const rows: RowType[][] = [];
 
-    for (let i = 0; i < profile.constructive.well_case.length; i++) {
-      const item = profile.constructive.well_case[i];
+    for (let i = 0; i < profile.well_case.length; i++) {
+      const item = profile.well_case[i];
 
       rows.push([
         {
           text: `${item.type}`,
         },
         {
-          text: `${numberFormaterInches.format(item.diam_pol)}"`,
+          text: `${numberFormater.format(item.diameter)} mm`,
           align: 'right',
         },
         { text: `${numberFormater.format(item.from)}`, align: 'right' },
@@ -168,12 +167,12 @@ function Info({ profile }: InfoProps) {
       ]);
 
       if (
-        item.type !== profile.constructive.well_case[i + 1]?.type ||
-        item.diam_pol !== profile.constructive.well_case[i + 1]?.diam_pol
+        item.type !== profile.well_case[i + 1]?.type ||
+        item.diameter !== profile.well_case[i + 1]?.diameter
       ) {
         let totalHeight = 0;
-        const filteredWC = profile.constructive.well_case.filter(
-          el => el.type === item.type && el.diam_pol === item.diam_pol,
+        const filteredWC = profile.well_case.filter(
+          el => el.type === item.type && el.diameter === item.diameter,
         );
 
         filteredWC.forEach(el => {
@@ -196,7 +195,7 @@ function Info({ profile }: InfoProps) {
     tables.push(table);
   }
 
-  if (profile.constructive.well_screen.length > 0) {
+  if (profile.well_screen.length > 0) {
     // @ts-ignore
     const table: TableType = {
       title: 'Filtros',
@@ -211,15 +210,15 @@ function Info({ profile }: InfoProps) {
 
     const rows: RowType[][] = [];
 
-    for (let i = 0; i < profile.constructive.well_screen.length; i++) {
-      const item = profile.constructive.well_screen[i];
+    for (let i = 0; i < profile.well_screen.length; i++) {
+      const item = profile.well_screen[i];
 
       rows.push([
         {
           text: `${item.type}`,
         },
         {
-          text: `${numberFormaterInches.format(item.diam_pol)}"`,
+          text: `${numberFormater.format(item.diameter)} mm`,
           align: 'right',
         },
         {
@@ -231,12 +230,12 @@ function Info({ profile }: InfoProps) {
       ]);
 
       if (
-        item.type !== profile.constructive.well_screen[i + 1]?.type ||
-        item.diam_pol !== profile.constructive.well_screen[i + 1]?.diam_pol
+        item.type !== profile.well_screen[i + 1]?.type ||
+        item.diameter !== profile.well_screen[i + 1]?.diameter
       ) {
         let totalHeight = 0;
-        const filteredWC = profile.constructive.well_screen.filter(
-          el => el.type === item.type && el.diam_pol === item.diam_pol,
+        const filteredWC = profile.well_screen.filter(
+          el => el.type === item.type && el.diameter === item.diameter,
         );
 
         filteredWC.forEach(el => {

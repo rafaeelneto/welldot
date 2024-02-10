@@ -9,6 +9,7 @@ import {
   Geologic,
   SurfaceCase,
 } from '@/src/types/profile.types';
+import { getEmptyProfile } from '../data/profile/profile.data';
 
 type PointItem = {
   depth: number;
@@ -103,13 +104,8 @@ export const numberFormater = new Intl.NumberFormat('pt-BR', {
   minimumFractionDigits: 2,
 });
 
-// TODO: remove this
-export const numberFormaterInches = new Intl.NumberFormat('pt-BR', {
-  maximumFractionDigits: 2,
-});
-
 export const calculateCilindricVolume = (diameter: number, height: number) => {
-  return Math.PI * ((diameter * 1000) / 2) ** 2 * height;
+  return Math.PI * (diameter / 1000 / 2) ** 2 * height;
 };
 
 export const calculateHoleFillVolume = (type: string, profile: Profile) => {
@@ -245,7 +241,7 @@ function convertImperialDiameters(importedProfile: any): any {
 }
 
 function convertConstructiveData(importedProfile: any) {
-  if (importedProfile.surface_case[0]?.diam_pol) {
+  if (importedProfile.surface_case?.[0].diam_pol) {
     importedProfile.surface_case = replaceImperialDiamenter<SurfaceCase>(
       importedProfile.surface_case,
     );
@@ -321,7 +317,10 @@ export function convertProfileFromJSON(jsonString: string): Profile | null {
     importedProfile = convertGeologicData(importedProfile);
     importedProfile = clearOldProperties(importedProfile);
 
-    const profile = JSON.parse(JSON.stringify(importedProfile)) as Profile;
+    const profile = {
+      ...getEmptyProfile(),
+      ...(JSON.parse(JSON.stringify(importedProfile)) as Profile),
+    };
     console.log(profile);
 
     return profile;
