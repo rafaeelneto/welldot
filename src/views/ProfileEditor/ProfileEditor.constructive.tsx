@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Collapse, NumberInput, TextInput, Checkbox } from '@mantine/core';
 
-import DataSheet from '@/src_old/components/dataSheetComponent/dataSheet.component';
+import DataSheet from '@/src/components/organisms/DataSheet/DataSheet.component';
 
 import { useProfileStore } from '@/src/store/profile/profile.store';
 
@@ -29,7 +29,7 @@ import {
   surfaceCaseColumns,
   wellCaseColumns,
   wellScreenColumns,
-} from '@/src_old/components/dataSheetComponent/columns';
+} from '@/src/components/organisms/DataSheet/columns';
 
 import styles from './profileEditor.module.scss';
 

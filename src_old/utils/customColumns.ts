@@ -14,8 +14,8 @@ export const colorPickerColumn = (): Column<string | null> => ({
 });
 
 export const customSelectColumn = (
-  params: SelectOptions
-): Column<string | null, SelectOptions> => ({
+  params: SelectOptions,
+): Column<string | null, SelectOptions, string> => ({
   component: CustomSelect,
   columnData: params,
   disableKeys: true,
@@ -24,9 +24,9 @@ export const customSelectColumn = (
   deleteValue: () => null,
   // @ts-ignore
   copyValue: ({ rowData }) =>
-    params.options.find((choice) => choice.value === rowData)?.label,
+    params.options.find(choice => choice.value === rowData)?.label,
   pasteValue: ({ value }) =>
-    params.options.find((choice) => choice.label === value)?.value ?? null,
+    params.options.find(choice => choice.label === value)?.value ?? null,
 });
 
 export default {
