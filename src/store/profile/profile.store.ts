@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { notifications } from '@mantine/notifications';
+
 import { getEmptyProfile } from '@/src/data/profile/profile.data';
 import {
   BoreHole,
@@ -17,6 +19,7 @@ import {
   WellScreen,
 } from '@/src/types/profile.types';
 import { e } from 'vitest/dist/reporters-1evA5lom';
+import { convertProfileFromJSON } from '@/src/utils/profile.utils';
 
 // TODO move this function to utils
 function reorderComponentsDepth<T>(
@@ -39,6 +42,7 @@ interface IProfileState {
   profile: Profile;
   mutationCount: number;
   updateProfile: (newProfile: Profile) => void;
+  updateProfileFromJSON: (jsonProfile: string) => void;
   updateCementPad: (property: keyof CementPad, value: string | number) => void;
   getUpdateListingFeatures: <T extends ListingTypes>(
     property: ListingKeys,
@@ -133,5 +137,19 @@ export const useProfileStore = create<IProfileState>((set, get) => ({
     };
 
     get().updateProfile(newPerfilState);
+  },
+  updateProfileFromJSON: (jsonProfile: string) => {
+    try {
+      const importedWell = convertProfileFromJSON(jsonProfile);
+      if (!importedWell) return;
+      get().updateProfile(importedWell);
+    } catch (error) {
+      console.log(error);
+      notifications.show({
+        title: `Importing Error`,
+        message: `Ops, we couldn't import this profile. The format is invalid or incompatible. Please try to another file or contact-us`,
+        color: 'red',
+      });
+    }
   },
 }));

@@ -49,9 +49,10 @@ function ProfileEditor() {
   const inputFile = useRef(null);
   const firstRun = useRef(true);
 
-  const { profile, clear, updateProfile } = useProfileStore(state => ({
-    ...state,
-  }));
+  const { profile, clear, updateProfile, updateProfileFromJSON } =
+    useProfileStore(state => ({
+      ...state,
+    }));
 
   const [openExport, setOpenExport] = useState(false);
 
@@ -66,13 +67,7 @@ function ProfileEditor() {
   const savedProfileJson = getWindow()?.localStorage.getItem('profile');
 
   if (firstRun.current && savedProfileJson) {
-    try {
-      const importedWell = convertProfileFromJSON(savedProfileJson);
-      if (!importedWell) return null;
-      updateProfile({ ...importedWell });
-    } catch (error) {
-      // error
-    }
+    updateProfileFromJSON(savedProfileJson);
     firstRun.current = false;
   }
 
@@ -88,17 +83,7 @@ function ProfileEditor() {
     reader.onload = (e: ProgressEvent<FileReader>) => {
       if (!e) return;
 
-      try {
-        const importedWell = convertProfileFromJSON(e.target?.result as string);
-        if (!importedWell) return;
-        updateProfile(importedWell);
-      } catch (error) {
-        console.log(error);
-        notifications.show({
-          title: 'Default notification',
-          message: 'Hey there, your code is awesome! 🤥',
-        });
-      }
+      updateProfileFromJSON(e.target?.result as string);
     };
 
     try {

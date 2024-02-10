@@ -79,17 +79,21 @@ export function getConstructivePropertySummary<T>(
   ];
 }
 
-export const checkIfProfileIsEmpty = (profile: Profile): boolean => {
+export const checkIfProfileIsEmpty = (profile: any): boolean => {
   if (!profile) return true;
 
+  if (profile.constructive || profile.geologic) {
+    return false;
+  }
+
   const noComponent =
-    profile.lithology.length === 0 &&
-    profile.fractures.length === 0 &&
-    profile.caves.length === 0 &&
-    profile.bore_hole.length === 0 &&
-    profile.hole_fill.length === 0 &&
-    profile.well_case.length === 0 &&
-    profile.well_screen.length === 0;
+    profile.lithology?.length === 0 &&
+    profile.fractures?.length === 0 &&
+    profile.caves?.length === 0 &&
+    profile.bore_hole?.length === 0 &&
+    profile.hole_fill?.length === 0 &&
+    profile.well_case?.length === 0 &&
+    profile.well_screen?.length === 0;
 
   return noComponent;
 };
@@ -217,7 +221,6 @@ function replaceImperialDiamenter<T>(data: any[]): T[] {
 
 function convertImperialDiameters(importedProfile: any): any {
   const isOnImperial = checkIfDiameterIsImperial(importedProfile);
-  console.log(isOnImperial);
   if (!isOnImperial) return importedProfile;
 
   const profile = { ...importedProfile };
@@ -254,8 +257,6 @@ function convertConstructiveData(importedProfile: any) {
     ...transformedProfile.constructive,
   };
 
-  delete transformedProfile.constructive;
-
   return {
     ...transformedProfile,
     ...constructive,
@@ -273,31 +274,52 @@ function convertGeologicData(importedProfile: any) {
     caves: [],
   };
 
-  delete importedProfile.geologic;
-
   return {
     ...importedProfile,
     ...geologic,
   };
 }
 
+function clearOldProperties(importedProfile: any) {
+  if (importedProfile.geologic) {
+    delete importedProfile.geologic;
+  }
+
+  if (importedProfile.constructive) {
+    delete importedProfile.constructive;
+  }
+
+  if (importedProfile.info) {
+    delete importedProfile.info;
+  }
+
+  if (importedProfile.units) {
+    delete importedProfile.units;
+  }
+
+  return {
+    ...importedProfile,
+  };
+}
+
 export function convertProfileFromJSON(jsonString: string): Profile | null {
-  let importedProfile = JSON.parse(jsonString);
+  try {
+    let importedProfile = JSON.parse(jsonString);
 
-  // TODO improve detection to non profile jsons
-  // TODO improve detection to non json files
+    const noProfile = checkIfProfileIsEmpty(importedProfile);
+    if (noProfile) {
+      return null;
+    }
 
-  importedProfile = convertConstructiveData(importedProfile);
-  importedProfile = convertGeologicData(importedProfile);
+    importedProfile = convertConstructiveData(importedProfile);
+    importedProfile = convertGeologicData(importedProfile);
+    importedProfile = clearOldProperties(importedProfile);
 
-  // const noProfile = checkIfProfileIsEmpty(importedProfile);
+    const profile = JSON.parse(JSON.stringify(importedProfile)) as Profile;
+    console.log(profile);
 
-  // if (noProfile) {
-  //   throw new Error('Invalid or empty profile');
-  // }
-  const profile = JSON.parse(JSON.stringify(importedProfile)) as Profile;
-
-  console.log(profile);
-
-  return profile;
+    return profile;
+  } catch (e) {
+    throw new Error('Invalid profile format');
+  }
 }
