@@ -4,3 +4,5 @@ export function getWindow(): Window | undefined {
   }
   return window;
 }
+
+export default getWindow;

@@ -27,15 +27,20 @@ import {
   FileText,
 } from 'react-feather';
 
-import { PROFILE_TYPE } from '../../types/profile.types';
-import { infoType } from '../../types/profile2Export.types';
+import { Profile } from '@/src/types/profile.types';
+import { infoType } from '../../../src_old/types/profile2Export.types';
 
 import styles from './pdfExport.module.scss';
 
 import profile2Export from './profile2Export.component';
 
 type PDFEProps = {
-  profile: PROFILE_TYPE;
+  profile: Profile & {
+    info: {
+      headingInfo: { label: string; value: string }[];
+      endInfo: { label: string; value: string }[];
+    };
+  };
   onChangeInfo: (newPerfilState: any) => void;
 };
 

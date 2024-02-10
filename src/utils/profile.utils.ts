@@ -1,79 +1,100 @@
 import {
-  PROFILE_TYPE,
-  CONSTRUCTIVE_COMPONENT_TYPE,
-  HOLE_FILL_COMPONENT_TYPE,
-  BORE_HOLE_COMPONENT_TYPE,
-  CEMENT_PAD_COMPONENT_TYPE,
-  SURFACE_CASE_COMPONENT_TYPE,
-  WELL_CASE_COMPONENT_TYPE,
-  WELL_SCREEN_COMPONENT_TYPE,
-} from '../types/profile.types';
+  Profile,
+  Constructive,
+  HoleFill,
+  BoreHole,
+  WellCase,
+  WellScreen,
+  Reduction,
+  Geologic,
+  SurfaceCase,
+} from '@/src/types/profile.types';
+import { getEmptyProfile } from '../data/profile/profile.data';
 
-import { PROFILE_DEFAULT } from './profileDefaults';
+type PointItem = {
+  depth: number;
+};
 
-export const getProfileLastItemsDepths = (profile: PROFILE_TYPE): number[] => {
+type ExtensionItem = {
+  to: number;
+};
+
+function getLowestPointFromList(data: (PointItem | ExtensionItem)[]): number {
+  if (data.length === 0) return 0;
+
+  const lastItem = data[data.length - 1];
+
+  if ((lastItem as PointItem).depth) {
+    return (lastItem as PointItem).depth;
+  }
+
+  return (lastItem as ExtensionItem).to;
+}
+
+export const getProfileLastItemsDepths = (profile: Profile): number[] => {
   return [
-    profile.geologic.length === 0
-      ? 0
-      : profile.geologic[profile.geologic.length - 1].to,
-    profile.constructive.bore_hole.length === 0
-      ? 0
-      : profile.constructive.bore_hole[
-          profile.constructive.bore_hole.length - 1
-        ].to,
-    profile.constructive.hole_fill.length === 0
-      ? 0
-      : profile.constructive.hole_fill[
-          profile.constructive.hole_fill.length - 1
-        ].to,
-    profile.constructive.well_case.length === 0
-      ? 0
-      : profile.constructive.well_case[
-          profile.constructive.well_case.length - 1
-        ].to,
-    profile.constructive.well_screen.length === 0
-      ? 0
-      : profile.constructive.well_screen[
-          profile.constructive.well_screen.length - 1
-        ].to,
+    getLowestPointFromList(profile.lithology),
+    getLowestPointFromList(profile.fractures),
+    getLowestPointFromList(profile.caves),
+    getLowestPointFromList(profile.bore_hole),
+    getLowestPointFromList(profile.hole_fill),
+    getLowestPointFromList(profile.reduction),
+    getLowestPointFromList(profile.surface_case),
+    getLowestPointFromList(profile.well_case),
+    getLowestPointFromList(profile.well_screen),
   ];
 };
 
 export const getProfileDiamValues = (
-  constructionData: CONSTRUCTIVE_COMPONENT_TYPE,
+  constructionData: Constructive,
 ): number[] => [
-  ...constructionData.bore_hole.map(
-    (d: BORE_HOLE_COMPONENT_TYPE) =>
-      // divide by 1 to convert text to number
-      // eslint-disable-next-line implicit-arrow-linebreak
-      // @ts-ignore
-      parseFloat(d.diam_pol),
-    // eslint-disable-next-line function-paren-newline
-  ),
-  ...constructionData.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
-    // @ts-ignore
-    parseFloat(d.diam_pol),
-  ),
-  ...constructionData.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
-    // @ts-ignore
-    parseFloat(d.diam_pol),
-  ),
-  ...constructionData.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
-    // @ts-ignore
-    parseFloat(d.diam_pol),
-  ),
+  ...constructionData.bore_hole.map((d: BoreHole) => d.diameter),
+  ...constructionData.hole_fill.map((d: HoleFill) => d.diameter),
+  ...constructionData.surface_case.map((d: SurfaceCase) => d.diameter),
+  ...constructionData.well_screen.map((d: WellScreen) => d.diameter),
+  ...constructionData.well_case.map((d: WellCase) => d.diameter),
+  ...constructionData.reduction.reduce((acc: number[], cur: Reduction) => {
+    return acc.concat([cur.diam_from, cur.diam_to]);
+  }, []),
 ];
 
-export const isProfileEmpty = (profile: PROFILE_TYPE): boolean => {
+export function getConstructivePropertySummary<T>(
+  constructionData: any,
+  property: string,
+): T[] {
+  return [
+    ...(constructionData?.bore_hole?.map((d: BoreHole | any) => d[property]) ||
+      []),
+    ...(constructionData?.hole_fill?.map((d: HoleFill | any) => d[property]) ||
+      []),
+    ...(constructionData?.surface_case?.map(
+      (d: SurfaceCase | any) => d[property],
+    ) || []),
+    ...(constructionData?.well_screen?.map(
+      (d: WellScreen | any) => d[property],
+    ) || []),
+    ...(constructionData?.well_case?.map((d: WellCase | any) => d[property]) ||
+      []),
+    ...(constructionData?.reduction?.map((d: WellCase | any) => d[property]) ||
+      []),
+  ];
+}
+
+export const checkIfProfileIsEmpty = (profile: any): boolean => {
   if (!profile) return true;
-  if (!profile.constructive && !profile.geologic) return true;
+
+  if (profile.constructive || profile.geologic) {
+    return false;
+  }
 
   const noComponent =
-    profile.geologic.length === 0 &&
-    profile.constructive.bore_hole.length === 0 &&
-    profile.constructive.hole_fill.length === 0 &&
-    profile.constructive.well_case.length === 0 &&
-    profile.constructive.well_screen.length === 0;
+    profile.lithology?.length === 0 &&
+    profile.fractures?.length === 0 &&
+    profile.caves?.length === 0 &&
+    profile.bore_hole?.length === 0 &&
+    profile.hole_fill?.length === 0 &&
+    profile.well_case?.length === 0 &&
+    profile.well_screen?.length === 0;
 
   return noComponent;
 };
@@ -83,280 +104,226 @@ export const numberFormater = new Intl.NumberFormat('pt-BR', {
   minimumFractionDigits: 2,
 });
 
-export const numberFormaterInches = new Intl.NumberFormat('pt-BR', {
-  maximumFractionDigits: 2,
-});
-
-export const calculateVolume = (diamPol: number, height: number) => {
-  return Math.PI * (diamPol / 39.37 / 2) ** 2 * height;
+export const calculateCilindricVolume = (diameter: number, height: number) => {
+  return Math.PI * (diameter / 1000 / 2) ** 2 * height;
 };
 
-export const calculateHoleFillVolume = (
-  type: string,
-  profile: PROFILE_TYPE,
-) => {
+export const calculateHoleFillVolume = (type: string, profile: Profile) => {
   let volume = 0;
 
-  const { well_case: wellCase, well_screen: wellScreen } = profile.constructive;
+  const { well_case: wellCase, well_screen: wellScreen } = profile;
 
-  const holeFillType = profile.constructive.hole_fill.filter(
-    el => el.type === type,
-  );
+  const holeFillType = profile.hole_fill.filter(el => el.type === type);
 
   holeFillType.forEach(el => {
     // CALCULATE THE OUTER VOLUME
-    let outerVolume = calculateVolume(el.diam_pol, el.to - el.from);
+    let outerVolume = calculateCilindricVolume(el.diameter, el.to - el.from);
 
     // SUBTRACT THE OUTER VOLUME FROM THE VOLUME OF EACH WELL CASE SECTION
     for (let i = 0; i < wellCase.length; i++) {
       const wC = wellCase[i];
 
-      if (wC.from > el.to || wC.to < el.from) {
-        // eslint-disable-next-line no-continue
-        continue;
+      if (!(wC.from > el.to || wC.to < el.from)) {
+        let { from, to } = el;
+        if (wC.from > el.from) from = wC.from;
+        if (wC.to < el.to) to = wC.to;
+
+        const wellSectionVolume = calculateCilindricVolume(
+          wC.diameter,
+          to - from,
+        );
+
+        outerVolume -= wellSectionVolume;
       }
-
-      // eslint-disable-next-line prefer-destructuring
-      let { from, to } = el;
-      if (wC.from > el.from) from = wC.from;
-      if (wC.to < el.to) to = wC.to;
-
-      const wellSectionVolume = calculateVolume(wC.diam_pol, to - from);
-
-      outerVolume -= wellSectionVolume;
     }
 
     // SUBTRACT THE OUTER VOLUME FROM THE VOLUME OF EACH WELL SCREEN SECTION
     for (let i = 0; i < wellScreen.length; i++) {
       const wS = wellScreen[i];
 
-      if (wS.from > el.to || wS.to < el.from) {
-        // eslint-disable-next-line no-continue
-        continue;
+      if (!(wS.from > el.to || wS.to < el.from)) {
+        let { from, to } = el;
+        if (wS.from > el.from) from = wS.from;
+        if (wS.to < el.to) to = wS.to;
+
+        const wellSectionVolume = calculateCilindricVolume(
+          wS.diameter,
+          to - from,
+        );
+
+        outerVolume -= wellSectionVolume;
       }
-
-      // eslint-disable-next-line prefer-destructuring
-      let { from, to } = el;
-      if (wS.from > el.from) from = wS.from;
-      if (wS.to < el.to) to = wS.to;
-
-      const wellSectionVolume = calculateVolume(wS.diam_pol, to - from);
-
-      outerVolume -= wellSectionVolume;
     }
 
-    // console.log(outerVolume);
     volume += outerVolume;
   });
 
   return volume;
 };
 
-export const convertProfile = (jsonString: string) => {
-  let perfilImported = JSON.parse(jsonString);
+/**
+ * Convertion Section
+ */
+const INCHES_TO_MM_CONVERSION_RATIO = 25.4;
+const OLD_DIAM_PROP_NAME = 'diam_pol';
 
-  let noPerfil = true;
-  if (perfilImported.geologic && perfilImported.constructive) {
-    if (perfilImported.constructive.bole_hole) {
-      perfilImported.constructive = {
-        ...perfilImported.constructive,
-        bore_hole: [...perfilImported.constructive.bole_hole],
-      };
+function convertBoleHole(importedProfile: any): any {
+  if (!importedProfile.constructive) return importedProfile;
 
-      delete perfilImported.constructive.bole_hole;
-    }
+  const profile = { ...importedProfile };
 
-    noPerfil = isProfileEmpty(perfilImported);
-  }
-
-  if (noPerfil) {
-    const perfilConverted = {
-      ...PROFILE_DEFAULT,
-      constructive: { ...PROFILE_DEFAULT.constructive },
+  if (importedProfile.constructive.bole_hole) {
+    profile.constructive = {
+      ...profile.constructive,
+      bore_hole: [...profile.constructive.bole_hole],
     };
-    if (perfilImported.geologico || perfilImported.construtivo) {
-      if (perfilImported.geologico.length > 0) {
-        perfilConverted.geologic = perfilImported.geologico.map(
-          (camada: any) => {
-            return {
-              from: parseFloat(camada.de),
-              to: parseFloat(camada.ate),
-              fgdc_texture: camada.fgdc_texture || '',
-              color: camada.color || '',
-              description: camada.descricao || '',
-              geologic_unit: camada.unidade_geologica || '',
-            };
-          },
-        );
-      }
-      if (perfilImported.construtivo.furo.length > 0) {
-        perfilConverted.constructive.bore_hole =
-          perfilImported.construtivo.furo.map((camada: any) => {
-            return {
-              from: parseFloat(camada.de),
-              to: parseFloat(camada.ate),
-              diam_pol: parseFloat(camada.diam_pol) || 0,
-            };
-          });
-      }
-      if (perfilImported.construtivo.espaco_anelar.length > 0) {
-        perfilConverted.constructive.hole_fill =
-          perfilImported.construtivo.espaco_anelar.map((camada: any) => {
-            let tipo = 'gravel_pack';
-            if (camada.tipo === 'cimento') {
-              tipo = 'seal';
-            }
-            return {
-              from: parseFloat(camada.de),
-              to: parseFloat(camada.ate),
-              diam_pol: parseFloat(camada.diam_pol) || 0,
-              description: camada.descricao || '',
-              // eslint-disable-next-line eqeqeq
-              type: tipo,
-            };
-          });
-      }
-      if (perfilImported.construtivo.filtros.length > 0) {
-        perfilConverted.constructive.well_screen =
-          perfilImported.construtivo.filtros.map((camada: any) => {
-            return {
-              from: parseFloat(camada.de),
-              to: parseFloat(camada.ate),
-              type: camada.tipo || '',
-              diam_pol: parseFloat(camada.diam_pol) || 0,
-              screen_slot_mm: parseFloat(camada.ranhura_mm) || 0,
-            };
-          });
-      }
-      if (perfilImported.construtivo.revestimento.length > 0) {
-        perfilConverted.constructive.well_case =
-          perfilImported.construtivo.revestimento.map((camada: any) => {
-            return {
-              from: parseFloat(camada.de),
-              to: parseFloat(camada.ate),
-              type: camada.tipo || '',
-              diam_pol: parseFloat(camada.diam_pol) || 0,
-            };
-          });
-      }
-      if (perfilImported.construtivo.tubo_boca.length > 0) {
-        perfilConverted.constructive.surface_case =
-          perfilImported.construtivo.tubo_boca.map((camada: any) => {
-            const depth =
-              parseFloat(camada.altura) || parseFloat(camada.depth) || 0;
-            return {
-              from: camada.from || 0,
-              to: camada.to || depth,
-              diam_pol: parseFloat(camada.diam_pol) || 0,
-            };
-          });
-      }
-      if (perfilImported.construtivo.laje.largura) {
-        perfilConverted.constructive.cement_pad = {
-          type: perfilImported.construtivo.laje.tipo,
-          thickness: parseFloat(perfilImported.construtivo.laje.espessura),
-          width: parseFloat(perfilImported.construtivo.laje.largura),
-          length: parseFloat(perfilImported.construtivo.laje.comprimento),
-        };
-      }
 
-      perfilImported = { ...perfilConverted };
-    } else {
-      throw new Error('Erro ao carregar perfil');
-    }
+    delete profile.constructive.bole_hole;
   }
 
-  perfilImported.geologic = perfilImported.geologic.map((layer: any) => {
-    return { ...layer, from: parseFloat(layer.from), to: parseFloat(layer.to) };
-  });
+  return profile;
+}
 
-  perfilImported.constructive.bore_hole =
-    perfilImported.constructive.bore_hole.map((item: any) => {
-      return {
-        ...item,
-        from: parseFloat(item.from),
-        to: parseFloat(item.to),
-        diam_pol: parseFloat(item.diam_pol),
-      };
-    });
+function checkIfDiameterIsImperial(importedProfile: any): any {
+  const profile = { ...importedProfile };
 
-  perfilImported.constructive.well_case =
-    perfilImported.constructive.well_case.map((item: any) => {
-      return {
-        ...item,
-        from: parseFloat(item.from),
-        to: parseFloat(item.to),
-        diam_pol: parseFloat(item.diam_pol),
-      };
-    });
+  if (!profile.constructive) return false;
 
-  perfilImported.constructive.well_screen =
-    perfilImported.constructive.well_screen.map((item: any) => {
-      return {
-        ...item,
-        from: parseFloat(item.from),
-        to: parseFloat(item.to),
-        diam_pol: parseFloat(item.diam_pol),
-        screen_slot_mm: parseFloat(item.screen_slot_mm),
-      };
-    });
-
-  perfilImported.constructive.surface_case =
-    perfilImported.constructive.surface_case.map((item: any) => {
-      return {
-        ...item,
-        from: parseFloat(item.from),
-        to: parseFloat(item.to),
-        diam_pol: parseFloat(item.diam_pol),
-      };
-    });
-  perfilImported.constructive.hole_fill =
-    perfilImported.constructive.hole_fill.map((item: any) => {
-      return {
-        ...item,
-        from: parseFloat(item.from),
-        to: parseFloat(item.to),
-        diam_pol: parseFloat(item.diam_pol),
-      };
-    });
-
-  if (perfilImported.constructive.reduction) {
-    perfilImported.constructive.reduction =
-      perfilImported.constructive.reduction.map((item: any) => {
-        return {
-          ...item,
-          from: parseFloat(item.from),
-          to: parseFloat(item.to),
-          diam_from: parseFloat(item.diam_from),
-          diam_to: parseFloat(item.diam_to),
-        };
-      });
-  }
-
-  perfilImported.constructive.intake_depth = parseFloat(
-    perfilImported.constructive.intake_depth,
+  const diamPolValues = getConstructivePropertySummary<number>(
+    profile.constructive,
+    OLD_DIAM_PROP_NAME,
   );
 
-  perfilImported.constructive.cement_pad = {
-    ...perfilImported.constructive.cement_pad,
-    width: perfilImported.constructive.cement_pad.width,
-    thickness: perfilImported.constructive.cement_pad.thickness,
-    length: perfilImported.constructive.cement_pad.length,
+  const isOnImperial = diamPolValues.filter(i => i !== undefined).length > 0;
+
+  return isOnImperial;
+}
+
+function replaceImperialDiamenter<T>(data: any[]): T[] {
+  if (!data) return [];
+
+  return data.map((d: any) => {
+    const item = { ...d };
+    const diamMM = d.diam_pol * INCHES_TO_MM_CONVERSION_RATIO;
+
+    delete item.diam_pol;
+
+    return {
+      ...item,
+      diameter: diamMM,
+    };
+  });
+}
+
+function convertImperialDiameters(importedProfile: any): any {
+  const isOnImperial = checkIfDiameterIsImperial(importedProfile);
+  if (!isOnImperial) return importedProfile;
+
+  const profile = { ...importedProfile };
+
+  profile.constructive.bore_hole = replaceImperialDiamenter<BoreHole>(
+    profile.constructive.bore_hole,
+  );
+  profile.constructive.hole_fill = replaceImperialDiamenter<HoleFill>(
+    profile.constructive.hole_fill,
+  );
+  profile.constructive.surface_case = replaceImperialDiamenter<SurfaceCase>(
+    profile.constructive.surface_case,
+  );
+  profile.constructive.well_screen = replaceImperialDiamenter<WellScreen>(
+    profile.constructive.well_screen,
+  );
+  profile.constructive.well_case = replaceImperialDiamenter<WellCase>(
+    profile.constructive.well_case,
+  );
+
+  return profile;
+}
+
+function convertConstructiveData(importedProfile: any) {
+  if (importedProfile.surface_case?.[0].diam_pol) {
+    importedProfile.surface_case = replaceImperialDiamenter<SurfaceCase>(
+      importedProfile.surface_case,
+    );
+  }
+
+  if (!importedProfile.constructive) {
+    return importedProfile;
+  }
+
+  let transformedProfile = { ...importedProfile };
+  transformedProfile = convertBoleHole(transformedProfile);
+  transformedProfile = convertImperialDiameters(transformedProfile);
+
+  const constructive: Constructive = {
+    ...transformedProfile.constructive,
   };
 
-  // check if cementPad exists
-  let cementPad = false;
+  return {
+    ...transformedProfile,
+    ...constructive,
+  };
+}
 
-  if (
-    perfilImported.constructive &&
-    perfilImported.constructive.cement_pad &&
-    perfilImported.constructive.cement_pad.width
-  ) {
-    cementPad = true;
+function convertGeologicData(importedProfile: any) {
+  if (!importedProfile.geologic || !importedProfile.geologic[0]) {
+    return importedProfile;
+  }
+
+  const geologic: Geologic = {
+    lithology: [...importedProfile.geologic],
+    fractures: [],
+    caves: [],
+  };
+
+  return {
+    ...importedProfile,
+    ...geologic,
+  };
+}
+
+function clearOldProperties(importedProfile: any) {
+  if (importedProfile.geologic) {
+    delete importedProfile.geologic;
+  }
+
+  if (importedProfile.constructive) {
+    delete importedProfile.constructive;
+  }
+
+  if (importedProfile.info) {
+    delete importedProfile.info;
+  }
+
+  if (importedProfile.units) {
+    delete importedProfile.units;
   }
 
   return {
-    perfilImported,
-    cementPad,
+    ...importedProfile,
   };
-};
+}
+
+export function convertProfileFromJSON(jsonString: string): Profile | null {
+  try {
+    let importedProfile = JSON.parse(jsonString);
+
+    const noProfile = checkIfProfileIsEmpty(importedProfile);
+    if (noProfile) {
+      return null;
+    }
+
+    importedProfile = convertConstructiveData(importedProfile);
+    importedProfile = convertGeologicData(importedProfile);
+    importedProfile = clearOldProperties(importedProfile);
+
+    const profile = {
+      ...getEmptyProfile(),
+      ...(JSON.parse(JSON.stringify(importedProfile)) as Profile),
+    };
+
+    return profile;
+  } catch (e) {
+    throw new Error('Invalid profile format');
+  }
+}

@@ -4,34 +4,28 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
-import wrap from '../../utils/wrap';
+import wrap from '../../../src_old/utils/wrap';
 
 // eslint-disable-next-line import/namespace
 import { innerRenderPdf, printPdf, downloadPdf } from './pdfGenerate';
 
-import fdgcTextures from '../../utils/fgdcTextures';
+import fdgcTextures from '../../../src_old/utils/fgdcTextures';
 
 import {
   getProfileLastItemsDepths,
   getProfileDiamValues,
-  isProfileEmpty,
+  checkIfProfileIsEmpty,
 } from '../../utils/profile.utils';
 
+import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
+
+import { getLithologicalFillList } from '../../../src_old/utils/profileD3.utils';
 import {
-  GEOLOGIC_COMPONENT_TYPE,
-  BORE_HOLE_COMPONENT_TYPE,
-  CEMENT_PAD_COMPONENT_TYPE,
-  HOLE_FILL_COMPONENT_TYPE,
-  PROFILE_TYPE,
-  SURFACE_CASE_COMPONENT_TYPE,
-  WELL_CASE_COMPONENT_TYPE,
-  WELL_SCREEN_COMPONENT_TYPE,
-  CONSTRUCTIVE_COMPONENT_TYPE,
-} from '../../types/profile.types';
-
-import { SvgInfo, infoType } from '../../types/profile2Export.types';
-
-import { getLithologicalFillList } from '../../utils/profileD3.utils';
+  Constructive,
+  HoleFill,
+  Lithology,
+  Profile,
+} from '@/src/types/profile.types';
 
 const d3 = {
   ...d3module,
@@ -44,18 +38,26 @@ const profile2Export = (
   header: string,
   headingInfo: infoType[],
   endInfo: infoType[],
-  profile: PROFILE_TYPE,
+  profile: Profile,
   breakPages: boolean,
   zoomLevel: number,
   iframeId?: string,
   print?: boolean,
 ) => {
-  if (isProfileEmpty(profile)) return;
+  if (checkIfProfileIsEmpty(profile)) return;
 
   const MARGINS = { TOP: 15, RIGHT: 30, BOTTOM: 30, LEFT: 20 };
 
-  const geologicData = profile.geologic;
-  const constructionData = profile.constructive;
+  const geologicData = profile.lithology;
+  const constructionData = {
+    cement_pad: profile.cement_pad,
+    bore_hole: profile.bore_hole,
+    hole_fill: profile.hole_fill,
+    surface_case: profile.surface_case,
+    well_case: profile.well_case,
+    well_screen: profile.well_screen,
+    reduction: profile.reduction,
+  } as Constructive;
 
   // calculate max depth on the profile
   const depthValues = getProfileLastItemsDepths(profile);
@@ -70,7 +72,7 @@ const profile2Export = (
   const GEOLOGY_X_POS_DIV_2 = GEOLOGY_X_POS_DIV_1 + 20;
   const GEOLOGY_TIP_WIDTH = 200;
 
-  const maxDiamValues = getProfileDiamValues(profile.constructive);
+  const maxDiamValues = getProfileDiamValues(profile);
 
   const maxXValues = d3.max(maxDiamValues) || 0;
 
@@ -211,7 +213,7 @@ const profile2Export = (
         .background('#fff'),
     };
 
-    const updateGeology = async (data: GEOLOGIC_COMPONENT_TYPE[], yScale) => {
+    const updateGeology = async (data: Lithology[], yScale) => {
       const litologicalFill = getLithologicalFillList(data);
 
       const layerGroup = litoligicalGroup.append('g');
@@ -225,7 +227,7 @@ const profile2Export = (
         .attr('width', GEOLOGY_WIDTH)
         .style('stroke', '#101010')
         .style('stroke-width', '1px')
-        .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+        .attr('y', (d: Lithology, i) => {
           if (i === 0) {
             const depth = d.from < currentDepth ? currentDepth : d.from;
             return yScale(depth);
@@ -234,14 +236,14 @@ const profile2Export = (
           // const depth = d.from < currentDepth ? currentDepth : d.from;
           return yScale(data[i - 1].to);
         })
-        .attr('height', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+        .attr('height', (d: Lithology, i) => {
           const depth =
             (d.to < maxSvgDepth ? d.to : maxSvgDepth) -
             (d.from > currentDepth ? d.from : currentDepth);
 
           return yScale(depth + currentDepth);
         })
-        .style('fill', (d: GEOLOGIC_COMPONENT_TYPE) => {
+        .style('fill', (d: Lithology) => {
           if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
             return litologicalFill[`${d.fgdc_texture}.${d.from}`];
           }
@@ -271,7 +273,7 @@ const profile2Export = (
           if (d.to > maxSvgDepth) return null;
           return `${d.to}`;
         })
-        .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+        .attr('y', (d: Lithology, i) => {
           currYPos = yScale(d.to);
           return yScale(d.to);
         });
@@ -296,7 +298,7 @@ const profile2Export = (
           return d.description;
         })
         .call(wrap, GEOLOGY_TIP_WIDTH)
-        .attr('y', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+        .attr('y', (d: Lithology, i) => {
           if (i > 0) {
             const lastTextHeight =
               // @ts-ignore
@@ -342,7 +344,7 @@ const profile2Export = (
         .style('stroke-width', '1px')
         // eslint-disable-next-line no-unused-vars
         // @ts-ignore
-        .attr('d', (d: GEOLOGIC_COMPONENT_TYPE, i) => {
+        .attr('d', (d: Lithology, i) => {
           const yPos = yScale(d.from > currentDepth ? d.from : currentDepth);
           let curveCoordinates: any[] = [[WIDTH, yPos]];
 
@@ -387,7 +389,7 @@ const profile2Export = (
 
     const occupiedPositions: { from: number; to: number }[] = [];
 
-    const updatePoco = (data: CONSTRUCTIVE_COMPONENT_TYPE, yScale) => {
+    const updatePoco = (data: Constructive, yScale) => {
       constructionGroup.selectAll('.cement_pad').remove();
 
       if (data.cement_pad && data.cement_pad.thickness && currentDepth === 0) {
@@ -403,14 +405,14 @@ const profile2Export = (
           .attr('class', 'cement_pad')
           .attr(
             'x',
-            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2,
+            (d: any) => (POCO_CENTER - xScale((d.width * 0.7 * 1000) / 2)) / 2,
           )
           .attr('y', (d: any) => {
-            return yScale(0) - yScale(d.thickness);
+            return yScale(0) - yScale(d.thickness * 0.7);
           })
-          .attr('width', (d: any) => xScale((d.width / 2) * 39.37))
+          .attr('width', (d: any) => xScale((d.width * 0.7 * 1000) / 2))
           .attr('height', (d: any) => {
-            return yScale(d.thickness);
+            return yScale(d.thickness * 0.7);
           })
           .style('fill', d => {
             svg.call(profileTexture.pad);
@@ -421,10 +423,10 @@ const profile2Export = (
       }
 
       const getXPos = () => {
-        return (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2;
+        return (d: any) => (POCO_CENTER - xScale(d.diameter)) / 2;
       };
       const getWidth = () => {
-        return (d: any) => xScale(d.diam_pol);
+        return (d: any) => xScale(d.diameter);
       };
 
       const getYPos = dataInner => {
@@ -493,9 +495,9 @@ const profile2Export = (
         .merge(surfaceCase)
         .attr(
           'x',
-          (d: any) => (POCO_CENTER - xScale(d.diam_pol + d.diam_pol * 0.1)) / 2,
+          (d: any) => (POCO_CENTER - xScale(d.diameter + d.diameter * 0.1)) / 2,
         )
-        .attr('width', (d: any) => xScale(d.diam_pol + d.diam_pol * 0.1))
+        .attr('width', (d: any) => xScale(d.diameter + d.diameter * 0.1))
         .attr('y', getYPos(data.surface_case))
         .attr('height', (d: any) => {
           const depth =
@@ -518,8 +520,8 @@ const profile2Export = (
       newHoleFill
         // @ts-ignore
         .merge(holeFill)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diameter)) / 2)
+        .attr('width', (d: any) => xScale(d.diameter))
         .attr('y', getYPos(data.hole_fill))
         .attr('height', (d: any) => {
           const depth =
@@ -528,7 +530,7 @@ const profile2Export = (
 
           return yScale(depth + currentDepth);
         })
-        .style('fill', (d: HOLE_FILL_COMPONENT_TYPE) => {
+        .style('fill', (d: HoleFill) => {
           svg.call(profileTexture[d.type]);
           return profileTexture[d.type].url();
         });
@@ -547,8 +549,8 @@ const profile2Export = (
       newWellCase
         // @ts-ignore
         .merge(wellCase)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diameter)) / 2)
+        .attr('width', (d: any) => xScale(d.diameter))
         .attr('y', getYPosUnconnected(data.well_case))
         .attr('height', getHeight(data.well_case));
 
@@ -571,8 +573,8 @@ const profile2Export = (
       newWellScreen
         // @ts-ignore
         .merge(wellScreen)
-        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diam_pol)) / 2)
-        .attr('width', (d: any) => xScale(d.diam_pol))
+        .attr('x', (d: any) => (POCO_CENTER - xScale(d.diameter)) / 2)
+        .attr('width', (d: any) => xScale(d.diameter))
         .attr('y', getYPosUnconnected(data.well_screen))
         .attr('height', (d: any) => {
           const depth =
@@ -737,8 +739,8 @@ const profile2Export = (
       let lastDiam = 0;
 
       const wellCaseFiltered = data.well_case.filter(item => {
-        if (item.diam_pol !== lastDiam) {
-          lastDiam = item.diam_pol;
+        if (item.diameter !== lastDiam) {
+          lastDiam = item.diameter;
           return true;
         }
         return false;
@@ -747,8 +749,8 @@ const profile2Export = (
       lastDiam = 0;
 
       const wellScreenFiltered = data.well_screen.filter(item => {
-        if (item.diam_pol !== lastDiam) {
-          lastDiam = item.diam_pol;
+        if (item.diameter !== lastDiam) {
+          lastDiam = item.diameter;
           return true;
         }
         return false;
@@ -774,7 +776,7 @@ const profile2Export = (
 
         .text(d => {
           // if (d.to > maxSvgDepth) return null;
-          return `Revest. ${d.diam_pol}" ${d.type}`;
+          return `Revest. ${d.diameter}" ${d.type}`;
         })
         .attr('text-anchor', 'end')
         .attr('x', getTipXPos(10, WELL_CASE_TIP_CLASS_NAME))
@@ -823,7 +825,7 @@ const profile2Export = (
         .attr('fill', DARK_GRAY)
         .text(d => {
           // if (d.to > maxSvgDepth) return null;
-          return `Filtro ${d.diam_pol}" ${d.type} \n Ranhura: ${d.screen_slot_mm}mm`;
+          return `Filtro ${d.diameter}" ${d.type} \n Ranhura: ${d.screen_slot_mm}mm`;
         })
         .attr('text-anchor', 'end')
         .attr('x', getTipXPos(10, WELL_SCREEN_TIP_CLASS_NAME))
@@ -866,7 +868,7 @@ const profile2Export = (
         updateGeology(geologicData.filter(filterByDepth), yScaleLocal);
       }
 
-      const drawConstructionData: CONSTRUCTIVE_COMPONENT_TYPE = {
+      const drawConstructionData: Constructive = {
         cement_pad: constructionData.cement_pad,
         bore_hole: constructionData.bore_hole.filter(filterByDepth),
         hole_fill: constructionData.hole_fill.filter(filterByDepth),

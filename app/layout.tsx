@@ -11,7 +11,7 @@ import {
   MantineColorsTuple,
 } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import Header from '@/src/components/header/header.component';
+import Header from '@/src_old/components/header/header.component';
 
 const myColor: MantineColorsTuple = [
   '#ebf8ff',

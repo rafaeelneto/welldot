@@ -1,113 +1,115 @@
-/* eslint-disable camelcase */
-export type GEOLOGIC_COMPONENT_TYPE = {
-  from: number;
-  to: number;
-  description: string;
-  color: string;
-  fgdc_texture: string | number;
-  geologic_unit: string;
+export type BoreHole = {
+  from: number | null;
+  to: number | null;
+  diameter: number | null;
+  drilling_method?: string | null;
 };
 
-export type BORE_HOLE_COMPONENT_TYPE = {
-  from: number;
-  to: number;
-  diam_pol: number;
+export type WellCase = {
+  from: number | null;
+  to: number | null;
+  type: string | null;
+  diameter: number | null;
 };
 
-export type WELL_CASE_COMPONENT_TYPE = {
-  from: number;
-  to: number;
-  type: string;
-  diam_pol: number;
+export type Reduction = {
+  from: number | null;
+  to: number | null;
+  diam_from: number | null;
+  diam_to: number | null;
+  type: string | null;
 };
 
-export type REDUCTION_COMPONENT_TYPE = {
-  from: number;
-  to: number;
-  diam_from: number;
-  diam_to: number;
-  type: string;
+export type WellScreen = {
+  from: number | null;
+  to: number | null;
+  type: string | null;
+  diameter: number | null;
+  screen_slot_mm: number | null;
 };
 
-export type WELL_SCREEN_COMPONENT_TYPE = {
-  from: number;
-  to: number;
-  type: string;
-  diam_pol: number;
-  screen_slot_mm: number;
-};
-
-export type HOLE_FILL_COMPONENT_TYPE = {
-  from: number;
-  to: number;
+export type HoleFill = {
+  from: number | null;
+  to: number | null;
   type: 'gravel_pack' | 'seal';
-  diam_pol: number;
-  description: string;
+  diameter: number | null;
+  description: string | null;
 };
 
-export type SURFACE_CASE_COMPONENT_TYPE = {
-  from: number;
-  to: number;
-  // depth: number;
-  diam_pol: number;
+export type SurfaceCase = {
+  from: number | null;
+  to: number | null;
+  diameter: number | null;
 };
 
-export type CEMENT_PAD_COMPONENT_TYPE = {
-  type: string;
-  width: number;
-  thickness: number;
-  length: number;
+export type CementPad = {
+  type: string | null;
+  width: number | null;
+  thickness: number | null;
+  length: number | null;
 };
 
-export type CONSTRUCTIVE_COMPONENT_TYPE = {
-  bore_hole: BORE_HOLE_COMPONENT_TYPE[];
-  well_case: WELL_CASE_COMPONENT_TYPE[];
-  reduction: REDUCTION_COMPONENT_TYPE[];
-  well_screen: WELL_SCREEN_COMPONENT_TYPE[];
-  surface_case: SURFACE_CASE_COMPONENT_TYPE[];
-  hole_fill: HOLE_FILL_COMPONENT_TYPE[];
-  cement_pad: CEMENT_PAD_COMPONENT_TYPE;
-  intake_depth?: number;
+export type Lithology = {
+  from: number | null;
+  to: number | null;
+  description: string | null;
+  color: string | null;
+  fgdc_texture: string | null;
+  geologic_unit: string | null;
 };
 
-export type INFO_TYPE = { label: string; value: string };
-
-export type DRILLING_METHOD = {
-  from: number;
-  to: number;
-  drilling_method: string;
+export type Fracture = {
+  depth: number | null;
+  water_intake: boolean | null;
+  description?: string | null;
+  swarm?: boolean | null;
+  azimuth?: number | null;
+  dip?: number | null;
 };
 
-export type PROFILE_TYPE = {
-  name?: string;
-  units: {
-    diam_unit: 'metric' | 'imperial';
-    depth_unit: 'metric' | 'imperial';
-  };
-  info?: {
-    headingInfo?: INFO_TYPE[];
-    endInfo?: INFO_TYPE[];
-  };
-  geologic: GEOLOGIC_COMPONENT_TYPE[];
-  constructive: CONSTRUCTIVE_COMPONENT_TYPE;
+export type Cave = {
+  from: number | null;
+  to: number | null;
+  water_intake: boolean | null;
+  description?: string | null;
 };
 
-export type PROFILE_TYPE_1 = {
-  name?: string;
-  well_driller?: string;
-  construction_date?: string; // * stored in ISO format
-  drilling_method?: DRILLING_METHOD[];
-  lat?: number;
-  lng?: number;
-  elevation?: number;
-  units: {
-    diam_unit: 'metric' | 'imperial';
-    depth_unit: 'metric' | 'imperial';
-  };
-  info?: {
-    headingInfo?: INFO_TYPE[];
-    endInfo?: INFO_TYPE[];
-  };
-  geologic: GEOLOGIC_COMPONENT_TYPE[];
-  constructive: CONSTRUCTIVE_COMPONENT_TYPE;
+export type Profile = {
+  name?: string | null;
+  well_driller?: string | null;
+  construction_date?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  elevation?: number | null;
+  obs?: string | null;
+
+  // Constructive
+  bore_hole: BoreHole[];
+  well_case: WellCase[];
+  reduction: Reduction[];
+  well_screen: WellScreen[];
+  surface_case: SurfaceCase[];
+  hole_fill: HoleFill[];
+  cement_pad: CementPad;
+
+  // Geologic
+  lithology: Lithology[];
+  fractures: Fracture[];
+  caves: Cave[];
+};
+
+export type Geologic = {
+  lithology: Lithology[];
+  fractures: Fracture[];
+  caves: Cave[];
+};
+
+export type Constructive = {
+  bore_hole: BoreHole[];
+  well_case: WellCase[];
+  reduction: Reduction[];
+  well_screen: WellScreen[];
+  surface_case: SurfaceCase[];
+  hole_fill: HoleFill[];
+  cement_pad: CementPad;
 };

@@ -1,18 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 
-import { isProfileEmpty } from '../../utils/profile.utils';
+import { checkIfProfileIsEmpty } from '@/src/utils/profile.utils';
 
-import { DinamicDrawer } from '../../utils/ProfileDrawer';
+import { DinamicDrawer } from '@/src/utils/ProfileDrawer/ProfileDrawer';
 
-import { PROFILE_TYPE } from '../../types/profile.types';
+import { Profile } from '@/src/types/profile.types';
 
 import styles from './profileDrawer.module.scss';
 
-type PDProps = {
-  profile: PROFILE_TYPE;
-};
+interface ProfileDrawerProps {
+  profile: Profile;
+}
 
-const ProfileDrawer = ({ profile }: PDProps) => {
+const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
   const svgContainer = useRef(null);
   const profileDrawer = useRef<DinamicDrawer | null>(null);
 
@@ -36,7 +36,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
         tooltipTitle: styles.title,
         tooltipPrimaryInfo: styles.primaryInfo,
         tooltipSecondaryInfo: styles.secondaryInfo,
-      }
+      },
     );
 
     profileDrawer.current.prepareSvg();
@@ -54,7 +54,7 @@ const ProfileDrawer = ({ profile }: PDProps) => {
     }
   }, [profile, svgContainer.current]);
 
-  const noProfile = isProfileEmpty(profile);
+  const noProfile = checkIfProfileIsEmpty(profile);
 
   return (
     <>

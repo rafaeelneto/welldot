@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   eslint: {
-    ignoreDuringBuilds: ['/src'],
+    ignoreDuringBuilds: ['/src_old'],
   },
   webpack(config) {
     // Grab the existing rule that handles SVG imports

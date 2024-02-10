@@ -2,15 +2,14 @@ import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { format } from 'date-fns';
 
-import { SvgInfo, infoType } from '../../types/profile2Export.types';
+import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 
 // import '../../register-files';
-import { PROFILE_TYPE } from '../../types/profile.types';
+import { Profile } from '@/src/types/profile.types';
 
 import {
   calculateHoleFillVolume,
   numberFormater,
-  numberFormaterInches,
 } from '../../utils/profile.utils';
 
 // @ts-ignore
@@ -56,7 +55,7 @@ pdfMake.tableLayouts = {
 const MARGIN = 30;
 
 export const exportPdfProfile = (
-  profile: PROFILE_TYPE,
+  profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
   svgs: SvgInfo[],
@@ -221,7 +220,7 @@ export const exportPdfProfile = (
     });
   }
 
-  if (profile.constructive.bore_hole.length > 0) {
+  if (profile.bore_hole.length > 0) {
     content.push({ text: ' ' });
     content.push({ text: 'Furo', style: 'title' });
 
@@ -233,11 +232,11 @@ export const exportPdfProfile = (
       ],
     ];
 
-    for (let i = 0; i < profile.constructive.bore_hole.length; i++) {
-      const item = profile.constructive.bore_hole[i];
+    for (let i = 0; i < profile.bore_hole.length; i++) {
+      const item = profile.bore_hole[i];
 
       endingInfoBody.push([
-        { text: `${numberFormaterInches.format(item.diam_pol)}"` },
+        { text: `${numberFormater.format(item.diameter)} mm` },
         { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
         { text: `${numberFormater.format(item.to)}`, style: 'column_right' },
       ]);
@@ -256,7 +255,7 @@ export const exportPdfProfile = (
     });
   }
 
-  if (profile.constructive.surface_case.length > 0) {
+  if (profile.surface_case.length > 0) {
     content.push({ text: ' ' });
     content.push({ text: 'Tubo de Boca', style: 'title' });
 
@@ -268,11 +267,11 @@ export const exportPdfProfile = (
       ],
     ];
 
-    for (let i = 0; i < profile.constructive.surface_case.length; i++) {
-      const item = profile.constructive.surface_case[i];
+    for (let i = 0; i < profile.surface_case.length; i++) {
+      const item = profile.surface_case[i];
 
       endingInfoBody.push([
-        { text: `${numberFormaterInches.format(item.diam_pol)}"` },
+        { text: `${numberFormater.format(item.diameter)} mm` },
         { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
         { text: `${numberFormater.format(item.to)}`, style: 'column_right' },
       ]);
@@ -291,7 +290,7 @@ export const exportPdfProfile = (
     });
   }
 
-  if (profile.constructive.hole_fill.length > 0) {
+  if (profile.hole_fill.length > 0) {
     content.push({ text: ' ' });
     content.push({ text: 'Espaço Anelar', style: 'title' });
 
@@ -304,13 +303,13 @@ export const exportPdfProfile = (
       ],
     ];
 
-    for (let i = 0; i < profile.constructive.hole_fill.length; i++) {
-      const item = profile.constructive.hole_fill[i];
+    for (let i = 0; i < profile.hole_fill.length; i++) {
+      const item = profile.hole_fill[i];
 
       endingInfoBody.push([
         `${item.description ? item.description : item.type}`,
         {
-          text: `${numberFormaterInches.format(item.diam_pol)}"`,
+          text: `${numberFormater.format(item.diameter)} mm`,
           style: 'column_right',
         },
         { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
@@ -318,8 +317,8 @@ export const exportPdfProfile = (
       ]);
 
       if (
-        item.type !== profile.constructive.hole_fill[i + 1]?.type ||
-        i === profile.constructive.hole_fill.length - 1
+        item.type !== profile.hole_fill[i + 1]?.type ||
+        i === profile.hole_fill.length - 1
       ) {
         endingInfoBody.push([
           { text: `Volume total`, style: 'sum_row', colSpan: 3 },
@@ -349,7 +348,7 @@ export const exportPdfProfile = (
     });
   }
 
-  if (profile.constructive.well_case.length > 0) {
+  if (profile.well_case.length > 0) {
     content.push({ text: ' ' });
     content.push({ text: 'Revestimento', style: 'title' });
 
@@ -362,13 +361,13 @@ export const exportPdfProfile = (
       ],
     ];
 
-    for (let i = 0; i < profile.constructive.well_case.length; i++) {
-      const item = profile.constructive.well_case[i];
+    for (let i = 0; i < profile.well_case.length; i++) {
+      const item = profile.well_case[i];
 
       endingInfoBody.push([
         `${item.type}`,
         {
-          text: `${numberFormaterInches.format(item.diam_pol)}"`,
+          text: `${numberFormater.format(item.diameter)} mm`,
           style: 'column_right',
         },
         { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
@@ -376,12 +375,12 @@ export const exportPdfProfile = (
       ]);
 
       if (
-        item.type !== profile.constructive.well_case[i + 1]?.type ||
-        item.diam_pol !== profile.constructive.well_case[i + 1]?.diam_pol
+        item.type !== profile.well_case[i + 1]?.type ||
+        item.diameter !== profile.well_case[i + 1]?.diameter
       ) {
         let totalHeight = 0;
-        const filteredWC = profile.constructive.well_case.filter(
-          el => el.type === item.type && el.diam_pol === item.diam_pol,
+        const filteredWC = profile.well_case.filter(
+          el => el.type === item.type && el.diameter === item.diameter,
         );
 
         filteredWC.forEach(el => {
@@ -414,7 +413,7 @@ export const exportPdfProfile = (
     });
   }
 
-  if (profile.constructive.well_screen.length > 0) {
+  if (profile.well_screen.length > 0) {
     content.push({ text: ' ' });
     content.push({ text: 'Filtros', style: 'title' });
 
@@ -428,13 +427,13 @@ export const exportPdfProfile = (
       ],
     ];
 
-    for (let i = 0; i < profile.constructive.well_screen.length; i++) {
-      const item = profile.constructive.well_screen[i];
+    for (let i = 0; i < profile.well_screen.length; i++) {
+      const item = profile.well_screen[i];
 
       endingInfoBody.push([
         `${item.type}`,
         {
-          text: `${numberFormaterInches.format(item.diam_pol)}"`,
+          text: `${numberFormater.format(item.diameter)} mm`,
           style: 'column_right',
         },
         {
@@ -446,12 +445,12 @@ export const exportPdfProfile = (
       ]);
 
       if (
-        item.type !== profile.constructive.well_screen[i + 1]?.type ||
-        item.diam_pol !== profile.constructive.well_screen[i + 1]?.diam_pol
+        item.type !== profile.well_screen[i + 1]?.type ||
+        item.diameter !== profile.well_screen[i + 1]?.diameter
       ) {
         let totalHeight = 0;
-        const filteredWC = profile.constructive.well_screen.filter(
-          el => el.type === item.type && el.diam_pol === item.diam_pol,
+        const filteredWC = profile.well_screen.filter(
+          el => el.type === item.type && el.diameter === item.diameter,
         );
 
         filteredWC.forEach(el => {
@@ -492,7 +491,7 @@ export const exportPdfProfile = (
 };
 
 export const innerRenderPdf = (
-  profile: PROFILE_TYPE,
+  profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
   svgs: SvgInfo[],
@@ -520,7 +519,7 @@ export const innerRenderPdf = (
 };
 
 export const printPdf = (
-  profile: PROFILE_TYPE,
+  profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
   svgs: SvgInfo[],
@@ -541,7 +540,7 @@ export const printPdf = (
 };
 
 export const downloadPdf = (
-  profile: PROFILE_TYPE,
+  profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
   svgs: SvgInfo[],
