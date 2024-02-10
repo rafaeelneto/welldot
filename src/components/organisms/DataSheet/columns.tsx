@@ -24,23 +24,29 @@ import {
   WellScreen,
 } from '@/src/types/profile.types';
 
+const typedFloatColumn = floatColumn as Partial<Column<number, any, string>>;
+const typedTextColumn = textColumn as Partial<Column<string, any, string>>;
+
 export const geologyColumns = [
   {
-    ...keyColumn<Lithology, 'from'>('from', floatColumn),
+    ...keyColumn<Lithology, 'from'>('from', typedFloatColumn),
     title: 'De (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<Lithology, 'to'>('to', floatColumn),
+    ...keyColumn<Lithology, 'to'>('to', typedFloatColumn),
     title: 'Até (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<Lithology, 'color'>('color', colorPickerColumn()),
+    ...keyColumn<Lithology, 'color'>(
+      'color',
+      colorPickerColumn() as Partial<Column<string, any, string>>,
+    ),
     title: 'Cor',
     minWidth: 60,
     maxWidth: 60,
@@ -48,19 +54,21 @@ export const geologyColumns = [
   {
     ...keyColumn<Lithology, 'fgdc_texture'>(
       'fgdc_texture',
-      customSelectColumn({ options: FGDC_TEXTURES_OPTIONS }),
+      customSelectColumn({ options: FGDC_TEXTURES_OPTIONS }) as Partial<
+        Column<string, any, string>
+      >,
     ),
     title: TextureHelper(),
     minWidth: 90,
   },
   {
-    ...keyColumn<Lithology, 'geologic_unit'>('geologic_unit', textColumn),
+    ...keyColumn<Lithology, 'geologic_unit'>('geologic_unit', typedTextColumn),
     title: 'Unid. Geológica',
     grow: 1,
     minWidth: 100,
   },
   {
-    ...keyColumn<Lithology, 'description'>('description', textColumn),
+    ...keyColumn<Lithology, 'description'>('description', typedTextColumn),
     title: 'Descrição',
     grow: 2,
     minWidth: 400,
@@ -69,21 +77,21 @@ export const geologyColumns = [
 
 export const boreHoleColumns = [
   {
-    ...keyColumn<BoreHole, 'from'>('from', floatColumn),
+    ...keyColumn<BoreHole, 'from'>('from', typedFloatColumn),
     title: 'De (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<BoreHole, 'to'>('to', floatColumn),
+    ...keyColumn<BoreHole, 'to'>('to', typedFloatColumn),
     title: 'Até (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<BoreHole, 'diameter'>('diameter', floatColumn),
+    ...keyColumn<BoreHole, 'diameter'>('diameter', typedFloatColumn),
     title: 'Diâmetro',
     minWidth: 60,
   },
@@ -91,21 +99,21 @@ export const boreHoleColumns = [
 
 export const holeFillColumns = [
   {
-    ...keyColumn<HoleFill, 'from'>('from', floatColumn),
+    ...keyColumn<HoleFill, 'from'>('from', typedFloatColumn),
     title: 'De (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<HoleFill, 'to'>('to', floatColumn),
+    ...keyColumn<HoleFill, 'to'>('to', typedFloatColumn),
     title: 'Até (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<HoleFill, 'diameter'>('diameter', floatColumn),
+    ...keyColumn<HoleFill, 'diameter'>('diameter', typedFloatColumn),
     title: 'Diâmetro (mm)',
     minWidth: 80,
     maxWidth: 80,
@@ -125,7 +133,7 @@ export const holeFillColumns = [
     maxWidth: 120,
   },
   {
-    ...keyColumn<HoleFill, 'description'>('description', textColumn),
+    ...keyColumn<HoleFill, 'description'>('description', typedTextColumn),
     title: 'Descrição',
     grow: 2,
     minWidth: 300,
@@ -134,21 +142,21 @@ export const holeFillColumns = [
 
 export const surfaceCaseColumns = [
   {
-    ...keyColumn<SurfaceCase, 'from'>('from', floatColumn),
+    ...keyColumn<SurfaceCase, 'from'>('from', typedFloatColumn),
     title: 'De (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<SurfaceCase, 'to'>('to', floatColumn),
+    ...keyColumn<SurfaceCase, 'to'>('to', typedFloatColumn),
     title: 'Até (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<SurfaceCase, 'diameter'>('diameter', floatColumn),
+    ...keyColumn<SurfaceCase, 'diameter'>('diameter', typedFloatColumn),
     title: 'Diâmetro (mm)',
     minWidth: 60,
   },
@@ -156,27 +164,27 @@ export const surfaceCaseColumns = [
 
 export const wellCaseColumns = [
   {
-    ...keyColumn<WellCase, 'from'>('from', floatColumn),
+    ...keyColumn<WellCase, 'from'>('from', typedFloatColumn),
     title: 'De (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<WellCase, 'to'>('to', floatColumn),
+    ...keyColumn<WellCase, 'to'>('to', typedFloatColumn),
     title: 'Até (m)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<WellCase, 'diameter'>('diameter', floatColumn),
+    ...keyColumn<WellCase, 'diameter'>('diameter', typedFloatColumn),
     title: 'Diâmetro (mm)',
     minWidth: 60,
     maxWidth: 80,
   },
   {
-    ...keyColumn<WellCase, 'type'>('type', textColumn),
+    ...keyColumn<WellCase, 'type'>('type', typedTextColumn),
     title: 'Tipo',
     minWidth: 60,
     grow: 2,
@@ -185,34 +193,37 @@ export const wellCaseColumns = [
 
 export const wellScreenColumns = [
   {
-    ...keyColumn<WellScreen, 'from'>('from', floatColumn),
+    ...keyColumn<WellScreen, 'from'>('from', typedFloatColumn),
     title: 'De (m)',
     minWidth: 40,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<WellScreen, 'to'>('to', floatColumn),
+    ...keyColumn<WellScreen, 'to'>('to', typedFloatColumn),
     title: 'Até (m)',
     minWidth: 40,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<WellScreen, 'diameter'>('diameter', floatColumn),
+    ...keyColumn<WellScreen, 'diameter'>('diameter', typedFloatColumn),
     title: 'Diâmetro (mm)',
     minWidth: 60,
     maxWidth: 80,
   },
   {
-    ...keyColumn<WellScreen, 'screen_slot_mm'>('screen_slot_mm', floatColumn),
+    ...keyColumn<WellScreen, 'screen_slot_mm'>(
+      'screen_slot_mm',
+      typedFloatColumn,
+    ),
     title: 'Ranhura (mm)',
     minWidth: 60,
     maxWidth: 80,
     continuousUpdates: false,
   },
   {
-    ...keyColumn<WellScreen, 'type'>('type', textColumn),
+    ...keyColumn<WellScreen, 'type'>('type', typedTextColumn),
     title: 'Tipo',
     minWidth: 100,
   },
