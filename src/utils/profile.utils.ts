@@ -321,7 +321,6 @@ export function convertProfileFromJSON(jsonString: string): Profile | null {
       ...getEmptyProfile(),
       ...(JSON.parse(JSON.stringify(importedProfile)) as Profile),
     };
-    console.log(profile);
 
     return profile;
   } catch (e) {
