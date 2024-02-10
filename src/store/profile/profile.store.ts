@@ -147,7 +147,7 @@ export const useProfileStore = create<IProfileState>((set, get) => ({
       console.log(error);
       notifications.show({
         title: `Importing Error`,
-        message: `Ops, we couldn't import this profile. The format is invalid or incompatible. Please try to another file or contact-us`,
+        message: `Ops, we couldn't import this profile. The format is invalid or incompatible. Please try to another file or contact us`,
         color: 'red',
       });
     }

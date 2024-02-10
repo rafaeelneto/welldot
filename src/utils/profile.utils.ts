@@ -231,7 +231,7 @@ function convertImperialDiameters(importedProfile: any): any {
   profile.constructive.hole_fill = replaceImperialDiamenter<HoleFill>(
     profile.constructive.hole_fill,
   );
-  profile.constructive.surface_case = replaceImperialDiamenter<WellCase>(
+  profile.constructive.surface_case = replaceImperialDiamenter<SurfaceCase>(
     profile.constructive.surface_case,
   );
   profile.constructive.well_screen = replaceImperialDiamenter<WellScreen>(
@@ -245,6 +245,12 @@ function convertImperialDiameters(importedProfile: any): any {
 }
 
 function convertConstructiveData(importedProfile: any) {
+  if (importedProfile.surface_case[0]?.diam_pol) {
+    importedProfile.surface_case = replaceImperialDiamenter<SurfaceCase>(
+      importedProfile.surface_case,
+    );
+  }
+
   if (!importedProfile.constructive) {
     return importedProfile;
   }
