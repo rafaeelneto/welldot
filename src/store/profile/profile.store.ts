@@ -18,7 +18,6 @@ import {
   WellCase,
   WellScreen,
 } from '@/src/types/profile.types';
-import { e } from 'vitest/dist/reporters-1evA5lom';
 import { convertProfileFromJSON } from '@/src/utils/profile.utils';
 
 // TODO move this function to utils

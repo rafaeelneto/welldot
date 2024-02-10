@@ -11,8 +11,6 @@ import {
   Tabs,
 } from '@mantine/core';
 
-import { notifications } from '@mantine/notifications';
-
 import Joyride from 'react-joyride';
 
 import { format } from 'date-fns';
@@ -28,7 +26,7 @@ import download from 'downloadjs';
 // TODO reactive profileDrawer and info
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
 import Info from '@/src/components/organisms/Info/Info.component';
-// import PDFExport from '@/src/components/export/pdfExport.component';
+import PDFExport from '@/src/views/PDFExport/pdfExport.component';
 
 import TabConstructive from '@/src/views/ProfileEditor/ProfileEditor.constructive';
 import TabGeologic from '@/src/views/ProfileEditor/ProfileEditor.geologic';
@@ -42,6 +40,7 @@ import { getWindow } from '@/src/utils/window.utils';
 
 import styles from './profileEditor.module.scss';
 import { EMPTY_PROFILE } from '@/src/data/profile/profile.data';
+import { Profile } from '@/src/types/profile.types';
 
 function ProfileEditor() {
   const inputFile = useRef(null);
@@ -151,11 +150,17 @@ function ProfileEditor() {
               <Modal.CloseButton />
             </Modal.Header>
             <Modal.Body style={{ height: 'calc(100% - 60px)' }}>
-              {/* <PDFExport
-                profile={{ ...profileState }}
-                onChangeInfo={onChangePerfilState}
-              /> */}
-              jnijfndsfnd
+              <PDFExport
+                profile={
+                  { ...profile } as Profile & {
+                    info: {
+                      headingInfo: { label: string; value: string }[];
+                      endInfo: { label: string; value: string }[];
+                    };
+                  }
+                }
+                onChangeInfo={updateProfile}
+              />
             </Modal.Body>
           </Modal.Content>
         </Modal.Root>
