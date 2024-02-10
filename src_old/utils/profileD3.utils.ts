@@ -5,7 +5,7 @@ import textures from 'textures';
 
 import fdgcTextures from './fgdcTextures';
 
-import { GEOLOGIC_COMPONENT_TYPE } from '../types/profile.types';
+import { Lithology } from '@/src/types/profile.types';
 
 const d3 = {
   ...d3module,
@@ -55,7 +55,7 @@ export function responsivefy(svg) {
   return svg;
 }
 
-export const getLithologicalFillList = (data: GEOLOGIC_COMPONENT_TYPE[]) => {
+export const getLithologicalFillList = (data: Lithology[]) => {
   const profileTextures: (number | string)[] = [];
   data.forEach(element => {
     const texture: number | string = element.fgdc_texture;
