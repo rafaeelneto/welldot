@@ -459,14 +459,14 @@ export class DinamicDrawer {
           .attr(
             'x',
             (d: CementPad) =>
-              (POCO_CENTER - xScale((d.width * 0.5 * 1000) / 2)) / 2,
+              (POCO_CENTER - xScale((d.width * 0.7 * 1000) / 2)) / 2,
           )
           .attr('y', (d: CementPad) => {
-            return yScale(0) - yScale(d.thickness * 0.5);
+            return yScale(0) - yScale(d.thickness * 0.7);
           })
-          .attr('width', (d: CementPad) => xScale((d.width * 0.5 * 1000) / 2))
+          .attr('width', (d: CementPad) => xScale((d.width * 0.7 * 1000) / 2))
           .attr('height', (d: CementPad) => {
-            return yScale(d.thickness * 0.5);
+            return yScale(d.thickness * 0.7);
           })
           .style('fill', d => {
             svg.call(DEFAULTS_TEXTURES.pad);

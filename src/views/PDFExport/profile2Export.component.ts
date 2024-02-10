@@ -405,14 +405,14 @@ const profile2Export = (
           .attr('class', 'cement_pad')
           .attr(
             'x',
-            (d: any) => (POCO_CENTER - xScale((d.width / 2) * 39.37)) / 2,
+            (d: any) => (POCO_CENTER - xScale((d.width * 0.7 * 1000) / 2)) / 2,
           )
           .attr('y', (d: any) => {
-            return yScale(0) - yScale(d.thickness);
+            return yScale(0) - yScale(d.thickness * 0.7);
           })
-          .attr('width', (d: any) => xScale((d.width / 2) * 39.37))
+          .attr('width', (d: any) => xScale((d.width * 0.7 * 1000) / 2))
           .attr('height', (d: any) => {
-            return yScale(d.thickness);
+            return yScale(d.thickness * 0.7);
           })
           .style('fill', d => {
             svg.call(profileTexture.pad);

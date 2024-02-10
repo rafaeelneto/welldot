@@ -1,4 +1,5 @@
-import { create } from 'zustand';
+import { create, type StateCreator } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 import { notifications } from '@mantine/notifications';
 
@@ -90,8 +91,7 @@ const CHAING_TYPES = new Set<ChainingKeys>([
   'lithology',
 ]);
 
-// TODO implement persistence in localstorage
-export const useProfileStore = create<IProfileState>((set, get) => ({
+const state: StateCreator<IProfileState> = (set, get) => ({
   profile: getEmptyProfile(),
   mutationCount: 0,
   clear: () => {
@@ -134,7 +134,6 @@ export const useProfileStore = create<IProfileState>((set, get) => ({
       ...currProfile,
       cement_pad: newCementPad,
     };
-
     get().updateProfile(newPerfilState);
   },
   updateProfileFromJSON: (jsonProfile: string) => {
@@ -151,4 +150,11 @@ export const useProfileStore = create<IProfileState>((set, get) => ({
       });
     }
   },
-}));
+});
+
+export const useProfileStore = create<IProfileState>()(
+  persist(state, {
+    name: 'profile-storage',
+    storage: createJSONStorage(() => localStorage),
+  }),
+);

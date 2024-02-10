@@ -23,7 +23,6 @@ import {
 
 import download from 'downloadjs';
 
-// TODO reactive profileDrawer and info
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
 import Info from '@/src/components/organisms/Info/Info.component';
 import PDFExport from '@/src/views/PDFExport/pdfExport.component';
