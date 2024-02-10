@@ -17,6 +17,10 @@ Some functions of the app:
 
 - Provide some quantitative values that can be used on cost estimates.
 
+# Licensing
+
+This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives (CC BY-NC-ND) license. See the LICENSE.md file for details.
+
 # Tech
 
 The web interface of the app is built in Typescript using React (in the future, it may be used fluttler or react native to add a mobile app). Below there are some libraries and tools used:
