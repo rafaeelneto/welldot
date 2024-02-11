@@ -2,6 +2,7 @@ import {
   textColumn,
   floatColumn,
   keyColumn,
+  checkboxColumn,
   Column,
 } from 'react-datasheet-grid';
 
@@ -17,6 +18,7 @@ import { FGDC_TEXTURES_OPTIONS } from '@/src_old/utils/fgdcTextures';
 import TextureHelper from '@/src_old/components/textureHelperColumn/textureHelper.component';
 import {
   BoreHole,
+  Fracture,
   HoleFill,
   Lithology,
   SurfaceCase,
@@ -27,7 +29,7 @@ import {
 const typedFloatColumn = floatColumn as Partial<Column<number, any, string>>;
 const typedTextColumn = textColumn as Partial<Column<string, any, string>>;
 
-export const geologyColumns = [
+export const lithologyColumns = [
   {
     ...keyColumn<Lithology, 'from'>('from', typedFloatColumn),
     title: 'De (m)',
@@ -72,6 +74,48 @@ export const geologyColumns = [
     title: 'Descrição',
     grow: 2,
     minWidth: 400,
+  },
+];
+
+export const fractureColumns = [
+  {
+    ...keyColumn<Fracture, 'depth'>('depth', typedFloatColumn),
+    title: 'Profundidade (m)',
+    minWidth: 60,
+    maxWidth: 80,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn<Fracture, 'dip'>('dip', typedFloatColumn),
+    title: 'Mergulho °',
+    minWidth: 60,
+    maxWidth: 80,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn<Fracture, 'azimuth'>('azimuth', typedFloatColumn),
+    title: 'Azimuth °',
+    minWidth: 60,
+    maxWidth: 80,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn<Fracture, 'swarm'>('swarm', checkboxColumn),
+    title: 'Enxame',
+    minWidth: 60,
+    maxWidth: 80,
+  },
+  {
+    ...keyColumn<Fracture, 'water_intake'>('water_intake', checkboxColumn),
+    title: `Entrada d'água`,
+    minWidth: 60,
+    maxWidth: 80,
+  },
+  {
+    ...keyColumn<Fracture, 'description'>('description', typedTextColumn),
+    title: 'Descrição',
+    grow: 2,
+    minWidth: 300,
   },
 ];
 

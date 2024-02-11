@@ -29,7 +29,7 @@ import {
   surfaceCaseColumns,
   wellCaseColumns,
   wellScreenColumns,
-} from '@/src/components/organisms/DataSheet/columns';
+} from '@/src/data/dataSheet/columns';
 
 import styles from './profileEditor.module.scss';
 

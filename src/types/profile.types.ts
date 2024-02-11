@@ -61,10 +61,10 @@ export type Lithology = {
 export type Fracture = {
   depth: number;
   water_intake: boolean;
-  description?: string;
-  swarm?: boolean;
-  azimuth?: number;
-  dip?: number;
+  description: string;
+  swarm: boolean;
+  azimuth: number;
+  dip: number;
 };
 
 export type Cave = {
