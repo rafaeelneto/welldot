@@ -18,6 +18,7 @@ import {
   SurfaceCase,
   WellCase,
   WellScreen,
+  Fracture,
 } from '@/src/types/profile.types';
 
 import {
@@ -36,33 +37,37 @@ const d3 = {
 };
 
 type componentsClassNames = {
-  tooltip?: string;
-  tooltipTitle?: string;
-  tooltipPrimaryInfo?: string;
-  tooltipSecondaryInfo?: string;
-  yAxis?: string;
-  wellGroup?: string;
-  lithologyGroup?: string;
-  constructionGroup?: string;
-  cementPadGroup?: string;
-  holeGroup?: string;
-  surfaceCaseGroup?: string;
-  holeFillGroup?: string;
-  wellCaseGroup?: string;
-  wellScreenGroup?: string;
-  conflictGroup?: string;
+  tooltip: string;
+  tooltipTitle: string;
+  tooltipPrimaryInfo: string;
+  tooltipSecondaryInfo: string;
+  yAxis: string;
+  wellGroup: string;
+  geologicGroup: string;
+  lithologyGroup: string;
+  fracturesGroup: string;
+  constructionGroup: string;
+  cementPadGroup: string;
+  holeGroup: string;
+  surfaceCaseGroup: string;
+  holeFillGroup: string;
+  wellCaseGroup: string;
+  wellScreenGroup: string;
+  conflictGroup: string;
 };
 
 type Conflict = { from: number; to: number; diameter: number };
 
-const DEFAULT_COMPONENTS_CLASS_NAMES = {
+const DEFAULT_COMPONENTS_CLASS_NAMES: componentsClassNames = {
   tooltip: 'tooltip',
   tooltipTitle: 'tittle',
   tooltipPrimaryInfo: 'primaryInfo',
   tooltipSecondaryInfo: 'secondaryInfo',
   yAxis: 'yAxis',
   wellGroup: 'poco-group',
-  lithologyGroup: 'lito-group',
+  geologicGroup: 'geologic-group',
+  lithologyGroup: 'litho-group',
+  fracturesGroup: 'fractures-group',
   constructionGroup: 'const-group',
   cementPadGroup: 'cement-pad',
   holeGroup: 'hole',
@@ -154,7 +159,6 @@ const mergeConflicts = (
       nextConflict.to === conflict.to &&
       nextConflict.from === conflict.from
     ) {
-      // eslint-disable-next-line no-plusplus
       jumpTo++;
     }
 
@@ -177,13 +181,13 @@ const getYAxisFunctions = (yScale: any) => {
 };
 
 const getLithologyFiller = (geologyData: Lithology[], svg) => {
-  const litologicalFill = getLithologicalFillList(geologyData);
+  const lithologicalFill = getLithologicalFillList(geologyData);
   return (d: Lithology) => {
-    if (!litologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
-      return litologicalFill[`${d.fgdc_texture}.${d.from}`];
+    if (!lithologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
+      return lithologicalFill[`${d.fgdc_texture}.${d.from}`];
     }
-    svg.call(litologicalFill[`${d.fgdc_texture}.${d.from}`]);
-    return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
+    svg.call(lithologicalFill[`${d.fgdc_texture}.${d.from}`]);
+    return lithologicalFill[`${d.fgdc_texture}.${d.from}`].url();
   };
 };
 
@@ -220,7 +224,13 @@ export class DinamicDrawer {
       .append('g')
       .attr('class', this.customClassNames.wellGroup);
 
-    const litoligicalGroup = pocoGroup
+    const geologicGroup = pocoGroup
+      .append('g')
+      .attr('class', this.customClassNames.geologicGroup);
+
+    geologicGroup.append('g').attr('class', this.customClassNames.yAxis);
+
+    geologicGroup
       .append('g')
       .attr('class', this.customClassNames.lithologyGroup);
 
@@ -228,53 +238,55 @@ export class DinamicDrawer {
       .append('g')
       .attr('class', this.customClassNames.constructionGroup);
 
-    litoligicalGroup.append('g').attr('class', this.customClassNames.yAxis);
+    geologicGroup
+      .append('g')
+      .attr('class', this.customClassNames.fracturesGroup);
 
-    const cementPadGroup = constructionGroup
+    constructionGroup
       .append('g')
       .attr('class', this.customClassNames.cementPadGroup);
-    const holeGroup = constructionGroup
+    constructionGroup
       .append('g')
       .attr('class', this.customClassNames.holeGroup);
-    const surfaceCaseGroup = constructionGroup
+    constructionGroup
       .append('g')
       .attr('class', this.customClassNames.surfaceCaseGroup);
-    const holeFillGroup = constructionGroup
+    constructionGroup
       .append('g')
       .attr('class', this.customClassNames.holeFillGroup);
-    const wellCaseGroup = constructionGroup
+    constructionGroup
       .append('g')
       .attr('class', this.customClassNames.wellCaseGroup);
-    const wellScreenGroup = constructionGroup
+    constructionGroup
       .append('g')
       .attr('class', this.customClassNames.wellScreenGroup);
-    const conflictGroup = constructionGroup
+    constructionGroup
       .append('g')
       .attr('class', this.customClassNames.conflictGroup);
   }
 
   populateTooltips() {
     const tipsText = {
-      geology: (element, d: Lithology) => `
+      geology: (_, d: Lithology) => `
         <span class="${this.customClassNames.tooltipTitle}">Litologia</span>
         <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
         <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
       `,
-      hole: (element, d: HoleFill) => {
+      hole: (_, d: HoleFill) => {
         return `
         <span class="${this.customClassNames.tooltipTitle}">FURO</span>
         <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
         <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
         `;
       },
-      surfaceCase: (element, d: SurfaceCase) => {
+      surfaceCase: (_, d: SurfaceCase) => {
         return `
             <span class="${this.customClassNames.tooltipTitle}">TUBO DE BOCA</span>
             <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
             <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
           `;
       },
-      holeFill: (element, d: HoleFill) => {
+      holeFill: (_, d: HoleFill) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">ESP. ANELAR</span>
           <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
@@ -284,7 +296,7 @@ export class DinamicDrawer {
           </span>
           `;
       },
-      wellCase: (element, d: WellCase) => {
+      wellCase: (_, d: WellCase) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">REVESTIMENTO</span>
               <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
@@ -294,7 +306,7 @@ export class DinamicDrawer {
               <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
           `;
       },
-      wellScreen: (element, d: WellScreen) => {
+      wellScreen: (_, d: WellScreen) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">FILTROS</span>
               <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
@@ -306,7 +318,7 @@ export class DinamicDrawer {
               </span>
           `;
       },
-      conflict: (element, d: any) => {
+      conflict: (_, d: any) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">FILTROS</span>
               <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
@@ -348,8 +360,8 @@ export class DinamicDrawer {
 
     const pocoGroup = svg.select(`.${this.customClassNames.wellGroup}`);
 
-    const litoligicalGroup = svg
-      .select(`.${this.customClassNames.lithologyGroup}`)
+    const geologicGroup = svg
+      .select(`.${this.customClassNames.geologicGroup}`)
       .attr(
         'transform',
         `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
@@ -375,16 +387,21 @@ export class DinamicDrawer {
 
     const POCO_WIDTH = svgWidth / 4;
     const POCO_CENTER = (svgWidth * 3) / 4;
+    const FRACTURES_INNER_WIDTH = POCO_WIDTH;
+    const FRACTURES_OUTER_WIDTH = POCO_WIDTH * 1.8;
 
     const transition = d3.transition().duration(750).ease(d3.easeCubic);
 
     const tooltips = this.populateTooltips();
 
-    const updateGeology = async (data: Lithology[], yScale) => {
+    const updateGeology = async (
+      data: { lithology: Lithology[]; fractures: Fracture[] },
+      yScale,
+    ) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
-      const getLithologyFill = getLithologyFiller(data, svg);
+      const getLithologyFill = getLithologyFiller(data.lithology, svg);
 
-      const rects = litoligicalGroup.selectAll('rect').data(data);
+      const rects = geologicGroup.selectAll('rect').data(data.lithology);
 
       rects.exit().remove();
 
@@ -409,16 +426,23 @@ export class DinamicDrawer {
         .style('fill', getLithologyFill);
     };
 
-    const updatePoco = (data: Constructive, yScale) => {
+    const updateFractures = (data: Fracture[], yScale) => {
+      const { getHeight, getYPos } = getYAxisFunctions(yScale);
+    };
+
+    const updatePoco = (
+      data: Constructive & { fractures: Fracture[] },
+      yScale,
+    ) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
 
       const maxXValues = getProfileDiamValues(data);
 
-      const maxValues = d3.max(maxXValues) || 0;
+      const maxXValueConstruction = d3.max(maxXValues) || 0;
 
       const xScale = d3
         .scaleLinear()
-        .domain([0, maxValues])
+        .domain([0, maxXValueConstruction])
         .range([0, POCO_WIDTH]);
 
       constructionGroup.selectAll('.cement_pad').remove();
@@ -662,11 +686,86 @@ export class DinamicDrawer {
         .attr('width', (d: Conflict) => xScale(d.diameter))
         // @ts-ignore
         .transition(transition)
-        .attr('y', getYPos)
+        .attr('y', yScale(0))
         .attr('height', getHeight);
+
+      // FRACTURES
+
+      constructionGroup
+        .append('clipPath')
+        .attr('id', 'clipWell')
+        .append('rect')
+        .attr('x', (POCO_CENTER - xScale(maxXValueConstruction)) / 2)
+        .attr('width', POCO_WIDTH)
+        .attr('y', yScale(0))
+        .attr('height', yScale(maxYValues));
+
+      const fractures = constructionGroup
+        .selectAll('line')
+        .data(data.fractures);
+
+      fractures.exit().remove();
+
+      const newFractures = fractures
+        .enter()
+        .append('line')
+        .attr('class', 'fracture')
+        .attr('clip-path', 'url(#clipWell)')
+        .style('opacity', '1')
+        .attr('stroke', 'red') // Set the stroke color to black
+        .attr('stroke-width', '1px') // Set the stroke width
+        .on('mouseover', tooltips.hole.show)
+        .on('mouseout', tooltips.hole.hide);
+
+      function convertDegreesToRadians(degree: number) {
+        return (degree * Math.PI) / 180;
+      }
+
+      function getPosition(
+        axis: 'x' | 'y',
+        sign: number,
+      ): (d: Fracture) => number {
+        function getXPosition(d: Fracture) {
+          // if (!d.depth && sign < 0) return POCO_CENTER / 2
+          return (
+            POCO_CENTER / 2 +
+            (Math.cos(convertDegreesToRadians(sign < 0 ? d.dip + 180 : d.dip)) *
+              FRACTURES_INNER_WIDTH) /
+              2
+          );
+        }
+
+        if (axis === 'x') {
+          return getXPosition;
+        }
+
+        function getYPosition(d: Fracture) {
+          const yPos =
+            yScale(d.depth || 0) +
+            (Math.sin(convertDegreesToRadians(sign < 0 ? d.dip + 180 : d.dip)) *
+              FRACTURES_INNER_WIDTH) /
+              2;
+
+          return yPos;
+        }
+
+        return getYPosition;
+      }
+
+      newFractures
+        // @ts-ignore
+        .merge(fractures)
+        .transition(transition)
+        .attr('x1', getPosition('x', -1))
+        .attr('y1', getPosition('y', -1))
+        .attr('x2', getPosition('x', 1))
+        .attr('y2', getPosition('y', 1));
     };
 
-    const geologicData = profile.lithology;
+    const geologicData = {
+      lithology: profile.lithology,
+      fractures: profile.fractures,
+    };
     const constructionData = {
       cement_pad: profile.cement_pad,
       bore_hole: profile.bore_hole,
@@ -675,7 +774,8 @@ export class DinamicDrawer {
       well_case: profile.well_case,
       well_screen: profile.well_screen,
       reduction: profile.reduction,
-    } as Constructive;
+      fractures: profile.fractures,
+    } as Constructive & { fractures: Fracture[] };
 
     const maxValues = getProfileLastItemsDepths(profile);
 
@@ -688,7 +788,7 @@ export class DinamicDrawer {
 
     const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
 
-    const gY = litoligicalGroup
+    const gY = geologicGroup
       .select(`.${this.customClassNames.yAxis}`)
       // @ts-ignore
       .call(yAxis);
@@ -724,6 +824,7 @@ export class DinamicDrawer {
     function drawProfile() {
       if (geologicData) updateGeology(geologicData, yScaleGlobal);
       if (constructionData) updatePoco(constructionData, yScaleGlobal);
+      if (geologicData) updateFractures(geologicData.fractures, yScaleGlobal);
     }
 
     // @ts-ignore

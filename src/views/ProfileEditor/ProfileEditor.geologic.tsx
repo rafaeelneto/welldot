@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import DataSheet from '@/src/components/organisms/DataSheet/DataSheet.component';
 
@@ -38,7 +38,7 @@ export default function ProfileEditorConstructive() {
         <div className="flex flex-col p-2.5">
           <span className={styles.componentTitle}>Fraturas:</span>
           <DataSheet
-            data={profile.surface_case}
+            data={profile.fractures}
             onChangeValues={getUpdateListingFeatures<Fracture>('fractures')}
             columns={fractureColumns}
             defaultValue={() => FRACTURE_FEATURE_DEFAULT}

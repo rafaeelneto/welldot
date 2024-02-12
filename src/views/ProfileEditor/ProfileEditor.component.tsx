@@ -310,7 +310,8 @@ function ProfileEditor() {
                   value="constructive"
                   className="h-[calc(100%-50px)] overflow-y-auto"
                 >
-                  <TabConstructive />
+                  JDNSAKDJNS
+                  {/* <TabConstructive /> */}
                 </Tabs.Panel>
                 <Tabs.Panel
                   value="geology"
