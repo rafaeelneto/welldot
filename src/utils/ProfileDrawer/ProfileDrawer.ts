@@ -1,11 +1,8 @@
-/* eslint-disable max-classes-per-file */
-// ! FIX THIS MAX CLASS LINT
-
 import * as d3module from 'd3';
 import d3tip from 'd3-tip';
-
-// @ts-ignore
 import textures from 'textures';
+
+import Fractures from '@/public/fractures.svg?url';
 
 import {
   Profile,
@@ -20,23 +17,25 @@ import {
   WellScreen,
   Fracture,
 } from '@/src/types/profile.types';
-
 import {
   checkIfProfileIsEmpty,
   getProfileDiamValues,
   getProfileLastItemsDepths,
 } from '@/src/utils/profile.utils';
 import {
+  getConflictAreas,
+  mergeConflicts,
   responsivefy,
-  getLithologicalFillList,
-} from '../../../src_old/utils/profileD3.utils';
+  getLithologyFiller,
+  getYAxisFunctions,
+} from '@/src/utils/ProfileDrawer/ProfileDrawer.utils';
 
 const d3 = {
   ...d3module,
   tip: d3tip,
 };
 
-type componentsClassNames = {
+type ComponentsClassNames = {
   tooltip: string;
   tooltipTitle: string;
   tooltipPrimaryInfo: string;
@@ -58,7 +57,7 @@ type componentsClassNames = {
 
 type Conflict = { from: number; to: number; diameter: number };
 
-const DEFAULT_COMPONENTS_CLASS_NAMES: componentsClassNames = {
+const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
   tooltip: 'tooltip',
   tooltipTitle: 'tittle',
   tooltipPrimaryInfo: 'primaryInfo',
@@ -92,105 +91,6 @@ const DEFAULTS_TEXTURES = {
     .background('#fff'),
 };
 
-const getConflictAreas = (array1: any[], array2: any[]) => {
-  const conflicts: { from: number; to: number; diameter: number }[] = [];
-  array1.forEach(item1 => {
-    array2.forEach(item2 => {
-      if (
-        (item2.from >= item1.from && item2.from < item1.to) ||
-        (item2.to <= item1.to && item2.to > item1.from)
-      ) {
-        // calculate ends of conflicts areas
-        const a = Math.max(item2.from, item1.from);
-        const b = Math.min(item2.to, item1.to);
-
-        conflicts.push({
-          from: a,
-          to: b,
-          diameter: Math.max(item1.diamenter, item2.diameter),
-        });
-      }
-    });
-  });
-  return conflicts;
-};
-
-const mergeConflicts = (
-  conflicts: { from: number; to: number; diameter: number }[],
-  buffer: number,
-) => {
-  // SORT ARRAY BY THE FROM PROPERTY
-  const sortedConflicts = conflicts.sort(
-    // @ts-ignore
-    (a, b) => parseFloat(a.from) - parseFloat(b.from),
-  );
-
-  const mergedConflicts: { from: number; to: number; diameter: number }[] = [];
-
-  let index = 0;
-  while (index < sortedConflicts.length) {
-    const conflict = sortedConflicts[index];
-
-    const { from, diameter } = conflict;
-    let { to } = conflict;
-
-    let jumpTo = index + 1;
-
-    for (let i = index + 1; i < sortedConflicts.length; i++) {
-      const nextConflict = sortedConflicts[i];
-      // if (nextConflict.to < conflict.to) {
-      //   // eslint-disable-next-line no-continue
-      //   continue;
-      // }
-
-      if (nextConflict.from > conflict.to + buffer) {
-        jumpTo = i;
-        break;
-      }
-
-      if (nextConflict.to > conflict.to && nextConflict.from >= conflict.from) {
-        to = nextConflict.to;
-      }
-    }
-
-    const nextConflict = sortedConflicts[index + 1];
-    if (
-      nextConflict &&
-      nextConflict.to === conflict.to &&
-      nextConflict.from === conflict.from
-    ) {
-      jumpTo++;
-    }
-
-    mergedConflicts.push({ from, to, diameter });
-
-    index = jumpTo;
-  }
-  return mergedConflicts;
-};
-
-const getYAxisFunctions = (yScale: any) => {
-  return {
-    getHeight: ({ from, to }: { from: number; to: number }) => {
-      return yScale(to - from);
-    },
-    getYPos: ({ from }: { from: number }) => {
-      return yScale(from);
-    },
-  };
-};
-
-const getLithologyFiller = (geologyData: Lithology[], svg) => {
-  const lithologicalFill = getLithologicalFillList(geologyData);
-  return (d: Lithology) => {
-    if (!lithologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
-      return lithologicalFill[`${d.fgdc_texture}.${d.from}`];
-    }
-    svg.call(lithologicalFill[`${d.fgdc_texture}.${d.from}`]);
-    return lithologicalFill[`${d.fgdc_texture}.${d.from}`].url();
-  };
-};
-
 export class DinamicDrawer {
   private svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
 
@@ -206,7 +106,7 @@ export class DinamicDrawer {
       TOP: number;
       BOTTOM: number;
     },
-    customClassNames?: componentsClassNames,
+    customClassNames?: ComponentsClassNames,
   ) {
     if (customClassNames) {
       this.customClassNames = {
@@ -368,7 +268,7 @@ export class DinamicDrawer {
       );
 
     const constructionGroup = svg
-      .select('.const-group')
+      .select(`.${this.customClassNames.constructionGroup}`)
       .attr(
         'transform',
         `translate(${this.MARGINS.LEFT + this.WIDTH / 2}, ${this.MARGINS.TOP})`,
@@ -426,8 +326,33 @@ export class DinamicDrawer {
         .style('fill', getLithologyFill);
     };
 
-    const updateFractures = (data: Fracture[], yScale) => {
+    const updateFractures = async (data: Fracture[], yScale) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
+
+      console.log(Fractures);
+      // @ts-ignore
+      const externalSvg = await d3.xml(Fractures.src);
+
+      const descrImg = geologicGroup.selectAll('.fractures').data(data);
+
+      // Remove exiting elements
+      descrImg.exit().remove();
+
+      // Enter new elements
+      const newElements = descrImg
+        .enter()
+        .append('svg')
+        .attr('class', 'fractures')
+        // transform-origin: center center;
+        .attr('transform-origin', 'center center')
+        .append(() => externalSvg.documentElement.cloneNode(true));
+
+      // Merge new elements with existing ones
+      newElements
+        // @ts-ignore
+        .merge(descrImg)
+        .attr('transform', (d, i) => `translate(0, ${yScale(d.depth)})`)
+        .attr('transform', d => `rotate(${d.dip})`);
     };
 
     const updatePoco = (
@@ -688,78 +613,6 @@ export class DinamicDrawer {
         .transition(transition)
         .attr('y', yScale(0))
         .attr('height', getHeight);
-
-      // FRACTURES
-
-      constructionGroup
-        .append('clipPath')
-        .attr('id', 'clipWell')
-        .append('rect')
-        .attr('x', (POCO_CENTER - xScale(maxXValueConstruction)) / 2)
-        .attr('width', POCO_WIDTH)
-        .attr('y', yScale(0))
-        .attr('height', yScale(maxYValues));
-
-      const fractures = constructionGroup
-        .selectAll('line')
-        .data(data.fractures);
-
-      fractures.exit().remove();
-
-      const newFractures = fractures
-        .enter()
-        .append('line')
-        .attr('class', 'fracture')
-        .attr('clip-path', 'url(#clipWell)')
-        .style('opacity', '1')
-        .attr('stroke', 'red') // Set the stroke color to black
-        .attr('stroke-width', '1px') // Set the stroke width
-        .on('mouseover', tooltips.hole.show)
-        .on('mouseout', tooltips.hole.hide);
-
-      function convertDegreesToRadians(degree: number) {
-        return (degree * Math.PI) / 180;
-      }
-
-      function getPosition(
-        axis: 'x' | 'y',
-        sign: number,
-      ): (d: Fracture) => number {
-        function getXPosition(d: Fracture) {
-          // if (!d.depth && sign < 0) return POCO_CENTER / 2
-          return (
-            POCO_CENTER / 2 +
-            (Math.cos(convertDegreesToRadians(sign < 0 ? d.dip + 180 : d.dip)) *
-              FRACTURES_INNER_WIDTH) /
-              2
-          );
-        }
-
-        if (axis === 'x') {
-          return getXPosition;
-        }
-
-        function getYPosition(d: Fracture) {
-          const yPos =
-            yScale(d.depth || 0) +
-            (Math.sin(convertDegreesToRadians(sign < 0 ? d.dip + 180 : d.dip)) *
-              FRACTURES_INNER_WIDTH) /
-              2;
-
-          return yPos;
-        }
-
-        return getYPosition;
-      }
-
-      newFractures
-        // @ts-ignore
-        .merge(fractures)
-        .transition(transition)
-        .attr('x1', getPosition('x', -1))
-        .attr('y1', getPosition('y', -1))
-        .attr('x2', getPosition('x', 1))
-        .attr('y2', getPosition('y', 1));
     };
 
     const geologicData = {
@@ -819,6 +672,10 @@ export class DinamicDrawer {
           if (!d) return null;
           return transform.k * spanH(d);
         });
+
+      geologicGroup
+        .selectAll('.fractures')
+        .attr('transform', `translate(0, ${transform.y})`);
     }
 
     function drawProfile() {
@@ -838,8 +695,6 @@ export class DinamicDrawer {
     // svg.on('wheel', wheeled).call(zoom);
   }
 }
-
-export class StaticDrawer {}
 
 export default {
   DinamicDrawer,
