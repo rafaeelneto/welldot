@@ -138,8 +138,11 @@ export class DinamicDrawer {
       .append('g')
       .attr('class', this.customClassNames.constructionGroup);
 
-    geologicGroup
-      .append('g')
+    pocoGroup
+      .append('svg')
+      .attr('viewBox', '0 0 500 74')
+      .attr('y', 0)
+      .attr('x', 0)
       .attr('class', this.customClassNames.fracturesGroup);
 
     constructionGroup
@@ -267,6 +270,13 @@ export class DinamicDrawer {
         `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
       );
 
+    const fracturesGroup = svg
+      .select(`.${this.customClassNames.fracturesGroup}`)
+      .attr(
+        'transform',
+        `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
+      );
+
     const constructionGroup = svg
       .select(`.${this.customClassNames.constructionGroup}`)
       .attr(
@@ -333,7 +343,7 @@ export class DinamicDrawer {
       // @ts-ignore
       const externalSvg = await d3.xml(Fractures.src);
 
-      const descrImg = geologicGroup.selectAll('.fractures').data(data);
+      const descrImg = fracturesGroup.selectAll('.fractures').data(data);
 
       // Remove exiting elements
       descrImg.exit().remove();
@@ -341,17 +351,15 @@ export class DinamicDrawer {
       // Enter new elements
       const newElements = descrImg
         .enter()
-        .append('svg')
+        .append(() => externalSvg.documentElement.cloneNode(true))
         .attr('class', 'fractures')
-        // transform-origin: center center;
-        .attr('transform-origin', 'center center')
-        .append(() => externalSvg.documentElement.cloneNode(true));
+        .attr('transform-origin', 'center center');
 
       // Merge new elements with existing ones
       newElements
         // @ts-ignore
         .merge(descrImg)
-        .attr('transform', (d, i) => `translate(0, ${yScale(d.depth)})`)
+        .attr('y', (d, i) => yScale(d.depth))
         .attr('transform', d => `rotate(${d.dip})`);
     };
 
@@ -674,7 +682,7 @@ export class DinamicDrawer {
         });
 
       geologicGroup
-        .selectAll('.fractures')
+        .select(`.fractures-group`)
         .attr('transform', `translate(0, ${transform.y})`);
     }
 
