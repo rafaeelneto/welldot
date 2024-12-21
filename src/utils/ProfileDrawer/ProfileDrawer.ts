@@ -106,7 +106,7 @@ export class DinamicDrawer {
       TOP: number;
       BOTTOM: number;
     },
-    customClassNames?: ComponentsClassNames,
+    customClassNames?: Partial<ComponentsClassNames>,
   ) {
     if (customClassNames) {
       this.customClassNames = {
@@ -117,7 +117,7 @@ export class DinamicDrawer {
     this.svg = d3.select(svgClassName);
   }
 
-  public prepareSvg() {
+  public async prepareSvg() {
     this.svg.selectAll('*').remove();
 
     const pocoGroup = this.svg
@@ -138,12 +138,21 @@ export class DinamicDrawer {
       .append('g')
       .attr('class', this.customClassNames.constructionGroup);
 
-    pocoGroup
-      .append('svg')
-      .attr('viewBox', '0 0 500 74')
-      .attr('y', 0)
-      .attr('x', 0)
-      .attr('class', this.customClassNames.fracturesGroup);
+    pocoGroup.append('g').attr('class', this.customClassNames.fracturesGroup);
+
+    this.svg.append('defs').html(`
+        <pattern id="fracture-swarm" patternUnits="userSpaceOnUse" width="100" height="20">
+          <line x1="0" y1="2" x2="5.6589684" y2="2" stroke="#000000" stroke-width="1" />
+          <line x1="17.610394" y1="5.7708259" x2="39.306301" y2="5.7708259" stroke="#000000" stroke-width="1" />
+          <line x1="34.435299" y1="15.774119" x2="64.435295" y2="15.774119" stroke="#000000" stroke-width="1" />
+          <line x1="0.85742563" y1="12.887059" x2="20.857426" y2="12.887059" stroke="#000000" stroke-width="1" />
+          <line x1="44.900799" y1="9.8969374" x2="80.973083" y2="9.8969374" stroke="#000000" stroke-width="1" />
+          <line x1="60" y1="2" x2="100" y2="2" stroke="black" stroke-width="1" />
+        </pattern>
+        <pattern id="single-fracture" patternUnits="userSpaceOnUse" width="100" height="20">
+          <line x1="12.28366" y1="8.435298" x2="93.124306" y2="8.435298" stroke="#000000" stroke-width="1" />
+        </pattern>
+    `);
 
     constructionGroup
       .append('g')
@@ -339,11 +348,7 @@ export class DinamicDrawer {
     const updateFractures = async (data: Fracture[], yScale) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
 
-      console.log(Fractures);
-      // @ts-ignore
-      const externalSvg = await d3.xml(Fractures.src);
-
-      const descrImg = fracturesGroup.selectAll('.fractures').data(data);
+      const descrImg = fracturesGroup.selectAll('rect').data(data);
 
       // Remove exiting elements
       descrImg.exit().remove();
@@ -351,15 +356,26 @@ export class DinamicDrawer {
       // Enter new elements
       const newElements = descrImg
         .enter()
-        .append(() => externalSvg.documentElement.cloneNode(true))
-        .attr('class', 'fractures')
+        .append('rect')
+        .attr('class', 'fracture')
+        .attr('x', 10)
+        .attr('width', svgWidth - 150)
+        .attr('height', 20)
         .attr('transform-origin', 'center center');
 
       // Merge new elements with existing ones
       newElements
         // @ts-ignore
         .merge(descrImg)
-        .attr('y', (d, i) => yScale(d.depth))
+        .attr('y', d => {
+          return yScale(d.depth) - 10;
+        })
+        .style('fill', d => {
+          if (d.swarm) {
+            return `url(${location}#fracture-swarm)`;
+          }
+          return `url(${location}#single-fracture)`;
+        })
         .attr('transform', d => `rotate(${d.dip})`);
     };
 
@@ -388,17 +404,17 @@ export class DinamicDrawer {
           .direction('e')
           .html((element, d: CementPad) => {
             return `
-            <span class="${this.customClassNames.tooltipTitle}">LAJE DE PROTEÇÃO</span>
-            <span class="${this.customClassNames.tooltipPrimaryInfo}">${data.cement_pad.type}</span>
-            <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Espessura:</strong> 
-            ${data.cement_pad.thickness} m</span>
-            <span class="${this.customClassNames.tooltipSecondaryInfo}">
-              <strong>Largura:</strong> ${data.cement_pad.width} m
-            </span>
-            <span class="${this.customClassNames.tooltipSecondaryInfo}">
-              <strong>Comprimento:</strong> ${data.cement_pad.length} m
-            </span>
-          `;
+              <span class="${this.customClassNames.tooltipTitle}">LAJE DE PROTEÇÃO</span>
+              <span class="${this.customClassNames.tooltipPrimaryInfo}">${data.cement_pad.type}</span>
+              <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Espessura:</strong> 
+              ${data.cement_pad.thickness} m</span>
+              <span class="${this.customClassNames.tooltipSecondaryInfo}">
+                <strong>Largura:</strong> ${data.cement_pad.width} m
+              </span>
+              <span class="${this.customClassNames.tooltipSecondaryInfo}">
+                <strong>Comprimento:</strong> ${data.cement_pad.length} m
+              </span>
+            `;
           });
 
         svg.call(tipCP);
@@ -681,9 +697,15 @@ export class DinamicDrawer {
           return transform.k * spanH(d);
         });
 
-      geologicGroup
-        .select(`.fractures-group`)
-        .attr('transform', `translate(0, ${transform.y})`);
+      fracturesGroup
+        .select(`rect`)
+        .attr('y', d => {
+          console.log(d);
+          if (!d) return null;
+          // @ts-ignore
+          return transform.applyY(yScaleGlobal(d.depth) - 10);
+        })
+        .attr('height', 20);
     }
 
     function drawProfile() {

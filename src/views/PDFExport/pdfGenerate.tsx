@@ -14,7 +14,7 @@ import {
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+// pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign

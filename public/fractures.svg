@@ -1,3 +1,15 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 485 74" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;"><path d="M9.194,31.151l134.72,-0" style="fill:none;stroke:#000;stroke-width:2.29px;"/><path d="M70.368,53.868l134.72,0" style="fill:none;stroke:#000;stroke-width:2.29px;"/><path d="M125.387,16.746l134.72,-0" style="fill:none;stroke:#000;stroke-width:2.29px;"/><path d="M179.105,42.414l134.72,0" style="fill:none;stroke:#000;stroke-width:2.29px;"/><path d="M347.365,34.697l134.721,0" style="fill:none;stroke:#000;stroke-width:2.29px;"/><path d="M282.515,21.221l134.72,0" style="fill:none;stroke:#000;stroke-width:2.29px;"/><path d="M312.971,55.221l134.721,0" style="fill:none;stroke:#000;stroke-width:2.29px;"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100%" height="100%" viewBox="0 0 100 20" version="1.1" xml:space="preserve"
+    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;"
+    sodipodi:docname="fractures.svg" inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+
+    <line x1="0" y1="2" x2="5.6589684" y2="2" stroke="#000000" stroke-width="1" />
+    <line x1="17.610394" y1="5.7708259" x2="39.306301" y2="5.7708259" stroke="#000000" stroke-width="1" />
+    <line x1="34.435299" y1="15.774119" x2="64.435295" y2="15.774119" stroke="#000000" stroke-width="1" />
+    <line x1="0.85742563" y1="12.887059" x2="20.857426" y2="12.887059" stroke="#000000" stroke-width="1" />
+    <line x1="44.900799" y1="9.8969374" x2="80.973083" y2="9.8969374" stroke="#000000" stroke-width="1" />
+    <line x1="60" y1="2" x2="100" y2="2" stroke="black" stroke-width="1" />
 </svg>

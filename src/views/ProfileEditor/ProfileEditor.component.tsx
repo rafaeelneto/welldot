@@ -11,7 +11,8 @@ import {
   Tabs,
 } from '@mantine/core';
 
-import Joyride from 'react-joyride';
+// import Joyride from 'react-joyride';
+const Joyride = dynamic(() => import('react-joyride'), { ssr: false });
 
 import { format } from 'date-fns';
 
@@ -40,6 +41,7 @@ import { getWindow } from '@/src/utils/window.utils';
 import styles from './profileEditor.module.scss';
 import { EMPTY_PROFILE } from '@/src/data/profile/profile.data';
 import { Profile } from '@/src/types/profile.types';
+import dynamic from 'next/dynamic';
 
 function ProfileEditor() {
   const inputFile = useRef(null);
@@ -310,8 +312,7 @@ function ProfileEditor() {
                   value="constructive"
                   className="h-[calc(100%-50px)] overflow-y-auto"
                 >
-                  JDNSAKDJNS
-                  {/* <TabConstructive /> */}
+                  <TabConstructive />
                 </Tabs.Panel>
                 <Tabs.Panel
                   value="geology"
