@@ -120,6 +120,15 @@ export class DinamicDrawer {
   public async prepareSvg() {
     this.svg.selectAll('*').remove();
 
+    this.svg.append('defs').append('clipPath')
+      .attr('id', 'fractures-clip')
+      .append('rect')
+      .attr('id', 'fractures-clip-rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', 10000)
+      .attr('height', 10000);
+
     const pocoGroup = this.svg
       .append('g')
       .attr('class', this.customClassNames.wellGroup);
@@ -141,17 +150,42 @@ export class DinamicDrawer {
     pocoGroup.append('g').attr('class', this.customClassNames.fracturesGroup);
 
     this.svg.append('defs').html(`
-        <pattern id="fracture-swarm" patternUnits="userSpaceOnUse" width="100" height="20">
-          <line x1="0" y1="2" x2="5.6589684" y2="2" stroke="#000000" stroke-width="1" />
-          <line x1="17.610394" y1="5.7708259" x2="39.306301" y2="5.7708259" stroke="#000000" stroke-width="1" />
-          <line x1="34.435299" y1="15.774119" x2="64.435295" y2="15.774119" stroke="#000000" stroke-width="1" />
-          <line x1="0.85742563" y1="12.887059" x2="20.857426" y2="12.887059" stroke="#000000" stroke-width="1" />
-          <line x1="44.900799" y1="9.8969374" x2="80.973083" y2="9.8969374" stroke="#000000" stroke-width="1" />
-          <line x1="60" y1="2" x2="100" y2="2" stroke="black" stroke-width="1" />
-        </pattern>
-        <pattern id="single-fracture" patternUnits="userSpaceOnUse" width="100" height="20">
-          <line x1="12.28366" y1="8.435298" x2="93.124306" y2="8.435298" stroke="#000000" stroke-width="1" />
-        </pattern>
+        <pattern id="single-fracture" patternUnits="userSpaceOnUse" width="120" height="24">
+    <!-- linha principal com leve irregularidade simulando uma fratura -->
+    <polyline 
+      points="0,12 18,11.5 42,12.8 68,11.2 95,12.5 120,12" 
+      stroke="#1a1a1a" stroke-width="1.2" fill="none" stroke-linecap="round"
+    />
+    <!-- pequenas terminações nas bordas (wing cracks) -->
+    <line x1="18" y1="11.5" x2="16" y2="9"   stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
+    <line x1="68" y1="11.2" x2="70" y2="9.5" stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
+    <line x1="95" y1="12.5" x2="97" y2="14.5" stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
+  </pattern>
+
+  <pattern id="fracture-swarm" patternUnits="userSpaceOnUse" width="120" height="48">
+    <!-- fratura principal -->
+    <polyline 
+      points="0,10 22,9.5 50,11 80,9.8 110,10.5 120,10" 
+      stroke="#1a1a1a" stroke-width="1.4" fill="none" stroke-linecap="round"
+    />
+    <!-- fratura secundária — ligeiramente deslocada e mais curta -->
+    <polyline 
+      points="10,28 35,27 60,29 88,27.5 110,28.5" 
+      stroke="#1a1a1a" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.75"
+    />
+    <!-- fratura terciária — mais curta ainda -->
+    <polyline 
+      points="25,44 55,43 80,44.5 100,43.5" 
+      stroke="#1a1a1a" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.55"
+    />
+    <!-- wing cracks na fratura principal -->
+    <line x1="22"  y1="9.5"  x2="19"  y2="7"    stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
+    <line x1="80"  y1="9.8"  x2="82"  y2="7.5"  stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
+    <line x1="110" y1="10.5" x2="112" y2="12.5" stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
+    <!-- wing cracks na fratura secundária -->
+    <line x1="35"  y1="27"   x2="33"  y2="25"   stroke="#1a1a1a" stroke-width="0.6" opacity="0.5"/>
+    <line x1="88"  y1="27.5" x2="90"  y2="25.5" stroke="#1a1a1a" stroke-width="0.6" opacity="0.5"/>
+  </pattern>
     `);
 
     constructionGroup
@@ -284,7 +318,8 @@ export class DinamicDrawer {
       .attr(
         'transform',
         `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
-      );
+      )
+      .attr('clip-path', 'url(#fractures-clip)');
 
     const constructionGroup = svg
       .select(`.${this.customClassNames.constructionGroup}`)
@@ -314,13 +349,13 @@ export class DinamicDrawer {
     const tooltips = this.populateTooltips();
 
     const updateGeology = async (
-      data: { lithology: Lithology[]; fractures: Fracture[] },
+      data: Lithology[],
       yScale,
     ) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
-      const getLithologyFill = getLithologyFiller(data.lithology, svg);
+      const getLithologyFill = getLithologyFiller(data, svg);
 
-      const rects = geologicGroup.selectAll('rect').data(data.lithology);
+      const rects = geologicGroup.selectAll('rect').data(data);
 
       rects.exit().remove();
 
@@ -345,38 +380,34 @@ export class DinamicDrawer {
         .style('fill', getLithologyFill);
     };
 
-    const updateFractures = async (data: Fracture[], yScale) => {
-      const { getHeight, getYPos } = getYAxisFunctions(yScale);
+    const updateFractures = (data: Fracture[], yScale) => {
+      const rects = fracturesGroup.selectAll('rect').data(data);
+      rects.exit().remove();
 
-      const descrImg = fracturesGroup.selectAll('rect').data(data);
+      const rectWidth = POCO_WIDTH * 1.2;
+      const rectHeight = 20;
+      // Centro do poço relativo ao fracturesGroup (que tem translate de MARGINS.LEFT)
+      const pocoCenterInGroup = POCO_CENTER - this.MARGINS.LEFT; 
+      const rectX = pocoCenterInGroup - rectWidth / 2;           
 
-      // Remove exiting elements
-      descrImg.exit().remove();
-
-      // Enter new elements
-      const newElements = descrImg
+      const newRects = rects
         .enter()
         .append('rect')
         .attr('class', 'fracture')
-        .attr('x', 10)
-        .attr('width', svgWidth - 150)
-        .attr('height', 20)
-        .attr('transform-origin', 'center center');
+        .attr('width', rectWidth)
+        .attr('height', rectHeight);
 
-      // Merge new elements with existing ones
-      newElements
+      newRects
         // @ts-ignore
-        .merge(descrImg)
-        .attr('y', d => {
-          return yScale(d.depth) - 10;
-        })
-        .style('fill', d => {
-          if (d.swarm) {
-            return `url(${location}#fracture-swarm)`;
-          }
-          return `url(${location}#single-fracture)`;
-        })
-        .attr('transform', d => `rotate(${d.dip})`);
+        .merge(rects)
+        .attr('x', rectX)
+        .attr('y', d => yScale(d.depth) - rectHeight / 2)
+        .style('fill', d => d.swarm ? '#fracture-swarm' : '#fractures-single')
+        .attr('transform', d => {
+          const cx = pocoCenterInGroup;         // 👈 pivô no centro do poço
+          const cy = yScale(d.depth);
+          return `rotate(${d.dip}, ${cx}, ${cy})`;
+        });
     };
 
     const updatePoco = (
@@ -663,6 +694,8 @@ export class DinamicDrawer {
       .domain([0, maxYValues])
       .range([0, svgHeight - this.MARGINS.TOP - this.MARGINS.BOTTOM]);
 
+    const yZero = yScaleGlobal(0); 
+
     const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
 
     const gY = geologicGroup
@@ -680,7 +713,7 @@ export class DinamicDrawer {
       return yScaleGlobal(d.to - d.from);
     };
 
-    function zooming(e: any) {
+    const zooming = (e: any) => {
       // eslint-disable-next-line prefer-destructuring
       const transform = e.transform;
 
@@ -697,21 +730,38 @@ export class DinamicDrawer {
           return transform.k * spanH(d);
         });
 
+      const zoomedYZero = transform.applyY(yScaleGlobal(0));
+
+      const rectWidth = POCO_WIDTH * 0.8;
+      const rectHeight = 20;
+      const pocoCenterInGroup = POCO_CENTER - this.MARGINS.LEFT;
+      const rectX = pocoCenterInGroup - rectWidth / 2;
+
       fracturesGroup
-        .select(`rect`)
-        .attr('y', d => {
-          console.log(d);
+        .selectAll('rect')
+        .attr('y', (d: any) => {
           if (!d) return null;
-          // @ts-ignore
-          return transform.applyY(yScaleGlobal(d.depth) - 10);
+          return transform.applyY(yScaleGlobal(d.depth)) - rectHeight / 2;
         })
-        .attr('height', 20);
+        .attr('height', rectHeight)
+        .attr('transform', (d: any) => {
+          if (!d) return null;
+          const cx = pocoCenterInGroup;  
+          const cy = transform.applyY(yScaleGlobal(d.depth));
+          return `rotate(${d.dip}, ${cx}, ${cy})`;
+        });
     }
 
-    function drawProfile() {
-      if (geologicData) updateGeology(geologicData, yScaleGlobal);
+
+    const drawProfile = () => {
+      
+      if (geologicData.lithology) updateGeology(geologicData.lithology, yScaleGlobal);
+      if (geologicData.fractures) updateFractures(geologicData.fractures, yScaleGlobal);
       if (constructionData) updatePoco(constructionData, yScaleGlobal);
-      if (geologicData) updateFractures(geologicData.fractures, yScaleGlobal);
+
+      this.svg.select('#fractures-clip-rect')
+        .attr('y', yZero)
+        .attr('height', svgHeight);
     }
 
     // @ts-ignore
