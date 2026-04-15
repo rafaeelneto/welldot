@@ -238,6 +238,17 @@ export class DinamicDrawer {
               </span>
           `;
       },
+      fracture: (_event: unknown, d: Fracture) => {
+        const title = d.swarm ? 'ENXAME DE FRATURAS' : 'FRATURA';
+        return `
+          <span class="${this.customClassNames.tooltipTitle}">${title}</span>
+          <span class="${this.customClassNames.tooltipPrimaryInfo}"><strong>Profundidade:</strong> ${d.depth} m</span>
+          ${d.water_intake ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Entrada d'água:</strong> ${d.depth} m</span>` : ''}
+          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Mergulho:</strong> ${d.dip}°</span>
+          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Azimute:</strong> ${d.azimuth}°</span>
+          ${d.description ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
+        `;
+      },
     };
 
     const tooltips: any = {};
@@ -391,7 +402,21 @@ export class DinamicDrawer {
           .attr('class', 'fracture-group')
           .datum(fracture)
           .attr('transform',
-            `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterInGroup},0)`);
+            `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterInGroup},0)`)
+          .on('mouseover', tooltips.fracture.show)
+          .on('mouseout', tooltips.fracture.hide)
+          .style('cursor', 'pointer');
+
+        // Invisible hit-area rect so the mouse target covers the full diagonal
+        // band of the fracture (not just the thin stroke pixels).
+        const hitBuffer = fracture.swarm ? 14 : 8;
+        g.append('rect')
+          .attr('x', xa)
+          .attr('y', -hitBuffer)
+          .attr('width', w)
+          .attr('height', hitBuffer * 2)
+          .attr('fill', 'transparent')
+          .style('pointer-events', 'all');
 
         const strokeColor = fracture.water_intake ? '#1a6fa8' : '#000000';
 
