@@ -346,7 +346,7 @@ export class DinamicDrawer {
       fracturesGroup.selectAll('g.fracture-group').remove();
 
       const halfWidth = (POCO_WIDTH * 1.2) / 2;
-      const pocoCenterInGroup = POCO_CENTER - this.MARGINS.LEFT;
+      const pocoCenterInGroup = this.WIDTH / 2 + POCO_CENTER / 2;
       const xa = pocoCenterInGroup - halfWidth;
       const w  = halfWidth * 2;
 
@@ -783,7 +783,7 @@ export class DinamicDrawer {
 
       const zoomedYZero = transform.applyY(yScaleGlobal(0));
 
-      const pocoCenterInGroup = POCO_CENTER - this.MARGINS.LEFT;
+      const pocoCenterInGroup = this.WIDTH / 2 + POCO_CENTER / 2;
 
       fracturesGroup
         .selectAll('g.fracture-group')
