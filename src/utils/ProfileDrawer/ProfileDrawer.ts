@@ -149,44 +149,6 @@ export class DinamicDrawer {
 
     pocoGroup.append('g').attr('class', this.customClassNames.fracturesGroup);
 
-    this.svg.append('defs').html(`
-        <pattern id="single-fracture" patternUnits="userSpaceOnUse" width="120" height="24">
-    <!-- linha principal com leve irregularidade simulando uma fratura -->
-    <polyline 
-      points="0,12 18,11.5 42,12.8 68,11.2 95,12.5 120,12" 
-      stroke="#1a1a1a" stroke-width="1.2" fill="none" stroke-linecap="round"
-    />
-    <!-- pequenas terminações nas bordas (wing cracks) -->
-    <line x1="18" y1="11.5" x2="16" y2="9"   stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
-    <line x1="68" y1="11.2" x2="70" y2="9.5" stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
-    <line x1="95" y1="12.5" x2="97" y2="14.5" stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
-  </pattern>
-
-  <pattern id="fracture-swarm" patternUnits="userSpaceOnUse" width="120" height="48">
-    <!-- fratura principal -->
-    <polyline 
-      points="0,10 22,9.5 50,11 80,9.8 110,10.5 120,10" 
-      stroke="#1a1a1a" stroke-width="1.4" fill="none" stroke-linecap="round"
-    />
-    <!-- fratura secundária — ligeiramente deslocada e mais curta -->
-    <polyline 
-      points="10,28 35,27 60,29 88,27.5 110,28.5" 
-      stroke="#1a1a1a" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.75"
-    />
-    <!-- fratura terciária — mais curta ainda -->
-    <polyline 
-      points="25,44 55,43 80,44.5 100,43.5" 
-      stroke="#1a1a1a" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.55"
-    />
-    <!-- wing cracks na fratura principal -->
-    <line x1="22"  y1="9.5"  x2="19"  y2="7"    stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
-    <line x1="80"  y1="9.8"  x2="82"  y2="7.5"  stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
-    <line x1="110" y1="10.5" x2="112" y2="12.5" stroke="#1a1a1a" stroke-width="0.7" opacity="0.6"/>
-    <!-- wing cracks na fratura secundária -->
-    <line x1="35"  y1="27"   x2="33"  y2="25"   stroke="#1a1a1a" stroke-width="0.6" opacity="0.5"/>
-    <line x1="88"  y1="27.5" x2="90"  y2="25.5" stroke="#1a1a1a" stroke-width="0.6" opacity="0.5"/>
-  </pattern>
-    `);
 
     constructionGroup
       .append('g')
@@ -381,33 +343,122 @@ export class DinamicDrawer {
     };
 
     const updateFractures = (data: Fracture[], yScale) => {
-      const rects = fracturesGroup.selectAll('rect').data(data);
-      rects.exit().remove();
+      fracturesGroup.selectAll('g.fracture-group').remove();
 
-      const rectWidth = POCO_WIDTH * 1.2;
-      const rectHeight = 20;
-      // Centro do poço relativo ao fracturesGroup (que tem translate de MARGINS.LEFT)
-      const pocoCenterInGroup = POCO_CENTER - this.MARGINS.LEFT; 
-      const rectX = pocoCenterInGroup - rectWidth / 2;           
+      const halfWidth = (POCO_WIDTH * 1.2) / 2;
+      const pocoCenterInGroup = POCO_CENTER - this.MARGINS.LEFT;
+      const xa = pocoCenterInGroup - halfWidth;
+      const w  = halfWidth * 2;
 
-      const newRects = rects
-        .enter()
-        .append('rect')
-        .attr('class', 'fracture')
-        .attr('width', rectWidth)
-        .attr('height', rectHeight);
+      const xAt = (nx: number) => xa + nx * w;
+      const BLK = '#000000';
+      const RC  = 'round' as const;
 
-      newRects
-        // @ts-ignore
-        .merge(rects)
-        .attr('x', rectX)
-        .attr('y', d => yScale(d.depth) - rectHeight / 2)
-        .style('fill', d => d.swarm ? '#fracture-swarm' : '#fractures-single')
-        .attr('transform', d => {
-          const cx = pocoCenterInGroup;         // 👈 pivô no centro do poço
-          const cy = yScale(d.depth);
-          return `rotate(${d.dip}, ${cx}, ${cy})`;
-        });
+      // Deterministic PRNG seeded by fracture depth — same depth always renders identically
+      const makePrng = (seed: number) => {
+        let s = Math.abs(seed * 7919) | 1;
+        return () => {
+          s = (s * 16807) % 2147483647;
+          return (s - 1) / 2147483646;
+        };
+      };
+
+      // Generate a wavy polyline as [normalised-x, dy] pairs.
+      // startInset / endInset: how far (0-1) each end is pulled away from the edge.
+      const wavyLine = (
+        rng: () => number,
+        steps: number,
+        baseY: number,
+        jitter: number,
+        startInset: number,
+        endInset: number,
+      ): [number, number][] => {
+        const pts: [number, number][] = [];
+        for (let i = 0; i < steps; i++) {
+          const t  = i / (steps - 1);
+          const nx = startInset + t * (1 - startInset - endInset);
+          const dy = baseY + (rng() * 2 - 1) * jitter;
+          pts.push([nx, dy]);
+        }
+        return pts;
+      };
+
+      data.forEach(fracture => {
+        const rng = makePrng(fracture.depth);
+        const cy  = yScale(fracture.depth);
+
+        const g = fracturesGroup
+          .append('g')
+          .attr('class', 'fracture-group')
+          .datum(fracture)
+          .attr('transform',
+            `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterInGroup},0)`);
+
+        const appendLine = (x1: number, y1: number, x2: number, y2: number, sw: number) =>
+          g.append('line')
+            .attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2)
+            .attr('stroke', BLK).attr('stroke-width', sw).attr('stroke-linecap', RC);
+
+        const appendPolyline = (pts: [number, number][], sw: number) =>
+          g.append('polyline')
+            .attr('points', pts.map(([nx, dy]) => `${xAt(nx)},${dy}`).join(' '))
+            .attr('stroke', BLK).attr('stroke-width', sw)
+            .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
+
+        if (fracture.swarm) {
+          // Random number of lines (4–6), randomly spaced across the swarm band
+          const lineCount = 4 + Math.round(rng() * 2);
+          const spread    = 18; // total band height in px
+          const halfSpread = spread / 2;
+
+          // Sort random y-positions so lines don't cross chaotically
+          const bases = Array.from({ length: lineCount }, () => (rng() * 2 - 1) * halfSpread)
+            .sort((a, b) => a - b);
+
+          bases.forEach((base, idx) => {
+            const isCentral = idx === Math.floor(lineCount / 2);
+            const sw        = isCentral ? 1.8 : 0.6 + rng() * 0.7;
+            const steps     = 6 + Math.round(rng() * 3);
+            const jitter    = 0.8 + rng() * 1.2;
+            const insetL    = 0.04 + rng() * 0.12;
+            const insetR    = 0.04 + rng() * 0.12;
+            appendPolyline(wavyLine(rng, steps, base, jitter, insetL, insetR), sw);
+          });
+
+          // A few short en-echelon bridges between adjacent lines
+          const bridgeCount = 2 + Math.round(rng() * 2);
+          for (let b = 0; b < bridgeCount; b++) {
+            const nx  = 0.15 + rng() * 0.7;
+            const pairIdx = Math.floor(rng() * (bases.length - 1));
+            appendLine(xAt(nx), bases[pairIdx], xAt(nx + (rng() - 0.5) * 0.06), bases[pairIdx + 1], 0.6);
+          }
+
+          // Wing cracks on the primary (central) line
+          const primaryBase = bases[Math.floor(lineCount / 2)];
+          for (let wc = 0; wc < 2; wc++) {
+            const nx  = 0.2 + rng() * 0.6;
+            const len = 3 + rng() * 3;
+            const dir = rng() > 0.5 ? -1 : 1;
+            appendLine(xAt(nx), primaryBase, xAt(nx + (rng() - 0.5) * 0.04), primaryBase + dir * len, 0.8);
+          }
+
+        } else {
+          // Single fracture: one wavy line with random insets and jitter
+          const steps  = 7 + Math.round(rng() * 3);
+          const insetL = 0.03 + rng() * 0.08;
+          const insetR = 0.03 + rng() * 0.08;
+          appendPolyline(wavyLine(rng, steps, 0, 2, insetL, insetR), 1.8);
+
+          // 2–4 micro-cracks at random positions along the fracture
+          const crackCount = 2 + Math.round(rng() * 2);
+          for (let c = 0; c < crackCount; c++) {
+            const nx  = insetL + rng() * (1 - insetL - insetR);
+            const len = 3.5 + rng() * 3.5;
+            const dir = rng() > 0.5 ? 1 : -1;
+            appendLine(xAt(nx), (rng() * 2 - 1) * 1.5, xAt(nx + (rng() - 0.5) * 0.03), dir * len, 0.9);
+          }
+        }
+      });
     };
 
     const updatePoco = (
@@ -732,23 +783,15 @@ export class DinamicDrawer {
 
       const zoomedYZero = transform.applyY(yScaleGlobal(0));
 
-      const rectWidth = POCO_WIDTH * 0.8;
-      const rectHeight = 20;
       const pocoCenterInGroup = POCO_CENTER - this.MARGINS.LEFT;
-      const rectX = pocoCenterInGroup - rectWidth / 2;
 
       fracturesGroup
-        .selectAll('rect')
-        .attr('y', (d: any) => {
-          if (!d) return null;
-          return transform.applyY(yScaleGlobal(d.depth)) - rectHeight / 2;
-        })
-        .attr('height', rectHeight)
+        .selectAll('g.fracture-group')
         .attr('transform', (d: any) => {
           if (!d) return null;
-          const cx = pocoCenterInGroup;  
+          const cx = pocoCenterInGroup;
           const cy = transform.applyY(yScaleGlobal(d.depth));
-          return `rotate(${d.dip}, ${cx}, ${cy})`;
+          return `translate(0,${cy}) rotate(${d.dip},${cx},0)`;
         });
     }
 
