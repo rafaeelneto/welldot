@@ -351,7 +351,6 @@ export class DinamicDrawer {
       const w  = halfWidth * 2;
 
       const xAt = (nx: number) => xa + nx * w;
-      const BLK = '#000000';
       const RC  = 'round' as const;
 
       // Deterministic PRNG seeded by fracture depth — same depth always renders identically
@@ -394,15 +393,17 @@ export class DinamicDrawer {
           .attr('transform',
             `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterInGroup},0)`);
 
+        const strokeColor = fracture.water_intake ? '#1a6fa8' : '#000000';
+
         const appendLine = (x1: number, y1: number, x2: number, y2: number, sw: number) =>
           g.append('line')
             .attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2)
-            .attr('stroke', BLK).attr('stroke-width', sw).attr('stroke-linecap', RC);
+            .attr('stroke', strokeColor).attr('stroke-width', sw).attr('stroke-linecap', RC);
 
         const appendPolyline = (pts: [number, number][], sw: number) =>
           g.append('polyline')
             .attr('points', pts.map(([nx, dy]) => `${xAt(nx)},${dy}`).join(' '))
-            .attr('stroke', BLK).attr('stroke-width', sw)
+            .attr('stroke', strokeColor).attr('stroke-width', sw)
             .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
 
         if (fracture.swarm) {
