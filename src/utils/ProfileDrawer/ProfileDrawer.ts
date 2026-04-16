@@ -16,6 +16,7 @@ import {
   WellCase,
   WellScreen,
   Fracture,
+  Cave,
 } from '@/src/types/profile.types';
 import {
   checkIfProfileIsEmpty,
@@ -45,6 +46,7 @@ type ComponentsClassNames = {
   geologicGroup: string;
   lithologyGroup: string;
   fracturesGroup: string;
+  cavesGroup: string;
   constructionGroup: string;
   cementPadGroup: string;
   holeGroup: string;
@@ -67,6 +69,7 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
   geologicGroup: 'geologic-group',
   lithologyGroup: 'litho-group',
   fracturesGroup: 'fractures-group',
+  cavesGroup: 'caves-group',
   constructionGroup: 'const-group',
   cementPadGroup: 'cement-pad',
   holeGroup: 'hole',
@@ -80,6 +83,8 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
 const DEFAULTS_TEXTURES = {
   pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
   conflict: textures.lines().heavier().stroke('#E52117'),
+  cave_dry: textures.lines().heavier().stroke('#333333'),
+  cave_wet: textures.lines().heavier().stroke('#1a6fa8'),
   seal: textures.lines().thicker().background('#ffffff'),
   gravel_pack: textures.circles().complement().background('#ffffff'),
   well_screen: textures
@@ -120,7 +125,9 @@ export class DinamicDrawer {
   public async prepareSvg() {
     this.svg.selectAll('*').remove();
 
-    this.svg.append('defs').append('clipPath')
+    const defs = this.svg.append('defs');
+
+    defs.append('clipPath')
       .attr('id', 'fractures-clip')
       .append('rect')
       .attr('id', 'fractures-clip-rect')
@@ -143,12 +150,16 @@ export class DinamicDrawer {
       .append('g')
       .attr('class', this.customClassNames.lithologyGroup);
 
+    // Caves render on top of the lithology rects, below fractures
+    geologicGroup
+      .append('g')
+      .attr('class', this.customClassNames.cavesGroup);
+
     const constructionGroup = pocoGroup
       .append('g')
       .attr('class', this.customClassNames.constructionGroup);
 
     pocoGroup.append('g').attr('class', this.customClassNames.fracturesGroup);
-
 
     constructionGroup
       .append('g')
@@ -249,6 +260,14 @@ export class DinamicDrawer {
           ${d.description ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
         `;
       },
+      cave: (_event: unknown, d: Cave) => {
+        return `
+          <span class="${this.customClassNames.tooltipTitle}">CAVERNA</span>
+          <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
+          ${d.water_intake ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Entrada d'água</strong></span>` : ''}
+          ${d.description ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
+        `;
+      },
     };
 
     const tooltips: any = {};
@@ -286,12 +305,20 @@ export class DinamicDrawer {
         `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
       );
 
+    const lithologyGroup = geologicGroup.select(`.${this.customClassNames.lithologyGroup}`);
+
     const fracturesGroup = svg
       .select(`.${this.customClassNames.fracturesGroup}`)
       .attr(
         'transform',
         `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
       )
+      .attr('clip-path', 'url(#fractures-clip)');
+
+    // cavesGroup is a child of geologicGroup so it already inherits the
+    // translate(MARGINS.LEFT, MARGINS.TOP) transform — no extra transform here.
+    const cavesGroup = svg
+      .select(`.${this.customClassNames.cavesGroup}`)
       .attr('clip-path', 'url(#fractures-clip)');
 
     const constructionGroup = svg
@@ -314,12 +341,92 @@ export class DinamicDrawer {
 
     const POCO_WIDTH = svgWidth / 4;
     const POCO_CENTER = (svgWidth * 3) / 4;
-    const FRACTURES_INNER_WIDTH = POCO_WIDTH;
-    const FRACTURES_OUTER_WIDTH = POCO_WIDTH * 1.8;
 
     const transition = d3.transition().duration(750).ease(d3.easeCubic);
 
     const tooltips = this.populateTooltips();
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Cave helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Seeded PRNG — deterministic so every zoom/redraw produces identical shapes.
+     */
+    const makeCavePrng = (seed: number) => {
+      let s = Math.abs(seed * 6271) | 1;
+      return () => {
+        s = (s * 16807) % 2147483647;
+        return (s - 1) / 2147483646;
+      };
+    };
+
+    /**
+     * Build a wavy horizontal contact line as an array of [x, y] points.
+     *
+     * The line spans from xLeft to xRight at a nominal y of baseY.
+     * Each sample is displaced vertically by a combination of a low-frequency
+     * sinusoidal curve (for large-scale curvature) and a high-frequency random
+     * component (for small-scale roughness), giving a natural geological contact.
+     *
+     * @param xLeft   - leftmost x coordinate (matches lithology rect x)
+     * @param xRight  - rightmost x coordinate (matches lithology rect right edge)
+     * @param baseY   - nominal pixel y for this contact depth
+     * @param amp     - maximum vertical displacement in pixels
+     * @param steps   - number of sample points (more = smoother)
+     * @param rng     - seeded PRNG; must be freshly constructed per call
+     */
+    const wavyContact = (
+      xLeft: number,
+      xRight: number,
+      baseY: number,
+      amp: number,
+      steps: number,
+      rng: () => number,
+    ): [number, number][] => {
+      const pts: [number, number][] = [];
+      const phaseShift = rng() * Math.PI * 2;
+      const freqLow    = 0.8 + rng() * 0.6; // ~1 full cycle across the width
+
+      for (let i = 0; i < steps; i++) {
+        const t = i / (steps - 1);
+        const x = xLeft + t * (xRight - xLeft);
+        // Low-frequency component: smooth overall curvature
+        const low  = Math.sin(t * Math.PI * 2 * freqLow + phaseShift) * amp * 0.6;
+        // High-frequency component: small-scale roughness
+        const high = (rng() * 2 - 1) * amp * 0.4;
+        pts.push([x, baseY + low + high]);
+      }
+      return pts;
+    };
+
+    /**
+     * Convert an array of [x, y] points into a smooth SVG cubic-Bézier path
+     * string using Catmull-Rom tension. Produces natural curved contacts rather
+     * than the jagged edges of a raw polyline.
+     */
+    const ptsToSmoothPath = (pts: [number, number][]): string => {
+      if (pts.length < 2) return '';
+      const n       = pts.length;
+      const tension = 0.35;
+      let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+      for (let i = 0; i < n - 1; i++) {
+        const p0   = pts[Math.max(0, i - 1)];
+        const p1   = pts[i];
+        const p2   = pts[i + 1];
+        const p3   = pts[Math.min(n - 1, i + 2)];
+        const cp1x = p1[0] + (p2[0] - p0[0]) * tension;
+        const cp1y = p1[1] + (p2[1] - p0[1]) * tension;
+        const cp2x = p2[0] - (p3[0] - p1[0]) * tension;
+        const cp2y = p2[1] - (p3[1] - p1[1]) * tension;
+        d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+      }
+      return d;
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // updateGeology
+    // ─────────────────────────────────────────────────────────────────────────
 
     const updateGeology = async (
       data: Lithology[],
@@ -328,7 +435,7 @@ export class DinamicDrawer {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
       const getLithologyFill = getLithologyFiller(data, svg);
 
-      const rects = geologicGroup.selectAll('rect').data(data);
+      const rects = lithologyGroup.selectAll('rect').data(data);
 
       rects.exit().remove();
 
@@ -345,13 +452,125 @@ export class DinamicDrawer {
       newLayers
         // @ts-ignore
         .merge(rects)
-
         .attr('y', getYPos)
         // @ts-ignore
         .transition(transition)
         .attr('height', getHeight)
         .style('fill', getLithologyFill);
     };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // updateCaves
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Caves are rendered as full-width lithology-like bands whose top and bottom
+     * contacts are irregular and wavy rather than straight horizontal lines.
+     *
+     * Approach:
+     *   1. Use the same x-extents as the lithology rects (x=10 to x=svgWidth-100)
+     *      so the cave band visually replaces the lithology fill in that interval.
+     *   2. Generate a wavy top contact and a wavy bottom contact using independent
+     *      seeded PRNGs so the two edges are uncorrelated (they won't mirror each
+     *      other) and every redraw—including zoom—produces identical geometry.
+     *   3. Build a single closed SVG path from the two contacts:
+     *        top contact (left → right)
+     *        → vertical right edge connecting to the bottom contact
+     *        → bottom contact (right → left)
+     *        → vertical left edge back to start
+     *      This gives a wavy-edged filled band exactly like a lithology layer.
+     *   4. Stroke the top and bottom contact lines separately so they appear as
+     *      distinct, crisp geological contacts on top of the fill.
+     *   5. Fill with the cave_dry / cave_wet texture from DEFAULTS_TEXTURES,
+     *      registered via svg.call() exactly as every other texture in this file.
+     */
+    const updateCaves = (data: Cave[], yScale) => {
+      cavesGroup.selectAll('g.cave-group').remove();
+
+      // x-extents match the lithology rect geometry exactly
+      const xLeft  = 10;
+      const xRight = svgWidth - 100;
+      const steps  = 32; // enough points for smooth Bézier curves
+
+      data.forEach(cave => {
+        // Two different seeds so top and bottom contacts are visually independent
+        const seedTop = cave.from * 100 + cave.to;
+        const seedBot = cave.to  * 100 + cave.from + 999;
+        const rngTop  = makeCavePrng(seedTop);
+        const rngBot  = makeCavePrng(seedBot);
+
+        const yTop = yScale(cave.from);
+        const yBot = yScale(cave.to);
+        const span = yBot - yTop; // pixel height of the cave band
+
+        // Amplitude proportional to band height, clamped for readability
+        const amp = Math.max(3, Math.min(span * 0.18, 14));
+
+        const topPts = wavyContact(xLeft, xRight, yTop, amp, steps, rngTop);
+        const botPts = wavyContact(xLeft, xRight, yBot, amp, steps, rngBot);
+
+        // Smooth path strings for each contact
+        const topPath = ptsToSmoothPath(topPts);
+        const botPath = ptsToSmoothPath(botPts);
+
+        // Closed filled region:
+        //   top contact L→R  +  right vertical edge down
+        //   +  bottom contact R→L (reversed)  +  left vertical edge up  +  Z
+        const botReversed = ptsToSmoothPath([...botPts].reverse());
+        const closedPath =
+          topPath +
+          ` L ${xRight.toFixed(1)},${botPts[botPts.length - 1][1].toFixed(1)}` +
+          // Strip the leading 'M x,y' from the reversed bottom path so the
+          // concatenated path stays as one continuous sub-path.
+          botReversed.replace(/^M [\d.-]+ [\d.-]+/, '') +
+          ` L ${xLeft.toFixed(1)},${topPts[0][1].toFixed(1)} Z`;
+
+        // Register the texture before reading its url() — same pattern as
+        // conflict, pad, and every other texture in this file.
+        const caveTexture = cave.water_intake
+          ? DEFAULTS_TEXTURES.cave_wet
+          : DEFAULTS_TEXTURES.cave_dry;
+        svg.call(caveTexture);
+
+        const strokeColor = cave.water_intake ? '#1a6fa8' : '#333333';
+
+        const g = cavesGroup
+          .append('g')
+          .attr('class', 'cave-group')
+          .datum(cave)
+          .style('cursor', 'pointer')
+          .on('mouseover', tooltips.cave.show)
+          .on('mouseout', tooltips.cave.hide);
+
+        // Filled band — covers the lithology fill in this depth interval
+        g.append('path')
+          .attr('d', closedPath)
+          .attr('fill', caveTexture.url())
+          .attr('stroke', 'none');
+
+        // Top contact line — rendered above the fill so it's always visible
+        g.append('path')
+          .attr('d', topPath)
+          .attr('fill', 'none')
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', 1.2)
+          .attr('stroke-linecap', 'round')
+          .attr('stroke-linejoin', 'round');
+
+        // Bottom contact line
+        g.append('path')
+          .attr('d', botPath)
+          .attr('fill', 'none')
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', 1.2)
+          .attr('stroke-linecap', 'round')
+          .attr('stroke-linejoin', 'round');
+      });
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // updateFractures
+    // ─────────────────────────────────────────────────────────────────────────
 
     const updateFractures = (data: Fracture[], yScale) => {
       fracturesGroup.selectAll('g.fracture-group').remove();
@@ -364,7 +583,6 @@ export class DinamicDrawer {
       const xAt = (nx: number) => xa + nx * w;
       const RC  = 'round' as const;
 
-      // Deterministic PRNG seeded by fracture depth — same depth always renders identically
       const makePrng = (seed: number) => {
         let s = Math.abs(seed * 7919) | 1;
         return () => {
@@ -373,8 +591,6 @@ export class DinamicDrawer {
         };
       };
 
-      // Generate a wavy polyline as [normalised-x, dy] pairs.
-      // startInset / endInset: how far (0-1) each end is pulled away from the edge.
       const wavyLine = (
         rng: () => number,
         steps: number,
@@ -407,8 +623,6 @@ export class DinamicDrawer {
           .on('mouseout', tooltips.fracture.hide)
           .style('cursor', 'pointer');
 
-        // Invisible hit-area rect so the mouse target covers the full diagonal
-        // band of the fracture (not just the thin stroke pixels).
         const hitBuffer = fracture.swarm ? 14 : 8;
         g.append('rect')
           .attr('x', xa)
@@ -432,12 +646,10 @@ export class DinamicDrawer {
             .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
 
         if (fracture.swarm) {
-          // Random number of lines (4–6), randomly spaced across the swarm band
-          const lineCount = 4 + Math.round(rng() * 2);
-          const spread    = 18; // total band height in px
+          const lineCount  = 4 + Math.round(rng() * 2);
+          const spread     = 18;
           const halfSpread = spread / 2;
 
-          // Sort random y-positions so lines don't cross chaotically
           const bases = Array.from({ length: lineCount }, () => (rng() * 2 - 1) * halfSpread)
             .sort((a, b) => a - b);
 
@@ -451,15 +663,13 @@ export class DinamicDrawer {
             appendPolyline(wavyLine(rng, steps, base, jitter, insetL, insetR), sw);
           });
 
-          // A few short en-echelon bridges between adjacent lines
           const bridgeCount = 2 + Math.round(rng() * 2);
           for (let b = 0; b < bridgeCount; b++) {
-            const nx  = 0.15 + rng() * 0.7;
+            const nx      = 0.15 + rng() * 0.7;
             const pairIdx = Math.floor(rng() * (bases.length - 1));
             appendLine(xAt(nx), bases[pairIdx], xAt(nx + (rng() - 0.5) * 0.06), bases[pairIdx + 1], 0.6);
           }
 
-          // Wing cracks on the primary (central) line
           const primaryBase = bases[Math.floor(lineCount / 2)];
           for (let wc = 0; wc < 2; wc++) {
             const nx  = 0.2 + rng() * 0.6;
@@ -469,13 +679,11 @@ export class DinamicDrawer {
           }
 
         } else {
-          // Single fracture: one wavy line with random insets and jitter
           const steps  = 7 + Math.round(rng() * 3);
           const insetL = 0.03 + rng() * 0.08;
           const insetR = 0.03 + rng() * 0.08;
           appendPolyline(wavyLine(rng, steps, 0, 2, insetL, insetR), 1.8);
 
-          // 2–4 micro-cracks at random positions along the fracture
           const crackCount = 2 + Math.round(rng() * 2);
           for (let c = 0; c < crackCount; c++) {
             const nx  = insetL + rng() * (1 - insetL - insetR);
@@ -487,6 +695,10 @@ export class DinamicDrawer {
       });
     };
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // updatePoco
+    // ─────────────────────────────────────────────────────────────────────────
+
     const updatePoco = (
       data: Constructive & { fractures: Fracture[] },
       yScale,
@@ -494,7 +706,6 @@ export class DinamicDrawer {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
 
       const maxXValues = getProfileDiamValues(data);
-
       const maxXValueConstruction = d3.max(maxXValues) || 0;
 
       const xScale = d3
@@ -695,20 +906,15 @@ export class DinamicDrawer {
         .attr('y', getYPos)
         .attr('height', getHeight);
 
-      // GET THE ARRAY FROM CONFLICT DETECTION
       const conflictAreas: Conflict[] = [];
-
-      // 1. ARRAY THROUGH WELL CASE OR WELL SCREEN
       conflictAreas.push(...getConflictAreas(data.well_case, data.well_screen));
       conflictAreas.push(...getConflictAreas(data.well_screen, data.well_case));
 
-      // 2. ADD SOME BUFFER AND MERGE TWO CLOSES AREAS
       const mergedConflicts = mergeConflicts(conflictAreas, 1);
 
       const tipConflict = d3
         // @ts-ignore
         .tip()
-        // TODO ! CHANGE
         .attr('class', `${this.customClassNames.tooltip} conflic`)
         .direction('e')
         .html((_, d) => {
@@ -750,20 +956,20 @@ export class DinamicDrawer {
     const geologicData = {
       lithology: profile.lithology,
       fractures: profile.fractures,
+      caves:     profile.caves,
     };
     const constructionData = {
-      cement_pad: profile.cement_pad,
-      bore_hole: profile.bore_hole,
-      hole_fill: profile.hole_fill,
+      cement_pad:   profile.cement_pad,
+      bore_hole:    profile.bore_hole,
+      hole_fill:    profile.hole_fill,
       surface_case: profile.surface_case,
-      well_case: profile.well_case,
-      well_screen: profile.well_screen,
-      reduction: profile.reduction,
-      fractures: profile.fractures,
+      well_case:    profile.well_case,
+      well_screen:  profile.well_screen,
+      reduction:    profile.reduction,
+      fractures:    profile.fractures,
     } as Constructive & { fractures: Fracture[] };
 
     const maxValues = getProfileLastItemsDepths(profile);
-
     const maxYValues = d3.max(maxValues) || 0;
 
     const yScaleGlobal = d3
@@ -771,7 +977,7 @@ export class DinamicDrawer {
       .domain([0, maxYValues])
       .range([0, svgHeight - this.MARGINS.TOP - this.MARGINS.BOTTOM]);
 
-    const yZero = yScaleGlobal(0); 
+    const yZero = yScaleGlobal(0);
 
     const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
 
@@ -790,12 +996,16 @@ export class DinamicDrawer {
       return yScaleGlobal(d.to - d.from);
     };
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Zoom handler
+    // ─────────────────────────────────────────────────────────────────────────
+
     const zooming = (e: any) => {
-      // eslint-disable-next-line prefer-destructuring
       const transform = e.transform;
 
       // @ts-ignore
       gY.call(yAxis.scale(transform.rescaleY(yScaleGlobal)));
+
       pocoGroup
         .selectAll('rect')
         .attr('y', d => {
@@ -807,10 +1017,9 @@ export class DinamicDrawer {
           return transform.k * spanH(d);
         });
 
-      const zoomedYZero = transform.applyY(yScaleGlobal(0));
-
       const pocoCenterInGroup = this.WIDTH / 2 + POCO_CENTER / 2;
 
+      // Fractures: recompute transform so rotation pivot tracks the scaled depth
       fracturesGroup
         .selectAll('g.fracture-group')
         .attr('transform', (d: any) => {
@@ -819,29 +1028,35 @@ export class DinamicDrawer {
           const cy = transform.applyY(yScaleGlobal(d.depth));
           return `translate(0,${cy}) rotate(${d.dip},${cx},0)`;
         });
-    }
 
+      // Caves: full redraw with the rescaled yScale.
+      // Path geometry is cheap and this keeps the zoom handler simple.
+      if (geologicData.caves?.length) {
+        updateCaves(geologicData.caves, transform.rescaleY(yScaleGlobal));
+      }
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Initial draw
+    // ─────────────────────────────────────────────────────────────────────────
 
     const drawProfile = () => {
-      
       if (geologicData.lithology) updateGeology(geologicData.lithology, yScaleGlobal);
+      if (geologicData.caves?.length) updateCaves(geologicData.caves, yScaleGlobal);
       if (geologicData.fractures) updateFractures(geologicData.fractures, yScaleGlobal);
       if (constructionData) updatePoco(constructionData, yScaleGlobal);
 
       this.svg.select('#fractures-clip-rect')
         .attr('y', yZero)
         .attr('height', svgHeight);
-    }
+    };
 
     // @ts-ignore
     const zoomNode = d3.zoom().on('zoom', zooming);
-    // const zoom = d3.zoom().scaleExtent([0.2, 15]).on('zoom', zooming);
 
     drawProfile();
     // @ts-ignore
     this.svg.call(zoomNode).node();
-    // @ts-ignore
-    // svg.on('wheel', wheeled).call(zoom);
   }
 }
 
