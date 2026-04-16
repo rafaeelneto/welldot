@@ -196,7 +196,7 @@ export class DinamicDrawer {
       },
       holeFill: (_, d: HoleFill) => {
         return `
-          <span class="${this.customClassNames.tooltipTitle}">ESP. ANELAR</span>
+          <span class="${this.customClassNames.tooltipTitle}">ESP. ANULAR</span>
           <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
           <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
           <span class="${this.customClassNames.tooltipSecondaryInfo}">

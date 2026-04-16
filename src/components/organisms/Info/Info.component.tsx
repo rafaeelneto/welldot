@@ -89,7 +89,7 @@ function Info({ profile }: InfoProps) {
   if (profile.hole_fill.length > 0) {
     // @ts-ignore
     const table: TableType = {
-      title: 'Espaço Anelar',
+      title: 'Espaço Anular',
       header: [
         { text: 'Descrição' },
         { text: 'Diamêtro', align: 'right' },

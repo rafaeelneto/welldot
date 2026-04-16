@@ -682,7 +682,7 @@ const PerfilEditor = () => {
                   </div>
                   <div className={styles.componentContainer}>
                     <span className={styles.componentTitle}>
-                      Espaço Anelar:
+                      Espaço Anular:
                     </span>
                     {profileState &&
                     profileState.constructive &&

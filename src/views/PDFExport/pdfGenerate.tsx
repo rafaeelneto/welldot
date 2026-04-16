@@ -298,7 +298,7 @@ export const exportPdfProfile = (
 
   if (profile.hole_fill.length > 0) {
     content.push({ text: ' ' });
-    content.push({ text: 'Espaço Anelar', style: 'title' });
+    content.push({ text: 'Espaço Anular', style: 'title' });
 
     const endingInfoBody: any[][] = [
       [
