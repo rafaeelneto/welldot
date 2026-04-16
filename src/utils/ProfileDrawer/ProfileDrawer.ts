@@ -385,17 +385,17 @@ export class DinamicDrawer {
       rng: () => number,
     ): [number, number][] => {
       const pts: [number, number][] = [];
-      const phaseShift = rng() * Math.PI * 2;
-      const freqLow    = 0.8 + rng() * 0.6; // ~1 full cycle across the width
 
+      // Damped random walk: each step nudges the current offset by a small
+      // delta then damps it back toward zero, so adjacent samples are correlated
+      // (no jagged spikes) and the line never wanders far from baseY.
+      let offset = 0;
       for (let i = 0; i < steps; i++) {
         const t = i / (steps - 1);
         const x = xLeft + t * (xRight - xLeft);
-        // Low-frequency component: smooth overall curvature
-        const low  = Math.sin(t * Math.PI * 2 * freqLow + phaseShift) * amp * 0.6;
-        // High-frequency component: small-scale roughness
-        const high = (rng() * 2 - 1) * amp * 0.4;
-        pts.push([x, baseY + low + high]);
+        offset += (rng() - 0.5) * amp * 0.6;
+        offset *= 0.75; // damping keeps the line close to baseY
+        pts.push([x, baseY + offset]);
       }
       return pts;
     };
@@ -504,7 +504,7 @@ export class DinamicDrawer {
         const span = yBot - yTop; // pixel height of the cave band
 
         // Amplitude proportional to band height, clamped for readability
-        const amp = Math.max(3, Math.min(span * 0.18, 14));
+        const amp = Math.max(2, Math.min(span * 0.06, 5));
 
         const topPts = wavyContact(xLeft, xRight, yTop, amp, steps, rngTop);
         const botPts = wavyContact(xLeft, xRight, yBot, amp, steps, rngBot);
