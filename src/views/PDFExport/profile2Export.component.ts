@@ -863,6 +863,12 @@ const profile2Export = (
     const updateFractures = (data: Fracture[], yScale: d3module.ScaleLinear<number, number>) => {
       fracturesGroup.selectAll('g.fracture-group').remove();
 
+      // Scale height-related fracture dimensions proportionally to the depth scale so
+      // fractures don't visually "explode" at small map scales (high zoomLevel).
+      // Reference: ~8 px per metre gives full-size symbols; clamp between 0.15 and 1.
+      const pixelsPerMeter = yScale(1) - yScale(0);
+      const fractureScale = Math.min(1, Math.max(0.15, pixelsPerMeter / 8));
+
       const xAt = (nx: number) => xa + nx * w;
       const RC = 'round' as const;
 
@@ -916,7 +922,7 @@ const profile2Export = (
 
         if (fracture.swarm) {
           const lineCount = 4 + Math.round(rng() * 2);
-          const spread = 18;
+          const spread = 18 * fractureScale;
           const halfSpread = spread / 2;
 
           const bases = Array.from({ length: lineCount }, () => (rng() * 2 - 1) * halfSpread)
@@ -926,7 +932,7 @@ const profile2Export = (
             const isCentral = idx === Math.floor(lineCount / 2);
             const sw = isCentral ? 1.8 : 0.6 + rng() * 0.7;
             const steps = 6 + Math.round(rng() * 3);
-            const jitter = 0.8 + rng() * 1.2;
+            const jitter = (0.8 + rng() * 1.2) * fractureScale;
             const insetL = 0.04 + rng() * 0.12;
             const insetR = 0.04 + rng() * 0.12;
             appendPolyline(wavyLine(rng, steps, base, jitter, insetL, insetR), sw);
@@ -942,7 +948,7 @@ const profile2Export = (
           const primaryBase = bases[Math.floor(lineCount / 2)];
           for (let wc = 0; wc < 2; wc++) {
             const nx = 0.2 + rng() * 0.6;
-            const len = 3 + rng() * 3;
+            const len = (3 + rng() * 3) * fractureScale;
             const dir = rng() > 0.5 ? -1 : 1;
             appendLine(xAt(nx), primaryBase, xAt(nx + (rng() - 0.5) * 0.04), primaryBase + dir * len, 0.8);
           }
@@ -950,16 +956,81 @@ const profile2Export = (
           const steps = 7 + Math.round(rng() * 3);
           const insetL = 0.03 + rng() * 0.08;
           const insetR = 0.03 + rng() * 0.08;
-          appendPolyline(wavyLine(rng, steps, 0, 2, insetL, insetR), 1.8);
+          appendPolyline(wavyLine(rng, steps, 0, 2 * fractureScale, insetL, insetR), 1.8);
 
           const crackCount = 2 + Math.round(rng() * 2);
           for (let c = 0; c < crackCount; c++) {
             const nx = insetL + rng() * (1 - insetL - insetR);
-            const len = 3.5 + rng() * 3.5;
+            const len = (3.5 + rng() * 3.5) * fractureScale;
             const dir = rng() > 0.5 ? 1 : -1;
-            appendLine(xAt(nx), (rng() * 2 - 1) * 1.5, xAt(nx + (rng() - 0.5) * 0.03), dir * len, 0.9);
+            appendLine(xAt(nx), (rng() * 2 - 1) * 1.5 * fractureScale, xAt(nx + (rng() - 0.5) * 0.03), dir * len, 0.9);
           }
         }
+      });
+    };
+
+    const drawLegend = () => {
+      // Place legend in the empty right area of the SVG (beyond the geology labels).
+      const LX = WIDTH - 155; // x in pocoGroup coords
+      const LY = 8;
+      const ROW_H = 16;
+      const SYM_W = 30; // symbol column width
+      const BOX_W = 155;
+      const BOX_H = ROW_H * 3 + 22;
+      const RC = 'round' as const;
+
+      const legendGroup = pocoGroup.append('g')
+        .attr('class', 'legend')
+        .attr('transform', `translate(${LX},${LY})`);
+
+      // Background box
+      legendGroup.append('rect')
+        .attr('x', 0).attr('y', 0)
+        .attr('width', BOX_W).attr('height', BOX_H)
+        .attr('fill', 'white').attr('rx', 3)
+        .style('stroke', DARK_GRAY).style('stroke-width', '0.8px');
+
+      // Title
+      legendGroup.append('text')
+        .attr('x', BOX_W / 2).attr('y', 12)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 7).attr('font-weight', 'bold')
+        .attr('fill', DARK_GRAY)
+        .text('LEGENDA');
+
+      const rows: { label: string; color: string; swarm: boolean }[] = [
+        { label: 'Fratura simples',          color: '#000000', swarm: false },
+        { label: 'Enxame de fraturas',        color: '#000000', swarm: true  },
+        { label: "Entrada d'água",            color: '#1a6fa8', swarm: false },
+      ];
+
+      rows.forEach(({ label, color, swarm }, i) => {
+        const ry = 20 + i * ROW_H;
+        const symY  = ry + ROW_H / 2;
+
+        const symG = legendGroup.append('g');
+
+        if (swarm) {
+          // Three short parallel wavy lines
+          [-4, 0, 4].forEach(offset => {
+            symG.append('polyline')
+              .attr('points', `4,${symY + offset} 10,${symY + offset - 1} 16,${symY + offset + 1} 22,${symY + offset - 0.5} 28,${symY + offset}`)
+              .attr('stroke', color).attr('stroke-width', offset === 0 ? 1.5 : 0.8)
+              .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
+          });
+        } else {
+          // One wavy line
+          symG.append('polyline')
+            .attr('points', `4,${symY} 9,${symY - 1.5} 15,${symY + 1} 21,${symY - 0.5} 28,${symY}`)
+            .attr('stroke', color).attr('stroke-width', 1.5)
+            .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
+        }
+
+        // Label
+        legendGroup.append('text')
+          .attr('x', SYM_W + 4).attr('y', symY + 3)
+          .attr('font-size', 6.5).attr('fill', DARK_GRAY)
+          .text(label);
       });
     };
 
@@ -983,6 +1054,8 @@ const profile2Export = (
         f => f.depth >= currentDepth && f.depth <= maxSvgDepth,
       );
       if (fractures.length > 0) updateFractures(fractures, yScaleLocal);
+
+      if (currentDepth === 0) drawLegend();
 
       const drawConstructionData: Constructive = {
         cement_pad: constructionData.cement_pad,
