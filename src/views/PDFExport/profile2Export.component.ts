@@ -22,6 +22,7 @@ import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 import { getLithologicalFillList } from '../../../src_old/utils/profileD3.utils';
 import {
   Constructive,
+  Fracture,
   HoleFill,
   Lithology,
   Profile,
@@ -152,6 +153,8 @@ const profile2Export = (
     const constructionGroup = pocoGroup
       .append('g')
       .attr('class', 'const-group');
+
+    const fracturesGroup = pocoGroup.append('g').attr('class', 'fractures-group');
 
     litoligicalGroup.append('g').attr('class', 'yAxis');
 
@@ -852,6 +855,114 @@ const profile2Export = (
         .attr('y', getRectYpos(wellScreenFiltered, WELL_SCREEN_TIP_CLASS_NAME));
     };
 
+    const pocoCenterX = POCO_CENTER / 2;
+    const halfWidth = (POCO_WIDTH * 1.2) / 2;
+    const xa = pocoCenterX - halfWidth;
+    const w = halfWidth * 2;
+
+    const updateFractures = (data: Fracture[], yScale: d3module.ScaleLinear<number, number>) => {
+      fracturesGroup.selectAll('g.fracture-group').remove();
+
+      const xAt = (nx: number) => xa + nx * w;
+      const RC = 'round' as const;
+
+      const makePrng = (seed: number) => {
+        let s = Math.abs(seed * 7919) | 1;
+        return () => {
+          s = (s * 16807) % 2147483647;
+          return (s - 1) / 2147483646;
+        };
+      };
+
+      const wavyLine = (
+        rng: () => number,
+        steps: number,
+        baseY: number,
+        jitter: number,
+        startInset: number,
+        endInset: number,
+      ): [number, number][] => {
+        const pts: [number, number][] = [];
+        for (let i = 0; i < steps; i++) {
+          const t = i / (steps - 1);
+          const nx = startInset + t * (1 - startInset - endInset);
+          const dy = baseY + (rng() * 2 - 1) * jitter;
+          pts.push([nx, dy]);
+        }
+        return pts;
+      };
+
+      data.forEach(fracture => {
+        const rng = makePrng(fracture.depth);
+        const cy = yScale(fracture.depth);
+
+        const g = fracturesGroup
+          .append('g')
+          .attr('class', 'fracture-group')
+          .attr('transform', `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterX},0)`);
+
+        const strokeColor = fracture.water_intake ? '#1a6fa8' : '#000000';
+
+        const appendLine = (x1: number, y1: number, x2: number, y2: number, sw: number) =>
+          g.append('line')
+            .attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2)
+            .attr('stroke', strokeColor).attr('stroke-width', sw).attr('stroke-linecap', RC);
+
+        const appendPolyline = (pts: [number, number][], sw: number) =>
+          g.append('polyline')
+            .attr('points', pts.map(([nx, dy]) => `${xAt(nx)},${dy}`).join(' '))
+            .attr('stroke', strokeColor).attr('stroke-width', sw)
+            .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
+
+        if (fracture.swarm) {
+          const lineCount = 4 + Math.round(rng() * 2);
+          const spread = 18;
+          const halfSpread = spread / 2;
+
+          const bases = Array.from({ length: lineCount }, () => (rng() * 2 - 1) * halfSpread)
+            .sort((a, b) => a - b);
+
+          bases.forEach((base, idx) => {
+            const isCentral = idx === Math.floor(lineCount / 2);
+            const sw = isCentral ? 1.8 : 0.6 + rng() * 0.7;
+            const steps = 6 + Math.round(rng() * 3);
+            const jitter = 0.8 + rng() * 1.2;
+            const insetL = 0.04 + rng() * 0.12;
+            const insetR = 0.04 + rng() * 0.12;
+            appendPolyline(wavyLine(rng, steps, base, jitter, insetL, insetR), sw);
+          });
+
+          const bridgeCount = 2 + Math.round(rng() * 2);
+          for (let b = 0; b < bridgeCount; b++) {
+            const nx = 0.15 + rng() * 0.7;
+            const pairIdx = Math.floor(rng() * (bases.length - 1));
+            appendLine(xAt(nx), bases[pairIdx], xAt(nx + (rng() - 0.5) * 0.06), bases[pairIdx + 1], 0.6);
+          }
+
+          const primaryBase = bases[Math.floor(lineCount / 2)];
+          for (let wc = 0; wc < 2; wc++) {
+            const nx = 0.2 + rng() * 0.6;
+            const len = 3 + rng() * 3;
+            const dir = rng() > 0.5 ? -1 : 1;
+            appendLine(xAt(nx), primaryBase, xAt(nx + (rng() - 0.5) * 0.04), primaryBase + dir * len, 0.8);
+          }
+        } else {
+          const steps = 7 + Math.round(rng() * 3);
+          const insetL = 0.03 + rng() * 0.08;
+          const insetR = 0.03 + rng() * 0.08;
+          appendPolyline(wavyLine(rng, steps, 0, 2, insetL, insetR), 1.8);
+
+          const crackCount = 2 + Math.round(rng() * 2);
+          for (let c = 0; c < crackCount; c++) {
+            const nx = insetL + rng() * (1 - insetL - insetR);
+            const len = 3.5 + rng() * 3.5;
+            const dir = rng() > 0.5 ? 1 : -1;
+            appendLine(xAt(nx), (rng() * 2 - 1) * 1.5, xAt(nx + (rng() - 0.5) * 0.03), dir * len, 0.9);
+          }
+        }
+      });
+    };
+
     // eslint-disable-next-line no-use-before-define
     drawProfile();
 
@@ -867,6 +978,11 @@ const profile2Export = (
       if (geologicData) {
         updateGeology(geologicData.filter(filterByDepth), yScaleLocal);
       }
+
+      const fractures: Fracture[] = (profile.fractures || []).filter(
+        f => f.depth >= currentDepth && f.depth <= maxSvgDepth,
+      );
+      if (fractures.length > 0) updateFractures(fractures, yScaleLocal);
 
       const drawConstructionData: Constructive = {
         cement_pad: constructionData.cement_pad,
