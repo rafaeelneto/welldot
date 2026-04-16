@@ -80,11 +80,12 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
   conflictGroup: 'conflict',
 };
 
+
 const DEFAULTS_TEXTURES = {
   pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
   conflict: textures.lines().heavier().stroke('#E52117'),
-  cave_dry: textures.lines().heavier().stroke('#333333'),
-  cave_wet: textures.lines().heavier().stroke('#1a6fa8'),
+  cave_dry: textures.lines().size(8).orientation('6/8').heavier(.3).thinner(.8).background('#ffffff').stroke('#333333'),
+  cave_wet: textures.lines().size(8).orientation('6/8').heavier(.3).thinner(.8).background('#ffffff').stroke('#1a6fa8'),
   seal: textures.lines().thicker().background('#ffffff'),
   gravel_pack: textures.circles().complement().background('#ffffff'),
   well_screen: textures
@@ -133,7 +134,7 @@ export class DinamicDrawer {
       .attr('id', 'fractures-clip-rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', 10000)
+      .attr('width', 100000)
       .attr('height', 10000);
 
     const pocoGroup = this.svg
@@ -489,7 +490,7 @@ export class DinamicDrawer {
 
       // x-extents match the lithology rect geometry exactly
       const xLeft  = 10;
-      const xRight = svgWidth - 100;
+      const xRight = svgWidth - 90;
       const steps  = 32; // enough points for smooth Bézier curves
 
       data.forEach(cave => {
