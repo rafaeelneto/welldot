@@ -18,6 +18,7 @@ import { FGDC_TEXTURES_OPTIONS } from '@/src_old/utils/fgdcTextures';
 import TextureHelper from '@/src_old/components/textureHelperColumn/textureHelper.component';
 import {
   BoreHole,
+  Cave,
   Fracture,
   HoleFill,
   Lithology,
@@ -113,6 +114,35 @@ export const fractureColumns = [
   },
   {
     ...keyColumn<Fracture, 'description'>('description', typedTextColumn),
+    title: 'Descrição',
+    grow: 2,
+    minWidth: 300,
+  },
+];
+
+export const caveColumns = [
+  {
+    ...keyColumn<Cave, 'from'>('from', typedFloatColumn),
+    title: 'De (m)',
+    minWidth: 60,
+    maxWidth: 80,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn<Cave, 'to'>('to', typedFloatColumn),
+    title: 'Até (m)',
+    minWidth: 60,
+    maxWidth: 80,
+    continuousUpdates: false,
+  },
+  {
+    ...keyColumn<Cave, 'water_intake'>('water_intake', checkboxColumn),
+    title: `Entrada d'água`,
+    minWidth: 60,
+    maxWidth: 80,
+  },
+  {
+    ...keyColumn<Cave, 'description'>('description', typedTextColumn),
     title: 'Descrição',
     grow: 2,
     minWidth: 300,

@@ -71,7 +71,7 @@ export type Cave = {
   from: number;
   to: number;
   water_intake: boolean;
-  description?: string;
+  description: string;
 };
 
 export type Profile = {
