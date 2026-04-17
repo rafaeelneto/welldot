@@ -45,7 +45,7 @@ import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
 import { getWindow } from '@/src/utils/window.utils';
 
 import styles from './profileEditor.module.scss';
-import { EMPTY_PROFILE } from '@/src/data/profile/profile.data';
+import { EMPTY_PROFILE, PROFILE_EXAMPLE } from '@/src/data/profile/profile.data';
 import { Profile } from '@/src/types/profile.types';
 import dynamic from 'next/dynamic';
 
@@ -252,7 +252,7 @@ function ProfileEditor() {
 
                   // SET EXAMPLE PROFILE
                   updateProfile({
-                    ...EMPTY_PROFILE,
+                    ...PROFILE_EXAMPLE,
                   });
                 }}
               >
