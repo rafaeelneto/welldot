@@ -21,6 +21,7 @@ import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 
 import { getLithologicalFillList } from '../../../src_old/utils/profileD3.utils';
 import {
+  Cave,
   Constructive,
   Fracture,
   HoleFill,
@@ -151,6 +152,8 @@ const POCO_WIDTH = 100;
 
     const litoligicalGroup = pocoGroup.append('g').attr('class', 'lito-group');
 
+    const cavesGroup = pocoGroup.append('g').attr('class', 'caves-group');
+
     const constructionGroup = pocoGroup
       .append('g')
       .attr('class', 'const-group');
@@ -215,6 +218,8 @@ const POCO_WIDTH = 100;
         .strokeWidth(2)
         .thicker(2)
         .background('#fff'),
+      cave_dry: textures.lines().size(8).orientation('6/8').heavier(.3).thinner(.8).background('#ffffff').stroke('#333333'),
+      cave_wet: textures.lines().size(8).orientation('6/8').heavier(.3).thinner(.8).background('#ffffff').stroke('#1a6fa8'),
     };
 
     const updateGeology = async (data: Lithology[], yScale) => {
@@ -389,6 +394,151 @@ const POCO_WIDTH = 100;
             ...curveCoordinates,
           ]);
         });
+    };
+
+    // ── Cave helpers ──────────────────────────────────────────────────────────
+
+    const makeCavePrng = (seed: number) => {
+      let s = Math.abs(seed * 6271) | 1;
+      return () => {
+        s = (s * 16807) % 2147483647;
+        return (s - 1) / 2147483646;
+      };
+    };
+
+    const wavyContact = (
+      xLeft: number, xRight: number, baseY: number,
+      amp: number, steps: number, rng: () => number,
+    ): [number, number][] => {
+      const pts: [number, number][] = [];
+      let offset = 0;
+      for (let i = 0; i < steps; i++) {
+        const t = i / (steps - 1);
+        const x = xLeft + t * (xRight - xLeft);
+        offset += (rng() - 0.5) * amp * 0.6;
+        offset *= 0.75;
+        pts.push([x, baseY + offset]);
+      }
+      return pts;
+    };
+
+    const ptsToSmoothPath = (pts: [number, number][]): string => {
+      if (pts.length < 2) return '';
+      const n = pts.length;
+      const tension = 0.35;
+      let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+      for (let i = 0; i < n - 1; i++) {
+        const p0 = pts[Math.max(0, i - 1)];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[Math.min(n - 1, i + 2)];
+        const cp1x = p1[0] + (p2[0] - p0[0]) * tension;
+        const cp1y = p1[1] + (p2[1] - p0[1]) * tension;
+        const cp2x = p2[0] - (p3[0] - p1[0]) * tension;
+        const cp2y = p2[1] - (p3[1] - p1[1]) * tension;
+        d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+      }
+      return d;
+    };
+
+    const updateCaves = (data: Cave[], yScale: d3module.ScaleLinear<number, number>) => {
+      cavesGroup.selectAll('g.cave-group').remove();
+
+      const xLeft  = GEOLOGY_X_POS;
+      const xRight = GEOLOGY_X_POS + GEOLOGY_WIDTH;
+      const steps  = 32;
+
+      data.forEach(cave => {
+        const fromClamped = Math.max(cave.from, currentDepth);
+        const toClamped   = Math.min(cave.to,   maxSvgDepth);
+        if (fromClamped >= toClamped) return;
+
+        const seedTop = cave.from * 100 + cave.to;
+        const seedBot = cave.to   * 100 + cave.from + 999;
+        const rngTop  = makeCavePrng(seedTop);
+        const rngBot  = makeCavePrng(seedBot);
+
+        const yTop = yScale(fromClamped);
+        const yBot = yScale(toClamped);
+        const span = yBot - yTop;
+        const amp  = Math.max(2, Math.min(span * 0.06, 5));
+
+        const topPts = wavyContact(xLeft, xRight, yTop, amp, steps, rngTop);
+        const botPts = wavyContact(xLeft, xRight, yBot, amp, steps, rngBot);
+
+        const topPath    = ptsToSmoothPath(topPts);
+        const botPath    = ptsToSmoothPath(botPts);
+        const botReversed = ptsToSmoothPath([...botPts].reverse());
+        const closedPath =
+          topPath +
+          ` L ${xRight.toFixed(1)},${botPts[botPts.length - 1][1].toFixed(1)}` +
+          botReversed.replace(/^M [\d.-]+ [\d.-]+/, '') +
+          ` L ${xLeft.toFixed(1)},${topPts[0][1].toFixed(1)} Z`;
+
+        const caveTexture = cave.water_intake
+          ? profileTexture.cave_wet
+          : profileTexture.cave_dry;
+        svg.call(caveTexture);
+
+        const strokeColor = cave.water_intake ? '#1a6fa8' : '#333333';
+
+        const g = cavesGroup.append('g').attr('class', 'cave-group');
+
+        g.append('path')
+          .attr('d', closedPath)
+          .attr('fill', caveTexture.url())
+          .attr('stroke', 'none');
+
+        g.append('path')
+          .attr('d', topPath)
+          .attr('fill', 'none')
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', 1.2)
+          .attr('stroke-linecap', 'round')
+          .attr('stroke-linejoin', 'round');
+
+        g.append('path')
+          .attr('d', botPath)
+          .attr('fill', 'none')
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', 1.2)
+          .attr('stroke-linecap', 'round')
+          .attr('stroke-linejoin', 'round');
+
+        // Depth labels on the right inside edge of the cave band,
+        // clear of the lithology "to" labels on the left (x = GEOLOGY_X_POS - 5).
+        // A white background rect is rendered first so the label stays legible
+        // over the cave texture and wavy contact lines.
+        const labelX    = xRight - 3;
+        const labelFs   = 6;
+        const labelPadX = 2;
+        const labelPadY = 1.5;
+        const labelH    = labelFs + labelPadY * 2;
+
+        const appendDepthLabel = (depth: number, anchorY: number) => {
+          const text  = `${depth} m`;
+          const labelW = text.length * (labelFs * 0.52) + labelPadX * 2;
+          g.append('rect')
+            .attr('x', labelX - labelW)
+            .attr('y', anchorY - labelPadY)
+            .attr('width', labelW)
+            .attr('height', labelH)
+            .attr('fill', 'white')
+            .attr('rx', 1)
+            .attr('stroke', strokeColor)
+            .attr('stroke-width', 0.4);
+          g.append('text')
+            .attr('x', labelX - labelPadX)
+            .attr('y', anchorY + labelFs * 0.72)
+            .attr('font-size', labelFs)
+            .attr('text-anchor', 'end')
+            .attr('fill', strokeColor)
+            .text(text);
+        };
+
+        if (fromClamped === cave.from) appendDepthLabel(cave.from, yTop + 2);
+        if (toClamped   === cave.to)   appendDepthLabel(cave.to,   yBot - labelH - 2);
+      });
     };
 
     const occupiedPositions: { from: number; to: number }[] = [];
@@ -986,6 +1136,11 @@ const POCO_WIDTH = 100;
         updateGeology(geologicData.filter(filterByDepth), yScaleLocal);
       }
 
+      const caves: Cave[] = (profile.caves || []).filter(
+        c => c.to >= currentDepth && c.from <= maxSvgDepth,
+      );
+      if (caves.length > 0) updateCaves(caves, yScaleLocal);
+
       const fractures: Fracture[] = (profile.fractures || []).filter(
         f => f.depth >= currentDepth && f.depth <= maxSvgDepth,
       );
@@ -1013,23 +1168,36 @@ const POCO_WIDTH = 100;
     currentDepth += yScaleGlobal.invert(svgInfo.height);
   });
 
-  // Draw horizontal legend below all profile SVGs (only when fractures exist)
+  // Draw horizontal legend below all profile SVGs (fractures + caves)
   const LEGEND_SVG_ID = 'fractureLegendSvg';
   divContainer.select(`#${LEGEND_SVG_ID}`).remove();
 
-  if (profile.fractures && profile.fractures.length > 0) {
-    const profileFractures = profile.fractures;
-    const hasSimple = profileFractures.some(f => !f.swarm && !f.water_intake);
-    const hasSwarm  = profileFractures.some(f =>  f.swarm);
-    const hasWater  = profileFractures.some(f =>  f.water_intake);
+  const profileFractures = profile.fractures || [];
+  const profileCaves     = profile.caves     || [];
 
-    const allLegendItems: { label: string; color: string; swarm: boolean }[] = [
-      { label: 'Fratura simples',    color: '#000000', swarm: false },
-      { label: 'Enxame de fraturas', color: '#000000', swarm: true  },
-      { label: "Entrada d'água",     color: '#1a6fa8', swarm: false },
+  const hasSimple   = profileFractures.some(f => !f.swarm && !f.water_intake);
+  const hasSwarm    = profileFractures.some(f =>  f.swarm);
+  const hasWaterFx  = profileFractures.some(f =>  f.water_intake);
+  const hasCaveDry  = profileCaves.some(c => !c.water_intake);
+  const hasCaveWet  = profileCaves.some(c =>  c.water_intake);
+
+  const hasFractureLegend = hasSimple || hasSwarm || hasWaterFx;
+  const hasCaveLegend     = hasCaveDry || hasCaveWet;
+
+  if (hasFractureLegend || hasCaveLegend) {
+    type FractureItem = { kind: 'fracture'; label: string; color: string; swarm: boolean };
+    type CaveItem     = { kind: 'cave';     label: string; color: string; wet: boolean };
+    type LegendItem   = FractureItem | CaveItem;
+
+    const allLegendItems: LegendItem[] = [
+      { kind: 'fracture', label: 'Fratura simples',    color: '#000000', swarm: false },
+      { kind: 'fracture', label: 'Enxame de fraturas', color: '#000000', swarm: true  },
+      { kind: 'fracture', label: "Entrada d'água",     color: '#1a6fa8', swarm: false },
+      { kind: 'cave',     label: 'Caverna seca',       color: '#333333', wet: false   },
+      { kind: 'cave',     label: "Caverna c/ água",    color: '#1a6fa8', wet: true    },
     ];
     const legendItems = allLegendItems.filter((_, i) =>
-      [hasSimple, hasSwarm, hasWater][i],
+      [hasSimple, hasSwarm, hasWaterFx, hasCaveDry, hasCaveWet][i],
     );
 
     const svgTotalWidth = WIDTH + MARGINS.LEFT + MARGINS.RIGHT;
@@ -1056,29 +1224,44 @@ const POCO_WIDTH = 100;
 
     const COL_ITEM_W = 110;
 
-    legendItems.forEach(({ label, color, swarm }, i) => {
-      const cx = 10 + i * COL_ITEM_W;
+    legendItems.forEach((item, i) => {
+      const cx   = 10 + i * COL_ITEM_W;
       const symY = (LEGEND_HEIGHT - 4) / 2;
       const symG = legendG.append('g');
 
-      if (swarm) {
-        ([-4, 0, 4] as number[]).forEach(offset => {
+      if (item.kind === 'fracture') {
+        if (item.swarm) {
+          ([-4, 0, 4] as number[]).forEach(offset => {
+            symG.append('polyline')
+              .attr('points', `${cx},${symY + offset} ${cx + 6},${symY + offset - 1} ${cx + 12},${symY + offset + 1} ${cx + 18},${symY + offset - 0.5} ${cx + 24},${symY + offset}`)
+              .attr('stroke', item.color).attr('stroke-width', offset === 0 ? 1.5 : 0.8)
+              .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
+          });
+        } else {
           symG.append('polyline')
-            .attr('points', `${cx},${symY + offset} ${cx + 6},${symY + offset - 1} ${cx + 12},${symY + offset + 1} ${cx + 18},${symY + offset - 0.5} ${cx + 24},${symY + offset}`)
-            .attr('stroke', color).attr('stroke-width', offset === 0 ? 1.5 : 0.8)
+            .attr('points', `${cx},${symY} ${cx + 5},${symY - 1.5} ${cx + 11},${symY + 1} ${cx + 17},${symY - 0.5} ${cx + 24},${symY}`)
+            .attr('stroke', item.color).attr('stroke-width', 1.5)
             .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
-        });
+        }
       } else {
-        symG.append('polyline')
-          .attr('points', `${cx},${symY} ${cx + 5},${symY - 1.5} ${cx + 11},${symY + 1} ${cx + 17},${symY - 0.5} ${cx + 24},${symY}`)
-          .attr('stroke', color).attr('stroke-width', 1.5)
-          .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
+        // Cave symbol: small rect with the corresponding texture
+        const caveTexture = item.wet
+          ? textures.lines().size(8).orientation('6/8').heavier(.3).thinner(.8).background('#ffffff').stroke(item.color)
+          : textures.lines().size(8).orientation('6/8').heavier(.3).thinner(.8).background('#ffffff').stroke(item.color);
+        legendSvgEl.call(caveTexture);
+
+        const rw = 24; const rh = 12;
+        symG.append('rect')
+          .attr('x', cx).attr('y', symY - rh / 2)
+          .attr('width', rw).attr('height', rh)
+          .attr('fill', caveTexture.url())
+          .attr('stroke', item.color).attr('stroke-width', 0.8);
       }
 
       legendG.append('text')
         .attr('x', cx + 28).attr('y', symY + 3)
         .attr('font-size', 7).attr('fill', DARK_GRAY)
-        .text(label);
+        .text(item.label);
     });
   }
 
