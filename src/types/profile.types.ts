@@ -56,6 +56,7 @@ export type Lithology = {
   color: string;
   fgdc_texture: string;
   geologic_unit: string;
+  aquifer_unit: string;
 };
 
 export type Fracture = {

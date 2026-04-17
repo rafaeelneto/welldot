@@ -116,6 +116,18 @@ const state: StateCreator<IProfileState> = (set, get) => ({
         ) as any;
       }
 
+      if (currProfile[property][0]?.hasOwnProperty('depth')) {
+        currProfile[property] = newFeatures.sort((a, b) => {
+          if ('depth' in a && 'depth' in b) {
+            return a.depth - b.depth;
+          }
+          if ('from' in a && 'from' in b) {
+            return a.from - b.from;
+          }
+          return 0;
+        }).map((feature) => ({ ...feature, depth: feature['depth'] >= 0 ? feature['depth'] : 0 })) as any;
+      }
+
       get().updateProfile(currProfile);
     }
 

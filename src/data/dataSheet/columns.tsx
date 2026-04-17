@@ -71,6 +71,12 @@ export const lithologyColumns = [
     minWidth: 100,
   },
   {
+    ...keyColumn<Lithology, 'aquifer_unit'>('aquifer_unit', typedTextColumn),
+    title: 'Unid. Aquífera',
+    grow: 1,
+    minWidth: 100,
+  },
+  {
     ...keyColumn<Lithology, 'description'>('description', typedTextColumn),
     title: 'Descrição',
     grow: 2,
