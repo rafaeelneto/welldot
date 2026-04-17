@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Collapse, NumberInput, TextInput, Checkbox, Textarea } from '@mantine/core';
+import { NumberInput, TextInput, Textarea } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 
 import { useProfileStore } from '@/src/store/profile/profile.store';
 
@@ -53,12 +54,12 @@ export default function ProfileEditorGeneral() {
           onChange={e => updateField('well_driller', e.currentTarget.value)}
         />
 
-        <TextInput
+        <DateInput
           className={styles.layerInput}
           label="Data de Construção"
-          placeholder="YYYY-MM-DD"
-          value={profile.construction_date || ''}
-          onChange={e => updateField('construction_date', e.currentTarget.value)}
+          valueFormat="DD/MM/YYYY"
+          value={profile.construction_date ? new Date(profile.construction_date) : null}
+          onChange={date => updateField('construction_date', date ? date.toISOString() : '')}
         />
 
         <div className={styles.layerRow}>
