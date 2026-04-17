@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type Units = 'metric' | 'imperial';
 export type DiameterUnits = 'mm' | 'inches';
@@ -32,6 +32,7 @@ export const useUIStore = create<IUIState>()(
     }),
     {
       name: 'ui-preferences',
+      storage: createJSONStorage(() => localStorage),
     },
   ),
 );
