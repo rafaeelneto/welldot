@@ -227,6 +227,7 @@ function ProfileEditor() {
                       ]}
                     />
                   </div>
+                  <p className='text-xs text-gray-400'>O formato do arquivo permanecerá armazenado em medidas internacionais. Essas configurações alteram apenas a visualização dos valores.</p>
                 </Stack>
               </Popover.Dropdown>
             </Popover>
