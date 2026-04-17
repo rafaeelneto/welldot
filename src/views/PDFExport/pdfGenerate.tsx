@@ -183,6 +183,15 @@ export const exportPdfProfile = (
     });
   });
 
+  const legendSvg = document.getElementById('fractureLegendSvg');
+  if (legendSvg && legendSvg.getAttribute('height') && legendSvg.getAttribute('width')) {
+    content.push({
+      svg: legendSvg.outerHTML,
+      width: parseFloat(legendSvg.getAttribute('width') || '0'),
+      height: parseFloat(legendSvg.getAttribute('height') || '0'),
+    });
+  }
+
   if (endInfo.length > 0) {
     content.push({ text: ' ' });
     content.push({ text: 'Informações Finais', style: 'title' });

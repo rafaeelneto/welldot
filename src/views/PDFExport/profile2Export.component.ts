@@ -970,71 +970,6 @@ const POCO_WIDTH = 100;
       });
     };
 
-    const drawLegend = () => {
-      // Place legend in the empty right area of the SVG (beyond the geology labels).
-      const LX = WIDTH - 155; // x in pocoGroup coords
-      const LY = 8;
-      const ROW_H = 16;
-      const SYM_W = 30; // symbol column width
-      const BOX_W = 120;
-      const BOX_H = ROW_H * 3 + 22;
-      const RC = 'round' as const;
-
-      const legendGroup = pocoGroup.append('g')
-        .attr('class', 'legend')
-        .attr('transform', `translate(${LX},${LY})`);
-
-      // Background box
-      legendGroup.append('rect')
-        .attr('x', 0).attr('y', 0)
-        .attr('width', BOX_W).attr('height', BOX_H)
-        .attr('fill', 'white').attr('rx', 3)
-        .style('stroke', DARK_GRAY).style('stroke-width', '0.8px');
-
-      // Title
-      legendGroup.append('text')
-        .attr('x', BOX_W / 2).attr('y', 12)
-        .attr('text-anchor', 'middle')
-        .attr('font-size', 7).attr('font-weight', 'bold')
-        .attr('fill', DARK_GRAY)
-        .text('LEGENDA');
-
-      const rows: { label: string; color: string; swarm: boolean }[] = [
-        { label: 'Fratura simples',          color: '#000000', swarm: false },
-        { label: 'Enxame de fraturas',        color: '#000000', swarm: true  },
-        { label: "Entrada d'água",            color: '#1a6fa8', swarm: false },
-      ];
-
-      rows.forEach(({ label, color, swarm }, i) => {
-        const ry = 20 + i * ROW_H;
-        const symY  = ry + ROW_H / 2;
-
-        const symG = legendGroup.append('g');
-
-        if (swarm) {
-          // Three short parallel wavy lines
-          [-4, 0, 4].forEach(offset => {
-            symG.append('polyline')
-              .attr('points', `4,${symY + offset} 10,${symY + offset - 1} 16,${symY + offset + 1} 22,${symY + offset - 0.5} 28,${symY + offset}`)
-              .attr('stroke', color).attr('stroke-width', offset === 0 ? 1.5 : 0.8)
-              .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
-          });
-        } else {
-          // One wavy line
-          symG.append('polyline')
-            .attr('points', `4,${symY} 9,${symY - 1.5} 15,${symY + 1} 21,${symY - 0.5} 28,${symY}`)
-            .attr('stroke', color).attr('stroke-width', 1.5)
-            .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
-        }
-
-        // Label
-        legendGroup.append('text')
-          .attr('x', SYM_W + 4).attr('y', symY + 3)
-          .attr('font-size', 6.5).attr('fill', DARK_GRAY)
-          .text(label);
-      });
-    };
-
     // eslint-disable-next-line no-use-before-define
     drawProfile();
 
@@ -1055,8 +990,6 @@ const POCO_WIDTH = 100;
         f => f.depth >= currentDepth && f.depth <= maxSvgDepth,
       );
       if (fractures.length > 0) updateFractures(fractures, yScaleLocal);
-
-      if (currentDepth === 0) drawLegend();
 
       const drawConstructionData: Constructive = {
         cement_pad: constructionData.cement_pad,
@@ -1079,6 +1012,75 @@ const POCO_WIDTH = 100;
     drawLog(svgInfo);
     currentDepth += yScaleGlobal.invert(svgInfo.height);
   });
+
+  // Draw horizontal legend below all profile SVGs (only when fractures exist)
+  const LEGEND_SVG_ID = 'fractureLegendSvg';
+  divContainer.select(`#${LEGEND_SVG_ID}`).remove();
+
+  if (profile.fractures && profile.fractures.length > 0) {
+    const profileFractures = profile.fractures;
+    const hasSimple = profileFractures.some(f => !f.swarm && !f.water_intake);
+    const hasSwarm  = profileFractures.some(f =>  f.swarm);
+    const hasWater  = profileFractures.some(f =>  f.water_intake);
+
+    const allLegendItems: { label: string; color: string; swarm: boolean }[] = [
+      { label: 'Fratura simples',    color: '#000000', swarm: false },
+      { label: 'Enxame de fraturas', color: '#000000', swarm: true  },
+      { label: "Entrada d'água",     color: '#1a6fa8', swarm: false },
+    ];
+    const legendItems = allLegendItems.filter((_, i) =>
+      [hasSimple, hasSwarm, hasWater][i],
+    );
+
+    const svgTotalWidth = WIDTH + MARGINS.LEFT + MARGINS.RIGHT;
+    const LEGEND_HEIGHT = 44;
+    const RC = 'round' as const;
+
+    const legendSvgEl = divContainer.append('svg')
+      .attr('id', LEGEND_SVG_ID)
+      .attr('width', svgTotalWidth)
+      .attr('height', LEGEND_HEIGHT);
+
+    const legendG = legendSvgEl.append('g').attr('transform', `translate(0, 2)`);
+
+    legendG.append('rect')
+      .attr('x', 0).attr('y', 0)
+      .attr('width', WIDTH + MARGINS.RIGHT).attr('height', LEGEND_HEIGHT - 4)
+      .attr('fill', 'white').attr('rx', 3)
+      .style('stroke', DARK_GRAY).style('stroke-width', '0.8px');
+
+    legendG.append('text')
+      .attr('x', 6).attr('y', 11)
+      .attr('font-size', 7).attr('font-weight', 'bold').attr('fill', DARK_GRAY)
+      .text('LEGENDA:');
+
+    const COL_ITEM_W = 110;
+
+    legendItems.forEach(({ label, color, swarm }, i) => {
+      const cx = 10 + i * COL_ITEM_W;
+      const symY = (LEGEND_HEIGHT - 4) / 2;
+      const symG = legendG.append('g');
+
+      if (swarm) {
+        ([-4, 0, 4] as number[]).forEach(offset => {
+          symG.append('polyline')
+            .attr('points', `${cx},${symY + offset} ${cx + 6},${symY + offset - 1} ${cx + 12},${symY + offset + 1} ${cx + 18},${symY + offset - 0.5} ${cx + 24},${symY + offset}`)
+            .attr('stroke', color).attr('stroke-width', offset === 0 ? 1.5 : 0.8)
+            .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
+        });
+      } else {
+        symG.append('polyline')
+          .attr('points', `${cx},${symY} ${cx + 5},${symY - 1.5} ${cx + 11},${symY + 1} ${cx + 17},${symY - 0.5} ${cx + 24},${symY}`)
+          .attr('stroke', color).attr('stroke-width', 1.5)
+          .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
+      }
+
+      legendG.append('text')
+        .attr('x', cx + 28).attr('y', symY + 3)
+        .attr('font-size', 7).attr('fill', DARK_GRAY)
+        .text(label);
+    });
+  }
 
   if (iframeId) {
     innerRenderPdf(
