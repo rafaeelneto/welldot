@@ -9,6 +9,10 @@ import {
   Tooltip,
   Divider,
   Tabs,
+  Popover,
+  SegmentedControl,
+  Text,
+  Stack,
 } from '@mantine/core';
 
 // import Joyride from 'react-joyride';
@@ -20,6 +24,7 @@ import {
   ArrowUpTrayIcon,
   ArrowDownTrayIcon,
   DocumentTextIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/solid';
 
 import download from 'downloadjs';
@@ -32,6 +37,7 @@ import TabConstructive from '@/src/views/ProfileEditor/ProfileEditor.constructiv
 import TabGeologic from '@/src/views/ProfileEditor/ProfileEditor.geologic';
 
 import { useProfileStore } from '@/src/store/profile/profile.store';
+import { useUIStore } from '@/src/store/ui.store';
 
 import DeleteWell from '@/public/assets/icons/delete_well_icon.svg';
 import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
@@ -51,6 +57,8 @@ function ProfileEditor() {
     useProfileStore(state => ({
       ...state,
     }));
+
+  const { diameter_units, length_units, setDiameterUnits, setLengthUnits } = useUIStore();
 
   const [openExport, setOpenExport] = useState(false);
 
@@ -183,6 +191,46 @@ function ProfileEditor() {
           />
 
           <div className="h-auto py-2 flex flex-row justify-start items-center space-x-3 overflow-x-auto lg:overflow-x-hidden lg:justify-end">
+            <Popover width={240} position="bottom-end" withArrow shadow="md">
+              <Popover.Target>
+                <Tooltip label="Preferências de Exibição">
+                  <IconButton variant="light" size="lg" aria-label="Preferências">
+                    <Cog6ToothIcon className="h-4 w-4" />
+                  </IconButton>
+                </Tooltip>
+              </Popover.Target>
+              <Popover.Dropdown>
+                <Stack gap="sm">
+                  <div>
+                    <Text size="xs" fw={600} mb={4} c="dimmed">UNIDADE DE DIÂMETRO</Text>
+                    <SegmentedControl
+                      fullWidth
+                      size="xs"
+                      value={diameter_units}
+                      onChange={v => setDiameterUnits(v as 'mm' | 'inches')}
+                      data={[
+                        { label: 'mm', value: 'mm' },
+                        { label: 'polegadas', value: 'inches' },
+                      ]}
+                    />
+                  </div>
+                  <div>
+                    <Text size="xs" fw={600} mb={4} c="dimmed">UNIDADE DE COMPRIMENTO</Text>
+                    <SegmentedControl
+                      fullWidth
+                      size="xs"
+                      value={length_units}
+                      onChange={v => setLengthUnits(v as 'm' | 'ft')}
+                      data={[
+                        { label: 'm', value: 'm' },
+                        { label: 'ft', value: 'ft' },
+                      ]}
+                    />
+                  </div>
+                </Stack>
+              </Popover.Dropdown>
+            </Popover>
+            <Divider orientation="vertical" />
             <Tooltip label="Perfil Exemplo">
               <IconButton
                 variant="light"
