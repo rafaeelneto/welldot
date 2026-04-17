@@ -12,24 +12,28 @@ import {
   LITHOLOGY_FEATURE_DEFAULT,
 } from '@/src/data/profile/profile.data';
 
-import {
-  fractureColumns,
-  caveColumns,
-  lithologyColumns,
-} from '@/src/data/dataSheet/columns';
+import { useColumns } from '@/src/data/dataSheet/useColumns';
 
 import styles from './profileEditor.module.scss';
+import { useUIStore } from '@/src/store/ui.store';
 
 export default function ProfileEditorConstructive() {
   const { profile, getUpdateListingFeatures } = useProfileStore(state => ({
     ...state,
   }));
 
+  const { length_units } = useUIStore(state => ({
+      ...state,
+    }));
+
+  const { lithologyColumns, fractureColumns, caveColumns } = useColumns();
+
   return (
     <>
       <div className="flex flex-col p-2.5">
         <span className={styles.componentTitle}>Litologia:</span>
         <DataSheet
+          key={length_units}
           data={profile.lithology}
           onChangeValues={getUpdateListingFeatures<Lithology>('lithology')}
           columns={lithologyColumns}
@@ -40,6 +44,7 @@ export default function ProfileEditorConstructive() {
         <div className="flex flex-col p-2.5">
           <span className={styles.componentTitle}>Fraturas:</span>
           <DataSheet
+            key={length_units}
             data={profile.fractures}
             onChangeValues={getUpdateListingFeatures<Fracture>('fractures')}
             columns={fractureColumns}
@@ -52,6 +57,7 @@ export default function ProfileEditorConstructive() {
         <div className="flex flex-col p-2.5">
           <span className={styles.componentTitle}>Cavernas:</span>
           <DataSheet
+            key={length_units}
             data={profile.caves}
             onChangeValues={getUpdateListingFeatures<Cave>('caves')}
             columns={caveColumns}
