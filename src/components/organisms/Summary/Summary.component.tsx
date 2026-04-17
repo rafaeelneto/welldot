@@ -10,7 +10,7 @@ import {
 
 import { useUIStore } from '@/src/store/ui.store';
 
-import styles from './info.module.scss';
+import styles from './Summary.module.scss';
 
 type InfoProps = {
   profile: Profile;
