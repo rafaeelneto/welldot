@@ -348,9 +348,12 @@ export const exportPdfProfile = (
           {},
           {},
           {
-            text: `${numberFormater.format(
-              calculateHoleFillVolume(item.type, profile),
-            )} m³`,
+            text: (() => {
+              const volM3 = calculateHoleFillVolume(item.type, profile);
+              return lengthUnits === 'ft'
+                ? `${numberFormater.format(parseFloat((volM3 * 35.3147).toFixed(3)))} ft³`
+                : `${numberFormater.format(volM3)} m³`;
+            })(),
             style: 'sum_row',
             align: 'right',
           },
