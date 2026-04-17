@@ -244,8 +244,8 @@ export function useColumns() {
       {
         ...keyColumn<HoleFill, 'description'>('description', typedTextColumn),
         title: 'Descrição',
-        grow: 2,
-        minWidth: 300,
+      //   // grow: 2,
+        minWidth: 100,
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
