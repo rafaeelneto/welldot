@@ -178,7 +178,7 @@ export const exportPdfProfile = (
 
     content.push({
       svg: svg?.outerHTML,
-      width: svgWidth * 0.75,
+      width: svgWidth,
       height: svgHeight,
     });
   });

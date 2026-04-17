@@ -65,13 +65,15 @@ const profile2Export = (
 
   const maxYValues = d3.max(depthValues) || 0;
 
-  const POCO_WIDTH = 100;
-  const POCO_CENTER = 350;
-  const GEOLOGY_X_POS = 35;
-  const GEOLOGY_WIDTH = 220;
-  const GEOLOGY_X_POS_DIV_1 = GEOLOGY_WIDTH + GEOLOGY_X_POS + 10;
-  const GEOLOGY_X_POS_DIV_2 = GEOLOGY_X_POS_DIV_1 + 20;
-  const GEOLOGY_TIP_WIDTH = 200;
+const WIDTH = 595.28 - 30 - 30 - MARGINS.LEFT - MARGINS.RIGHT; // 485.28pt
+const POCO_CENTER = 350;
+const GEOLOGY_X_POS = 35;
+const GEOLOGY_WIDTH = 220;
+const GEOLOGY_X_POS_DIV_1 = GEOLOGY_WIDTH + GEOLOGY_X_POS + 10; // 265
+const GEOLOGY_X_POS_DIV_2 = GEOLOGY_X_POS_DIV_1 + 20;           // 285
+const GEOLOGY_TIP_WIDTH = 200;
+
+const POCO_WIDTH = 100;
 
   const maxDiamValues = getProfileDiamValues(profile);
 
@@ -86,7 +88,6 @@ const profile2Export = (
 
   const A4_SVG_HEIGHT = 480 * 1.33;
 
-  const WIDTH = 521.8 * 1.33 - MARGINS.LEFT - MARGINS.RIGHT;
 
   const yScaleGlobal = d3
     .scaleLinear()
@@ -975,7 +976,7 @@ const profile2Export = (
       const LY = 8;
       const ROW_H = 16;
       const SYM_W = 30; // symbol column width
-      const BOX_W = 155;
+      const BOX_W = 120;
       const BOX_H = ROW_H * 3 + 22;
       const RC = 'round' as const;
 
