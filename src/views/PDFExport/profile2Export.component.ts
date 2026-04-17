@@ -16,6 +16,7 @@ import {
   getProfileDiamValues,
   checkIfProfileIsEmpty,
 } from '../../utils/profile.utils';
+import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
 
 import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 
@@ -45,8 +46,15 @@ const profile2Export = (
   zoomLevel: number,
   iframeId?: string,
   print?: boolean,
+  lengthUnits: LengthUnits = 'm',
+  diameterUnits: DiameterUnits = 'mm',
 ) => {
   if (checkIfProfileIsEmpty(profile)) return;
+
+  const fmtLen = (m: number): string => lengthUnits === 'ft' ? (m * 3.28084).toFixed(1) : String(m);
+  const fmtDiam = (mm: number): string => diameterUnits === 'inches' ? (mm * 0.0393701).toFixed(2) : String(mm);
+  const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
+  const diamUnit = diameterUnits === 'inches' ? 'in' : 'mm';
 
   const MARGINS = { TOP: 15, RIGHT: 30, BOTTOM: 30, LEFT: 20 };
 
@@ -189,9 +197,15 @@ const POCO_WIDTH = 100;
       .domain([currentDepth, maxSvgDepth])
       .range([0, svgInfo.height]);
 
+    const depthFactor = lengthUnits === 'ft' ? 3.28084 : 1;
+    const yScaleAxisLocal = d3
+      .scaleLinear()
+      .domain([currentDepth * depthFactor, maxSvgDepth * depthFactor])
+      .range([0, svgInfo.height]);
+
     const yAxis = d3
-      .axisLeft(yScaleLocal)
-      .tickFormat((d: any) => `${d} m`)
+      .axisLeft(yScaleAxisLocal)
+      .tickFormat((d: any) => `${d}${lenUnit}`)
       .tickArguments([tickCount]);
 
     // @ts-ignore
@@ -516,7 +530,7 @@ const POCO_WIDTH = 100;
         const labelH    = labelFs + labelPadY * 2;
 
         const appendDepthLabel = (depth: number, anchorY: number) => {
-          const text  = `${depth} m`;
+          const text  = `${fmtLen(depth)}${lenUnit}`;
           const labelW = text.length * (labelFs * 0.52) + labelPadX * 2;
           g.append('rect')
             .attr('x', labelX - labelW)
@@ -930,7 +944,7 @@ const POCO_WIDTH = 100;
 
         .text(d => {
           // if (d.to > maxSvgDepth) return null;
-          return `Revest. ${d.diameter}" ${d.type}`;
+          return `Revest. ${fmtDiam(d.diameter)}${diamUnit} ${d.type}`;
         })
         .attr('text-anchor', 'end')
         .attr('x', getTipXPos(10, WELL_CASE_TIP_CLASS_NAME))
@@ -979,7 +993,7 @@ const POCO_WIDTH = 100;
         .attr('fill', DARK_GRAY)
         .text(d => {
           // if (d.to > maxSvgDepth) return null;
-          return `Filtro ${d.diameter}" ${d.type} \n Ranhura: ${d.screen_slot_mm}mm`;
+          return `Filtro ${fmtDiam(d.diameter)}${diamUnit} ${d.type} \n Ranhura: ${fmtDiam(d.screen_slot_mm)}${diamUnit}`;
         })
         .attr('text-anchor', 'end')
         .attr('x', getTipXPos(10, WELL_SCREEN_TIP_CLASS_NAME))
@@ -1274,11 +1288,13 @@ const POCO_WIDTH = 100;
       breakPages,
       iframeId,
       header,
+      lengthUnits,
+      diameterUnits,
     );
   } else if (print) {
-    printPdf(profile, headingInfo, endInfo, svgs, breakPages, header);
+    printPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits);
   } else {
-    downloadPdf(profile, headingInfo, endInfo, svgs, breakPages, header);
+    downloadPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits);
   }
 };
 

@@ -30,6 +30,7 @@ import {
   getLithologyFiller,
   getYAxisFunctions,
 } from '@/src/utils/ProfileDrawer/ProfileDrawer.utils';
+import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
 
 const d3 = {
   ...d3module,
@@ -101,6 +102,17 @@ export class DinamicDrawer {
   private svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
 
   customClassNames = DEFAULT_COMPONENTS_CLASS_NAMES;
+  private lengthUnits: LengthUnits = 'm';
+  private diameterUnits: DiameterUnits = 'mm';
+
+  private fmtLen(m: number): string {
+    return this.lengthUnits === 'ft' ? (m * 3.28084).toFixed(1) : String(m);
+  }
+  private fmtDiam(mm: number): string {
+    return this.diameterUnits === 'inches' ? (mm * 0.0393701).toFixed(2) : String(mm);
+  }
+  private get lenUnit(): string { return this.lengthUnits === 'ft' ? 'ft' : 'm'; }
+  private get diamUnit(): string { return this.diameterUnits === 'inches' ? 'in' : 'mm'; }
 
   constructor(
     svgClassName: string,
@@ -189,28 +201,28 @@ export class DinamicDrawer {
     const tipsText = {
       geology: (_, d: Lithology) => `
         <span class="${this.customClassNames.tooltipTitle}">Litologia</span>
-        <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
+        <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
         <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
       `,
       hole: (_, d: HoleFill) => {
         return `
         <span class="${this.customClassNames.tooltipTitle}">FURO</span>
-        <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
-        <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
+        <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
+        <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
         `;
       },
       surfaceCase: (_, d: SurfaceCase) => {
         return `
             <span class="${this.customClassNames.tooltipTitle}">TUBO DE BOCA</span>
-            <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
-            <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
+            <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
+            <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
           `;
       },
       holeFill: (_, d: HoleFill) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">ESP. ANULAR</span>
-          <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
-          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${d.diameter} mm</span>
+          <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
+          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
           <span class="${this.customClassNames.tooltipSecondaryInfo}">
             <strong>Descrição:</strong> ${d.description}
           </span>
@@ -219,9 +231,9 @@ export class DinamicDrawer {
       wellCase: (_, d: WellCase) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">REVESTIMENTO</span>
-              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
+              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${d.diameter} mm
+                <strong>Diâmetro:</strong> ${this.fmtDiam(d.diameter)} ${this.diamUnit}
               </span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
           `;
@@ -229,24 +241,24 @@ export class DinamicDrawer {
       wellScreen: (_, d: WellScreen) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">FILTROS</span>
-              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
+              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${d.diameter} mm</span>
+                <strong>Diâmetro:</strong> ${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Ranhura:</strong> ${d.screen_slot_mm}mm
+                <strong>Ranhura:</strong> ${this.fmtDiam(d.screen_slot_mm)} ${this.diamUnit}
               </span>
           `;
       },
       conflict: (_, d: any) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">FILTROS</span>
-              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
+              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${d.diameter} mm</span>
+                <strong>Diâmetro:</strong> ${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Ranhura:</strong> ${d.screen_slot_mm}mm
+                <strong>Ranhura:</strong> ${this.fmtDiam(d.screen_slot_mm)} ${this.diamUnit}
               </span>
           `;
       },
@@ -254,8 +266,8 @@ export class DinamicDrawer {
         const title = d.swarm ? 'ENXAME DE FRATURAS' : 'FRATURA';
         return `
           <span class="${this.customClassNames.tooltipTitle}">${title}</span>
-          <span class="${this.customClassNames.tooltipPrimaryInfo}"><strong>Profundidade:</strong> ${d.depth} m</span>
-          ${d.water_intake ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Entrada d'água:</strong> ${d.depth} m</span>` : ''}
+          <span class="${this.customClassNames.tooltipPrimaryInfo}"><strong>Profundidade:</strong> ${this.fmtLen(d.depth)} ${this.lenUnit}</span>
+          ${d.water_intake ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Entrada d'água:</strong> ${this.fmtLen(d.depth)} ${this.lenUnit}</span>` : ''}
           <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Mergulho:</strong> ${d.dip}°</span>
           <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Azimute:</strong> ${d.azimuth}°</span>
           ${d.description ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
@@ -264,7 +276,7 @@ export class DinamicDrawer {
       cave: (_event: unknown, d: Cave) => {
         return `
           <span class="${this.customClassNames.tooltipTitle}">CAVERNA</span>
-          <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
+          <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
           ${d.water_intake ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Entrada d'água</strong></span>` : ''}
           ${d.description ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
         `;
@@ -287,10 +299,13 @@ export class DinamicDrawer {
     return tooltips;
   }
 
-  drawLog(profile: Profile) {
+  drawLog(profile: Profile, lengthUnits: LengthUnits = 'm', diameterUnits: DiameterUnits = 'mm') {
     if (!this.svg) return;
 
     if (checkIfProfileIsEmpty(profile)) return;
+
+    this.lengthUnits = lengthUnits;
+    this.diameterUnits = diameterUnits;
 
     const svg = this.svg
       .attr('height', this.HEIGHT + this.MARGINS.TOP + this.MARGINS.BOTTOM)
@@ -726,13 +741,13 @@ export class DinamicDrawer {
             return `
               <span class="${this.customClassNames.tooltipTitle}">LAJE DE PROTEÇÃO</span>
               <span class="${this.customClassNames.tooltipPrimaryInfo}">${data.cement_pad.type}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Espessura:</strong> 
-              ${data.cement_pad.thickness} m</span>
+              <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Espessura:</strong>
+              ${this.fmtLen(data.cement_pad.thickness)} ${this.lenUnit}</span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Largura:</strong> ${data.cement_pad.width} m
+                <strong>Largura:</strong> ${this.fmtLen(data.cement_pad.width)} ${this.lenUnit}
               </span>
               <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Comprimento:</strong> ${data.cement_pad.length} m
+                <strong>Comprimento:</strong> ${this.fmtLen(data.cement_pad.length)} ${this.lenUnit}
               </span>
             `;
           });
@@ -980,7 +995,13 @@ export class DinamicDrawer {
 
     const yZero = yScaleGlobal(0);
 
-    const yAxis = d3.axisLeft(yScaleGlobal).tickFormat((d: any) => `${d} m`);
+    const maxYDisplay = this.lengthUnits === 'ft' ? maxYValues * 3.28084 : maxYValues;
+    const yScaleAxis = d3
+      .scaleLinear()
+      .domain([0, maxYDisplay])
+      .range([0, svgHeight - this.MARGINS.TOP - this.MARGINS.BOTTOM]);
+
+    const yAxis = d3.axisLeft(yScaleAxis).tickFormat((d: any) => `${d}${this.lenUnit}`);
 
     const gY = geologicGroup
       .select(`.${this.customClassNames.yAxis}`)
@@ -1005,7 +1026,7 @@ export class DinamicDrawer {
       const transform = e.transform;
 
       // @ts-ignore
-      gY.call(yAxis.scale(transform.rescaleY(yScaleGlobal)));
+      gY.call(yAxis.scale(transform.rescaleY(yScaleAxis)));
 
       pocoGroup
         .selectAll('rect')

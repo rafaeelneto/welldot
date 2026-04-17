@@ -33,6 +33,7 @@ import { infoType } from '../../../src_old/types/profile2Export.types';
 import styles from './pdfExport.module.scss';
 
 import profile2Export from './profile2Export.component';
+import { useUIStore } from '@/src/store/ui.store';
 
 type PDFEProps = {
   profile: Profile & {
@@ -168,6 +169,7 @@ function SortableList({
 function PDFExport({ profile, onChangeInfo }: PDFEProps) {
   const timeoutRef = useRef<any>();
   const IFRAME_ID = 'ÏFRAME_PDF_ID';
+  const { length_units, diameter_units } = useUIStore();
 
   const headingInfo = profile.info?.headingInfo || [];
   const endInfo = profile.info?.endInfo || [];
@@ -189,6 +191,9 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           breakPages,
           zoomValue,
           IFRAME_ID,
+          undefined,
+          length_units,
+          diameter_units,
         );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`);
@@ -196,7 +201,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
 
       onChangeInfo({ ...profile, info: { headingInfo, endInfo } });
     }, 1000);
-  }, [headingInfo, header, endInfo, breakPages, zoomValue]);
+  }, [headingInfo, header, endInfo, breakPages, zoomValue, length_units, diameter_units]);
 
   const handleBreakChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBreakPages(event.target.checked);
@@ -249,6 +254,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               zoomValue,
               undefined,
               false,
+              length_units,
+              diameter_units,
             );
             // @ts-ignore
             if (window.gtag) {
@@ -286,6 +293,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               zoomValue,
               undefined,
               true,
+              length_units,
+              diameter_units,
             );
           }}
           leftSection={<Printer className="h-4 w-4" />}

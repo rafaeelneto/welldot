@@ -11,6 +11,7 @@ import {
   calculateHoleFillVolume,
   numberFormater,
 } from '../../utils/profile.utils';
+import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign
@@ -61,7 +62,14 @@ export const exportPdfProfile = (
   svgs: SvgInfo[],
   breakPages: boolean,
   header = 'Perfil Geológico-Construtivo',
+  lengthUnits: LengthUnits = 'm',
+  diameterUnits: DiameterUnits = 'mm',
 ) => {
+  const fmtLen = (m: number) => lengthUnits === 'ft' ? numberFormater.format(m * 3.28084) : numberFormater.format(m);
+  const fmtDiam = (mm: number) => diameterUnits === 'inches' ? numberFormater.format(mm * 0.0393701) : numberFormater.format(mm);
+  const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
+  const diamUnit = diameterUnits === 'inches' ? 'in' : 'mm';
+
   const docDefinition: any = {
     defaultStyle: {
       font: 'openSans',
@@ -242,8 +250,8 @@ export const exportPdfProfile = (
     const endingInfoBody: any[][] = [
       [
         { text: 'Diâmetro' },
-        { text: 'De (m)', style: 'column_right' },
-        { text: 'Até (m)', style: 'column_right' },
+        { text: `De (${lenUnit})`, style: 'column_right' },
+        { text: `Até (${lenUnit})`, style: 'column_right' },
       ],
     ];
 
@@ -251,9 +259,9 @@ export const exportPdfProfile = (
       const item = profile.bore_hole[i];
 
       endingInfoBody.push([
-        { text: `${numberFormater.format(item.diameter)} mm` },
-        { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
-        { text: `${numberFormater.format(item.to)}`, style: 'column_right' },
+        { text: `${fmtDiam(item.diameter)} ${diamUnit}` },
+        { text: fmtLen(item.from), style: 'column_right' },
+        { text: fmtLen(item.to), style: 'column_right' },
       ]);
     }
 
@@ -277,8 +285,8 @@ export const exportPdfProfile = (
     const endingInfoBody: any[][] = [
       [
         { text: 'Diâmetro' },
-        { text: 'De (m)', style: 'column_right' },
-        { text: 'Até (m)', style: 'column_right' },
+        { text: `De (${lenUnit})`, style: 'column_right' },
+        { text: `Até (${lenUnit})`, style: 'column_right' },
       ],
     ];
 
@@ -286,9 +294,9 @@ export const exportPdfProfile = (
       const item = profile.surface_case[i];
 
       endingInfoBody.push([
-        { text: `${numberFormater.format(item.diameter)} mm` },
-        { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
-        { text: `${numberFormater.format(item.to)}`, style: 'column_right' },
+        { text: `${fmtDiam(item.diameter)} ${diamUnit}` },
+        { text: fmtLen(item.from), style: 'column_right' },
+        { text: fmtLen(item.to), style: 'column_right' },
       ]);
     }
 
@@ -313,8 +321,8 @@ export const exportPdfProfile = (
       [
         { text: 'Descrição' },
         { text: 'Diâmetro', style: 'column_right' },
-        { text: 'De (m)', style: 'column_right' },
-        { text: 'Até (m)', style: 'column_right' },
+        { text: `De (${lenUnit})`, style: 'column_right' },
+        { text: `Até (${lenUnit})`, style: 'column_right' },
       ],
     ];
 
@@ -324,11 +332,11 @@ export const exportPdfProfile = (
       endingInfoBody.push([
         `${item.description ? item.description : item.type}`,
         {
-          text: `${numberFormater.format(item.diameter)} mm`,
+          text: `${fmtDiam(item.diameter)} ${diamUnit}`,
           style: 'column_right',
         },
-        { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
-        { text: `${numberFormater.format(item.to)}`, style: 'column_right' },
+        { text: fmtLen(item.from), style: 'column_right' },
+        { text: fmtLen(item.to), style: 'column_right' },
       ]);
 
       if (
@@ -371,8 +379,8 @@ export const exportPdfProfile = (
       [
         { text: 'Tipo' },
         { text: 'Diâmetro', style: 'column_right' },
-        { text: 'De (m)', style: 'column_right' },
-        { text: 'Até (m)', style: 'column_right' },
+        { text: `De (${lenUnit})`, style: 'column_right' },
+        { text: `Até (${lenUnit})`, style: 'column_right' },
       ],
     ];
 
@@ -382,11 +390,11 @@ export const exportPdfProfile = (
       endingInfoBody.push([
         `${item.type}`,
         {
-          text: `${numberFormater.format(item.diameter)} mm`,
+          text: `${fmtDiam(item.diameter)} ${diamUnit}`,
           style: 'column_right',
         },
-        { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
-        { text: `${numberFormater.format(item.to)}`, style: 'column_right' },
+        { text: fmtLen(item.from), style: 'column_right' },
+        { text: fmtLen(item.to), style: 'column_right' },
       ]);
 
       if (
@@ -407,7 +415,7 @@ export const exportPdfProfile = (
           {},
           {},
           {
-            text: `${numberFormater.format(totalHeight)} m`,
+            text: `${fmtLen(totalHeight)} ${lenUnit}`,
             style: 'sum_row',
             align: 'right',
           },
@@ -436,9 +444,9 @@ export const exportPdfProfile = (
       [
         { text: 'Tipo' },
         { text: 'Diâmetro', style: 'column_right' },
-        { text: 'Ranhura (mm)', style: 'column_right' },
-        { text: 'De (m)', style: 'column_right' },
-        { text: 'Até (m)', style: 'column_right' },
+        { text: `Ranhura (${diamUnit})`, style: 'column_right' },
+        { text: `De (${lenUnit})`, style: 'column_right' },
+        { text: `Até (${lenUnit})`, style: 'column_right' },
       ],
     ];
 
@@ -448,15 +456,15 @@ export const exportPdfProfile = (
       endingInfoBody.push([
         `${item.type}`,
         {
-          text: `${numberFormater.format(item.diameter)} mm`,
+          text: `${fmtDiam(item.diameter)} ${diamUnit}`,
           style: 'column_right',
         },
         {
-          text: `${numberFormater.format(item.screen_slot_mm)}`,
+          text: fmtDiam(item.screen_slot_mm),
           style: 'column_right',
         },
-        { text: `${numberFormater.format(item.from)}`, style: 'column_right' },
-        { text: `${numberFormater.format(item.to)}`, style: 'column_right' },
+        { text: fmtLen(item.from), style: 'column_right' },
+        { text: fmtLen(item.to), style: 'column_right' },
       ]);
 
       if (
@@ -478,7 +486,7 @@ export const exportPdfProfile = (
           {},
           {},
           {
-            text: `${numberFormater.format(totalHeight)} m`,
+            text: `${fmtLen(totalHeight)} ${lenUnit}`,
             style: 'sum_row',
             align: 'right',
           },
@@ -513,6 +521,8 @@ export const innerRenderPdf = (
   breakPages: boolean,
   iframeId: string,
   header = 'Perfil Geológico-Construtivo',
+  lengthUnits: LengthUnits = 'm',
+  diameterUnits: DiameterUnits = 'mm',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -521,6 +531,8 @@ export const innerRenderPdf = (
     svgs,
     breakPages,
     header,
+    lengthUnits,
+    diameterUnits,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
@@ -540,6 +552,8 @@ export const printPdf = (
   svgs: SvgInfo[],
   breakPages: boolean,
   header = 'Perfil Geológico-Construtivo',
+  lengthUnits: LengthUnits = 'm',
+  diameterUnits: DiameterUnits = 'mm',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -548,6 +562,8 @@ export const printPdf = (
     svgs,
     breakPages,
     header,
+    lengthUnits,
+    diameterUnits,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
@@ -561,6 +577,8 @@ export const downloadPdf = (
   svgs: SvgInfo[],
   breakPages: boolean,
   header = 'Perfil Geológico-Construtivo',
+  lengthUnits: LengthUnits = 'm',
+  diameterUnits: DiameterUnits = 'mm',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -569,6 +587,8 @@ export const downloadPdf = (
     svgs,
     breakPages,
     header,
+    lengthUnits,
+    diameterUnits,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
