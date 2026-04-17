@@ -64,7 +64,7 @@ function ColorPicker({ focus, rowData, setRowData, stopEditing }: CellProps) {
           <SketchPicker
             className={styles.colorPicker}
             disableAlpha
-            color={rowData}
+            color={rowData || '#000000'}
             onChange={(newColor, _event) => {
               setRowData(newColor.hex);
             }}
