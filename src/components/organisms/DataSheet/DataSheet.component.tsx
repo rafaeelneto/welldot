@@ -2,9 +2,10 @@ import React, { useState, useRef } from 'react';
 
 import { DataSheetGrid, AddRowsComponentProps } from 'react-datasheet-grid';
 
-import { Button, NumberInput } from '@mantine/core';
+import { Button, ActionIcon, NumberInput } from '@mantine/core';
 
 import { PlusCircle } from 'react-feather';
+import { XMarkIcon, PlusCircleIcon } from '@heroicons/react/24/solid';
 
 import 'react-datasheet-grid/dist/style.css';
 
@@ -68,7 +69,36 @@ function DataSheet({
       height={customHeight || DEFAULT_HEIGHT}
       onChange={onChangeValues}
       columns={columns}
-      gutterColumn={false}
+      gutterColumn={{
+        component: ({ insertRowBelow }) => (
+          <div className='flex items-center justify-center w-full h-full'>
+            <ActionIcon
+              variant="subtle"
+              color="green"
+              size="sm"
+              className='w-full h-full'
+              onClick={insertRowBelow}
+            >
+              <PlusCircleIcon className='w-4 h-4'/>
+            </ActionIcon>
+          </div>
+        ),
+      }}
+      stickyRightColumn={{
+        component: ({ deleteRow }) => (
+          <div className='flex items-center justify-center w-full h-full'>
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              size="sm"
+              className='w-full h-full'
+              onClick={deleteRow}
+            >
+              <XMarkIcon className='w-4 h-4'/>
+            </ActionIcon>
+          </div>
+        ),
+      }}
       addRowsComponent={CustomAddButton}
     />
   );
