@@ -89,9 +89,11 @@ function ProfileEditor() {
     const fileUploaded = event.target?.files?.[0];
     const reader = new FileReader();
     reader.onload = (e: ProgressEvent<FileReader>) => {
+      console.log('File loaded:', e.target?.result);
       if (!e) return;
 
       updateProfileFromJSON(e.target?.result as string);
+
     };
 
     try {

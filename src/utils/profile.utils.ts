@@ -168,7 +168,7 @@ const WELL_FORMAT_VERSION = 1;
 
 export function profileToWell(profile: Profile): string {
   const well: Record<string, unknown> = {
-    v: WELL_FORMAT_VERSION,
+    version: WELL_FORMAT_VERSION,
     ...(profile.name !== undefined && { name: profile.name }),
     ...(profile.well_driller !== undefined && { well_driller: profile.well_driller }),
     ...(profile.construction_date !== undefined && { construction_date: profile.construction_date }),
@@ -268,8 +268,8 @@ export function convertProfileFromJSON(jsonString: string): Profile | null {
   }
 
   // .well compact format — detected by presence of version field `v`
-  if (raw && typeof raw.v === 'number') {
-    if (raw.v !== 1) throw new Error(`Unsupported .well format version: ${raw.v}`);
+  if (raw && typeof raw.version === 'number') {
+    if (raw.version !== 1) throw new Error(`Unsupported .well format version: ${raw.version}`);
     return decodeWell(raw);
   }
 
