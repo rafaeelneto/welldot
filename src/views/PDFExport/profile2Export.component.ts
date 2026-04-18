@@ -1146,6 +1146,62 @@ const POCO_WIDTH = 100;
             appendLine(xAt(nx), (rng() * 2 - 1) * 1.5 * fractureScale, xAt(nx + (rng() - 0.5) * 0.03), dir * len, 0.9);
           }
         }
+
+        // Tip label: depth · dip · azimuth — placed to the left of the fracture band
+        const LABEL_FONT_SIZE = 6;
+        const LABEL_PAD_X     = 3;
+        const LABEL_PAD_Y     = 3;
+        const LABEL_H         = LABEL_FONT_SIZE + LABEL_PAD_Y * 2;
+        const tipColor        = fracture.water_intake ? '#1a6fa8' : '#444444';
+        const depthLabel      = `${(fracture.depth * depthFactor).toFixed(1)}${lenUnit}`;
+        const dipLabel        = fracture.dip     != null ? ` D:${fracture.dip}°`      : '';
+        const azLabel         = fracture.azimuth != null ? ` Az:${fracture.azimuth}°` : '';
+        const tipText         = `${depthLabel}${dipLabel}${azLabel}`;
+        const estimatedW      = tipText.length * (LABEL_FONT_SIZE * 0.52) + LABEL_PAD_X * 2;
+        const TIP_X_END       = xa - 6;
+        const rectX           = TIP_X_END - estimatedW;
+
+        const tipG = fracturesGroup.append('g').attr('class', 'fracture-tip');
+
+        // Dot at well centre on the fracture depth
+        tipG.append('circle')
+          .attr('cx', pocoCenterX)
+          .attr('cy', cy)
+          .attr('r', 1.5)
+          .attr('fill', tipColor)
+          .attr('opacity', 0.65);
+
+        // Dashed leader from centre to right edge of label
+        tipG.append('line')
+          .attr('x1', pocoCenterX - 2)
+          .attr('y1', cy)
+          .attr('x2', TIP_X_END)
+          .attr('y2', cy)
+          .attr('stroke', tipColor)
+          .attr('stroke-width', 0.5)
+          .attr('stroke-dasharray', '2,2')
+          .attr('opacity', 0.65);
+
+        // Background rect centred on the label
+        tipG.append('rect')
+          .attr('x', rectX)
+          .attr('y', cy - LABEL_H / 2)
+          .attr('width', estimatedW)
+          .attr('height', LABEL_H)
+          .attr('rx', 2)
+          .attr('fill', 'white')
+          .attr('stroke', tipColor)
+          .attr('stroke-width', 0.4)
+          .attr('opacity', 0.85);
+
+        tipG.append('text')
+          .attr('x', rectX + LABEL_PAD_X)
+          .attr('y', cy)
+          .attr('dy', '.35em')
+          .attr('font-size', LABEL_FONT_SIZE)
+          .attr('fill', tipColor)
+          .attr('opacity', 0.9)
+          .text(tipText);
       });
     };
 
