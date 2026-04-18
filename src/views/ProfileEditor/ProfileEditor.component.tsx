@@ -28,6 +28,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 import download from 'downloadjs';
+import { profileToWell } from '@/src/utils/profile.utils';
 
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
 import Info from '@/src/components/organisms/Summary/Summary.component';
@@ -295,23 +296,13 @@ function ProfileEditor() {
                       'download profile',
                     );
                   }
-                  const profileToSave = { ...profile };
-
-                  const perfilJSON = JSON.stringify(profileToSave);
-
-                  const blob = new Blob([perfilJSON], {
-                    type: 'application/json',
-                  });
-
+                  const wellData = profileToWell({ ...profile });
+                  const blob = new Blob([wellData], { type: 'application/vnd.well+json' });
+                  const safeName = (profile.name || '').replace(/ /g, '_').toLowerCase();
                   download(
                     blob,
-                    `perfil_${(profile.name || '')
-                      .replace(/ /g, '_')
-                      .toLowerCase()}_${format(
-                      new Date(),
-                      'dd_MM_yyyy__hh_mm',
-                    )}.json`,
-                    'application/json',
+                    `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`,
+                    'application/vnd.well+json',
                   );
                 }}
                 leftSection={<ArrowDownTrayIcon className="h-4 w-4" />}
@@ -329,7 +320,7 @@ function ProfileEditor() {
                 type="file"
                 ref={inputFile}
                 onChange={handleChangeInputFile}
-                accept="application/json"
+                accept="application/json,.json,.well"
                 style={{ display: 'none' }}
               />
             </div>

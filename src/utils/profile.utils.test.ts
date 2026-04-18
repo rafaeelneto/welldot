@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { convertProfileFromJSON } from './profile.utils';
+import { convertProfileFromJSON, profileToWell } from './profile.utils';
+import type { Profile } from '@/src/types/profile.types';
 
 const INCHES_TO_MM = 25.4;
 
@@ -393,5 +394,201 @@ describe('convertProfileFromJSON — full legacy profile (PROFILE_EXAMPLE)', () 
     result.lithology.forEach(item => {
       expect(item.aquifer_unit).toBeDefined();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// .well format — profileToWell serialisation
+// ---------------------------------------------------------------------------
+
+const fullProfile: Profile = {
+  name: 'Poço PP-01',
+  well_driller: 'Driller Corp',
+  construction_date: '2024-03-15',
+  lat: -1.4558,
+  lng: -48.5039,
+  elevation: 12.5,
+  obs: 'Sem anomalias',
+  bore_hole: [{ from: 0, to: 80, diameter: 250, drilling_method: 'rotary' }],
+  well_case: [{ from: 0, to: 60, type: 'steel', diameter: 200 }],
+  reduction: [{ from: 58, to: 60, diam_from: 200, diam_to: 150, type: 'conical' }],
+  well_screen: [{ from: 60, to: 80, type: 'pvc', diameter: 150, screen_slot_mm: 0.5 }],
+  surface_case: [{ from: 0, to: 3, diameter: 300 }],
+  hole_fill: [{ from: 60, to: 80, type: 'gravel_pack', diameter: 250, description: 'Seixo 2-4mm' }],
+  cement_pad: { type: 'square', width: 1.0, thickness: 0.15, length: 1.0 },
+  lithology: [
+    { from: 0, to: 20, description: 'Areia fina', color: '#f5deb3', fgdc_texture: 'sand', geologic_unit: 'Quaternário', aquifer_unit: 'freático' },
+    { from: 20, to: 80, description: 'Granito fraturado', color: '#a9a9a9', fgdc_texture: 'granite', geologic_unit: 'Embasamento', aquifer_unit: 'fraturado' },
+  ],
+  fractures: [
+    { depth: 45.2, water_intake: true, description: 'Fratura aberta', swarm: false, azimuth: 120, dip: 35 },
+  ],
+  caves: [{ from: 50, to: 52, water_intake: false, description: 'Caverna seca' }],
+};
+
+describe('profileToWell — serialisation', () => {
+  it('produces valid JSON', () => {
+    expect(() => JSON.parse(profileToWell(fullProfile))).not.toThrow();
+  });
+
+  it('sets version to 1', () => {
+    expect(JSON.parse(profileToWell(fullProfile)).v).toBe(1);
+  });
+
+  it('maps metadata to compact keys', () => {
+    const w = JSON.parse(profileToWell(fullProfile));
+    expect(w.n).toBe('Poço PP-01');
+    expect(w.dr).toBe('Driller Corp');
+    expect(w.cd).toBe('2024-03-15');
+    expect(w.lt).toBe(-1.4558);
+    expect(w.lg).toBe(-48.5039);
+    expect(w.el).toBe(12.5);
+    expect(w.ob).toBe('Sem anomalias');
+  });
+
+  it('maps bore_hole to bh[] with compact keys', () => {
+    const { bh } = JSON.parse(profileToWell(fullProfile));
+    expect(bh).toHaveLength(1);
+    expect(bh[0]).toEqual({ f: 0, t: 80, d: 250, dm: 'rotary' });
+  });
+
+  it('omits dm when drilling_method is absent', () => {
+    const p: Profile = { ...fullProfile, bore_hole: [{ from: 0, to: 10, diameter: 200 }] };
+    const { bh } = JSON.parse(profileToWell(p));
+    expect(bh[0]).not.toHaveProperty('dm');
+  });
+
+  it('maps well_case to wc[]', () => {
+    const { wc } = JSON.parse(profileToWell(fullProfile));
+    expect(wc[0]).toEqual({ f: 0, t: 60, ty: 'steel', d: 200 });
+  });
+
+  it('maps reduction to rd[] with df and d2', () => {
+    const { rd } = JSON.parse(profileToWell(fullProfile));
+    expect(rd[0]).toEqual({ f: 58, t: 60, df: 200, d2: 150, ty: 'conical' });
+  });
+
+  it('maps well_screen to ws[] with sl', () => {
+    const { ws } = JSON.parse(profileToWell(fullProfile));
+    expect(ws[0]).toEqual({ f: 60, t: 80, ty: 'pvc', d: 150, sl: 0.5 });
+  });
+
+  it('maps surface_case to sc[]', () => {
+    const { sc } = JSON.parse(profileToWell(fullProfile));
+    expect(sc[0]).toEqual({ f: 0, t: 3, d: 300 });
+  });
+
+  it('maps hole_fill to hf[]', () => {
+    const { hf } = JSON.parse(profileToWell(fullProfile));
+    expect(hf[0]).toEqual({ f: 60, t: 80, ty: 'gravel_pack', d: 250, ds: 'Seixo 2-4mm' });
+  });
+
+  it('maps cement_pad to cp', () => {
+    const { cp } = JSON.parse(profileToWell(fullProfile));
+    expect(cp).toEqual({ ty: 'square', w: 1.0, th: 0.15, l: 1.0 });
+  });
+
+  it('maps lithology to li[]', () => {
+    const { li } = JSON.parse(profileToWell(fullProfile));
+    expect(li).toHaveLength(2);
+    expect(li[0]).toEqual({ f: 0, t: 20, ds: 'Areia fina', cl: '#f5deb3', tx: 'sand', gu: 'Quaternário', au: 'freático' });
+  });
+
+  it('maps fractures to fr[]', () => {
+    const { fr } = JSON.parse(profileToWell(fullProfile));
+    expect(fr[0]).toEqual({ dp: 45.2, wi: true, ds: 'Fratura aberta', sw: false, az: 120, di: 35 });
+  });
+
+  it('maps caves to cv[]', () => {
+    const { cv } = JSON.parse(profileToWell(fullProfile));
+    expect(cv[0]).toEqual({ f: 50, t: 52, wi: false, ds: 'Caverna seca' });
+  });
+
+  it('does not include cp when cement_pad is falsy', () => {
+    const p = { ...fullProfile, cement_pad: null as any };
+    expect(JSON.parse(profileToWell(p))).not.toHaveProperty('cp');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// .well format — convertProfileFromJSON round-trip
+// ---------------------------------------------------------------------------
+
+describe('convertProfileFromJSON — .well format', () => {
+  it('detects .well format via v field and does not throw', () => {
+    expect(() => convertProfileFromJSON(profileToWell(fullProfile))).not.toThrow();
+  });
+
+  it('throws on unsupported version', () => {
+    expect(() => convertProfileFromJSON(JSON.stringify({ v: 99 }))).toThrow('Unsupported .well format version: 99');
+  });
+
+  it('round-trips metadata losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.name).toBe(fullProfile.name);
+    expect(result.well_driller).toBe(fullProfile.well_driller);
+    expect(result.construction_date).toBe(fullProfile.construction_date);
+    expect(result.lat).toBe(fullProfile.lat);
+    expect(result.lng).toBe(fullProfile.lng);
+    expect(result.elevation).toBe(fullProfile.elevation);
+    expect(result.obs).toBe(fullProfile.obs);
+  });
+
+  it('round-trips bore_hole losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.bore_hole).toEqual(fullProfile.bore_hole);
+  });
+
+  it('round-trips well_case losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.well_case).toEqual(fullProfile.well_case);
+  });
+
+  it('round-trips reduction losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.reduction).toEqual(fullProfile.reduction);
+  });
+
+  it('round-trips well_screen losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.well_screen).toEqual(fullProfile.well_screen);
+  });
+
+  it('round-trips surface_case losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.surface_case).toEqual(fullProfile.surface_case);
+  });
+
+  it('round-trips hole_fill losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.hole_fill).toEqual(fullProfile.hole_fill);
+  });
+
+  it('round-trips cement_pad losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.cement_pad).toEqual(fullProfile.cement_pad);
+  });
+
+  it('round-trips lithology losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.lithology).toEqual(fullProfile.lithology);
+  });
+
+  it('round-trips fractures losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.fractures).toEqual(fullProfile.fractures);
+  });
+
+  it('round-trips caves losslessly', () => {
+    const result = convertProfileFromJSON(profileToWell(fullProfile))!;
+    expect(result.caves).toEqual(fullProfile.caves);
+  });
+
+  it('defaults empty arrays when sections are absent', () => {
+    const minimal = JSON.stringify({ v: 1, n: 'test', li: [{ f: 0, t: 10, ds: 'x', cl: '#fff', tx: 'sand', gu: '', au: '' }] });
+    const result = convertProfileFromJSON(minimal)!;
+    expect(result.bore_hole).toEqual([]);
+    expect(result.fractures).toEqual([]);
+    expect(result.caves).toEqual([]);
   });
 });

@@ -162,6 +162,87 @@ export const calculateHoleFillVolume = (type: string, profile: Profile) => {
   return volume;
 };
 
+// ─── .well format (compact keys) ────────────────────────────────────────────
+
+const WELL_FORMAT_VERSION = 1;
+
+export function profileToWell(profile: Profile): string {
+  const compact: Record<string, unknown> = {
+    v: WELL_FORMAT_VERSION,
+    ...(profile.name !== undefined && { n: profile.name }),
+    ...(profile.well_driller !== undefined && { dr: profile.well_driller }),
+    ...(profile.construction_date !== undefined && { cd: profile.construction_date }),
+    ...(profile.lat !== undefined && { lt: profile.lat }),
+    ...(profile.lng !== undefined && { lg: profile.lng }),
+    ...(profile.elevation !== undefined && { el: profile.elevation }),
+    ...(profile.obs !== undefined && { ob: profile.obs }),
+    bh: profile.bore_hole.map(({ from: f, to: t, diameter: d, drilling_method: dm }) => ({
+      f, t, d, ...(dm !== undefined && { dm }),
+    })),
+    wc: profile.well_case.map(({ from: f, to: t, type: ty, diameter: d }) => ({ f, t, ty, d })),
+    rd: profile.reduction.map(({ from: f, to: t, diam_from: df, diam_to: d2, type: ty }) => ({
+      f, t, df, d2, ty,
+    })),
+    ws: profile.well_screen.map(({ from: f, to: t, type: ty, diameter: d, screen_slot_mm: sl }) => ({
+      f, t, ty, d, sl,
+    })),
+    sc: profile.surface_case.map(({ from: f, to: t, diameter: d }) => ({ f, t, d })),
+    hf: profile.hole_fill.map(({ from: f, to: t, type: ty, diameter: d, description: ds }) => ({
+      f, t, ty, d, ds,
+    })),
+    ...(profile.cement_pad && { cp: {
+      ty: profile.cement_pad.type,
+      w: profile.cement_pad.width,
+      th: profile.cement_pad.thickness,
+      l: profile.cement_pad.length,
+    }}),
+    li: profile.lithology.map(({ from: f, to: t, description: ds, color: cl, fgdc_texture: tx, geologic_unit: gu, aquifer_unit: au }) => ({
+      f, t, ds, cl, tx, gu, au,
+    })),
+    fr: profile.fractures.map(({ depth: dp, water_intake: wi, description: ds, swarm: sw, azimuth: az, dip: di }) => ({
+      dp, wi, ds, sw, az, di,
+    })),
+    cv: profile.caves.map(({ from: f, to: t, water_intake: wi, description: ds }) => ({ f, t, wi, ds })),
+  };
+
+  return JSON.stringify(compact);
+}
+
+function decodeWell(raw: any): Profile {
+  return {
+    ...getEmptyProfile(),
+    ...(raw.n !== undefined && { name: raw.n }),
+    ...(raw.dr !== undefined && { well_driller: raw.dr }),
+    ...(raw.cd !== undefined && { construction_date: raw.cd }),
+    ...(raw.lt !== undefined && { lat: raw.lt }),
+    ...(raw.lg !== undefined && { lng: raw.lg }),
+    ...(raw.el !== undefined && { elevation: raw.el }),
+    ...(raw.ob !== undefined && { obs: raw.ob }),
+    bore_hole: (raw.bh ?? []).map(({ f, t, d, dm }: any) => ({
+      from: f, to: t, diameter: d, ...(dm !== undefined && { drilling_method: dm }),
+    })),
+    well_case: (raw.wc ?? []).map(({ f, t, ty, d }: any) => ({ from: f, to: t, type: ty, diameter: d })),
+    reduction: (raw.rd ?? []).map(({ f, t, df, d2, ty }: any) => ({
+      from: f, to: t, diam_from: df, diam_to: d2, type: ty,
+    })),
+    well_screen: (raw.ws ?? []).map(({ f, t, ty, d, sl }: any) => ({
+      from: f, to: t, type: ty, diameter: d, screen_slot_mm: sl,
+    })),
+    surface_case: (raw.sc ?? []).map(({ f, t, d }: any) => ({ from: f, to: t, diameter: d })),
+    hole_fill: (raw.hf ?? []).map(({ f, t, ty, d, ds }: any) => ({
+      from: f, to: t, type: ty, diameter: d, description: ds,
+    })),
+    ...(raw.cp && { cement_pad: { type: raw.cp.ty, width: raw.cp.w, thickness: raw.cp.th, length: raw.cp.l } }),
+    lithology: (raw.li ?? []).map(({ f, t, ds, cl, tx, gu, au }: any) => ({
+      from: f, to: t, description: ds, color: cl, fgdc_texture: tx, geologic_unit: gu, aquifer_unit: au,
+    })),
+    fractures: (raw.fr ?? []).map(({ dp, wi, ds, sw, az, di }: any) => ({
+      depth: dp, water_intake: wi, description: ds, swarm: sw, azimuth: az, dip: di,
+    })),
+    caves: (raw.cv ?? []).map(({ f, t, wi, ds }: any) => ({ from: f, to: t, water_intake: wi, description: ds })),
+  };
+}
+
 /**
  * Profile conversion — backwards-compatibility with legacy JSON formats
  */
@@ -213,6 +294,12 @@ export function convertProfileFromJSON(jsonString: string): Profile | null {
     raw = JSON.parse(jsonString);
   } catch {
     throw new Error('Invalid profile format');
+  }
+
+  // .well compact format — detected by presence of version field `v`
+  if (raw && typeof raw.v === 'number') {
+    if (raw.v !== 1) throw new Error(`Unsupported .well format version: ${raw.v}`);
+    return decodeWell(raw);
   }
 
   if (checkIfProfileIsEmpty(raw)) return null;
