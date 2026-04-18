@@ -55,6 +55,29 @@ pdfMake.tableLayouts = {
 
 const MARGIN = 30;
 
+function base64ToBlob(base64String, contentType = '') {
+  // Remove data URL prefix if it exists
+  const base64Data = base64String.replace(/^data:([^;]+);base64,/, '');
+
+  // Convert base64 to raw binary data
+  const binaryData = atob(base64Data);
+
+  // Create array buffer from binary data
+  const arrayBuffer = new ArrayBuffer(binaryData.length);
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  // Fill array buffer with binary data
+  for (let i = 0; i < binaryData.length; i++) {
+    uint8Array[i] = binaryData.charCodeAt(i);
+  }
+
+  // Create blob from array buffer
+  const blob = new Blob([arrayBuffer], { type: contentType });
+
+  // Create and return blob URL
+  return URL.createObjectURL(blob);
+}
+
 export const exportPdfProfile = (
   profile: Profile,
   headingInfo: infoType[],
@@ -538,14 +561,20 @@ export const innerRenderPdf = (
     diameterUnits,
   );
   // @ts-ignore
-  const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-  pdfDocGenerator.getDataUrl(dataUrl => {
-    if (iframeId) {
-      const iframe = document.getElementById(iframeId);
-      // @ts-ignore
-      iframe.src = dataUrl;
-    }
-  });
+  try {
+
+    const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+    pdfDocGenerator.getDataUrl(dataUrl => {
+      const blobUrl = base64ToBlob(dataUrl, 'application/pdf');
+      if (iframeId) {
+        const iframe = document.getElementById(iframeId);
+        // @ts-ignore
+        iframe.src = blobUrl;
+      }
+    });
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+  }
 };
 
 export const printPdf = (
