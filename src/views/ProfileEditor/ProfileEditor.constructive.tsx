@@ -23,15 +23,10 @@ import {
   WELL_CASE_FEATURE_DEFAULT,
 } from '@/src/data/profile/profile.data';
 
-import {
-  boreHoleColumns,
-  holeFillColumns,
-  surfaceCaseColumns,
-  wellCaseColumns,
-  wellScreenColumns,
-} from '@/src/components/organisms/DataSheet/columns';
+import { useColumns } from '@/src/data/dataSheet/useColumns';
 
 import styles from './profileEditor.module.scss';
+import { useUIStore } from '@/src/store/ui.store';
 
 export default function ProfileEditorConstructive() {
   const { profile, updateProfile, updateCementPad, getUpdateListingFeatures } =
@@ -39,12 +34,32 @@ export default function ProfileEditorConstructive() {
       ...state,
     }));
 
+  const { length_units, diameter_units } = useUIStore(state => ({
+        ...state,
+      }));
+
+  const toLen = (m: number) =>
+    length_units === 'ft' ? parseFloat((m * 3.28084).toFixed(3)) : m;
+  const fromLen = (v: number) =>
+    length_units === 'ft' ? parseFloat((v / 3.28084).toFixed(4)) : v;
+  const lenLabel = length_units === 'ft' ? 'ft' : 'm';
+
+  const {
+    boreHoleColumns,
+    holeFillColumns,
+    surfaceCaseColumns,
+    wellCaseColumns,
+    wellScreenColumns,
+  } = useColumns();
+
   const checkCementPad = () => {
     if (profile.cement_pad && profile.cement_pad.thickness) {
       return true;
     }
     return false;
   };
+
+  const key = `${length_units}-${diameter_units}`;
 
   return (
     <div>
@@ -82,7 +97,7 @@ export default function ProfileEditorConstructive() {
         </span>
 
         <Collapse in={checkCementPad()}>
-          <div>
+          <div key={length_units}>
             <TextInput
               className={`${styles.layerInput}`}
               id="standard-multiline-flexible"
@@ -96,29 +111,29 @@ export default function ProfileEditorConstructive() {
               <NumberInput
                 className={styles.layerInput}
                 id="standard-multiline-flexible"
-                label="Largura"
-                value={profile.cement_pad.width}
+                label={`Largura (${lenLabel})`}
+                value={toLen(profile.cement_pad.width)}
                 onChange={value => {
-                  updateCementPad('width', value as string);
+                  updateCementPad('width', String(fromLen(value as number)));
                 }}
               />
 
               <NumberInput
                 className={styles.layerInput}
                 id="standard-multiline-flexible"
-                label="Comprimento"
-                value={profile.cement_pad.length}
+                label={`Comprimento (${lenLabel})`}
+                value={toLen(profile.cement_pad.length)}
                 onChange={value => {
-                  updateCementPad('length', value as string);
+                  updateCementPad('length', String(fromLen(value as number)));
                 }}
               />
               <NumberInput
                 className={styles.layerInput}
                 id="standard-multiline-flexible"
-                label="Espessura"
-                value={profile.cement_pad.thickness}
+                label={`Espessura (${lenLabel})`}
+                value={toLen(profile.cement_pad.thickness)}
                 onChange={value => {
-                  updateCementPad('thickness', value as string);
+                  updateCementPad('thickness', String(fromLen(value as number)));
                 }}
               />
             </div>
@@ -129,6 +144,7 @@ export default function ProfileEditorConstructive() {
         <div className="flex flex-col p-2.5">
           <span className={styles.componentTitle}>Furo:</span>
           <DataSheet
+            key={key}
             data={profile.bore_hole}
             onChangeValues={getUpdateListingFeatures<BoreHole>('bore_hole')}
             columns={boreHoleColumns}
@@ -138,6 +154,7 @@ export default function ProfileEditorConstructive() {
         <div className="flex flex-col p-2.5">
           <span className={styles.componentTitle}>Espaço Anelar:</span>
           <DataSheet
+            key={key}
             data={profile.hole_fill}
             onChangeValues={getUpdateListingFeatures<HoleFill>('hole_fill')}
             columns={holeFillColumns}
@@ -149,6 +166,7 @@ export default function ProfileEditorConstructive() {
         <div className="flex flex-col p-2.5">
           <span className={styles.componentTitle}>Tubo de Boca:</span>
           <DataSheet
+            key={key}
             data={profile.surface_case}
             onChangeValues={getUpdateListingFeatures<SurfaceCase>(
               'surface_case',
@@ -160,6 +178,7 @@ export default function ProfileEditorConstructive() {
         <div className="flex flex-col p-2.5">
           <span className={styles.componentTitle}>Revestimento:</span>
           <DataSheet
+            key={key}
             data={profile.well_case}
             onChangeValues={getUpdateListingFeatures<WellCase>('well_case')}
             columns={wellCaseColumns}
@@ -170,6 +189,7 @@ export default function ProfileEditorConstructive() {
       <div className="flex flex-col p-2.5">
         <span className={styles.componentTitle}>Filtros:</span>
         <DataSheet
+          key={key}
           data={profile.well_screen}
           onChangeValues={getUpdateListingFeatures<WellScreen>('well_screen')}
           columns={wellScreenColumns}

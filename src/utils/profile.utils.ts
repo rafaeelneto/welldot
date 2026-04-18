@@ -8,6 +8,7 @@ import {
   Reduction,
   Geologic,
   SurfaceCase,
+  Lithology,
 } from '@/src/types/profile.types';
 import { getEmptyProfile } from '../data/profile/profile.data';
 
@@ -161,169 +162,182 @@ export const calculateHoleFillVolume = (type: string, profile: Profile) => {
   return volume;
 };
 
+// ─── .well format (compact keys) ────────────────────────────────────────────
+
+const WELL_FORMAT_VERSION = 1;
+
+export function profileToWell(profile: Profile): string {
+  const compact: Record<string, unknown> = {
+    v: WELL_FORMAT_VERSION,
+    ...(profile.name !== undefined && { n: profile.name }),
+    ...(profile.well_driller !== undefined && { dr: profile.well_driller }),
+    ...(profile.construction_date !== undefined && { cd: profile.construction_date }),
+    ...(profile.lat !== undefined && { lt: profile.lat }),
+    ...(profile.lng !== undefined && { lg: profile.lng }),
+    ...(profile.elevation !== undefined && { el: profile.elevation }),
+    ...(profile.obs !== undefined && { ob: profile.obs }),
+    bh: profile.bore_hole.map(({ from: f, to: t, diameter: d, drilling_method: dm }) => ({
+      f, t, d, ...(dm !== undefined && { dm }),
+    })),
+    wc: profile.well_case.map(({ from: f, to: t, type: ty, diameter: d }) => ({ f, t, ty, d })),
+    rd: profile.reduction.map(({ from: f, to: t, diam_from: df, diam_to: d2, type: ty }) => ({
+      f, t, df, d2, ty,
+    })),
+    ws: profile.well_screen.map(({ from: f, to: t, type: ty, diameter: d, screen_slot_mm: sl }) => ({
+      f, t, ty, d, sl,
+    })),
+    sc: profile.surface_case.map(({ from: f, to: t, diameter: d }) => ({ f, t, d })),
+    hf: profile.hole_fill.map(({ from: f, to: t, type: ty, diameter: d, description: ds }) => ({
+      f, t, ty, d, ds,
+    })),
+    ...(profile.cement_pad && { cp: {
+      ty: profile.cement_pad.type,
+      w: profile.cement_pad.width,
+      th: profile.cement_pad.thickness,
+      l: profile.cement_pad.length,
+    }}),
+    li: profile.lithology.map(({ from: f, to: t, description: ds, color: cl, fgdc_texture: tx, geologic_unit: gu, aquifer_unit: au }) => ({
+      f, t, ds, cl, tx, gu, au,
+    })),
+    fr: profile.fractures.map(({ depth: dp, water_intake: wi, description: ds, swarm: sw, azimuth: az, dip: di }) => ({
+      dp, wi, ds, sw, az, di,
+    })),
+    cv: profile.caves.map(({ from: f, to: t, water_intake: wi, description: ds }) => ({ f, t, wi, ds })),
+  };
+
+  return JSON.stringify(compact);
+}
+
+function decodeWell(raw: any): Profile {
+  return {
+    ...getEmptyProfile(),
+    ...(raw.n !== undefined && { name: raw.n }),
+    ...(raw.dr !== undefined && { well_driller: raw.dr }),
+    ...(raw.cd !== undefined && { construction_date: raw.cd }),
+    ...(raw.lt !== undefined && { lat: raw.lt }),
+    ...(raw.lg !== undefined && { lng: raw.lg }),
+    ...(raw.el !== undefined && { elevation: raw.el }),
+    ...(raw.ob !== undefined && { obs: raw.ob }),
+    bore_hole: (raw.bh ?? []).map(({ f, t, d, dm }: any) => ({
+      from: f, to: t, diameter: d, ...(dm !== undefined && { drilling_method: dm }),
+    })),
+    well_case: (raw.wc ?? []).map(({ f, t, ty, d }: any) => ({ from: f, to: t, type: ty, diameter: d })),
+    reduction: (raw.rd ?? []).map(({ f, t, df, d2, ty }: any) => ({
+      from: f, to: t, diam_from: df, diam_to: d2, type: ty,
+    })),
+    well_screen: (raw.ws ?? []).map(({ f, t, ty, d, sl }: any) => ({
+      from: f, to: t, type: ty, diameter: d, screen_slot_mm: sl,
+    })),
+    surface_case: (raw.sc ?? []).map(({ f, t, d }: any) => ({ from: f, to: t, diameter: d })),
+    hole_fill: (raw.hf ?? []).map(({ f, t, ty, d, ds }: any) => ({
+      from: f, to: t, type: ty, diameter: d, description: ds,
+    })),
+    ...(raw.cp && { cement_pad: { type: raw.cp.ty, width: raw.cp.w, thickness: raw.cp.th, length: raw.cp.l } }),
+    lithology: (raw.li ?? []).map(({ f, t, ds, cl, tx, gu, au }: any) => ({
+      from: f, to: t, description: ds, color: cl, fgdc_texture: tx, geologic_unit: gu, aquifer_unit: au,
+    })),
+    fractures: (raw.fr ?? []).map(({ dp, wi, ds, sw, az, di }: any) => ({
+      depth: dp, water_intake: wi, description: ds, swarm: sw, azimuth: az, dip: di,
+    })),
+    caves: (raw.cv ?? []).map(({ f, t, wi, ds }: any) => ({ from: f, to: t, water_intake: wi, description: ds })),
+  };
+}
+
 /**
- * Convertion Section
+ * Profile conversion — backwards-compatibility with legacy JSON formats
  */
-const INCHES_TO_MM_CONVERSION_RATIO = 25.4;
-const OLD_DIAM_PROP_NAME = 'diam_pol';
+const INCHES_TO_MM = 25.4;
 
-function convertBoleHole(importedProfile: any): any {
-  if (!importedProfile.constructive) return importedProfile;
+function inchesToMM(items: any[]): any[] {
+  if (!items?.length) return items ?? [];
+  if (!items.some(item => item.diam_pol !== undefined)) return items;
 
-  const profile = { ...importedProfile };
-
-  if (importedProfile.constructive.bole_hole) {
-    profile.constructive = {
-      ...profile.constructive,
-      bore_hole: [...profile.constructive.bole_hole],
-    };
-
-    delete profile.constructive.bole_hole;
-  }
-
-  return profile;
+  return items.map(({ diam_pol, ...rest }) => ({
+    ...rest,
+    diameter: diam_pol * INCHES_TO_MM,
+  }));
 }
 
-function checkIfDiameterIsImperial(importedProfile: any): any {
-  const profile = { ...importedProfile };
-
-  if (!profile.constructive) return false;
-
-  const diamPolValues = getConstructivePropertySummary<number>(
-    profile.constructive,
-    OLD_DIAM_PROP_NAME,
-  );
-
-  const isOnImperial = diamPolValues.filter(i => i !== undefined).length > 0;
-
-  return isOnImperial;
+function normalizeLithology(items: any[]): Lithology[] {
+  return items.map(item => ({ aquifer_unit: '', ...item }));
 }
 
-function replaceImperialDiamenter<T>(data: any[]): T[] {
-  if (!data) return [];
-
-  return data.map((d: any) => {
-    const item = { ...d };
-    const diamMM = d.diam_pol * INCHES_TO_MM_CONVERSION_RATIO;
-
-    delete item.diam_pol;
-
-    return {
-      ...item,
-      diameter: diamMM,
-    };
-  });
-}
-
-function convertImperialDiameters(importedProfile: any): any {
-  const isOnImperial = checkIfDiameterIsImperial(importedProfile);
-  if (!isOnImperial) return importedProfile;
-
-  const profile = { ...importedProfile };
-
-  profile.constructive.bore_hole = replaceImperialDiamenter<BoreHole>(
-    profile.constructive.bore_hole,
-  );
-  profile.constructive.hole_fill = replaceImperialDiamenter<HoleFill>(
-    profile.constructive.hole_fill,
-  );
-  profile.constructive.surface_case = replaceImperialDiamenter<SurfaceCase>(
-    profile.constructive.surface_case,
-  );
-  profile.constructive.well_screen = replaceImperialDiamenter<WellScreen>(
-    profile.constructive.well_screen,
-  );
-  profile.constructive.well_case = replaceImperialDiamenter<WellCase>(
-    profile.constructive.well_case,
-  );
-
-  return profile;
-}
-
-function convertConstructiveData(importedProfile: any) {
-  if (importedProfile.surface_case?.[0].diam_pol) {
-    importedProfile.surface_case = replaceImperialDiamenter<SurfaceCase>(
-      importedProfile.surface_case,
-    );
-  }
-
-  if (!importedProfile.constructive) {
-    return importedProfile;
-  }
-
-  let transformedProfile = { ...importedProfile };
-  transformedProfile = convertBoleHole(transformedProfile);
-  transformedProfile = convertImperialDiameters(transformedProfile);
-
-  const constructive: Constructive = {
-    ...transformedProfile.constructive,
-  };
+function normalizeConstructive(src: any): Partial<Constructive> {
+  // Handle "bole_hole" typo present in some old exports
+  const boreHoleData = src.bole_hole ?? src.bore_hole ?? [];
 
   return {
-    ...transformedProfile,
-    ...constructive,
+    bore_hole: inchesToMM(boreHoleData),
+    hole_fill: inchesToMM(src.hole_fill ?? []),
+    surface_case: inchesToMM(src.surface_case ?? []),
+    well_case: inchesToMM(src.well_case ?? []),
+    well_screen: inchesToMM(src.well_screen ?? []),
+    reduction: src.reduction ?? [],
+    ...(src.cement_pad && { cement_pad: src.cement_pad }),
   };
 }
 
-function convertGeologicData(importedProfile: any) {
-  if (!importedProfile.geologic || !importedProfile.geologic[0]) {
-    return importedProfile;
-  }
-
-  const geologic: Geologic = {
-    lithology: [...importedProfile.geologic],
-    fractures: [],
-    caves: [],
-  };
+function normalizeGeologic(raw: any): Geologic {
+  // Old format stores lithology as `geologic[]`; new format uses `lithology[]`
+  const lithologySource: any[] = raw.lithology ?? raw.geologic ?? [];
 
   return {
-    ...importedProfile,
-    ...geologic,
-  };
-}
-
-function clearOldProperties(importedProfile: any) {
-  if (importedProfile.geologic) {
-    delete importedProfile.geologic;
-  }
-
-  if (importedProfile.constructive) {
-    delete importedProfile.constructive;
-  }
-
-  if (importedProfile.info) {
-    delete importedProfile.info;
-  }
-
-  if (importedProfile.units) {
-    delete importedProfile.units;
-  }
-
-  return {
-    ...importedProfile,
+    lithology: normalizeLithology(lithologySource),
+    fractures: raw.fractures ?? [],
+    caves: raw.caves ?? [],
   };
 }
 
 export function convertProfileFromJSON(jsonString: string): Profile | null {
+  let raw: any;
   try {
-    let importedProfile = JSON.parse(jsonString);
-
-    const noProfile = checkIfProfileIsEmpty(importedProfile);
-    if (noProfile) {
-      return null;
-    }
-
-    importedProfile = convertConstructiveData(importedProfile);
-    importedProfile = convertGeologicData(importedProfile);
-    importedProfile = clearOldProperties(importedProfile);
-
-    const profile = {
-      ...getEmptyProfile(),
-      ...(JSON.parse(JSON.stringify(importedProfile)) as Profile),
-    };
-
-    return profile;
-  } catch (e) {
+    raw = JSON.parse(jsonString);
+  } catch {
     throw new Error('Invalid profile format');
   }
+
+  // .well compact format — detected by presence of version field `v`
+  if (raw && typeof raw.v === 'number') {
+    if (raw.v !== 1) throw new Error(`Unsupported .well format version: ${raw.v}`);
+    return decodeWell(raw);
+  }
+
+  if (checkIfProfileIsEmpty(raw)) return null;
+
+  // Old format wraps constructive fields inside a `constructive` object;
+  // new format has them at the top level.
+  const constructiveSource = raw.constructive ?? raw;
+
+  const {
+    // Strip legacy wrapper keys and metadata-only fields
+    constructive: _c,
+    geologic: _g,
+    info: _i,
+    units: _u,
+    // Carry forward recognised top-level fields
+    name,
+    well_driller,
+    construction_date,
+    lat,
+    lng,
+    elevation,
+    obs,
+  } = raw;
+
+  const topLevelFields = {
+    ...(name !== undefined && { name }),
+    ...(well_driller !== undefined && { well_driller }),
+    ...(construction_date !== undefined && { construction_date }),
+    ...(lat !== undefined && { lat }),
+    ...(lng !== undefined && { lng }),
+    ...(elevation !== undefined && { elevation }),
+    ...(obs !== undefined && { obs }),
+  };
+
+  return {
+    ...getEmptyProfile(),
+    ...topLevelFields,
+    ...normalizeConstructive(constructiveSource),
+    ...normalizeGeologic(raw),
+  };
 }

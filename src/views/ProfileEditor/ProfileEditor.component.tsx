@@ -9,9 +9,14 @@ import {
   Tooltip,
   Divider,
   Tabs,
+  Popover,
+  SegmentedControl,
+  Text,
+  Stack,
 } from '@mantine/core';
 
-import Joyride from 'react-joyride';
+// import Joyride from 'react-joyride';
+const Joyride = dynamic(() => import('react-joyride'), { ssr: false });
 
 import { format } from 'date-fns';
 
@@ -19,18 +24,22 @@ import {
   ArrowUpTrayIcon,
   ArrowDownTrayIcon,
   DocumentTextIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/solid';
 
 import download from 'downloadjs';
+import { profileToWell } from '@/src/utils/profile.utils';
 
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
-import Info from '@/src/components/organisms/Info/Info.component';
+import Info from '@/src/components/organisms/Summary/Summary.component';
 import PDFExport from '@/src/views/PDFExport/pdfExport.component';
 
 import TabConstructive from '@/src/views/ProfileEditor/ProfileEditor.constructive';
 import TabGeologic from '@/src/views/ProfileEditor/ProfileEditor.geologic';
+import TabGeneral from '@/src/views/ProfileEditor/ProfileEditor.general';
 
 import { useProfileStore } from '@/src/store/profile/profile.store';
+import { useUIStore } from '@/src/store/ui.store';
 
 import DeleteWell from '@/public/assets/icons/delete_well_icon.svg';
 import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
@@ -38,8 +47,9 @@ import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
 import { getWindow } from '@/src/utils/window.utils';
 
 import styles from './profileEditor.module.scss';
-import { EMPTY_PROFILE } from '@/src/data/profile/profile.data';
+import { EMPTY_PROFILE, PROFILE_EXAMPLE } from '@/src/data/profile/profile.data';
 import { Profile } from '@/src/types/profile.types';
+import dynamic from 'next/dynamic';
 
 function ProfileEditor() {
   const inputFile = useRef(null);
@@ -49,6 +59,8 @@ function ProfileEditor() {
     useProfileStore(state => ({
       ...state,
     }));
+
+  const { diameter_units, length_units, setDiameterUnits, setLengthUnits } = useUIStore();
 
   const [openExport, setOpenExport] = useState(false);
 
@@ -166,27 +178,113 @@ function ProfileEditor() {
       </div>
       <div className="h-full flex flex-col">
         <div className="flex flex-col-reverse lg:flex-row lg:justify-between lg:max-h-15">
-          <input
-            className="bg-transparent rounded-lg p-2 text-4xl border-none m-1 font-semibold text-gray-500"
-            autoComplete="off"
-            value={profile.name || ''}
-            placeholder="Nome do Poço"
-            onChange={event => {
-              // eslint-disable-next-line implicit-arrow-linebreak
-              updateProfile({
-                ...profile,
-                name: event.target.value,
-              });
-            }}
-          />
+          
+        </div>
+        <div className="h-full overflow-x-auto">
+          <div className="flex relative h-full flex-row w-auto md:overflow-hidden">
+            <div className={`${styles.perfilContainer}`} id="profileContainer">
+              <ProfileDrawer profile={profile} />
+            </div>
+            <div className="w-full h-full bg-white rounded-lg relative md:w-2/3">
+              <div className="h-auto py-2 ml-2 flex flex-row justify-start items-center space-x-3 overflow-x-auto lg:overflow-x-hidden">
+              <Popover width={240} position="bottom-end" withArrow shadow="md">
+                <Popover.Target>
+                  <Tooltip label="Preferências de Exibição">
+                    <IconButton variant="light" size="lg" aria-label="Preferências">
+                      <Cog6ToothIcon className="h-4 w-4" />
+                    </IconButton>
+                  </Tooltip>
+                </Popover.Target>
+                <Popover.Dropdown>
+                  <Stack gap="sm">
+                    <div>
+                      <Text size="xs" fw={600} mb={4} c="dimmed">UNIDADE DE DIÂMETRO</Text>
+                      <SegmentedControl
+                        fullWidth
+                        size="xs"
+                        value={diameter_units}
+                        onChange={v => setDiameterUnits(v as 'mm' | 'inches')}
+                        data={[
+                          { label: 'mm', value: 'mm' },
+                          { label: 'polegadas', value: 'inches' },
+                        ]}
+                      />
+                    </div>
+                    <div>
+                      <Text size="xs" fw={600} mb={4} c="dimmed">UNIDADE DE COMPRIMENTO</Text>
+                      <SegmentedControl
+                        fullWidth
+                        size="xs"
+                        value={length_units}
+                        onChange={v => setLengthUnits(v as 'm' | 'ft')}
+                        data={[
+                          { label: 'm', value: 'm' },
+                          { label: 'ft', value: 'ft' },
+                        ]}
+                      />
+                    </div>
+                    <p className='text-xs text-gray-400'>O formato do arquivo permanecerá armazenado em medidas internacionais. Essas configurações alteram apenas a visualização dos valores.</p>
+                  </Stack>
+                </Popover.Dropdown>
+              </Popover>
+              <Divider orientation="vertical" />
+              <Tooltip label="Perfil Exemplo">
+                <IconButton
+                  variant="light"
+                  size="lg"
+                  aria-label="Settings"
+                  id="btn-example"
+                  onClick={() => {
+                    // @ts-ignore
+                    if (getWindow()?.gtag) {
+                      // @ts-ignore
+                      getWindow()?.gtag(
+                        'event',
+                        'button clicked',
+                        'User Interaction',
+                        'profile example',
+                      );
+                    }
 
-          <div className="h-auto py-2 flex flex-row justify-start items-center space-x-3 overflow-x-auto lg:overflow-x-hidden lg:justify-end">
-            <Tooltip label="Perfil Exemplo">
-              <IconButton
+                    // SET EXAMPLE PROFILE
+                    updateProfile({
+                      ...PROFILE_EXAMPLE,
+                    });
+                  }}
+                >
+                  <ExampleWell className="h-4 w-4" />
+                </IconButton>
+              </Tooltip>
+              <Divider orientation="vertical" />
+              <Button
                 variant="light"
-                size="lg"
-                aria-label="Settings"
-                id="btn-example"
+                onClick={clear}
+                leftSection={<DeleteWell className="h-4 w-4" />}
+              >
+                Limpar Perfil
+              </Button>
+              <Button
+                onClick={() => {
+                  // call pdf function
+                  // pdfGenerate()
+                  // @ts-ignore
+                  if (getWindow()?.gtag) {
+                    // @ts-ignore
+                    getWindow()?.gtag(
+                      'event',
+                      'button clicked',
+                      'User Interaction',
+                      'export pdf button',
+                    );
+                  }
+                  setOpenExport(true);
+                }}
+                leftSection={<DocumentTextIcon className="h-4 w-4" />}
+              >
+                Exportar PDF
+              </Button>
+
+              <Button
                 onClick={() => {
                   // @ts-ignore
                   if (getWindow()?.gtag) {
@@ -195,105 +293,37 @@ function ProfileEditor() {
                       'event',
                       'button clicked',
                       'User Interaction',
-                      'profile example',
+                      'download profile',
                     );
                   }
-
-                  // SET EXAMPLE PROFILE
-                  updateProfile({
-                    ...EMPTY_PROFILE,
-                  });
+                  const wellData = profileToWell({ ...profile });
+                  const blob = new Blob([wellData], { type: 'application/vnd.well+json' });
+                  const safeName = (profile.name || '').replace(/ /g, '_').toLowerCase();
+                  download(
+                    blob,
+                    `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`,
+                    'application/vnd.well+json',
+                  );
                 }}
+                leftSection={<ArrowDownTrayIcon className="h-4 w-4" />}
               >
-                <ExampleWell className="h-4 w-4" />
-              </IconButton>
-            </Tooltip>
-            <Divider orientation="vertical" />
-            <Button
-              variant="light"
-              onClick={clear}
-              leftSection={<DeleteWell className="h-4 w-4" />}
-            >
-              Limpar Perfil
-            </Button>
-            <Button
-              onClick={() => {
-                // call pdf function
-                // pdfGenerate()
-                // @ts-ignore
-                if (getWindow()?.gtag) {
-                  // @ts-ignore
-                  getWindow()?.gtag(
-                    'event',
-                    'button clicked',
-                    'User Interaction',
-                    'export pdf button',
-                  );
-                }
-                setOpenExport(true);
-              }}
-              leftSection={<DocumentTextIcon className="h-4 w-4" />}
-            >
-              Exportar PDF
-            </Button>
+                Exportar Dados
+              </Button>
+              <Button
+                onClick={handleClickFile}
+                leftSection={<ArrowUpTrayIcon className="h-4 w-4" />}
+              >
+                Importar Dados
+              </Button>
 
-            <Button
-              onClick={() => {
-                // @ts-ignore
-                if (getWindow()?.gtag) {
-                  // @ts-ignore
-                  getWindow()?.gtag(
-                    'event',
-                    'button clicked',
-                    'User Interaction',
-                    'download profile',
-                  );
-                }
-                const profileToSave = { ...profile };
-
-                const perfilJSON = JSON.stringify(profileToSave);
-
-                const blob = new Blob([perfilJSON], {
-                  type: 'application/json',
-                });
-
-                download(
-                  blob,
-                  `perfil_${(profile.name || '')
-                    .replace(/ /g, '_')
-                    .toLowerCase()}_${format(
-                    new Date(),
-                    'dd_MM_yyyy__hh_mm',
-                  )}.json`,
-                  'application/json',
-                );
-              }}
-              leftSection={<ArrowDownTrayIcon className="h-4 w-4" />}
-            >
-              Exportar Dados
-            </Button>
-            <Button
-              onClick={handleClickFile}
-              leftSection={<ArrowUpTrayIcon className="h-4 w-4" />}
-            >
-              Importar Dados
-            </Button>
-
-            <input
-              type="file"
-              ref={inputFile}
-              onChange={handleChangeInputFile}
-              accept="application/json"
-              style={{ display: 'none' }}
-            />
-          </div>
-        </div>
-        <div className="h-full overflow-x-auto">
-          <div className="flex relative h-full flex-row w-auto md:overflow-hidden">
-            <div className={`${styles.perfilContainer}`} id="profileContainer">
-              <ProfileDrawer profile={profile} />
+              <input
+                type="file"
+                ref={inputFile}
+                onChange={handleChangeInputFile}
+                accept="application/json,.json,.well"
+                style={{ display: 'none' }}
+              />
             </div>
-            <div className="w-full h-full bg-white rounded-lg relative md:w-2/3">
               <Tabs
                 className="h-full"
                 defaultValue="constructive"
@@ -302,10 +332,17 @@ function ProfileEditor() {
                 aria-label="basic tabs example"
               >
                 <Tabs.List className="pt-2 pb-0 pl-2 pr-2">
+                  <Tabs.Tab value="general">Geral</Tabs.Tab>
                   <Tabs.Tab value="constructive">Construtivo</Tabs.Tab>
                   <Tabs.Tab value="geology">Geológico</Tabs.Tab>
-                  <Tabs.Tab value="info">Info</Tabs.Tab>
+                  <Tabs.Tab value="summary">Sumário</Tabs.Tab>
                 </Tabs.List>
+                <Tabs.Panel
+                  value="general"
+                  className="h-[calc(100%-50px)] overflow-y-auto"
+                >
+                  <TabGeneral />
+                </Tabs.Panel>
                 <Tabs.Panel
                   value="constructive"
                   className="h-[calc(100%-50px)] overflow-y-auto"
@@ -319,7 +356,7 @@ function ProfileEditor() {
                   <TabGeologic />
                 </Tabs.Panel>
                 <Tabs.Panel
-                  value="info"
+                  value="summary"
                   className="h-[calc(100%-50px)] overflow-y-auto"
                 >
                   <Info profile={profile} />

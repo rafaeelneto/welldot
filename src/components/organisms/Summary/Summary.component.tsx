@@ -8,7 +8,9 @@ import {
   calculateHoleFillVolume,
 } from '@/src/utils/profile.utils';
 
-import styles from './info.module.scss';
+import { useUIStore } from '@/src/store/ui.store';
+
+import styles from './Summary.module.scss';
 
 type InfoProps = {
   profile: Profile;
@@ -28,6 +30,20 @@ type TableType = {
 };
 
 function Info({ profile }: InfoProps) {
+  const { diameter_units, length_units } = useUIStore();
+
+  const fmtDiam = (mm: number) =>
+    diameter_units === 'inches'
+      ? `${numberFormater.format(parseFloat((mm / 25.4).toFixed(3)))} pol`
+      : `${numberFormater.format(mm)} mm`;
+
+  const fmtLen = (m: number) =>
+    length_units === 'ft'
+      ? numberFormater.format(parseFloat((m * 3.28084).toFixed(3)))
+      : numberFormater.format(m);
+
+  const lenLabel = length_units === 'ft' ? 'ft' : 'm';
+
   const tables: TableType[] = [];
 
   if (profile.bore_hole.length > 0) {
@@ -36,8 +52,8 @@ function Info({ profile }: InfoProps) {
       title: 'Furo',
       header: [
         { text: 'Diamêtro' },
-        { text: 'De (m)', align: 'right' },
-        { text: 'Até (m)', align: 'right' },
+        { text: `De (${lenLabel})`, align: 'right' },
+        { text: `Até (${lenLabel})`, align: 'right' },
       ],
     };
 
@@ -47,9 +63,9 @@ function Info({ profile }: InfoProps) {
       const item = profile.bore_hole[i];
 
       rows.push([
-        { text: `${numberFormater.format(item.diameter)} mm` },
-        { text: `${numberFormater.format(item.from)}`, align: 'right' },
-        { text: `${numberFormater.format(item.to)}`, align: 'right' },
+        { text: fmtDiam(item.diameter) },
+        { text: fmtLen(item.from), align: 'right' },
+        { text: fmtLen(item.to), align: 'right' },
       ]);
     }
 
@@ -64,8 +80,8 @@ function Info({ profile }: InfoProps) {
       title: 'Tubo de Boca',
       header: [
         { text: 'Diamêtro' },
-        { text: 'De (m)', align: 'right' },
-        { text: 'Até (m)', align: 'right' },
+        { text: `De (${lenLabel})`, align: 'right' },
+        { text: `Até (${lenLabel})`, align: 'right' },
       ],
     };
 
@@ -75,9 +91,9 @@ function Info({ profile }: InfoProps) {
       const item = profile.surface_case[i];
 
       rows.push([
-        { text: `${numberFormater.format(item.diameter)} mm` },
-        { text: `${numberFormater.format(item.from)}`, align: 'right' },
-        { text: `${numberFormater.format(item.to)}`, align: 'right' },
+        { text: fmtDiam(item.diameter) },
+        { text: fmtLen(item.from), align: 'right' },
+        { text: fmtLen(item.to), align: 'right' },
       ]);
     }
 
@@ -89,12 +105,12 @@ function Info({ profile }: InfoProps) {
   if (profile.hole_fill.length > 0) {
     // @ts-ignore
     const table: TableType = {
-      title: 'Espaço Anelar',
+      title: 'Espaço Anular',
       header: [
         { text: 'Descrição' },
         { text: 'Diamêtro', align: 'right' },
-        { text: 'De (m)', align: 'right' },
-        { text: 'Até (m)', align: 'right' },
+        { text: `De (${lenLabel})`, align: 'right' },
+        { text: `Até (${lenLabel})`, align: 'right' },
       ],
     };
 
@@ -108,11 +124,11 @@ function Info({ profile }: InfoProps) {
           text: `${item.description ? item.description : item.type}`,
         },
         {
-          text: `${numberFormater.format(item.diameter)} mm`,
+          text: fmtDiam(item.diameter),
           align: 'right',
         },
-        { text: `${numberFormater.format(item.from)}`, align: 'right' },
-        { text: `${numberFormater.format(item.to)}`, align: 'right' },
+        { text: fmtLen(item.from), align: 'right' },
+        { text: fmtLen(item.to), align: 'right' },
       ]);
 
       if (
@@ -122,9 +138,12 @@ function Info({ profile }: InfoProps) {
         rows.push([
           { text: `Volume total`, classStyle: styles.sumCell, colSpan: 3 },
           {
-            text: `${numberFormater.format(
-              calculateHoleFillVolume(item.type, profile),
-            )} m³`,
+            text: (() => {
+              const volM3 = calculateHoleFillVolume(item.type, profile);
+              return length_units === 'ft'
+                ? `${numberFormater.format(parseFloat((volM3 * 35.3147).toFixed(3)))} ft³`
+                : `${numberFormater.format(volM3)} m³`;
+            })(),
             classStyle: styles.sumCell,
             align: 'right',
           },
@@ -144,8 +163,8 @@ function Info({ profile }: InfoProps) {
       header: [
         { text: 'Tipo' },
         { text: 'Diamêtro', align: 'right' },
-        { text: 'De (m)', align: 'right' },
-        { text: 'Até (m)', align: 'right' },
+        { text: `De (${lenLabel})`, align: 'right' },
+        { text: `Até (${lenLabel})`, align: 'right' },
       ],
     };
 
@@ -159,11 +178,11 @@ function Info({ profile }: InfoProps) {
           text: `${item.type}`,
         },
         {
-          text: `${numberFormater.format(item.diameter)} mm`,
+          text: fmtDiam(item.diameter),
           align: 'right',
         },
-        { text: `${numberFormater.format(item.from)}`, align: 'right' },
-        { text: `${numberFormater.format(item.to)}`, align: 'right' },
+        { text: fmtLen(item.from), align: 'right' },
+        { text: fmtLen(item.to), align: 'right' },
       ]);
 
       if (
@@ -182,7 +201,7 @@ function Info({ profile }: InfoProps) {
         rows.push([
           { text: `Total`, classStyle: styles.sumCell, colSpan: 3 },
           {
-            text: `${numberFormater.format(totalHeight)} m`,
+            text: `${fmtLen(totalHeight)} ${lenLabel}`,
             classStyle: styles.sumCell,
             align: 'right',
           },
@@ -203,8 +222,8 @@ function Info({ profile }: InfoProps) {
         { text: 'Tipo' },
         { text: 'Diamêtro', align: 'right' },
         { text: 'Ranhura (mm)', align: 'right' },
-        { text: 'De (m)', align: 'right' },
-        { text: 'Até (m)', align: 'right' },
+        { text: `De (${lenLabel})`, align: 'right' },
+        { text: `Até (${lenLabel})`, align: 'right' },
       ],
     };
 
@@ -218,15 +237,15 @@ function Info({ profile }: InfoProps) {
           text: `${item.type}`,
         },
         {
-          text: `${numberFormater.format(item.diameter)} mm`,
+          text: fmtDiam(item.diameter),
           align: 'right',
         },
         {
           text: `${numberFormater.format(item.screen_slot_mm)}`,
           align: 'right',
         },
-        { text: `${numberFormater.format(item.from)}`, align: 'right' },
-        { text: `${numberFormater.format(item.to)}`, align: 'right' },
+        { text: fmtLen(item.from), align: 'right' },
+        { text: fmtLen(item.to), align: 'right' },
       ]);
 
       if (
@@ -245,7 +264,7 @@ function Info({ profile }: InfoProps) {
         rows.push([
           { text: `Total`, classStyle: styles.sumCell, colSpan: 4 },
           {
-            text: `${numberFormater.format(totalHeight)} m`,
+            text: `${fmtLen(totalHeight)} ${lenLabel}`,
             classStyle: styles.sumCell,
             align: 'right',
           },
