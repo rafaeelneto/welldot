@@ -76,6 +76,7 @@ export type Cave = {
 };
 
 export type Profile = {
+  well_type?: string;
   name?: string;
   well_driller?: string;
   construction_date?: string;
