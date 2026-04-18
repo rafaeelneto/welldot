@@ -60,7 +60,7 @@ function ProfileEditor() {
       ...state,
     }));
 
-  const { diameter_units, length_units, setDiameterUnits, setLengthUnits } = useUIStore();
+  const { diameter_units, length_units, setDiameterUnits, setLengthUnits, coord_format, setCoordFormat } = useUIStore();
 
   const [openExport, setOpenExport] = useState(false);
 
@@ -89,9 +89,11 @@ function ProfileEditor() {
     const fileUploaded = event.target?.files?.[0];
     const reader = new FileReader();
     reader.onload = (e: ProgressEvent<FileReader>) => {
+      console.log('File loaded:', e.target?.result);
       if (!e) return;
 
       updateProfileFromJSON(e.target?.result as string);
+
     };
 
     try {
@@ -220,6 +222,19 @@ function ProfileEditor() {
                         data={[
                           { label: 'm', value: 'm' },
                           { label: 'ft', value: 'ft' },
+                        ]}
+                      />
+                    </div>
+                    <div>
+                      <Text size="xs" fw={600} mb={4} c="dimmed">COORDENADAS</Text>
+                      <SegmentedControl
+                        fullWidth
+                        size="xs"
+                        value={coord_format}
+                        onChange={v => setCoordFormat(v as 'dd' | 'dms')}
+                        data={[
+                          { label: 'DD', value: 'dd' },
+                          { label: 'DMS', value: 'dms' },
                         ]}
                       />
                     </div>

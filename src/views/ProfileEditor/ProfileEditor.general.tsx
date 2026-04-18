@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-import { NumberInput, TextInput, Textarea } from '@mantine/core';
+import { NumberInput, TextInput, Textarea, SegmentedControl, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 
 import { useProfileStore } from '@/src/store/profile/profile.store';
@@ -8,28 +8,61 @@ import { useProfileStore } from '@/src/store/profile/profile.store';
 import { EMPTY_PROFILE } from '@/src/data/profile/profile.data';
 
 import { useUIStore } from '@/src/store/ui.store';
+import { formatCoord, parseToDd } from '@/src/utils/coords.utils';
 
 import styles from './profileEditor.module.scss';
 
-export default function ProfileEditorGeneral() {
-  const { profile, updateProfile, updateCementPad } = useProfileStore(state => ({
-    ...state,
-  }));
+function CoordInput({
+  label,
+  dd,
+  isLat,
+  onChange,
+}: {
+  label: string;
+  dd: number | undefined;
+  isLat: boolean;
+  onChange: (dd: number) => void;
+}) {
+  const { coord_format, setCoordFormat } = useUIStore();
+  const [raw, setRaw] = useState('');
 
-  const { length_units } = useUIStore(state => ({ ...state }));
+  useEffect(() => {
+    if (dd != null && !isNaN(dd)) {
+      setRaw(formatCoord(dd, coord_format, isLat));
+    }
+  }, [coord_format, dd]);
+
+  const commit = () => {
+    const parsed = parseToDd(raw);
+    if (!isNaN(parsed)) {
+      onChange(parsed);
+      setRaw(formatCoord(parsed, coord_format, isLat));
+    } else if (dd != null && !isNaN(dd)) {
+      setRaw(formatCoord(dd, coord_format, isLat));
+    }
+  };
+
+  return (
+    <TextInput
+      className={styles.layerInput}
+      label={label}
+      value={raw}
+      onChange={e => setRaw(e.currentTarget.value)}
+      onBlur={commit}
+      placeholder={coord_format === 'dms' ? `ex: 23°30'45.12"S` : 'ex: -23.512533'}
+    />
+  );
+}
+
+export default function ProfileEditorGeneral() {
+  const { profile, updateProfile } = useProfileStore(state => ({ ...state }));
+  const { length_units, coord_format, setCoordFormat } = useUIStore();
 
   const toLen = (m: number) =>
     length_units === 'ft' ? parseFloat((m * 3.28084).toFixed(3)) : m;
   const fromLen = (v: number) =>
     length_units === 'ft' ? parseFloat((v / 3.28084).toFixed(4)) : v;
   const lenLabel = length_units === 'ft' ? 'ft' : 'm';
-
-  const checkCementPad = () => {
-    if (profile.cement_pad && profile.cement_pad.thickness) {
-      return true;
-    }
-    return false;
-  };
 
   const updateField = (field: string, value: string | number) => {
     updateProfile({ ...profile, [field]: value });
@@ -62,21 +95,32 @@ export default function ProfileEditorGeneral() {
           onChange={date => updateField('construction_date', date ? date.toISOString() : '')}
         />
 
+        <div className="flex flex-row items-center gap-2">
+          <Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>Coordenadas</Text>
+          <SegmentedControl
+            size="xs"
+            value={coord_format}
+            onChange={v => setCoordFormat(v as 'dd' | 'dms')}
+            data={[
+              { label: 'DD', value: 'dd' },
+              { label: 'DMS', value: 'dms' },
+            ]}
+          />
+        </div>
+
         <div className={styles.layerRow}>
-          <NumberInput
-            className={styles.layerInput}
+          <CoordInput
             label="Latitude"
-            decimalScale={6}
-            value={profile.lat ?? ''}
-            onChange={value => updateField('lat', value as number)}
+            dd={profile.lat}
+            isLat={true}
+            onChange={v => updateField('lat', v)}
           />
 
-          <NumberInput
-            className={styles.layerInput}
+          <CoordInput
             label="Longitude"
-            decimalScale={6}
-            value={profile.lng ?? ''}
-            onChange={value => updateField('lng', value as number)}
+            dd={profile.lng}
+            isLat={false}
+            onChange={v => updateField('lng', v)}
           />
 
           <NumberInput

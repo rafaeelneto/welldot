@@ -152,7 +152,7 @@ export default function ProfileEditorConstructive() {
           />
         </div>
         <div className="flex flex-col p-2.5">
-          <span className={styles.componentTitle}>Espaço Anelar:</span>
+          <span className={styles.componentTitle}>Espaço Anular:</span>
           <DataSheet
             key={key}
             data={profile.hole_fill}

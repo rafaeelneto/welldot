@@ -11,7 +11,10 @@ import {
   calculateHoleFillVolume,
   numberFormater,
 } from '../../utils/profile.utils';
-import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
+import { DiameterUnits, LengthUnits, CoordFormat, useUIStore } from '@/src/store/ui.store';
+import { formatCoord } from '@/src/utils/coords.utils';
+import { width } from 'pdfkit/js/page';
+import { buildSvgProfiles, A4_SVG_HEIGHT } from './buildSvgProfiles';
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign
@@ -55,20 +58,124 @@ pdfMake.tableLayouts = {
 
 const MARGIN = 30;
 
+function base64ToBlob(base64String, contentType = '') {
+  // Remove data URL prefix if it exists
+  const base64Data = base64String.replace(/^data:([^;]+);base64,/, '');
+
+  // Convert base64 to raw binary data
+  const binaryData = atob(base64Data);
+
+  // Create array buffer from binary data
+  const arrayBuffer = new ArrayBuffer(binaryData.length);
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  // Fill array buffer with binary data
+  for (let i = 0; i < binaryData.length; i++) {
+    uint8Array[i] = binaryData.charCodeAt(i);
+  }
+
+  // Create blob from array buffer
+  const blob = new Blob([arrayBuffer], { type: contentType });
+
+  // Create and return blob URL
+  return URL.createObjectURL(blob);
+}
+
+const buildMetaItems = (data: { label: string; value: any }[]) => (
+  data.map(item => ([
+      { width: '*', text: [
+        { text: `${item.label} \n`, style: 'metadataLabel' },
+        { text: item.value ?? '-', style: 'metadataValue' },
+      ] },
+    ]))
+);
+
+const buildMetadataRows = (arr: { label: string; value: any }[], maxColumns: number) => {
+  const rows = buildMetaItems(arr).reduce((rows, item, i) => {
+    if (i % maxColumns ===  0) {
+      rows.push([item]);
+    } else {
+      rows[rows.length - 1].push(item);
+    }
+    return rows;
+  }, [] as any[][])
+  rows.forEach(row => {
+    while (row.length < maxColumns) {
+      row.push({ width: '*', text: '' });
+    }
+  });
+  return rows
+}
+
+
+
 export const exportPdfProfile = (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
-  svgs: SvgInfo[],
   breakPages: boolean,
+  zoomLevel: number,
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
+  metadataPosition: 'before' | 'after' | null = null,
 ) => {
+  const {coord_format: coordFormat} = useUIStore.getState();
   const fmtLen = (m: number) => lengthUnits === 'ft' ? numberFormater.format(m * 3.28084) : numberFormater.format(m);
+  const fmtCoordField = (key: keyof typeof profile | string, val: unknown): string => {
+    if (key === 'lat' && typeof val === 'number') return formatCoord(val, coordFormat, true);
+    if (key === 'lng' && typeof val === 'number') return formatCoord(val, coordFormat, false);
+    return String(val ?? '');
+  };
   const fmtDiam = (mm: number) => diameterUnits === 'inches' ? numberFormater.format(mm * 0.0393701) : numberFormater.format(mm);
   const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
   const diamUnit = diameterUnits === 'inches' ? 'in' : 'mm';
+
+  const buildProfileMetadataTable = (profile: Profile) =>  {
+    const metaFields: { key: keyof Profile | string; label: string, getter?: (profile: Profile) => string }[] = [
+      { key: 'name', label: 'Nome' },
+      { key: 'well_type', label: 'Tipo' },
+      { key: 'well_driller', label: 'Perfurador' },
+      { key: 'construction_date', label: 'Data de Construção', getter: (profile) => profile.construction_date ? format(new Date(profile.construction_date), 'dd/MM/yyyy') : '' },
+      { key: 'coordinates', label: 'Coordenadas', getter: (profile) => {
+        const lat = profile.lat;
+        const lng = profile.lng;
+        if (lat !== undefined && lng !== undefined) {
+          return `${fmtCoordField('lat', lat)}, ${fmtCoordField('lng', lng)}`;
+        }
+        return '';
+      }},
+      { key: 'elevation', label: 'Elevação', getter: (profile) => profile.elevation !== undefined ? `${fmtLen(profile.elevation)} ${lenUnit}` : '' },
+      { key: 'obs', label: 'Observações' },
+    ];
+    const populated = metaFields.filter(f => {
+      const val = f.getter ? f.getter(profile) : profile[f.key];
+      return val !== undefined && val !== null && val !== '';
+    });
+    if (populated.length > 0) {
+      const metaBody: {label: string, value: string}[] = [];
+      for (let i = 0; i < populated.length; i += 2) {
+        const f1 = populated[i];
+        const f2 = populated[i + 1];
+        const v1 = f1.getter ? f1.getter(profile) : profile[f1.key];
+        if (!f2) {
+          metaBody.push({ label: f1.label, value: v1 });
+        } else {
+          const v2 = f2.getter ? f2.getter(profile) : profile[f2.key];
+          metaBody.push({ label: f1.label, value: v1 });
+          metaBody.push({ label: f2.label, value: v2 });
+        }
+      }
+      return {
+        layout: 'noBorders',
+        table: {
+          widths: ['*', '*', '*'],
+          dontBreakRows: false,
+          body: [...buildMetadataRows(metaBody, 3)],
+        },
+      }
+    }
+  }
 
   const docDefinition: any = {
     defaultStyle: {
@@ -129,6 +236,14 @@ export const exportPdfProfile = (
         bold: true,
         fontSize: 12,
       },
+      metadataLabel: {
+        fontSize: 8,
+        color: '#3d3d3d',
+      },
+      metadataValue: {
+        fontSize: 10,
+        color: '#3d3d3d',
+      }
     },
   };
 
@@ -137,44 +252,43 @@ export const exportPdfProfile = (
   content.push({ text: ' ' });
 
   if (headingInfo.length > 0) {
-    const headingInfoBody: string[][] = [];
 
-    for (let i = 0; i < headingInfo.length; i += 2) {
-      const info1 = headingInfo[i];
 
-      if (i + 1 >= headingInfo.length) {
-        headingInfoBody.push([`${info1.label}: ${info1.value}`, ``]);
-        break;
-      }
-
-      const info2 = headingInfo[i + 1];
-      headingInfoBody.push([
-        `${info1.label}: ${info1.value}`,
-        `${info2.label}: ${info2.value}`,
-      ]);
-    }
+    const maxColumns = 4;
 
     content.push({
-      layout: {
-        hLineWidth: (i: any, node: any) => {
-          if (i === node.table.body.length || i === 0) return 1;
-          return 0;
-        },
-        vLineWidth: (i: any) => {
-          return 0;
-        },
-        hLineColor: (i: any, node: any) => {
-          return '#3d3d3d';
-        },
-      },
+      layout: 'noBorders',
       table: {
-        heights: 15,
-        widths: [267.64 - 10, 267.64 - 10],
-
-        body: [...headingInfoBody],
-      },
+        widths: [ '*', '*', '*', '*' ],
+        body: [
+          ...buildMetadataRows(headingInfo.map((item, i) => ({
+            label: item.label,
+            value: item.value
+          })), maxColumns)
+        ]
+      }
     });
   }
+
+  if (metadataPosition === 'before') {
+    
+      content.push({ text: 'Dados do Poço', style: 'title' });
+      content.push(buildProfileMetadataTable(profile));
+    
+  }
+
+  const PT_TO_PX = 1.33;
+  let firstPageUsedHeight = 13 * PT_TO_PX; // spacer before SVG content
+  if (headingInfo.length > 0) {
+    firstPageUsedHeight += Math.ceil(headingInfo.length / 4) * 13 * PT_TO_PX;
+  }
+  if (metadataPosition === 'before') {
+    firstPageUsedHeight += 10 * PT_TO_PX; // 'Dados do Poço' title
+    firstPageUsedHeight += 3 * 13 * PT_TO_PX; // profile metadata table (max 3 rows × 3 cols)
+  }
+  const firstPageAvailableHeight = A4_SVG_HEIGHT - firstPageUsedHeight;
+
+  const svgs: SvgInfo[] = buildSvgProfiles({ profile, lengthUnits: lenUnit, diameterUnits: diamUnit === 'mm' ? 'mm' : 'inches', breakPages: breakPages, zoomLevel, firstPageAvailableHeight });
 
   svgs.forEach((svgInfo, key) => {
     const svg = document.getElementById(svgInfo.id);
@@ -204,43 +318,68 @@ export const exportPdfProfile = (
     content.push({ text: ' ' });
     content.push({ text: 'Informações Finais', style: 'title' });
 
-    const endingInfoBody: string[][] = [];
-
-    for (let i = 0; i < endInfo.length; i += 2) {
-      const info1 = endInfo[i];
-
-      if (i + 1 >= endInfo.length) {
-        endingInfoBody.push([`${info1.label}: ${info1.value}`, ``]);
-        break;
-      }
-
-      const info2 = endInfo[i + 1];
-      endingInfoBody.push([
-        `${info1.label}: ${info1.value}`,
-        `${info2.label}: ${info2.value}`,
-      ]);
-    }
+    const maxColumns = 4;
 
     content.push({
-      layout: {
-        hLineWidth: (i: any, node: any) => {
-          if (i === node.table.body.length || i === 0) return 1;
-          return 0;
-        },
-        vLineWidth: (i: any) => {
-          return 0;
-        },
-        hLineColor: (i: any, node: any) => {
-          return '#3d3d3d';
-        },
-      },
+      layout: 'noBorders',
       table: {
-        heights: 15,
-        widths: [267.64 - 10, 267.64 - 10],
-        dontBreakRows: true,
-        body: [...endingInfoBody],
-      },
+        widths: [ '*', '*', '*', '*' ],
+        body: [
+          ...buildMetadataRows(endInfo.map((item, i) => ({
+            label: item.label,
+            value: item.value
+          })), maxColumns)
+        ]
+      }
     });
+  }
+
+  if (metadataPosition === 'after') {
+    content.push({ text: ' ' });
+    content.push({ text: 'Dados do Poço', style: 'title' });
+    content.push(buildProfileMetadataTable(profile));
+  }
+
+  if (profile.cement_pad.thickness && profile.cement_pad.width) {
+    content.push({ text: ' ' });
+    content.push({ text: 'Laje de proteção', style: 'title' });
+
+    const cementPadBody: string[][] = [
+      [
+        `Espessura (${lenUnit})`,
+        fmtLen(profile.cement_pad.thickness),
+      ],
+      [
+        `Largura (${lenUnit})`,
+        fmtLen(profile.cement_pad.width),
+      ],
+      [
+        `Comprimento (${lenUnit})`,
+        fmtLen(profile.cement_pad.length), 
+      ],
+      [
+        `Material`,
+        profile.cement_pad.type,
+      ]
+    ];
+
+
+    content.push({
+        layout: {
+          hLineWidth: (i: any, node: any) => {
+            if (i === node.table.body.length || i === 0) return 1;
+            return 0;
+          },
+          vLineWidth: () => 0,
+          hLineColor: () => '#3d3d3d',
+        },
+        table: {
+          heights: 15,
+          widths: [267.64 - 10, 267.64 - 10],
+          dontBreakRows: true,
+          body: [...cementPadBody],
+        },
+      });
   }
 
   if (profile.bore_hole.length > 0) {
@@ -520,53 +659,63 @@ export const innerRenderPdf = (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
-  svgs: SvgInfo[],
   breakPages: boolean,
+  zoomLevel: number,
   iframeId: string,
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
+  metadataPosition: 'before' | 'after' | null = null,
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
-    svgs,
     breakPages,
+    zoomLevel,
     header,
     lengthUnits,
     diameterUnits,
+    metadataPosition,
   );
   // @ts-ignore
-  const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-  pdfDocGenerator.getDataUrl(dataUrl => {
-    if (iframeId) {
-      const iframe = document.getElementById(iframeId);
-      // @ts-ignore
-      iframe.src = dataUrl;
-    }
-  });
+  try {
+
+    const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+    pdfDocGenerator.getDataUrl(dataUrl => {
+      const blobUrl = base64ToBlob(dataUrl, 'application/pdf');
+      if (iframeId) {
+        const iframe = document.getElementById(iframeId);
+        // @ts-ignore
+        iframe.src = blobUrl;
+      }
+    });
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+  }
 };
 
 export const printPdf = (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
-  svgs: SvgInfo[],
   breakPages: boolean,
+  zoomLevel: number,
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
+  metadataPosition: 'before' | 'after' | null = null,
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
-    svgs,
     breakPages,
+    zoomLevel,
     header,
     lengthUnits,
     diameterUnits,
+    metadataPosition,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
@@ -577,21 +726,23 @@ export const downloadPdf = (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
-  svgs: SvgInfo[],
   breakPages: boolean,
+  zoomLevel: number,
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
+  metadataPosition: 'before' | 'after' | null = null,
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
-    svgs,
     breakPages,
+    zoomLevel,
     header,
     lengthUnits,
     diameterUnits,
+    metadataPosition,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
