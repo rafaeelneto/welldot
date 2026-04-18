@@ -250,6 +250,7 @@ function SortableList({
 
 function PDFExport({ profile, onChangeInfo }: PDFEProps) {
   const timeoutRef = useRef<any>();
+  const infoDebounceRef = useRef<any>();
   const IFRAME_ID = 'ÏFRAME_PDF_ID';
   const {
     length_units,
@@ -303,10 +304,13 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
   };
 
   const onChangeHeadingInfo = (newHeadingInfo: InfoItem[]) => {
-    onChangeInfo({
-      ...profile,
-      info: { headingInfo: newHeadingInfo, endInfo },
-    });
+    clearTimeout(infoDebounceRef.current);
+    infoDebounceRef.current = setTimeout(() => {
+      onChangeInfo({
+        ...profile,
+        info: { headingInfo: newHeadingInfo, endInfo },
+      });
+    }, 500);
   };
 
   const handleHeadingInfoValueChange = (newValue: InfoItem, index: number) => {
@@ -317,10 +321,13 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
   };
 
   const onChangeEndInfo = (newEndInfo: InfoItem[]) => {
-    onChangeInfo({
-      ...profile,
-      info: { headingInfo, endInfo: newEndInfo },
-    });
+    clearTimeout(infoDebounceRef.current);
+    infoDebounceRef.current = setTimeout(() => {
+      onChangeInfo({
+        ...profile,
+        info: { headingInfo, endInfo: newEndInfo },
+      });
+    }, 500);
   };
 
   const handleEndInfoValueChange = (newValue: InfoItem, index: number) => {
