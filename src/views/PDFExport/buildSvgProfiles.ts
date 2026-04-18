@@ -527,6 +527,7 @@ const POCO_WIDTH = 100;
         g.append('path')
           .attr('d', closedPath)
           .attr('fill', caveTexture.url())
+          .attr('fill-opacity', 0.6)
           .attr('stroke', 'none');
 
         g.append('path')

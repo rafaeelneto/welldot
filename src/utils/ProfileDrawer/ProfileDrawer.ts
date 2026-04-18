@@ -564,6 +564,7 @@ export class DinamicDrawer {
         g.append('path')
           .attr('d', closedPath)
           .attr('fill', caveTexture.url())
+          .attr('fill-opacity', 0.6)
           .attr('stroke', 'none');
 
         // Top contact line — rendered above the fill so it's always visible
