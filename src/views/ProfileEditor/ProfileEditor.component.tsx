@@ -21,8 +21,8 @@ const Joyride = dynamic(() => import('react-joyride'), { ssr: false });
 import { format } from 'date-fns';
 
 import {
-  ArrowUpTrayIcon,
-  ArrowDownTrayIcon,
+  ArrowDownOnSquareIcon,
+  FolderOpenIcon,
   DocumentTextIcon,
   Cog6ToothIcon,
 } from '@heroicons/react/24/solid';
@@ -189,6 +189,95 @@ function ProfileEditor() {
             </div>
             <div className="w-full h-full bg-white rounded-lg relative md:w-2/3">
               <div className="h-auto py-2 ml-2 flex flex-row justify-start items-center space-x-3 overflow-x-auto lg:overflow-x-hidden">
+              <Button
+                onClick={() => {
+                  // @ts-ignore
+                  if (getWindow()?.gtag) {
+                    // @ts-ignore
+                    getWindow()?.gtag(
+                      'event',
+                      'button clicked',
+                      'User Interaction',
+                      'download profile',
+                    );
+                  }
+                  const wellData = profileToWell({ ...profile });
+                  const blob = new Blob([wellData], { type: 'application/vnd.well+json' });
+                  const safeName = (profile.name || '').replace(/ /g, '_').toLowerCase();
+                  download(
+                    blob,
+                    `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`,
+                    'application/vnd.well+json',
+                  );
+                }}
+                leftSection={<ArrowDownOnSquareIcon className="h-4 w-4" />}
+              >
+                Salvar
+              </Button>
+              <Button
+              variant='light'
+                onClick={handleClickFile}
+                leftSection={<FolderOpenIcon className="h-4 w-4" />}
+              >
+                Abrir
+              </Button>
+              <Button
+              variant='subtle'
+                onClick={() => {
+                  // call pdf function
+                  // pdfGenerate()
+                  // @ts-ignore
+                  if (getWindow()?.gtag) {
+                    // @ts-ignore
+                    getWindow()?.gtag(
+                      'event',
+                      'button clicked',
+                      'User Interaction',
+                      'export pdf button',
+                    );
+                  }
+                  setOpenExport(true);
+                }}
+                leftSection={<DocumentTextIcon className="h-4 w-4" />}
+              >
+                Exportar PDF
+              </Button>
+              <Button
+                variant="subtle"
+                onClick={clear}
+                leftSection={<DeleteWell className="h-4 w-4" />}
+              >
+                Limpar Perfil
+              </Button>
+              <Divider orientation="vertical" />
+              <Tooltip label="Perfil Exemplo">
+                <IconButton
+                  variant="subtle"
+                  size="lg"
+                  aria-label="Settings"
+                  id="btn-example"
+                  onClick={() => {
+                    // @ts-ignore
+                    if (getWindow()?.gtag) {
+                      // @ts-ignore
+                      getWindow()?.gtag(
+                        'event',
+                        'button clicked',
+                        'User Interaction',
+                        'profile example',
+                      );
+                    }
+
+                    // SET EXAMPLE PROFILE
+                    updateProfile({
+                      ...PROFILE_EXAMPLE,
+                    });
+                  }}
+                >
+                  <ExampleWell className="h-4 w-4" />
+                </IconButton>
+              </Tooltip>
+              <Divider orientation="vertical" />
               <Popover width={240} position="bottom-end" withArrow shadow="md">
                 <Popover.Target>
                   <Tooltip label="Preferências de Exibição">
@@ -242,94 +331,6 @@ function ProfileEditor() {
                   </Stack>
                 </Popover.Dropdown>
               </Popover>
-              <Divider orientation="vertical" />
-              <Tooltip label="Perfil Exemplo">
-                <IconButton
-                  variant="light"
-                  size="lg"
-                  aria-label="Settings"
-                  id="btn-example"
-                  onClick={() => {
-                    // @ts-ignore
-                    if (getWindow()?.gtag) {
-                      // @ts-ignore
-                      getWindow()?.gtag(
-                        'event',
-                        'button clicked',
-                        'User Interaction',
-                        'profile example',
-                      );
-                    }
-
-                    // SET EXAMPLE PROFILE
-                    updateProfile({
-                      ...PROFILE_EXAMPLE,
-                    });
-                  }}
-                >
-                  <ExampleWell className="h-4 w-4" />
-                </IconButton>
-              </Tooltip>
-              <Divider orientation="vertical" />
-              <Button
-                variant="light"
-                onClick={clear}
-                leftSection={<DeleteWell className="h-4 w-4" />}
-              >
-                Limpar Perfil
-              </Button>
-              <Button
-                onClick={() => {
-                  // call pdf function
-                  // pdfGenerate()
-                  // @ts-ignore
-                  if (getWindow()?.gtag) {
-                    // @ts-ignore
-                    getWindow()?.gtag(
-                      'event',
-                      'button clicked',
-                      'User Interaction',
-                      'export pdf button',
-                    );
-                  }
-                  setOpenExport(true);
-                }}
-                leftSection={<DocumentTextIcon className="h-4 w-4" />}
-              >
-                Exportar PDF
-              </Button>
-
-              <Button
-                onClick={() => {
-                  // @ts-ignore
-                  if (getWindow()?.gtag) {
-                    // @ts-ignore
-                    getWindow()?.gtag(
-                      'event',
-                      'button clicked',
-                      'User Interaction',
-                      'download profile',
-                    );
-                  }
-                  const wellData = profileToWell({ ...profile });
-                  const blob = new Blob([wellData], { type: 'application/vnd.well+json' });
-                  const safeName = (profile.name || '').replace(/ /g, '_').toLowerCase();
-                  download(
-                    blob,
-                    `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`,
-                    'application/vnd.well+json',
-                  );
-                }}
-                leftSection={<ArrowDownTrayIcon className="h-4 w-4" />}
-              >
-                Exportar Dados
-              </Button>
-              <Button
-                onClick={handleClickFile}
-                leftSection={<ArrowUpTrayIcon className="h-4 w-4" />}
-              >
-                Importar Dados
-              </Button>
 
               <input
                 type="file"
