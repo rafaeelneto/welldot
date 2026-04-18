@@ -75,7 +75,7 @@ export function useColumns() {
           >,
         ),
         title: TextureHelper(),
-        minWidth: 90,
+        minWidth: 200,
       },
       {
         ...keyColumn<Lithology, 'geologic_unit'>('geologic_unit', typedTextColumn),
