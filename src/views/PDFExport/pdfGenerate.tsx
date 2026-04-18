@@ -11,9 +11,10 @@ import {
   calculateHoleFillVolume,
   numberFormater,
 } from '../../utils/profile.utils';
-import { DiameterUnits, LengthUnits, CoordFormat } from '@/src/store/ui.store';
+import { DiameterUnits, LengthUnits, CoordFormat, useUIStore } from '@/src/store/ui.store';
 import { formatCoord } from '@/src/utils/coords.utils';
 import { width } from 'pdfkit/js/page';
+import { buildSvgProfiles } from './buildSvgProfiles';
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign
@@ -112,14 +113,14 @@ export const exportPdfProfile = (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
-  svgs: SvgInfo[],
   breakPages: boolean,
+  zoomLevel: number,
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
-  coordFormat: CoordFormat = 'dd',
 ) => {
+  const {coord_format: coordFormat} = useUIStore.getState();
   const fmtLen = (m: number) => lengthUnits === 'ft' ? numberFormater.format(m * 3.28084) : numberFormater.format(m);
   const fmtCoordField = (key: keyof typeof profile | string, val: unknown): string => {
     if (key === 'lat' && typeof val === 'number') return formatCoord(val, coordFormat, true);
@@ -249,7 +250,7 @@ export const exportPdfProfile = (
   const content: any[] = [];
 
   content.push({ text: ' ' });
-  
+
   if (headingInfo.length > 0) {
 
 
@@ -275,6 +276,8 @@ export const exportPdfProfile = (
       content.push(buildProfileMetadataTable(profile));
     
   }
+
+  const svgs: SvgInfo[] = buildSvgProfiles({ profile, lengthUnits: lenUnit, diameterUnits: diamUnit === 'mm' ? 'mm' : 'inches', breakPages: breakPages, zoomLevel});
 
   svgs.forEach((svgInfo, key) => {
     const svg = document.getElementById(svgInfo.id);
@@ -645,26 +648,24 @@ export const innerRenderPdf = (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
-  svgs: SvgInfo[],
   breakPages: boolean,
+  zoomLevel: number,
   iframeId: string,
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
-  coordFormat: CoordFormat = 'dd',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
-    svgs,
     breakPages,
+    zoomLevel,
     header,
     lengthUnits,
     diameterUnits,
     metadataPosition,
-    coordFormat,
   );
   // @ts-ignore
   try {
@@ -687,25 +688,23 @@ export const printPdf = (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
-  svgs: SvgInfo[],
   breakPages: boolean,
+  zoomLevel: number,
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
-  coordFormat: CoordFormat = 'dd',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
-    svgs,
     breakPages,
+    zoomLevel,
     header,
     lengthUnits,
     diameterUnits,
     metadataPosition,
-    coordFormat,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
@@ -716,25 +715,23 @@ export const downloadPdf = (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
-  svgs: SvgInfo[],
   breakPages: boolean,
+  zoomLevel: number,
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
-  coordFormat: CoordFormat = 'dd',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
-    svgs,
     breakPages,
+    zoomLevel,
     header,
     lengthUnits,
     diameterUnits,
     metadataPosition,
-    coordFormat,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);

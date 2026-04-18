@@ -289,10 +289,9 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           length_units,
           diameter_units,
           metadataPosition,
-          coordFormat,
         );
       } catch (e) {
-        console.log(`There was a error while generating your PDF file`);
+        console.log(`There was a error while generating your PDF file`, e);
       }
 
       onChangeInfo({ ...profile, info: { headingInfo, endInfo } });
@@ -349,7 +348,6 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               length_units,
               diameter_units,
               metadataPosition,
-              coordFormat,
             );
             // @ts-ignore
             if (window.gtag) {
@@ -390,7 +388,6 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               length_units,
               diameter_units,
               metadataPosition,
-              coordFormat,
             );
           }}
           leftSection={<Printer className="h-4 w-4" />}
