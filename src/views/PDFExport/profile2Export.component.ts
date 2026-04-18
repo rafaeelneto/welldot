@@ -53,10 +53,9 @@ const profile2Export = (
 ) => {
   if (checkIfProfileIsEmpty(profile)) return;
 
-  const fmtLen = (m: number): string => lengthUnits === 'ft' ? (m * 3.28084).toFixed(1) : String(m);
-  const fmtDiam = (mm: number): string => diameterUnits === 'inches' ? (mm * 0.0393701).toFixed(2) : String(mm);
+const fmtDiam = (mm: number): string => diameterUnits === 'inches' ? (mm * 0.0393701).toFixed(2) : String(mm);
   const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
-  const diamUnit = diameterUnits === 'inches' ? 'in' : 'mm';
+  const diamUnit = diameterUnits === 'inches' ? '"' : 'mm';
 
   const MARGINS = { TOP: 15, RIGHT: 30, BOTTOM: 30, LEFT: 20 };
 
@@ -276,88 +275,12 @@ const POCO_WIDTH = 100;
           return litologicalFill[`${d.fgdc_texture}.${d.from}`].url();
         });
 
-      const LABELS_MARGINS = { top: 2, button: 2 };
-
-      const depthTipGroup = litoligicalGroup.append('g');
-
-      const depthTip = depthTipGroup.selectAll('text').data(data);
-
-      depthTip.exit().remove();
-
-      let currYPos = 0;
-
-      depthTip
-        .enter()
-        .append('text')
-        .attr('class', d => `depthTip-${d.from}`)
-        .attr('x', GEOLOGY_X_POS - 5)
-        .attr('dy', '.35em')
-        .attr('font-size', 7.5)
-        .attr('text-anchor', 'end')
-        .text(d => {
-          if (d.to > maxSvgDepth) return null;
-          return `${d.to}`;
-        })
-        .attr('y', (d: Lithology, i) => {
-          currYPos = yScale(d.to);
-          return yScale(d.to);
-        });
-
-      const labelGroup = litoligicalGroup.append('g');
-
-      const labels = labelGroup.selectAll('text').data(data);
-
-      labels.exit().remove();
-
-      currYPos = 0;
-
-      labels
-        .enter()
-        .append('text')
-        .attr('class', d => `${getTextLabelSelector(d.from)}`)
-        .attr('x', GEOLOGY_X_POS_DIV_2)
-        .attr('dy', '.15em')
-        .attr('font-size', 7.5)
-        .text(d => {
-          // if (d.from < currentDepth) return null;
-          return d.description;
-        })
-        .call(wrap, GEOLOGY_TIP_WIDTH)
-        .attr('y', (d: Lithology, i) => {
-          if (i > 0) {
-            const lastTextHeight =
-              // @ts-ignore
-              (d3
-                .select(`.${getTextLabelSelector(data[i - 1].from)}`)
-                .node()
-                // @ts-ignore
-                .getBoundingClientRect().height || 0) +
-              LABELS_MARGINS.button +
-              LABELS_MARGINS.top;
-
-            const calculatedY = currYPos + lastTextHeight;
-
-            if (
-              yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
-              calculatedY
-            ) {
-              currYPos = calculatedY;
-
-              return calculatedY + 7;
-            }
-          }
-
-          const yPos = yScale(d.from > currentDepth ? d.from : currentDepth);
-
-          currYPos = yPos;
-          return yPos + 7;
-        });
 
       const dividersGroup = litoligicalGroup.append('g');
 
       const dividers = dividersGroup.selectAll('g').data(data);
 
-      currYPos = 0;
+      let currYPos = 0;
 
       dividers
         .enter()
@@ -411,6 +334,101 @@ const POCO_WIDTH = 100;
           ]);
         });
     };
+
+    const LABELS_MARGINS = { top: 4, button: 4 };
+
+    const updateLithologyLabels = (data: Lithology[], yScale) => {
+
+      const depthTipGroup = pocoGroup.append('g');
+
+      const depthTip = depthTipGroup.selectAll('text').data(data);
+
+      depthTip.exit().remove();
+
+      let currYPos = 0;
+
+      depthTipGroup
+        .selectAll('rect.depth-tip-bg')
+        .data(data.filter(d => d.to <= maxSvgDepth))
+        .enter()
+        .append('rect')
+        .attr('class', 'depth-tip-bg')
+        .attr('fill', 'white')
+        .attr('stroke', DARK_GRAY)
+        .attr('stroke-width', 0.5)
+        .attr('x', GEOLOGY_X_POS)
+        .attr('width', (d: Lithology) => `${d.to}`.length * (7.5 * 0.52) + 4)
+        .attr('height', 11)
+        .attr('y', (d: Lithology) => yScale(d.to) - 5.5)
+        .attr('rx', 2);
+
+      depthTip
+        .enter()
+        .append('text')
+        .attr('class', d => `depthTip-${d.from}`)
+        .attr('x', GEOLOGY_X_POS + 2)
+        .attr('dy', '.35em')
+        .attr('font-size', 7.5)
+        .attr('text-anchor', 'start')
+        .text(d => {
+          if (d.to > maxSvgDepth) return null;
+          return `${d.to}`;
+        })
+        .attr('y', (d: Lithology, i) => {
+          currYPos = yScale(d.to);
+          return yScale(d.to);
+        });
+
+      const labelGroup = pocoGroup.append('g');
+
+      const labels = labelGroup.selectAll('text').data(data);
+
+      labels.exit().remove();
+
+      currYPos = 0;
+
+      labels
+        .enter()
+        .append('text')
+        .attr('class', d => `${getTextLabelSelector(d.from)}`)
+        .attr('x', GEOLOGY_X_POS_DIV_2)
+        .attr('dy', '.15em')
+        .attr('font-size', 7.5)
+        .text(d => {
+          // if (d.from < currentDepth) return null;
+          return d.description;
+        })
+        .call(wrap, GEOLOGY_TIP_WIDTH)
+        .attr('y', (d: Lithology, i) => {
+          if (i > 0) {
+            const lastTextHeight =
+              // @ts-ignore
+              (d3
+                .select(`.${getTextLabelSelector(data[i - 1].from)}`)
+                .node()
+                // @ts-ignore
+                .getBoundingClientRect().height || 0) +
+              LABELS_MARGINS.button +
+              LABELS_MARGINS.top;
+
+            const calculatedY = currYPos + lastTextHeight;
+
+            if (
+              yScale(d.from) + LABELS_MARGINS.top + LABELS_MARGINS.button <
+              calculatedY
+            ) {
+              currYPos = calculatedY;
+
+              return calculatedY + 7;
+            }
+          }
+
+          const yPos = yScale(d.from > currentDepth ? d.from : currentDepth);
+
+          currYPos = yPos;
+          return yPos + 7;
+        });
+    }
 
     // ── Cave helpers ──────────────────────────────────────────────────────────
 
@@ -525,35 +543,30 @@ const POCO_WIDTH = 100;
         // clear of the lithology "to" labels on the left (x = GEOLOGY_X_POS - 5).
         // A white background rect is rendered first so the label stays legible
         // over the cave texture and wavy contact lines.
-        const labelX    = xRight - 3;
-        const labelFs   = 6;
-        const labelPadX = 2;
-        const labelPadY = 1.5;
-        const labelH    = labelFs + labelPadY * 2;
-
+        const labelRightEdge = GEOLOGY_X_POS + GEOLOGY_WIDTH - 3;
         const appendDepthLabel = (depth: number, anchorY: number) => {
-          const text  = `${fmtLen(depth)}${lenUnit}`;
-          const labelW = text.length * (labelFs * 0.52) + labelPadX * 2;
+          const labelW = `${depth}`.length * (7.5 * 0.52) + 4;
           g.append('rect')
-            .attr('x', labelX - labelW)
-            .attr('y', anchorY - labelPadY)
-            .attr('width', labelW)
-            .attr('height', labelH)
+            .attr('class', 'depth-tip-bg')
             .attr('fill', 'white')
-            .attr('rx', 1)
-            .attr('stroke', strokeColor)
-            .attr('stroke-width', 0.4);
+            .attr('stroke', DARK_GRAY)
+            .attr('stroke-width', 0.5)
+            .attr('x', labelRightEdge - labelW)
+            .attr('width', labelW)
+            .attr('height', 11)
+            .attr('y', anchorY - 5.5)
+            .attr('rx', 2);
           g.append('text')
-            .attr('x', labelX - labelPadX)
-            .attr('y', anchorY + labelFs * 0.72)
-            .attr('font-size', labelFs)
+            .attr('x', labelRightEdge - 2)
+            .attr('dy', '.35em')
+            .attr('font-size', 7.5)
             .attr('text-anchor', 'end')
-            .attr('fill', strokeColor)
-            .text(text);
+            .attr('y', anchorY)
+            .text(`${depth}`);
         };
 
-        if (fromClamped === cave.from) appendDepthLabel(cave.from, yTop + 2);
-        if (toClamped   === cave.to)   appendDepthLabel(cave.to,   yBot - labelH - 2);
+        if (fromClamped === cave.from) appendDepthLabel(cave.from, yTop);
+        if (toClamped   === cave.to)   appendDepthLabel(cave.to,   yBot);
       });
     };
 
@@ -1136,6 +1149,87 @@ const POCO_WIDTH = 100;
       });
     };
 
+    const drawUnitLabels = (data: Lithology[], yScale: d3module.ScaleLinear<number, number>) => {
+      const STRIP_GEO_X = 15;
+      const STRIP_AQ_X  = 25;
+      const STRIP_W     = 10;
+      const FONT_SIZE   = 5.5;
+      const MIN_H_TEXT  = 8;
+
+      const groupByField = (field: 'geologic_unit' | 'aquifer_unit') => {
+        const groups: { unit: string; from: number; to: number }[] = [];
+        for (const layer of data) {
+          const unit = layer[field];
+          if (!unit) continue;
+          const from = Math.max(layer.from, currentDepth);
+          const to   = Math.min(layer.to,   maxSvgDepth);
+          if (from >= to) continue;
+          const last = groups[groups.length - 1];
+          if (last && last.unit === unit) {
+            last.to = to;
+          } else {
+            groups.push({ unit, from, to });
+          }
+        }
+        return groups;
+      };
+
+      const unitLabelGroup = litoligicalGroup.append('g').attr('class', 'unit-labels');
+
+      const drawStrip = (
+        groups: { unit: string; from: number; to: number }[],
+        stripX: number,
+        bgColor: string,
+      ) => {
+        groups.forEach((group, idx) => {
+          const yTop   = yScale(group.from);
+          const yBot   = yScale(group.to);
+          const height = yBot - yTop;
+          if (height < 1) return;
+
+          const isFirst = idx === 0;
+          const isLast  = idx === groups.length - 1;
+
+          unitLabelGroup.append('rect')
+            .attr('x', stripX)
+            .attr('y', yTop)
+            .attr('width', STRIP_W)
+            .attr('height', height)
+            .attr('fill', bgColor)
+            .attr('stroke', DARK_GRAY)
+            .attr('stroke-width', 0.4);
+
+          const appendEdge = (y: number, sw: number) =>
+            unitLabelGroup.append('line')
+              .attr('x1', stripX).attr('x2', stripX + STRIP_W)
+              .attr('y1', y).attr('y2', y)
+              .attr('stroke', DARK_GRAY).attr('stroke-width', sw);
+
+          appendEdge(yTop, isFirst ? 0.6 : 1.5);
+          appendEdge(yBot, isLast  ? 0.6 : 1.5);
+
+          if (height >= MIN_H_TEXT) {
+            const maxChars = Math.floor(height / (FONT_SIZE * 0.55));
+            const label = group.unit.length > maxChars
+              ? group.unit.slice(0, maxChars - 1) + '…'
+              : group.unit;
+
+            unitLabelGroup.append('text')
+              .attr('transform',
+                `translate(${(stripX + STRIP_W / 2).toFixed(1)},${((yTop + yBot) / 2).toFixed(1)}) rotate(-90)`)
+              .attr('text-anchor', 'middle')
+              .attr('dominant-baseline', 'middle')
+              .attr('font-size', FONT_SIZE)
+              .attr('fill', DARK_GRAY)
+              .text(label);
+          }
+        });
+      };
+
+      drawStrip(groupByField('geologic_unit'), STRIP_GEO_X, '#f0f0f0');
+      drawStrip(groupByField('aquifer_unit'),  STRIP_AQ_X,  '#dff0ff');
+    };
+
     // eslint-disable-next-line no-use-before-define
     drawProfile();
 
@@ -1149,7 +1243,9 @@ const POCO_WIDTH = 100;
       };
 
       if (geologicData) {
-        updateGeology(geologicData.filter(filterByDepth), yScaleLocal);
+        const filtered = geologicData.filter(filterByDepth);
+        drawUnitLabels(filtered, yScaleLocal);
+        updateGeology(filtered, yScaleLocal);
       }
 
       const caves: Cave[] = (profile.caves || []).filter(
@@ -1175,6 +1271,9 @@ const POCO_WIDTH = 100;
       };
 
       if (constructionData) updatePoco(drawConstructionData, yScaleLocal);
+
+      const filtered = geologicData.filter(filterByDepth);
+      updateLithologyLabels(filtered || [], yScaleLocal);
     }
   };
 

@@ -203,6 +203,8 @@ export class DinamicDrawer {
         <span class="${this.customClassNames.tooltipTitle}">Litologia</span>
         <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
         <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
+        ${d.geologic_unit ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Unidade geológica:</strong> ${d.geologic_unit}</span>` : ''}
+        ${d.aquifer_unit ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Unidade aquífera:</strong> ${d.aquifer_unit}</span>` : ''}
       `,
       hole: (_, d: HoleFill) => {
         return `
