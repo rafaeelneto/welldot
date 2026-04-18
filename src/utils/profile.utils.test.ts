@@ -435,78 +435,78 @@ describe('profileToWell — serialisation', () => {
     expect(JSON.parse(profileToWell(fullProfile)).v).toBe(1);
   });
 
-  it('maps metadata to compact keys', () => {
+  it('serialises metadata with full key names', () => {
     const w = JSON.parse(profileToWell(fullProfile));
-    expect(w.n).toBe('Poço PP-01');
-    expect(w.dr).toBe('Driller Corp');
-    expect(w.cd).toBe('2024-03-15');
-    expect(w.lt).toBe(-1.4558);
-    expect(w.lg).toBe(-48.5039);
-    expect(w.el).toBe(12.5);
-    expect(w.ob).toBe('Sem anomalias');
+    expect(w.name).toBe('Poço PP-01');
+    expect(w.well_driller).toBe('Driller Corp');
+    expect(w.construction_date).toBe('2024-03-15');
+    expect(w.lat).toBe(-1.4558);
+    expect(w.lng).toBe(-48.5039);
+    expect(w.elevation).toBe(12.5);
+    expect(w.obs).toBe('Sem anomalias');
   });
 
-  it('maps bore_hole to bh[] with compact keys', () => {
-    const { bh } = JSON.parse(profileToWell(fullProfile));
-    expect(bh).toHaveLength(1);
-    expect(bh[0]).toEqual({ f: 0, t: 80, d: 250, dm: 'rotary' });
+  it('serialises bore_hole with full key names', () => {
+    const { bore_hole } = JSON.parse(profileToWell(fullProfile));
+    expect(bore_hole).toHaveLength(1);
+    expect(bore_hole[0]).toEqual({ from: 0, to: 80, diameter: 250, drilling_method: 'rotary' });
   });
 
-  it('omits dm when drilling_method is absent', () => {
+  it('omits drilling_method when absent', () => {
     const p: Profile = { ...fullProfile, bore_hole: [{ from: 0, to: 10, diameter: 200 }] };
-    const { bh } = JSON.parse(profileToWell(p));
-    expect(bh[0]).not.toHaveProperty('dm');
+    const { bore_hole } = JSON.parse(profileToWell(p));
+    expect(bore_hole[0]).not.toHaveProperty('drilling_method');
   });
 
-  it('maps well_case to wc[]', () => {
-    const { wc } = JSON.parse(profileToWell(fullProfile));
-    expect(wc[0]).toEqual({ f: 0, t: 60, ty: 'steel', d: 200 });
+  it('serialises well_case with full key names', () => {
+    const { well_case } = JSON.parse(profileToWell(fullProfile));
+    expect(well_case[0]).toEqual({ from: 0, to: 60, type: 'steel', diameter: 200 });
   });
 
-  it('maps reduction to rd[] with df and d2', () => {
-    const { rd } = JSON.parse(profileToWell(fullProfile));
-    expect(rd[0]).toEqual({ f: 58, t: 60, df: 200, d2: 150, ty: 'conical' });
+  it('serialises reduction with full key names', () => {
+    const { reduction } = JSON.parse(profileToWell(fullProfile));
+    expect(reduction[0]).toEqual({ from: 58, to: 60, diam_from: 200, diam_to: 150, type: 'conical' });
   });
 
-  it('maps well_screen to ws[] with sl', () => {
-    const { ws } = JSON.parse(profileToWell(fullProfile));
-    expect(ws[0]).toEqual({ f: 60, t: 80, ty: 'pvc', d: 150, sl: 0.5 });
+  it('serialises well_screen with full key names', () => {
+    const { well_screen } = JSON.parse(profileToWell(fullProfile));
+    expect(well_screen[0]).toEqual({ from: 60, to: 80, type: 'pvc', diameter: 150, screen_slot_mm: 0.5 });
   });
 
-  it('maps surface_case to sc[]', () => {
-    const { sc } = JSON.parse(profileToWell(fullProfile));
-    expect(sc[0]).toEqual({ f: 0, t: 3, d: 300 });
+  it('serialises surface_case with full key names', () => {
+    const { surface_case } = JSON.parse(profileToWell(fullProfile));
+    expect(surface_case[0]).toEqual({ from: 0, to: 3, diameter: 300 });
   });
 
-  it('maps hole_fill to hf[]', () => {
-    const { hf } = JSON.parse(profileToWell(fullProfile));
-    expect(hf[0]).toEqual({ f: 60, t: 80, ty: 'gravel_pack', d: 250, ds: 'Seixo 2-4mm' });
+  it('serialises hole_fill with full key names', () => {
+    const { hole_fill } = JSON.parse(profileToWell(fullProfile));
+    expect(hole_fill[0]).toEqual({ from: 60, to: 80, type: 'gravel_pack', diameter: 250, description: 'Seixo 2-4mm' });
   });
 
-  it('maps cement_pad to cp', () => {
-    const { cp } = JSON.parse(profileToWell(fullProfile));
-    expect(cp).toEqual({ ty: 'square', w: 1.0, th: 0.15, l: 1.0 });
+  it('serialises cement_pad with full key names', () => {
+    const { cement_pad } = JSON.parse(profileToWell(fullProfile));
+    expect(cement_pad).toEqual({ type: 'square', width: 1.0, thickness: 0.15, length: 1.0 });
   });
 
-  it('maps lithology to li[]', () => {
-    const { li } = JSON.parse(profileToWell(fullProfile));
-    expect(li).toHaveLength(2);
-    expect(li[0]).toEqual({ f: 0, t: 20, ds: 'Areia fina', cl: '#f5deb3', tx: 'sand', gu: 'Quaternário', au: 'freático' });
+  it('serialises lithology with full key names', () => {
+    const { lithology } = JSON.parse(profileToWell(fullProfile));
+    expect(lithology).toHaveLength(2);
+    expect(lithology[0]).toEqual({ from: 0, to: 20, description: 'Areia fina', color: '#f5deb3', fgdc_texture: 'sand', geologic_unit: 'Quaternário', aquifer_unit: 'freático' });
   });
 
-  it('maps fractures to fr[]', () => {
-    const { fr } = JSON.parse(profileToWell(fullProfile));
-    expect(fr[0]).toEqual({ dp: 45.2, wi: true, ds: 'Fratura aberta', sw: false, az: 120, di: 35 });
+  it('serialises fractures with full key names', () => {
+    const { fractures } = JSON.parse(profileToWell(fullProfile));
+    expect(fractures[0]).toEqual({ depth: 45.2, water_intake: true, description: 'Fratura aberta', swarm: false, azimuth: 120, dip: 35 });
   });
 
-  it('maps caves to cv[]', () => {
-    const { cv } = JSON.parse(profileToWell(fullProfile));
-    expect(cv[0]).toEqual({ f: 50, t: 52, wi: false, ds: 'Caverna seca' });
+  it('serialises caves with full key names', () => {
+    const { caves } = JSON.parse(profileToWell(fullProfile));
+    expect(caves[0]).toEqual({ from: 50, to: 52, water_intake: false, description: 'Caverna seca' });
   });
 
-  it('does not include cp when cement_pad is falsy', () => {
+  it('does not include cement_pad when falsy', () => {
     const p = { ...fullProfile, cement_pad: null as any };
-    expect(JSON.parse(profileToWell(p))).not.toHaveProperty('cp');
+    expect(JSON.parse(profileToWell(p))).not.toHaveProperty('cement_pad');
   });
 });
 
@@ -585,7 +585,7 @@ describe('convertProfileFromJSON — .well format', () => {
   });
 
   it('defaults empty arrays when sections are absent', () => {
-    const minimal = JSON.stringify({ v: 1, n: 'test', li: [{ f: 0, t: 10, ds: 'x', cl: '#fff', tx: 'sand', gu: '', au: '' }] });
+    const minimal = JSON.stringify({ v: 1, name: 'test', lithology: [{ from: 0, to: 10, description: 'x', color: '#fff', fgdc_texture: 'sand', geologic_unit: '', aquifer_unit: '' }] });
     const result = convertProfileFromJSON(minimal)!;
     expect(result.bore_hole).toEqual([]);
     expect(result.fractures).toEqual([]);

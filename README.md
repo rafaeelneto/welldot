@@ -1,107 +1,121 @@
 # Well Profiler
 
-There's only a few softwares that helps geologists and engineers to build and view water well profiles. The only tool available (at last that I know) is a paid software.
+Most software for documenting and visualizing water well profiles is proprietary, expensive, and not interoperable. Well Profiler exists to change that.
 
-Well Profiler is web app built with react that can be used to scratch or document water wells profiles. With Well Profiler, the user can easily visualize and edit well construction and geology details. It saves the profile data in a JSON format and can export profile and construction details in a printable PDF file.
-The code is open source and the data structure format can be used by any other application.
+Well Profiler is an open-source web application built with React that lets geologists and engineers create, visualize, and export water well profiles. More importantly, it is the **reference implementation** of the **`.well` open file format** — a compact, structured standard for representing water well data that any application can read and write.
 
-You can check the app in the [Well Profiler website](wellprofiler.com)
+You can try the app at [wellprofiler.com](https://wellprofiler.com).
 
-The app should be used by anyone interested like geologists and engineers.
+---
 
-Some functions of the app:
+## The `.well` File Format
 
-- Provide a data visualization to water well profiles
+The core of this project is an open, versioned file format for water well data — not just the app.
 
-- Export the profile as a printable PDF file
+The `.well` format is designed to serve three purposes:
 
-- Provide some quantitative values that can be used on cost estimates.
+- **Visualization** — enough constructive and geological detail to produce accurate well profile drawings at true depth scale
+- **Registration** — a complete static record suitable for regulatory submissions and national well registries
+- **Research** — structured data aligned with FGDC and hydrogeological standards, enabling cross-well analysis and aquifer characterization
 
-# Licensing
+The format is human-readable JSON with full, descriptive key names. It is easy to inspect, diff, and version-control without tooling.
 
-This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives (CC BY-NC-ND) license. See the LICENSE.md file for details.
+**Example `.well` file:**
 
-# Tech
-
-The web interface of the app is built in Typescript using React (in the future, it may be used fluttler or react native to add a mobile app). Below there are some libraries and tools used:
-
-- [D3.js](https://d3js.org/)
-- [PDFMake.js](http://pdfmake.org/#/)
-
-# Formats
-
-I suggest a data structure format in other store water well constructive and geologic data. It's as follows:
-
-```typescript
-type WATER_WELL_PROFILE_TYPE = {
-  name: string | undefined;
-  units: {
-    diam_unit: 'metric' | 'imperial';
-    depth_unit: 'metric' | 'imperial';
-  };
-  info:
-    | {
-        headingInfo: { label: string; value: string }[] | undefined;
-        endInfo: { label: string; value: string }[] | undefined;
-      }
-    | undefined;
-  geologic: {
-    from: number; // start depth of the layer or component
-    to: number; // end depth of the layer or component
-    description: string; // description of the geologic layer
-    color: string; // color of the layer
-    fgdc_texture: string | number; // texture code of the FGDC Patterns by USGS
-    geologic_unit: string; // name of the geologic unit
-  }[];
-  constructive: {
-    bore_hole: {
-      from: number;
-      to: number;
-      diam_pol: number;
-    }[];
-    well_case: {
-      from: number;
-      to: number;
-      type: string;
-      diam_pol: number;
-    }[];
-    reduction: {
-      from: number;
-      to: number;
-      diam_from: number;
-      diam_to: number;
-      type: string;
-    }[];
-    well_screen: {
-      from: number;
-      to: number;
-      type: string;
-      diam_pol: number;
-      screen_slot_mm: number;
-    }[];
-    surface_case: {
-      from: number;
-      to: number;
-      diam_pol: number;
-    }[];
-    hole_fill: {
-      from: number;
-      to: number;
-      type: 'gravel_pack' | 'seal';
-      diam_pol: number;
-      description: string;
-    }[];
-    cement_pad: {
-      type: string;
-      width: number;
-      thickness: number;
-      length: number;
-    };
-    intake_depth: number | undefined;
-  };
-};
+```json
+{
+  "v": 1,
+  "name": "Poço PP-01",
+  "well_driller": "Perfuradora XYZ",
+  "construction_date": "2024-03-15",
+  "lat": -1.4558,
+  "lng": -48.5039,
+  "elevation": 12.5,
+  "bore_hole": [{ "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }],
+  "well_case": [{ "from": 0, "to": 60, "type": "steel", "diameter": 200 }],
+  "reduction": [{ "from": 58, "to": 60, "diam_from": 200, "diam_to": 150, "type": "conical" }],
+  "well_screen": [{ "from": 60, "to": 80, "type": "pvc", "diameter": 150, "screen_slot_mm": 0.5 }],
+  "surface_case": [{ "from": 0, "to": 3, "diameter": 300 }],
+  "hole_fill": [{ "from": 60, "to": 80, "type": "gravel_pack", "diameter": 250, "description": "Seixo 2-4mm" }],
+  "cement_pad": { "type": "square", "width": 1.0, "thickness": 0.15, "length": 1.0 },
+  "lithology": [{ "from": 0, "to": 20, "description": "Areia fina", "color": "#f5deb3", "fgdc_texture": "sand", "geologic_unit": "Quaternário", "aquifer_unit": "freático" }],
+  "fractures": [{ "depth": 45.2, "water_intake": true, "description": "Fratura aberta", "swarm": false, "azimuth": 120, "dip": 35 }],
+  "caves": [{ "from": 50, "to": 52, "water_intake": false, "description": "Caverna seca" }]
+}
 ```
 
-The Water Profiler uses the [FGDC Geologic map standard](https://ngmdb.usgs.gov/fgdc_gds/geolsymstd/download.php) to simbolize different geologic units as the user chooses.
+The format captures:
 
-Any suggestion or improvement are welcomed. Please, feel free to contact me if you want.
+| Section | Field | Description |
+|---|---|---|
+| Metadata | `v`, `name`, `well_driller`, `construction_date`, `lat`, `lng`, `elevation`, `obs` | Version, name, driller, date, coordinates, elevation, observations |
+| Borehole | `bore_hole[]` | Depth intervals and drilling method |
+| Well casing | `well_case[]` | Casing material, diameter, and depth |
+| Reductions | `reduction[]` | Diameter transitions between casing sections |
+| Well screen | `well_screen[]` | Screen type, slot size, and depth |
+| Surface casing | `surface_case[]` | Outer protective casing |
+| Hole fill | `hole_fill[]` | Gravel pack and cement seal intervals |
+| Cement pad | `cement_pad` | Surface pad dimensions |
+| Lithology | `lithology[]` | Geologic layers with FGDC texture codes, colors, and aquifer units |
+| Fractures | `fractures[]` | Depth, azimuth, dip, water intake |
+| Caves | `caves[]` | Depth intervals and water intake |
+
+All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`docs/file-format-specification.md`](docs/file-format-specification.md).
+
+The format is open. You are welcome to implement parsers, exporters, converters, or viewers in any language. Contributions to the specification are welcome via issues and pull requests.
+
+---
+
+## App Features
+
+- Visual well profile rendering with borehole geometry, casing strings, lithological column, fractures, and caves
+- Import and export `.well` files
+- Export printable PDF reports
+- Quantitative construction data useful for cost estimation
+
+---
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+---
+
+## Tech Stack
+
+- [Next.js](https://nextjs.org/) + [TypeScript](https://www.typescriptlang.org/)
+- [React](https://react.dev/)
+- [D3.js](https://d3js.org/) — profile rendering
+- [pdfmake](http://pdfmake.org/) — PDF export
+- [Mantine](https://mantine.dev/) — UI components
+
+---
+
+## Geologic Symbolization
+
+Well Profiler uses the [FGDC Digital Cartographic Standard for Geologic Map Symbolization](https://ngmdb.usgs.gov/fgdc_gds/geolsymstd/download.php), specifically the [FGDC Pattern Chart](https://ngmdb.usgs.gov/fgdc_gds/geolsymstd/fgdc-geolsym-patternchart.pdf) to represent lithological textures, the same standard used in scientific literature.
+
+---
+
+## Roadmap
+
+The following extensions are planned for future versions of the `.well` format and the app:
+
+- **Pump tests** — step-drawdown and constant-rate test results, including static/dynamic water levels, specific capacity, and transmissivity estimates
+- **Water quality** — physico-chemical and microbiological parameters tied to sampling date and depth interval
+- **History log** — timestamped records of maintenance events, rehabilitations, and operational changes over the well's lifespan
+- **Extended metadata** — owner, responsible hydrogeologist, licensing authority, permit number, and operational status
+- **Production data** — installed pump capacity, operational depth, and average yield
+
+---
+
+## Licensing
+
+This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives (CC BY-NC-ND) license. See [LICENSE.md](LICENSE.md) for details.
+
+---
+
+Suggestions, issues, and contributions are welcome. If you are building a tool that reads or writes `.well` files, feel free to open an issue — we would like to know about compatible implementations.
