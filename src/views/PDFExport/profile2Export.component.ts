@@ -48,6 +48,7 @@ const profile2Export = (
   print?: boolean,
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
+  showMetadataSection = false,
 ) => {
   if (checkIfProfileIsEmpty(profile)) return;
 
@@ -1290,11 +1291,12 @@ const POCO_WIDTH = 100;
       header,
       lengthUnits,
       diameterUnits,
+      showMetadataSection,
     );
   } else if (print) {
-    printPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits);
+    printPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits, showMetadataSection);
   } else {
-    downloadPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits);
+    downloadPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits, showMetadataSection);
   }
 };
 

@@ -9,6 +9,9 @@ import {
   List,
   Input,
   ActionIcon,
+  Popover,
+  Stack,
+  Tooltip,
 } from '@mantine/core';
 
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
@@ -35,11 +38,31 @@ import styles from './pdfExport.module.scss';
 import profile2Export from './profile2Export.component';
 import { useUIStore } from '@/src/store/ui.store';
 
+type InfoItem = infoType & { profileField?: keyof Profile };
+
+const WELL_METADATA_FIELDS: { key: keyof Profile; label: string }[] = [
+  { key: 'name', label: 'Nome' },
+  { key: 'well_type', label: 'Tipo' },
+  { key: 'well_driller', label: 'Perfurador' },
+  { key: 'construction_date', label: 'Data de Construção' },
+  { key: 'lat', label: 'Latitude' },
+  { key: 'lng', label: 'Longitude' },
+  { key: 'elevation', label: 'Elevação' },
+  { key: 'obs', label: 'Observações' },
+];
+
+const resolveInfo = (items: InfoItem[], profile: Profile): infoType[] =>
+  items.map(item =>
+    item.profileField
+      ? { label: item.label, value: String(profile[item.profileField] ?? '') }
+      : { label: item.label, value: item.value },
+  );
+
 type PDFEProps = {
   profile: Profile & {
     info: {
-      headingInfo: { label: string; value: string }[];
-      endInfo: { label: string; value: string }[];
+      headingInfo: InfoItem[];
+      endInfo: InfoItem[];
     };
   };
   onChangeInfo: (newPerfilState: any) => void;
@@ -73,16 +96,17 @@ function SortableList({
   onChangeList,
   onChangeValues,
   limit,
+  profile,
 }: {
-  items: infoType[];
-  defaultItem: infoType;
-  onChangeList: (newComponents: infoType[]) => void;
-  onChangeValues: (newComponent: infoType, index: number) => void;
+  items: InfoItem[];
+  defaultItem: InfoItem;
+  onChangeList: (newComponents: InfoItem[]) => void;
+  onChangeValues: (newComponent: InfoItem, index: number) => void;
   limit?: number | null;
+  profile: Profile;
 }) {
   const dragEndEvent = (e: DragEndEvent) => {
     const { over, active } = e;
-    console.log(over?.id, active.id);
     onChangeList(
       arrayMove(items, (active.id as number) - 1, (over?.id as number) - 1),
     );
@@ -98,6 +122,17 @@ function SortableList({
     newLayers.push(defaultItem);
     onChangeList(newLayers);
   };
+  const [metaPopoverOpen, setMetaPopoverOpen] = useState(false);
+  const [selectedMeta, setSelectedMeta] = useState<string[]>([]);
+
+  const onAddMetadata = () => {
+    const newItems = WELL_METADATA_FIELDS.filter(f => selectedMeta.includes(f.key)).map(
+      f => ({ label: f.label, value: '', profileField: f.key }),
+    );
+    onChangeList([...items, ...newItems]);
+    setSelectedMeta([]);
+    setMetaPopoverOpen(false);
+  };
 
   return (
     <>
@@ -106,41 +141,35 @@ function SortableList({
           <SortableContext items={items.map((_item, index) => index + 1)}>
             {items.map((item, index) => (
               <>
-                <SortableItem key={item.label} id={index + 1}>
+                <SortableItem key={`${item.label}-${index}`} id={index + 1}>
                   <Input
                     className={styles.layerInput}
-                    id="standard-multiline-flexible"
                     placeholder="Nome"
                     style={{ width: '100%' }}
                     value={item.label}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      // eslint-disable-next-line implicit-arrow-linebreak
-                      onChangeValues(
-                        {
-                          ...item,
-                          label: event.target.value,
-                        },
-                        index,
-                      );
+                      onChangeValues({ ...item, label: event.target.value }, index);
                     }}
                   />
-                  <Input
-                    className={styles.layerInput}
-                    id="standard-multiline-flexible"
-                    placeholder="Valor"
-                    style={{ width: '100%' }}
-                    value={item.value}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      // eslint-disable-next-line implicit-arrow-linebreak
-                      onChangeValues(
-                        {
-                          ...item,
-                          value: event.target.value,
-                        },
-                        index,
-                      );
-                    }}
-                  />
+                  <Tooltip
+                    label="Valor sincronizado com o perfil"
+                    disabled={!item.profileField}
+                  >
+                    <Input
+                      className={styles.layerInput}
+                      placeholder="Valor"
+                      style={{ width: '100%' }}
+                      disabled={!!item.profileField}
+                      value={
+                        item.profileField
+                          ? String(profile[item.profileField] ?? '')
+                          : item.value
+                      }
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        onChangeValues({ ...item, value: event.target.value }, index);
+                      }}
+                    />
+                  </Tooltip>
                   <ActionIcon
                     onClick={() => onDelete(index)}
                     variant="transparent"
@@ -154,14 +183,65 @@ function SortableList({
           </SortableContext>
         </DndContext>
       </List>
-      <Button
-        className={styles.addBtn}
-        aria-disabled={(limit && items.length > limit - 1) || false}
-        onClick={() => onAdd()}
-        leftSection={<PlusCircle className="h-4 w-4" />}
-      >
-        Adicionar
-      </Button>
+      <div className="flex gap-2 mb-3">
+        <Button
+          className={styles.addBtn}
+          aria-disabled={(limit && items.length > limit - 1) || false}
+          onClick={() => onAdd()}
+          leftSection={<PlusCircle className="h-4 w-4" />}
+        >
+          Adicionar
+        </Button>
+        <Popover
+          position="bottom-start"
+          opened={metaPopoverOpen}
+          onChange={setMetaPopoverOpen}
+          withinPortal
+        >
+          <Popover.Target>
+            <Button
+              variant="subtle"
+              leftSection={<FileText className="h-4 w-4" />}
+              onClick={() => setMetaPopoverOpen(o => !o)}
+            >
+              Metadados do poço
+            </Button>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Stack gap="xs">
+              {WELL_METADATA_FIELDS.map(field => (
+                <Checkbox
+                  key={field.key}
+                  label={field.label}
+                  checked={selectedMeta.includes(field.key)}
+
+                  onChange={e =>
+                  {
+                    const isChecked = e.currentTarget?.checked;
+                    setSelectedMeta(prev => {
+                      
+                      if (isChecked) {
+                        return [...prev, field.key];
+                      } else {
+                        return prev.filter(k => k !== field.key);
+                      }
+                    });
+                  }
+                  }
+                />
+              ))}
+              <Button
+                size="xs"
+                disabled={selectedMeta.length === 0}
+                onClick={onAddMetadata}
+                leftSection={<PlusCircle className="h-3 w-3" />}
+              >
+                Adicionar
+              </Button>
+            </Stack>
+          </Popover.Dropdown>
+        </Popover>
+      </div>
     </>
   );
 }
@@ -178,6 +258,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
   const [header, setHeader] = useState<string>('PERFIL GEOLÓGICO CONSTRUTIVO');
 
   const [breakPages, setBreakPages] = useState<boolean>(false);
+  const [showMetadataSection, setShowMetadataSection] = useState<boolean>(false);
 
   useEffect(() => {
     clearTimeout(timeoutRef.current);
@@ -185,8 +266,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
       try {
         profile2Export(
           header,
-          headingInfo,
-          endInfo,
+          resolveInfo(headingInfo, profile),
+          resolveInfo(endInfo, profile),
           { ...profile },
           breakPages,
           zoomValue,
@@ -194,6 +275,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           undefined,
           length_units,
           diameter_units,
+          showMetadataSection,
         );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`);
@@ -201,7 +283,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
 
       onChangeInfo({ ...profile, info: { headingInfo, endInfo } });
     }, 1000);
-  }, [headingInfo, header, endInfo, breakPages, zoomValue, length_units, diameter_units]);
+  }, [headingInfo, header, endInfo, breakPages, zoomValue, length_units, diameter_units, showMetadataSection]);
 
   const handleBreakChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBreakPages(event.target.checked);
@@ -211,28 +293,28 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     setZoomValue(newValue);
   };
 
-  const onChangeHeadingInfo = (newHeadingInfo: infoType[]) => {
+  const onChangeHeadingInfo = (newHeadingInfo: InfoItem[]) => {
     onChangeInfo({
       ...profile,
       info: { headingInfo: newHeadingInfo, endInfo },
     });
   };
 
-  const handleHeadingInfoValueChange = (newValue: infoType, index: number) => {
+  const handleHeadingInfoValueChange = (newValue: InfoItem, index: number) => {
     const newHeadingInfo = [...headingInfo];
     newHeadingInfo[index] = newValue;
 
     onChangeHeadingInfo(newHeadingInfo);
   };
 
-  const onChangeEndInfo = (newEndInfo: infoType[]) => {
+  const onChangeEndInfo = (newEndInfo: InfoItem[]) => {
     onChangeInfo({
       ...profile,
       info: { headingInfo, endInfo: newEndInfo },
     });
   };
 
-  const handleEndInfoValueChange = (newValue: infoType, index: number) => {
+  const handleEndInfoValueChange = (newValue: InfoItem, index: number) => {
     const newEndInfo = [...endInfo];
     newEndInfo[index] = newValue;
 
@@ -247,8 +329,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           onClick={() => {
             profile2Export(
               header,
-              headingInfo,
-              endInfo,
+              resolveInfo(headingInfo, profile),
+              resolveInfo(endInfo, profile),
               { ...profile },
               breakPages,
               zoomValue,
@@ -256,6 +338,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               false,
               length_units,
               diameter_units,
+              showMetadataSection,
             );
             // @ts-ignore
             if (window.gtag) {
@@ -286,8 +369,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
             }
             profile2Export(
               header,
-              headingInfo,
-              endInfo,
+              resolveInfo(headingInfo, profile),
+              resolveInfo(endInfo, profile),
               { ...profile },
               breakPages,
               zoomValue,
@@ -295,6 +378,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               true,
               length_units,
               diameter_units,
+              showMetadataSection,
             );
           }}
           leftSection={<Printer className="h-4 w-4" />}
@@ -315,9 +399,14 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
         <Checkbox
           className="mb-2"
           label="Quebra de páginas"
-          defaultChecked
           checked={breakPages}
           onChange={handleBreakChange}
+        />
+        <Checkbox
+          className="mb-2"
+          label="Incluir seção de metadados do poço"
+          checked={showMetadataSection}
+          onChange={e => setShowMetadataSection(e.currentTarget.checked)}
         />
         <Divider />
         {/* scale slider */}
@@ -358,6 +447,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           limit={6}
           onChangeList={onChangeHeadingInfo}
           onChangeValues={handleHeadingInfoValueChange}
+          profile={profile}
         />
         <Divider />
         <span className={styles.componentTitle}>Infomações finais</span>
@@ -366,6 +456,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           items={[...endInfo]}
           onChangeList={onChangeEndInfo}
           onChangeValues={handleEndInfoValueChange}
+          profile={profile}
         />
       </div>
       <div className={styles.pdfFrameContainer}>
