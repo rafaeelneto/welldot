@@ -371,6 +371,48 @@ export const exportPdfProfile = (
     }
   }
 
+  if (profile.cement_pad.thickness && profile.cement_pad.width) {
+    content.push({ text: ' ' });
+    content.push({ text: 'Laje de proteção', style: 'title' });
+
+    const cementPadBody: string[][] = [
+      [
+        `Espessura (${lenUnit})`,
+        fmtLen(profile.cement_pad.thickness),
+      ],
+      [
+        `Largura (${lenUnit})`,
+        fmtLen(profile.cement_pad.width),
+      ],
+      [
+        `Comprimento (${lenUnit})`,
+        fmtLen(profile.cement_pad.length), 
+      ],
+      [
+        `Material`,
+        profile.cement_pad.type,
+      ]
+    ];
+
+
+    content.push({
+        layout: {
+          hLineWidth: (i: any, node: any) => {
+            if (i === node.table.body.length || i === 0) return 1;
+            return 0;
+          },
+          vLineWidth: () => 0,
+          hLineColor: () => '#3d3d3d',
+        },
+        table: {
+          heights: 15,
+          widths: [267.64 - 10, 267.64 - 10],
+          dontBreakRows: true,
+          body: [...cementPadBody],
+        },
+      });
+  }
+
   if (profile.bore_hole.length > 0) {
     content.push({ text: ' ' });
     content.push({ text: 'Furo', style: 'title' });
