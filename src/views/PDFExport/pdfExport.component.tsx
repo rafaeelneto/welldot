@@ -12,6 +12,8 @@ import {
   Popover,
   Stack,
   Tooltip,
+  SegmentedControl,
+  Text,
 } from '@mantine/core';
 
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
@@ -36,7 +38,7 @@ import { infoType } from '../../../src_old/types/profile2Export.types';
 import styles from './pdfExport.module.scss';
 
 import profile2Export from './profile2Export.component';
-import { useUIStore } from '@/src/store/ui.store';
+import { useUIStore, DEFAULT_PDF_HEADER } from '@/src/store/ui.store';
 
 type InfoItem = infoType & { profileField?: keyof Profile };
 
@@ -249,23 +251,33 @@ function SortableList({
 function PDFExport({ profile, onChangeInfo }: PDFEProps) {
   const timeoutRef = useRef<any>();
   const IFRAME_ID = 'ÏFRAME_PDF_ID';
-  const { length_units, diameter_units } = useUIStore();
+  const {
+    length_units,
+    diameter_units,
+    pdf_header: header,
+    pdf_break_pages: breakPages,
+    pdf_zoom_value: zoomValue,
+    pdf_metadata_position: metadataPosition,
+    setPdfHeader: setHeader,
+    setPdfBreakPages: setBreakPages,
+    setPdfZoomValue: setZoomValue,
+    setPdfMetadataPosition: setMetadataPosition,
+  } = useUIStore();
 
   const headingInfo = profile.info?.headingInfo || [];
   const endInfo = profile.info?.endInfo || [];
 
-  const [zoomValue, setZoomValue] = useState<number>(500);
-  const [header, setHeader] = useState<string>('PERFIL GEOLÓGICO CONSTRUTIVO');
-
-  const [breakPages, setBreakPages] = useState<boolean>(false);
-  const [showMetadataSection, setShowMetadataSection] = useState<boolean>(false);
+  const effectiveHeader =
+    header === DEFAULT_PDF_HEADER && profile.name
+      ? `${header} - ${profile.name}`
+      : header;
 
   useEffect(() => {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       try {
         profile2Export(
-          header,
+          effectiveHeader,
           resolveInfo(headingInfo, profile),
           resolveInfo(endInfo, profile),
           { ...profile },
@@ -275,7 +287,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           undefined,
           length_units,
           diameter_units,
-          showMetadataSection,
+          metadataPosition,
         );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`);
@@ -283,14 +295,10 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
 
       onChangeInfo({ ...profile, info: { headingInfo, endInfo } });
     }, 1000);
-  }, [headingInfo, header, endInfo, breakPages, zoomValue, length_units, diameter_units, showMetadataSection]);
+  }, [headingInfo, header, endInfo, breakPages, zoomValue, length_units, diameter_units, metadataPosition]);
 
   const handleBreakChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBreakPages(event.target.checked);
-  };
-
-  const handleZoomChange = (newValue: number) => {
-    setZoomValue(newValue);
   };
 
   const onChangeHeadingInfo = (newHeadingInfo: InfoItem[]) => {
@@ -328,7 +336,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           className="mr-2"
           onClick={() => {
             profile2Export(
-              header,
+              effectiveHeader,
               resolveInfo(headingInfo, profile),
               resolveInfo(endInfo, profile),
               { ...profile },
@@ -338,7 +346,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               false,
               length_units,
               diameter_units,
-              showMetadataSection,
+              metadataPosition,
             );
             // @ts-ignore
             if (window.gtag) {
@@ -368,7 +376,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               );
             }
             profile2Export(
-              header,
+              effectiveHeader,
               resolveInfo(headingInfo, profile),
               resolveInfo(endInfo, profile),
               { ...profile },
@@ -378,7 +386,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               true,
               length_units,
               diameter_units,
-              showMetadataSection,
+              metadataPosition,
             );
           }}
           leftSection={<Printer className="h-4 w-4" />}
@@ -402,12 +410,18 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           checked={breakPages}
           onChange={handleBreakChange}
         />
-        <Checkbox
-          className="mb-2"
-          label="Incluir seção de metadados do poço"
-          checked={showMetadataSection}
-          onChange={e => setShowMetadataSection(e.currentTarget.checked)}
-        />
+        <div className="mb-2">
+          <Text size="sm" mb={4}>Seção de metadados do poço</Text>
+          <SegmentedControl
+            value={metadataPosition ?? 'none'}
+            onChange={v => setMetadataPosition(v === 'none' ? null : v as 'before' | 'after')}
+            data={[
+              { label: 'Antes', value: 'before' },
+              { label: 'Depois', value: 'after' },
+              { label: 'Não exibir', value: 'none' },
+            ]}
+          />
+        </div>
         <Divider />
         {/* scale slider */}
         <span className="text-lg font-bold text-[#55575D] mt-4 block">
@@ -418,7 +432,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
             className="flex-grow"
             label="Escala"
             value={zoomValue}
-            onChange={handleZoomChange}
+            onChange={setZoomValue}
             max={850}
             min={1}
           />

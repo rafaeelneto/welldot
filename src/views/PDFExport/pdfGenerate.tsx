@@ -87,7 +87,7 @@ export const exportPdfProfile = (
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
-  showMetadataSection = false,
+  metadataPosition: 'before' | 'after' | null = null,
 ) => {
   const fmtLen = (m: number) => lengthUnits === 'ft' ? numberFormater.format(m * 3.28084) : numberFormater.format(m);
   const fmtDiam = (mm: number) => diameterUnits === 'inches' ? numberFormater.format(mm * 0.0393701) : numberFormater.format(mm);
@@ -200,6 +200,54 @@ export const exportPdfProfile = (
     });
   }
 
+  if (metadataPosition === 'before') {
+    const metaFields: { key: keyof Profile; label: string }[] = [
+      { key: 'name', label: 'Nome' },
+      { key: 'well_type', label: 'Tipo' },
+      { key: 'well_driller', label: 'Perfurador' },
+      { key: 'construction_date', label: 'Data de Construção' },
+      { key: 'lat', label: 'Latitude' },
+      { key: 'lng', label: 'Longitude' },
+      { key: 'elevation', label: 'Elevação' },
+      { key: 'obs', label: 'Observações' },
+    ];
+    const populated = metaFields.filter(f => {
+      const val = profile[f.key];
+      return val !== undefined && val !== null && val !== '';
+    });
+    if (populated.length > 0) {
+      const metaBody: string[][] = [];
+      for (let i = 0; i < populated.length; i += 2) {
+        const f1 = populated[i];
+        const f2 = populated[i + 1];
+        const v1 = String(profile[f1.key] ?? '');
+        if (!f2) {
+          metaBody.push([`${f1.label}: ${v1}`, '']);
+        } else {
+          const v2 = String(profile[f2.key] ?? '');
+          metaBody.push([`${f1.label}: ${v1}`, `${f2.label}: ${v2}`]);
+        }
+      }
+      content.push({ text: 'Dados do Poço', style: 'title' });
+      content.push({
+        layout: {
+          hLineWidth: (i: any, node: any) => {
+            if (i === node.table.body.length || i === 0) return 1;
+            return 0;
+          },
+          vLineWidth: () => 0,
+          hLineColor: () => '#3d3d3d',
+        },
+        table: {
+          heights: 15,
+          widths: [267.64 - 10, 267.64 - 10],
+          dontBreakRows: true,
+          body: [...metaBody],
+        },
+      });
+    }
+  }
+
   svgs.forEach((svgInfo, key) => {
     const svg = document.getElementById(svgInfo.id);
     if (!svg!.getAttribute('height') || !svg!.getAttribute('width')) {
@@ -267,7 +315,7 @@ export const exportPdfProfile = (
     });
   }
 
-  if (showMetadataSection) {
+  if (metadataPosition === 'after') {
     const metaFields: { key: keyof Profile; label: string }[] = [
       { key: 'name', label: 'Nome' },
       { key: 'well_type', label: 'Tipo' },
@@ -599,7 +647,7 @@ export const innerRenderPdf = (
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
-  showMetadataSection = false,
+  metadataPosition: 'before' | 'after' | null = null,
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -610,7 +658,7 @@ export const innerRenderPdf = (
     header,
     lengthUnits,
     diameterUnits,
-    showMetadataSection,
+    metadataPosition,
   );
   // @ts-ignore
   try {
@@ -638,7 +686,7 @@ export const printPdf = (
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
-  showMetadataSection = false,
+  metadataPosition: 'before' | 'after' | null = null,
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -649,7 +697,7 @@ export const printPdf = (
     header,
     lengthUnits,
     diameterUnits,
-    showMetadataSection,
+    metadataPosition,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
@@ -665,7 +713,7 @@ export const downloadPdf = (
   header = 'Perfil Geológico-Construtivo',
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
-  showMetadataSection = false,
+  metadataPosition: 'before' | 'after' | null = null,
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -676,7 +724,7 @@ export const downloadPdf = (
     header,
     lengthUnits,
     diameterUnits,
-    showMetadataSection,
+    metadataPosition,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
