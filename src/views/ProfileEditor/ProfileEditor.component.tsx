@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import LZString from 'lz-string';
 
 import {
   Modal,
@@ -14,6 +16,7 @@ import {
   Text,
   Stack,
 } from '@mantine/core';
+import { useClipboard } from '@mantine/hooks';
 
 // import Joyride from 'react-joyride';
 const Joyride = dynamic(() => import('react-joyride'), { ssr: false });
@@ -25,10 +28,11 @@ import {
   FolderOpenIcon,
   DocumentTextIcon,
   Cog6ToothIcon,
+  ShareIcon,
 } from '@heroicons/react/24/solid';
 
 import download from 'downloadjs';
-import { profileToWell } from '@/src/utils/profile.utils';
+import { profileToWell, checkIfProfileIsEmpty } from '@/src/utils/profile.utils';
 
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
 import Info from '@/src/components/organisms/Summary/Summary.component';
@@ -54,6 +58,8 @@ import dynamic from 'next/dynamic';
 function ProfileEditor() {
   const inputFile = useRef(null);
   const firstRun = useRef(true);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const { profile, clear, updateProfile, updateProfileFromJSON } =
     useProfileStore(state => ({
@@ -62,7 +68,11 @@ function ProfileEditor() {
 
   const { diameter_units, length_units, setDiameterUnits, setLengthUnits, coord_format, setCoordFormat } = useUIStore();
 
+  const clipboard = useClipboard({ timeout: 2000 });
+
   const [openExport, setOpenExport] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const pendingImportJson = useRef<string | null>(null);
 
   const [tabValue, setTabValue] = React.useState<string | null>('constructive');
 
@@ -78,6 +88,31 @@ function ProfileEditor() {
     updateProfileFromJSON(savedProfileJson);
     firstRun.current = false;
   }
+
+  const removeParamFromUrl = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('p');
+    const query = params.toString();
+    router.replace(query ? `?${query}` : window.location.pathname, { scroll: false });
+  };
+
+  // Detect ?p= param on mount and prompt user before overwriting
+  useEffect(() => {
+    const encoded = searchParams.get('p');
+    if (!encoded) return;
+    const json = LZString.decompressFromEncodedURIComponent(encoded);
+    if (!json) {
+      removeParamFromUrl();
+      return;
+    }
+    pendingImportJson.current = json;
+    if (checkIfProfileIsEmpty(profile)) {
+      updateProfileFromJSON(json);
+      removeParamFromUrl();
+      return;
+    }
+    setImportModalOpen(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClickFile = (_event: React.MouseEvent<HTMLButtonElement>) => {
     (inputFile?.current as HTMLButtonElement | null)?.click();
@@ -149,6 +184,57 @@ function ProfileEditor() {
           )
         }
       </div>
+      <Modal
+        opened={importModalOpen}
+        onClose={() => {
+          setImportModalOpen(false);
+          removeParamFromUrl();
+        }}
+        title="Sobrescrever perfil atual?"
+        centered
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            Um perfil foi detectado no link. Deseja substituir o perfil atual pelo perfil do link?
+          </Text>
+          <Text size="sm" c="orange" fw={500}>
+            Salve seu perfil atual antes de continuar para não perder os dados.
+          </Text>
+          <Button
+            leftSection={<ArrowDownOnSquareIcon className="h-4 w-4" />}
+            variant="light"
+            onClick={() => {
+              const wellData = profileToWell({ ...profile });
+              const blob = new Blob([wellData], { type: 'application/vnd.well+json' });
+              const safeName = (profile.name || '').replace(/ /g, '_').toLowerCase();
+              download(blob, `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`, 'application/vnd.well+json');
+            }}
+          >
+            Salvar perfil atual
+          </Button>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="default"
+              onClick={() => {
+                setImportModalOpen(false);
+                removeParamFromUrl();
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              color="red"
+              onClick={() => {
+                if (pendingImportJson.current) updateProfileFromJSON(pendingImportJson.current);
+                setImportModalOpen(false);
+                removeParamFromUrl();
+              }}
+            >
+              Sobrescrever
+            </Button>
+          </div>
+        </Stack>
+      </Modal>
       <div>
         <Modal.Root
           opened={openExport}
@@ -249,6 +335,20 @@ function ProfileEditor() {
               >
                 Limpar Perfil
               </Button>
+              <Tooltip label={clipboard.copied ? 'Link copiado!' : 'Compartilhar perfil'}>
+                <Button
+                  variant="subtle"
+                  color={clipboard.copied ? 'teal' : undefined}
+                  leftSection={<ShareIcon className="h-4 w-4" />}
+                  onClick={() => {
+                    const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(profile));
+                    const url = `${window.location.origin}${window.location.pathname}?p=${encoded}`;
+                    clipboard.copy(url);
+                  }}
+                >
+                  {clipboard.copied ? 'Copiado!' : 'Compartilhar'}
+                </Button>
+              </Tooltip>
               <Divider orientation="vertical" />
               <Tooltip label="Perfil Exemplo">
                 <IconButton
