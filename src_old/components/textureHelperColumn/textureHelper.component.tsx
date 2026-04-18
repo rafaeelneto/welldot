@@ -12,7 +12,7 @@ function TextureHelperButton() {
         variant="transparent"
         onClick={() => {
           window
-            .open(`/FGDCgeostdTM11A2web_PatternChart.pdf`, '_blank')
+            .open(`/fgdc-geolsym-patternchart.pdf`, '_blank')
             ?.focus();
         }}
       >
