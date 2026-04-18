@@ -113,6 +113,14 @@ The following extensions are planned for future versions of the `.well` format a
 
 ---
 
+## Known Issues
+
+The codebase carries some technical debt from early development. There are areas with inconsistent patterns, legacy abstractions, and code that could be better organized. These will be addressed in upcoming work, which includes extracting the core rendering and file format logic into a standalone library and improving the overall code quality.
+
+Contributions and bug reports are welcome in the meantime.
+
+---
+
 ## Licensing
 
 This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives (CC BY-NC-ND) license. See [LICENSE.md](LICENSE.md) for details.
