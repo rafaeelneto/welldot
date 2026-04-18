@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type { CoordFormat } from '@/src/utils/coords.utils';
 
 export type Units = 'metric' | 'imperial';
 export type DiameterUnits = 'mm' | 'inches';
 export type LengthUnits = 'm' | 'ft';
+export type { CoordFormat };
 
 interface IUIState {
   units: Units;
@@ -13,6 +15,7 @@ interface IUIState {
   pdf_break_pages: boolean;
   pdf_zoom_value: number;
   pdf_metadata_position: 'before' | 'after' | null;
+  coord_format: CoordFormat;
   setUnits: (units: Units) => void;
   setDiameterUnits: (diameter_units: DiameterUnits) => void;
   setLengthUnits: (length_units: LengthUnits) => void;
@@ -20,6 +23,7 @@ interface IUIState {
   setPdfBreakPages: (pdf_break_pages: boolean) => void;
   setPdfZoomValue: (pdf_zoom_value: number) => void;
   setPdfMetadataPosition: (pdf_metadata_position: 'before' | 'after' | null) => void;
+  setCoordFormat: (coord_format: CoordFormat) => void;
   reset: () => void;
 }
 
@@ -33,6 +37,7 @@ const defaultState = {
   pdf_break_pages: false,
   pdf_zoom_value: 500,
   pdf_metadata_position: 'before' as 'before' | 'after' | null,
+  coord_format: 'dd' as CoordFormat,
 };
 
 export const useUIStore = create<IUIState>()(
@@ -46,6 +51,7 @@ export const useUIStore = create<IUIState>()(
       setPdfBreakPages: (pdf_break_pages: boolean) => set({ pdf_break_pages }),
       setPdfZoomValue: (pdf_zoom_value: number) => set({ pdf_zoom_value }),
       setPdfMetadataPosition: (pdf_metadata_position: 'before' | 'after' | null) => set({ pdf_metadata_position }),
+      setCoordFormat: (coord_format: CoordFormat) => set({ coord_format }),
       reset: () => set(defaultState),
     }),
     {

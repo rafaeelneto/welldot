@@ -16,7 +16,7 @@ import {
   getProfileDiamValues,
   checkIfProfileIsEmpty,
 } from '../../utils/profile.utils';
-import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
+import { DiameterUnits, LengthUnits, CoordFormat } from '@/src/store/ui.store';
 
 import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 
@@ -49,6 +49,7 @@ const profile2Export = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  coordFormat: CoordFormat = 'dd',
 ) => {
   if (checkIfProfileIsEmpty(profile)) return;
 
@@ -1292,11 +1293,12 @@ const POCO_WIDTH = 100;
       lengthUnits,
       diameterUnits,
       metadataPosition,
+      coordFormat,
     );
   } else if (print) {
-    printPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits, metadataPosition);
+    printPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits, metadataPosition, coordFormat);
   } else {
-    downloadPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits, metadataPosition);
+    downloadPdf(profile, headingInfo, endInfo, svgs, breakPages, header, lengthUnits, diameterUnits, metadataPosition, coordFormat);
   }
 };
 

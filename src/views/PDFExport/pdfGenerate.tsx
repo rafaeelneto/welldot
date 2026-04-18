@@ -11,7 +11,8 @@ import {
   calculateHoleFillVolume,
   numberFormater,
 } from '../../utils/profile.utils';
-import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
+import { DiameterUnits, LengthUnits, CoordFormat } from '@/src/store/ui.store';
+import { formatCoord } from '@/src/utils/coords.utils';
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign
@@ -88,8 +89,14 @@ export const exportPdfProfile = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  coordFormat: CoordFormat = 'dd',
 ) => {
   const fmtLen = (m: number) => lengthUnits === 'ft' ? numberFormater.format(m * 3.28084) : numberFormater.format(m);
+  const fmtCoordField = (key: keyof typeof profile, val: unknown): string => {
+    if (key === 'lat' && typeof val === 'number') return formatCoord(val, coordFormat, true);
+    if (key === 'lng' && typeof val === 'number') return formatCoord(val, coordFormat, false);
+    return String(val ?? '');
+  };
   const fmtDiam = (mm: number) => diameterUnits === 'inches' ? numberFormater.format(mm * 0.0393701) : numberFormater.format(mm);
   const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
   const diamUnit = diameterUnits === 'inches' ? 'in' : 'mm';
@@ -220,11 +227,11 @@ export const exportPdfProfile = (
       for (let i = 0; i < populated.length; i += 2) {
         const f1 = populated[i];
         const f2 = populated[i + 1];
-        const v1 = String(profile[f1.key] ?? '');
+        const v1 = fmtCoordField(f1.key, profile[f1.key]);
         if (!f2) {
           metaBody.push([`${f1.label}: ${v1}`, '']);
         } else {
-          const v2 = String(profile[f2.key] ?? '');
+          const v2 = fmtCoordField(f2.key, profile[f2.key]);
           metaBody.push([`${f1.label}: ${v1}`, `${f2.label}: ${v2}`]);
         }
       }
@@ -335,11 +342,11 @@ export const exportPdfProfile = (
       for (let i = 0; i < populated.length; i += 2) {
         const f1 = populated[i];
         const f2 = populated[i + 1];
-        const v1 = String(profile[f1.key] ?? '');
+        const v1 = fmtCoordField(f1.key, profile[f1.key]);
         if (!f2) {
           metaBody.push([`${f1.label}: ${v1}`, '']);
         } else {
-          const v2 = String(profile[f2.key] ?? '');
+          const v2 = fmtCoordField(f2.key, profile[f2.key]);
           metaBody.push([`${f1.label}: ${v1}`, `${f2.label}: ${v2}`]);
         }
       }
@@ -648,6 +655,7 @@ export const innerRenderPdf = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  coordFormat: CoordFormat = 'dd',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -659,6 +667,7 @@ export const innerRenderPdf = (
     lengthUnits,
     diameterUnits,
     metadataPosition,
+    coordFormat,
   );
   // @ts-ignore
   try {
@@ -687,6 +696,7 @@ export const printPdf = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  coordFormat: CoordFormat = 'dd',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -698,6 +708,7 @@ export const printPdf = (
     lengthUnits,
     diameterUnits,
     metadataPosition,
+    coordFormat,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
@@ -714,6 +725,7 @@ export const downloadPdf = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  coordFormat: CoordFormat = 'dd',
 ) => {
   const docDefinition = exportPdfProfile(
     profile,
@@ -725,6 +737,7 @@ export const downloadPdf = (
     lengthUnits,
     diameterUnits,
     metadataPosition,
+    coordFormat,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);

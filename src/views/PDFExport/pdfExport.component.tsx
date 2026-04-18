@@ -258,6 +258,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     pdf_break_pages: breakPages,
     pdf_zoom_value: zoomValue,
     pdf_metadata_position: metadataPosition,
+    coord_format: coordFormat,
     setPdfHeader: setHeader,
     setPdfBreakPages: setBreakPages,
     setPdfZoomValue: setZoomValue,
@@ -288,6 +289,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           length_units,
           diameter_units,
           metadataPosition,
+          coordFormat,
         );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`);
@@ -295,7 +297,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
 
       onChangeInfo({ ...profile, info: { headingInfo, endInfo } });
     }, 1000);
-  }, [headingInfo, header, endInfo, breakPages, zoomValue, length_units, diameter_units, metadataPosition]);
+  }, [headingInfo, header, endInfo, breakPages, zoomValue, length_units, diameter_units, metadataPosition, coordFormat]);
 
   const handleBreakChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBreakPages(event.target.checked);
@@ -347,6 +349,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               length_units,
               diameter_units,
               metadataPosition,
+              coordFormat,
             );
             // @ts-ignore
             if (window.gtag) {
@@ -387,6 +390,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               length_units,
               diameter_units,
               metadataPosition,
+              coordFormat,
             );
           }}
           leftSection={<Printer className="h-4 w-4" />}
