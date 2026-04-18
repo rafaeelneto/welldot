@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Extension:** `.well`
 **Encoding:** UTF-8
-**Base format:** Minified JSON
+**Base format:** JSON
 
 ---
 
@@ -21,326 +21,339 @@ The `.well` format is an open standard for representing water well data. It is d
 
 ## Design Principles
 
-- **Compact keys** — all property names are abbreviated to 2–3 characters for efficient storage and transmission
-- **Versioned** — includes a `v` field for forward compatibility; parsers must reject unrecognized versions
+- **Self-describing** — full field names are used throughout; a `.well` file can be read and understood without consulting the spec
+- **Versioned** — includes a `version` field for forward compatibility; parsers must reject unrecognized versions
 - **Self-contained** — a single file encodes the complete static record of one well
-- **Lossless** — no information is lost relative to the full TypeScript `Profile` type
 - **SI units** — all depths are in meters, all diameters in millimeters; applications are responsible for unit conversion on display
 - **Geographic north** — all azimuth values are referenced to geographic north
-- **Ground level as zero** — all depth values are measured from ground level (0); elevation above sea level is stored separately in the `el` field
-
----
-
-## Formats
-
-The `.well` standard is defined in two forms that carry identical information.
-
-### `.well` — Compact form
-
-The primary interchange format. A single-line minified JSON object with abbreviated keys. Intended for file storage, transmission, and use by tools and libraries.
-
-```
-application/vnd.well+json
-```
-
-Example:
-
-```
-{"v":1,"wt":"tubular","n":"Poço PP-01","dr":"Perfuradora XYZ","cd":"2024-03-15","lt":-1.4558,"lg":-48.5039,"el":12.5,"ob":"Sem anomalias","bh":[{"f":0,"t":80,"d":250,"dm":"rotary"}],"wc":[{"f":0,"t":60,"ty":"steel","d":200}],"rd":[{"f":58,"t":60,"df":200,"d2":150,"ty":"conical"}],"ws":[{"f":60,"t":80,"ty":"pvc","d":150,"sl":0.5}],"sc":[{"f":0,"t":3,"d":300}],"hf":[{"f":60,"t":80,"ty":"gravel_pack","d":250,"ds":"Seixo 2-4mm"}],"cp":{"ty":"square","w":1.0,"th":0.15,"l":1.0},"li":[{"f":0,"t":20,"ds":"Areia fina","cl":"#f5deb3","tx":"sand","gu":"Quaternário","au":"freático"},{"f":20,"t":80,"ds":"Granito fraturado","cl":"#a9a9a9","tx":"granite","gu":"Embasamento","au":"fraturado"}],"fr":[{"dp":45.2,"wi":true,"ds":"Fratura aberta","sw":false,"az":120,"di":35},{"dp":62.0,"wi":false,"ds":"Fratura swarm","sw":true,"az":90,"di":70}],"cv":[{"f":50,"t":52,"wi":false,"ds":"Caverna seca"}]}
-```
-
-### `.well.json` — Expanded form
-
-A pretty-printed JSON file with the same abbreviated keys. Intended for human inspection, version control, and debugging. Parsers that accept `.well` must also accept `.well.json`; the two forms are semantically identical.
-
-```
-application/vnd.well+json
-```
-
-Example:
-
-```json
-{
-  "v": 1,
-  "wt": "tubular",
-  "n": "Poço PP-01",
-  "dr": "Perfuradora XYZ",
-  "cd": "2024-03-15",
-  "lt": -1.4558,
-  "lg": -48.5039,
-  "el": 12.5,
-  "ob": "Sem anomalias",
-  "bh": [{ "f": 0, "t": 80, "d": 250, "dm": "rotary" }],
-  "wc": [{ "f": 0, "t": 60, "ty": "steel", "d": 200 }],
-  "rd": [{ "f": 58, "t": 60, "df": 200, "d2": 150, "ty": "conical" }],
-  "ws": [{ "f": 60, "t": 80, "ty": "pvc", "d": 150, "sl": 0.5 }],
-  "sc": [{ "f": 0, "t": 3, "d": 300 }],
-  "hf": [{ "f": 60, "t": 80, "ty": "gravel_pack", "d": 250, "ds": "Seixo 2-4mm" }],
-  "cp": { "ty": "square", "w": 1.0, "th": 0.15, "l": 1.0 },
-  "li": [
-    { "f": 0,  "t": 20, "ds": "Areia fina",       "cl": "#f5deb3", "tx": "sand",    "gu": "Quaternário", "au": "freático"  },
-    { "f": 20, "t": 80, "ds": "Granito fraturado", "cl": "#a9a9a9", "tx": "granite", "gu": "Embasamento", "au": "fraturado" }
-  ],
-  "fr": [
-    { "dp": 45.2, "wi": true,  "ds": "Fratura aberta", "sw": false, "az": 120, "di": 35 },
-    { "dp": 62.0, "wi": false, "ds": "Fratura swarm",  "sw": true,  "az": 90,  "di": 70 }
-  ],
-  "cv": [{ "f": 50, "t": 52, "wi": false, "ds": "Caverna seca" }]
-}
-```
+- **Ground level as zero** — all depth values are measured from ground level (0); elevation above sea level is stored separately in the `elevation` field
 
 ---
 
 ## File Structure
 
-A `.well` file is a single JSON object with the following top-level sections:
+A `.well` file is a JSON object with the following top-level structure:
 
-```
+```json
 {
-  "v":  <version>,          // format version (integer)
+  "version": 1,
 
-  // Well identity
-  "wt": <well_type>,
-  "n":  <name>,
-  "dr": <driller>,
-  "cd": <construction_date>,
-  "lt": <latitude>,
-  "lg": <longitude>,
-  "el": <elevation>,
-  "ob": <observations>,
+  "well_type": "tubular",
+  "name": "Poço PP-01",
+  "well_driller": "Perfuradora XYZ",
+  "construction_date": "2024-03-15",
+  "lat": -1.4558,
+  "lng": -48.5039,
+  "elevation": 12.5,
+  "obs": "Observações livres",
 
-  // Constructive elements
-  "bh": [ <BoreHole>, ... ],
-  "wc": [ <WellCase>, ... ],
-  "rd": [ <Reduction>, ... ],
-  "ws": [ <WellScreen>, ... ],
-  "sc": [ <SurfaceCase>, ... ],
-  "hf": [ <HoleFill>, ... ],
-  "cp": <CementPad>,
+  "bore_hole": [ ... ],
+  "well_case": [ ... ],
+  "reduction": [ ... ],
+  "well_screen": [ ... ],
+  "surface_case": [ ... ],
+  "hole_fill": [ ... ],
+  "cement_pad": { ... },
 
-  // Geological elements
-  "li": [ <Lithology>, ... ],
-  "fr": [ <Fracture>, ... ],
-  "cv": [ <Cave>, ... ]
+  "lithology": [ ... ],
+  "fractures": [ ... ],
+  "caves": [ ... ]
 }
 ```
 
 ---
 
-## Key Reference Table
+## Top-level Fields
 
-### Top-level / Metadata
-
-| Full field          | Compact key | Type    | Required |
-|---------------------|-------------|---------|----------|
-| `version`           | `v`         | integer | yes      |
-| `well_type`         | `wt`        | string  | yes      |
-| `name`              | `n`         | string  | no       |
-| `well_driller`      | `dr`        | string  | no       |
-| `construction_date` | `cd`        | string  | no       |
-| `lat`               | `lt`        | number  | no       |
-| `lng`               | `lg`        | number  | no       |
-| `elevation`         | `el`        | number  | no       |
-| `obs`               | `ob`        | string  | no       |
-
-`construction_date` uses key `cd` (not `dt`) to avoid collision with `diam_to` which uses `d2`.
+| Field               | Type    | Required | Description                                      |
+|---------------------|---------|----------|--------------------------------------------------|
+| `version`           | integer | yes      | Format version. Must be `1` for this spec.       |
+| `well_type`         | string  | yes      | Classification of the well. See vocabulary below.|
+| `name`              | string  | no       | Well name or local identifier.                   |
+| `well_driller`      | string  | no       | Name of the drilling company or individual.      |
+| `construction_date` | string  | no       | ISO 8601 date of well completion (YYYY-MM-DD).   |
+| `lat`               | number  | no       | Latitude in decimal degrees (WGS84).             |
+| `lng`               | number  | no       | Longitude in decimal degrees (WGS84).            |
+| `elevation`         | number  | no       | Ground elevation above sea level in meters.      |
+| `obs`               | string  | no       | Free-text observations about the well.           |
 
 ### `well_type` — Recommended values
 
-| Value                  | Description                                        |
-|------------------------|----------------------------------------------------|
-| `tubular`              | Conventional rotary or percussion drilled well     |
-| `artesian`             | Free-flowing artesian well                         |
-| `hand_dug`             | Manually excavated well or cistern                 |
-| `horizontal`           | Horizontal or sub-horizontal well                  |
-| `infiltration_gallery` | Horizontal subsurface infiltration gallery         |
+| Value                  | Description                                    |
+|------------------------|------------------------------------------------|
+| `tubular`              | Conventional rotary or percussion drilled well |
+| `artesian`             | Free-flowing artesian well                     |
+| `hand_dug`             | Manually excavated well or cistern             |
+| `horizontal`           | Horizontal or sub-horizontal well              |
+| `infiltration_gallery` | Horizontal subsurface infiltration gallery     |
 
 The `well_type` field accepts any string. The values above are the recommended vocabulary for interoperability. Tools should treat unrecognized values gracefully.
-
-### Shared field abbreviations
-
-| Full field    | Compact key | Notes                        |
-|---------------|-------------|------------------------------|
-| `from`        | `f`         | Depth in meters              |
-| `to`          | `t`         | Depth in meters              |
-| `diameter`    | `d`         | Diameter in millimeters      |
-| `type`        | `ty`        | String identifier            |
-| `description` | `ds`        | Free text                    |
 
 ---
 
 ## Object Schemas
 
-### `BoreHole` — `bh[]`
+### `BoreHole` — `bore_hole[]`
 
-| Full field        | Key  | Type   | Required |
-|-------------------|------|--------|----------|
-| `from`            | `f`  | number | yes      |
-| `to`              | `t`  | number | yes      |
-| `diameter`        | `d`  | number | yes      |
-| `drilling_method` | `dm` | string | no       |
+Represents a drilled interval of the borehole. Multiple entries describe a telescoping borehole with different diameters at different depth ranges.
+
+| Field             | Type   | Required | Description                        |
+|-------------------|--------|----------|------------------------------------|
+| `from`            | number | yes      | Start depth in meters.             |
+| `to`              | number | yes      | End depth in meters.               |
+| `diameter`        | number | yes      | Borehole diameter in millimeters.  |
+| `drilling_method` | string | no       | Method used (e.g. `rotary`, `percussion`, `cable_tool`). |
 
 ```json
-{ "f": 0, "t": 80, "d": 250, "dm": "rotary" }
+{ "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
 ```
 
 ---
 
-### `WellCase` — `wc[]`
+### `WellCase` — `well_case[]`
 
-| Full field | Key  | Type   | Required |
-|------------|------|--------|----------|
-| `from`     | `f`  | number | yes      |
-| `to`       | `t`  | number | yes      |
-| `type`     | `ty` | string | yes      |
-| `diameter` | `d`  | number | yes      |
+Steel or plastic casing installed inside the borehole.
 
-Recommended values for `ty`: `steel`, `pvc`, `hdpe`, `fiberglass`.
+| Field      | Type   | Required | Description                         |
+|------------|--------|----------|-------------------------------------|
+| `from`     | number | yes      | Start depth in meters.              |
+| `to`       | number | yes      | End depth in meters.                |
+| `type`     | string | yes      | Casing material. Recommended: `steel`, `pvc`, `hdpe`, `fiberglass`. |
+| `diameter` | number | yes      | Casing outer diameter in millimeters.|
 
 ```json
-{ "f": 0, "t": 60, "ty": "steel", "d": 200 }
+{ "from": 0, "to": 60, "type": "steel", "diameter": 200 }
 ```
 
 ---
 
-### `Reduction` — `rd[]`
+### `Reduction` — `reduction[]`
 
-| Full field  | Key  | Type   | Required |
-|-------------|------|--------|----------|
-| `from`      | `f`  | number | yes      |
-| `to`        | `t`  | number | yes      |
-| `diam_from` | `df` | number | yes      |
-| `diam_to`   | `d2` | number | yes      |
-| `type`      | `ty` | string | yes      |
+A transition piece connecting two casing or screen sections of different diameters.
+
+| Field       | Type   | Required | Description                              |
+|-------------|--------|----------|------------------------------------------|
+| `from`      | number | yes      | Start depth in meters.                   |
+| `to`        | number | yes      | End depth in meters.                     |
+| `diam_from` | number | yes      | Diameter at the top of the reducer in mm.|
+| `diam_to`   | number | yes      | Diameter at the bottom of the reducer in mm.|
+| `type`      | string | yes      | Reducer type (e.g. `conical`, `stepped`).|
 
 ```json
-{ "f": 58, "t": 60, "df": 200, "d2": 150, "ty": "conical" }
+{ "from": 58, "to": 60, "diam_from": 200, "diam_to": 150, "type": "conical" }
 ```
 
 ---
 
-### `WellScreen` — `ws[]`
+### `WellScreen` — `well_screen[]`
 
-| Full field       | Key  | Type   | Required |
-|------------------|------|--------|----------|
-| `from`           | `f`  | number | yes      |
-| `to`             | `t`  | number | yes      |
-| `type`           | `ty` | string | yes      |
-| `diameter`       | `d`  | number | yes      |
-| `screen_slot_mm` | `sl` | number | yes      |
+Slotted or wire-wound screen section that allows water to enter the well.
 
-Recommended values for `ty`: `wire_wound`, `bridge_slot`, `louvered`, `pvc_slotted`.
+| Field            | Type   | Required | Description                              |
+|------------------|--------|----------|------------------------------------------|
+| `from`           | number | yes      | Start depth in meters.                   |
+| `to`             | number | yes      | End depth in meters.                     |
+| `type`           | string | yes      | Screen type. Recommended: `wire_wound`, `bridge_slot`, `louvered`, `pvc_slotted`. |
+| `diameter`       | number | yes      | Screen outer diameter in millimeters.    |
+| `screen_slot_mm` | number | yes      | Slot opening size in millimeters.        |
 
 ```json
-{ "f": 60, "t": 80, "ty": "wire_wound", "d": 150, "sl": 0.5 }
+{ "from": 60, "to": 80, "type": "wire_wound", "diameter": 150, "screen_slot_mm": 0.5 }
 ```
 
 ---
 
-### `SurfaceCase` — `sc[]`
+### `SurfaceCase` — `surface_case[]`
 
-| Full field | Key | Type   | Required |
-|------------|-----|--------|----------|
-| `from`     | `f` | number | yes      |
-| `to`       | `t` | number | yes      |
-| `diameter` | `d` | number | yes      |
+Outer protective casing installed near the surface, typically to prevent surface contamination.
+
+| Field      | Type   | Required | Description                               |
+|------------|--------|----------|-------------------------------------------|
+| `from`     | number | yes      | Start depth in meters.                    |
+| `to`       | number | yes      | End depth in meters.                      |
+| `diameter` | number | yes      | Casing outer diameter in millimeters.     |
 
 ```json
-{ "f": 0, "t": 3, "d": 300 }
+{ "from": 0, "to": 3, "diameter": 300 }
 ```
 
 ---
 
-### `HoleFill` — `hf[]`
+### `HoleFill` — `hole_fill[]`
 
-| Full field    | Key  | Type                        | Required |
-|---------------|------|-----------------------------|----------|
-| `from`        | `f`  | number                      | yes      |
-| `to`          | `t`  | number                      | yes      |
-| `type`        | `ty` | `"gravel_pack"` or `"seal"` | yes      |
-| `diameter`    | `d`  | number                      | yes      |
-| `description` | `ds` | string                      | yes      |
+Material placed in the annular space between the casing and the borehole wall.
+
+| Field         | Type   | Required | Description                                      |
+|---------------|--------|----------|--------------------------------------------------|
+| `from`        | number | yes      | Start depth in meters.                           |
+| `to`          | number | yes      | End depth in meters.                             |
+| `type`        | string | yes      | Either `gravel_pack` or `seal`.                  |
+| `diameter`    | number | yes      | Outer diameter of the filled annulus in mm.      |
+| `description` | string | yes      | Material description (e.g. grain size, material).|
 
 ```json
-{ "f": 60, "t": 80, "ty": "gravel_pack", "d": 250, "ds": "Seixo 2-4mm" }
+{ "from": 60, "to": 80, "type": "gravel_pack", "diameter": 250, "description": "Seixo 2-4mm" }
 ```
 
 ---
 
-### `CementPad` — `cp`
+### `CementPad` — `cement_pad`
 
-The cement pad is always positioned at ground level (depth 0). Its dimensions are expressed in meters.
+The concrete pad installed at ground level (depth 0) around the wellhead. Dimensions are in meters.
 
-| Full field  | Key  | Type   | Required |
-|-------------|------|--------|----------|
-| `type`      | `ty` | string | yes      |
-| `width`     | `w`  | number | yes      |
-| `thickness` | `th` | number | yes      |
-| `length`    | `l`  | number | yes      |
+| Field       | Type   | Required | Description                              |
+|-------------|--------|----------|------------------------------------------|
+| `type`      | string | yes      | Pad shape (e.g. `square`, `rectangular`, `circular`). |
+| `width`     | number | yes      | Width in meters.                         |
+| `thickness` | number | yes      | Thickness in meters.                     |
+| `length`    | number | yes      | Length in meters.                        |
 
 ```json
-{ "ty": "square", "w": 1.0, "th": 0.15, "l": 1.0 }
+{ "type": "square", "width": 1.0, "thickness": 0.15, "length": 1.0 }
 ```
 
 ---
 
-### `Lithology` — `li[]`
+### `Lithology` — `lithology[]`
 
-| Full field      | Key  | Type         | Required |
-|-----------------|------|--------------|----------|
-| `from`          | `f`  | number       | yes      |
-| `to`            | `t`  | number       | yes      |
-| `description`   | `ds` | string       | yes      |
-| `color`         | `cl` | string (hex) | yes      |
-| `fgdc_texture`  | `tx` | string       | yes      |
-| `geologic_unit` | `gu` | string       | yes      |
-| `aquifer_unit`  | `au` | string       | yes      |
+Geological description of a depth interval.
 
-`fgdc_texture` should follow the FGDC Digital Cartographic Standard for Geologic Map Symbolization texture vocabulary.
+| Field           | Type   | Required | Description                                       |
+|-----------------|--------|----------|---------------------------------------------------|
+| `from`          | number | yes      | Start depth in meters.                            |
+| `to`            | number | yes      | End depth in meters.                              |
+| `description`   | string | yes      | Free-text geological description.                 |
+| `color`         | string | yes      | Representative color as a CSS hex value.          |
+| `fgdc_texture`  | string | yes      | Texture code per the FGDC Digital Cartographic Standard for Geologic Map Symbolization. |
+| `geologic_unit` | string | yes      | Name of the stratigraphic or geologic unit.       |
+| `aquifer_unit`  | string | yes      | Aquifer classification (e.g. `freático`, `confinado`, `fraturado`). |
 
 ```json
-{ "f": 0, "t": 20, "ds": "Areia fina", "cl": "#f5deb3", "tx": "sand", "gu": "Quaternário", "au": "freático" }
+{
+  "from": 0,
+  "to": 20,
+  "description": "Areia fina amarelada",
+  "color": "#f5deb3",
+  "fgdc_texture": "sand",
+  "geologic_unit": "Quaternário",
+  "aquifer_unit": "freático"
+}
 ```
 
 ---
 
-### `Fracture` — `fr[]`
+### `Fracture` — `fractures[]`
 
-| Full field     | Key  | Type    | Required |
-|----------------|------|---------|----------|
-| `depth`        | `dp` | number  | yes      |
-| `water_intake` | `wi` | boolean | yes      |
-| `description`  | `ds` | string  | yes      |
-| `swarm`        | `sw` | boolean | yes      |
-| `azimuth`      | `az` | number  | yes      |
-| `dip`          | `di` | number  | yes      |
+A discrete fracture or fracture zone intersected by the borehole.
 
-`azimuth` is measured in degrees from geographic north (0–360). `dip` is measured in degrees from horizontal (0–90).
+| Field          | Type    | Required | Description                                                   |
+|----------------|---------|----------|---------------------------------------------------------------|
+| `depth`        | number  | yes      | Depth of the fracture in meters.                              |
+| `water_intake` | boolean | yes      | Whether the fracture produces water.                          |
+| `description`  | string  | yes      | Free-text description.                                        |
+| `swarm`        | boolean | yes      | Whether this fracture belongs to a swarm (closely spaced set).|
+| `azimuth`      | number  | yes      | Azimuth in degrees from geographic north (0–360).             |
+| `dip`          | number  | yes      | Dip angle in degrees from horizontal (0–90).                  |
 
 ```json
-{ "dp": 45.2, "wi": true, "ds": "Fratura aberta", "sw": false, "az": 120, "di": 35 }
+{ "depth": 45.2, "water_intake": true, "description": "Fratura aberta", "swarm": false, "azimuth": 120, "dip": 35 }
 ```
 
 ---
 
-### `Cave` — `cv[]`
+### `Cave` — `caves[]`
 
-| Full field     | Key  | Type    | Required |
-|----------------|------|---------|----------|
-| `from`         | `f`  | number  | yes      |
-| `to`           | `t`  | number  | yes      |
-| `water_intake` | `wi` | boolean | yes      |
-| `description`  | `ds` | string  | yes      |
+A cavity or void zone intersected by the borehole.
+
+| Field          | Type    | Required | Description                          |
+|----------------|---------|----------|--------------------------------------|
+| `from`         | number  | yes      | Start depth in meters.               |
+| `to`           | number  | yes      | End depth in meters.                 |
+| `water_intake` | boolean | yes      | Whether the cave produces water.     |
+| `description`  | string  | yes      | Free-text description.               |
 
 ```json
-{ "f": 50, "t": 52, "wi": false, "ds": "Caverna seca" }
+{ "from": 50, "to": 52, "water_intake": false, "description": "Caverna seca" }
+```
+
+---
+
+## Complete Example
+
+```json
+{
+  "version": 1,
+  "well_type": "tubular",
+  "name": "Poço PP-01",
+  "well_driller": "Perfuradora XYZ",
+  "construction_date": "2024-03-15",
+  "lat": -1.4558,
+  "lng": -48.5039,
+  "elevation": 12.5,
+  "obs": "Sem anomalias observadas durante a perfuração.",
+
+  "bore_hole": [
+    { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
+  ],
+
+  "well_case": [
+    { "from": 0, "to": 60, "type": "steel", "diameter": 200 }
+  ],
+
+  "reduction": [
+    { "from": 58, "to": 60, "diam_from": 200, "diam_to": 150, "type": "conical" }
+  ],
+
+  "well_screen": [
+    { "from": 60, "to": 80, "type": "wire_wound", "diameter": 150, "screen_slot_mm": 0.5 }
+  ],
+
+  "surface_case": [
+    { "from": 0, "to": 3, "diameter": 300 }
+  ],
+
+  "hole_fill": [
+    { "from": 60, "to": 80, "type": "gravel_pack", "diameter": 250, "description": "Seixo 2-4mm" },
+    { "from": 3,  "to": 60, "type": "seal",         "diameter": 250, "description": "Cimento" }
+  ],
+
+  "cement_pad": { "type": "square", "width": 1.0, "thickness": 0.15, "length": 1.0 },
+
+  "lithology": [
+    {
+      "from": 0, "to": 20,
+      "description": "Areia fina amarelada",
+      "color": "#f5deb3",
+      "fgdc_texture": "sand",
+      "geologic_unit": "Quaternário",
+      "aquifer_unit": "freático"
+    },
+    {
+      "from": 20, "to": 80,
+      "description": "Granito fraturado cinza",
+      "color": "#a9a9a9",
+      "fgdc_texture": "granite",
+      "geologic_unit": "Embasamento Cristalino",
+      "aquifer_unit": "fraturado"
+    }
+  ],
+
+  "fractures": [
+    { "depth": 45.2, "water_intake": true,  "description": "Fratura aberta",       "swarm": false, "azimuth": 120, "dip": 35 },
+    { "depth": 62.0, "water_intake": false, "description": "Fratura de cisalhamento", "swarm": true,  "azimuth": 90,  "dip": 70 }
+  ],
+
+  "caves": [
+    { "from": 50, "to": 52, "water_intake": false, "description": "Caverna seca" }
+  ]
+}
 ```
 
 ---
 
 ## Versioning
 
-The `v` field must always be present and is an integer starting at `1`. Parsers must reject files with an unrecognized `v` value and should warn when `v` is absent.
+The `version` field must always be present and is an integer starting at `1`. Parsers must reject files with an unrecognized `version` value and should warn when `version` is absent.
 
 | Version | Description                   |
 |---------|-------------------------------|
@@ -350,14 +363,11 @@ A `hydro` block for dynamic hydrological data (static level, dynamic level, pump
 
 ---
 
-## Key Collision Reference
+## MIME Type
 
-| Concern                            | Resolution                             |
-|------------------------------------|----------------------------------------|
-| `construction_date` vs `diam_to`   | `cd` for date, `d2` for `diam_to`     |
-| `depth` (fracture) vs `diameter`   | `dp` for depth, `d` for diameter      |
-| `dip` vs `diameter`                | `di` for dip, `d` for diameter        |
-| `description` vs `drilling_method` | `ds` for description, `dm` for method |
+```
+application/vnd.well+json
+```
 
 ---
 
