@@ -248,9 +248,10 @@ export const exportPdfProfile = (
 
   const content: any[] = [];
 
+  content.push({ text: ' ' });
+  
   if (headingInfo.length > 0) {
 
-    content.push({ text: ' ' });
 
     const maxColumns = 4;
 
