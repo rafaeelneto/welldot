@@ -38,12 +38,15 @@ const d3 = {
 
 const DARK_GRAY = '#303030';
 
+export const A4_SVG_HEIGHT = 480 * 1.33;
+
 export function buildSvgProfiles(props: {
     profile: Profile;
     lengthUnits: LengthUnits,
     diameterUnits: DiameterUnits,
     breakPages?: boolean,
     zoomLevel?: number,
+    firstPageAvailableHeight?: number,
 }) {
     const {
         profile,
@@ -51,6 +54,7 @@ export function buildSvgProfiles(props: {
         diameterUnits = 'mm',
         breakPages = false,
         zoomLevel = 1,
+        firstPageAvailableHeight,
     } = props;
     const fmtDiam = (mm: number): string => diameterUnits === 'inches' ? (mm * 0.0393701).toFixed(2) : String(mm);
   const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
@@ -95,8 +99,7 @@ const POCO_WIDTH = 100;
   const svgTotalHeight = ((1 / zoomLevel) * maxYValues * 1000 * 72) / 25.4;
   const svgs: SvgInfo[] = [];
 
-  const A4_SVG_HEIGHT = 480 * 1.33;
-
+  
 
   const yScaleGlobal = d3
     .scaleLinear()
@@ -114,12 +117,16 @@ const POCO_WIDTH = 100;
     let index = 1;
 
     while (heightLeft > 0) {
+      const pageHeight = index === 1 && firstPageAvailableHeight != null
+        ? Math.max(firstPageAvailableHeight, 50)
+        : A4_SVG_HEIGHT;
+
       svgs.push({
         id: `svgCanvas${index}`,
-        height: heightLeft > A4_SVG_HEIGHT ? A4_SVG_HEIGHT : heightLeft,
+        height: heightLeft > pageHeight ? pageHeight : heightLeft,
       });
 
-      heightLeft -= A4_SVG_HEIGHT;
+      heightLeft -= pageHeight;
       index += 1;
     }
   } else {
@@ -1300,6 +1307,7 @@ const POCO_WIDTH = 100;
       if (geologicData) {
         const filtered = geologicData.filter(filterByDepth);
         drawUnitLabels(filtered, yScaleLocal);
+        updateLithologyLabels(filtered || [], yScaleLocal);
         updateGeology(filtered, yScaleLocal);
       }
 
@@ -1326,9 +1334,6 @@ const POCO_WIDTH = 100;
       };
 
       if (constructionData) updatePoco(drawConstructionData, yScaleLocal);
-
-      const filtered = geologicData.filter(filterByDepth);
-      updateLithologyLabels(filtered || [], yScaleLocal);
     }
   };
 

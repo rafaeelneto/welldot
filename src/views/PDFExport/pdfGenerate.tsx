@@ -14,7 +14,7 @@ import {
 import { DiameterUnits, LengthUnits, CoordFormat, useUIStore } from '@/src/store/ui.store';
 import { formatCoord } from '@/src/utils/coords.utils';
 import { width } from 'pdfkit/js/page';
-import { buildSvgProfiles } from './buildSvgProfiles';
+import { buildSvgProfiles, A4_SVG_HEIGHT } from './buildSvgProfiles';
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign
@@ -277,7 +277,18 @@ export const exportPdfProfile = (
     
   }
 
-  const svgs: SvgInfo[] = buildSvgProfiles({ profile, lengthUnits: lenUnit, diameterUnits: diamUnit === 'mm' ? 'mm' : 'inches', breakPages: breakPages, zoomLevel});
+  const PT_TO_PX = 1.33;
+  let firstPageUsedHeight = 13 * PT_TO_PX; // spacer before SVG content
+  if (headingInfo.length > 0) {
+    firstPageUsedHeight += Math.ceil(headingInfo.length / 4) * 13 * PT_TO_PX;
+  }
+  if (metadataPosition === 'before') {
+    firstPageUsedHeight += 10 * PT_TO_PX; // 'Dados do Poço' title
+    firstPageUsedHeight += 3 * 13 * PT_TO_PX; // profile metadata table (max 3 rows × 3 cols)
+  }
+  const firstPageAvailableHeight = A4_SVG_HEIGHT - firstPageUsedHeight;
+
+  const svgs: SvgInfo[] = buildSvgProfiles({ profile, lengthUnits: lenUnit, diameterUnits: diamUnit === 'mm' ? 'mm' : 'inches', breakPages: breakPages, zoomLevel, firstPageAvailableHeight });
 
   svgs.forEach((svgInfo, key) => {
     const svg = document.getElementById(svgInfo.id);
