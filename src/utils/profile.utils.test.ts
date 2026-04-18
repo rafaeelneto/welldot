@@ -276,6 +276,11 @@ describe('convertProfileFromJSON — new format (passthrough)', () => {
 // ---------------------------------------------------------------------------
 
 describe('convertProfileFromJSON — metadata fields', () => {
+  it('preserves well_type from new-format profile', () => {
+    const profile = { ...minimalNewProfile, well_type: 'tubular' };
+    expect(convertProfileFromJSON(toJSON(profile))?.well_type).toBe('tubular');
+  });
+
   it('preserves name from legacy profile', () => {
     const profile = { ...minimalLegacyProfile, name: 'Well-01' };
     expect(convertProfileFromJSON(toJSON(profile))?.name).toBe('Well-01');
@@ -432,7 +437,17 @@ describe('profileToWell — serialisation', () => {
   });
 
   it('sets version to 1', () => {
-    expect(JSON.parse(profileToWell(fullProfile)).v).toBe(1);
+    expect(JSON.parse(profileToWell(fullProfile)).version).toBe(1);
+  });
+
+  it('serialises well_type when present', () => {
+    const p: Profile = { ...fullProfile, well_type: 'tubular' };
+    expect(JSON.parse(profileToWell(p)).well_type).toBe('tubular');
+  });
+
+  it('omits well_type when absent', () => {
+    const { well_type: _, ...noType } = fullProfile as any;
+    expect(JSON.parse(profileToWell(noType))).not.toHaveProperty('well_type');
   });
 
   it('serialises metadata with full key names', () => {
@@ -515,12 +530,17 @@ describe('profileToWell — serialisation', () => {
 // ---------------------------------------------------------------------------
 
 describe('convertProfileFromJSON — .well format', () => {
-  it('detects .well format via v field and does not throw', () => {
+  it('detects .well format via version field and does not throw', () => {
     expect(() => convertProfileFromJSON(profileToWell(fullProfile))).not.toThrow();
   });
 
   it('throws on unsupported version', () => {
-    expect(() => convertProfileFromJSON(JSON.stringify({ v: 99 }))).toThrow('Unsupported .well format version: 99');
+    expect(() => convertProfileFromJSON(JSON.stringify({ version: 99 }))).toThrow('Unsupported .well format version: 99');
+  });
+
+  it('round-trips well_type losslessly', () => {
+    const p: Profile = { ...fullProfile, well_type: 'artesian' };
+    expect(convertProfileFromJSON(profileToWell(p))?.well_type).toBe('artesian');
   });
 
   it('round-trips metadata losslessly', () => {
@@ -585,7 +605,7 @@ describe('convertProfileFromJSON — .well format', () => {
   });
 
   it('defaults empty arrays when sections are absent', () => {
-    const minimal = JSON.stringify({ v: 1, name: 'test', lithology: [{ from: 0, to: 10, description: 'x', color: '#fff', fgdc_texture: 'sand', geologic_unit: '', aquifer_unit: '' }] });
+    const minimal = JSON.stringify({ version: 1, name: 'test', lithology: [{ from: 0, to: 10, description: 'x', color: '#fff', fgdc_texture: 'sand', geologic_unit: '', aquifer_unit: '' }] });
     const result = convertProfileFromJSON(minimal)!;
     expect(result.bore_hole).toEqual([]);
     expect(result.fractures).toEqual([]);
