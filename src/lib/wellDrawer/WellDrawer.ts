@@ -512,28 +512,6 @@ export class WellDrawer {
       constructionGroup.selectAll('.cement_pad').remove();
 
       if (data.cement_pad && data.cement_pad.thickness) {
-        const tipCP = d3
-          // @ts-ignore
-          .tip()
-          .attr('class', this.customClassNames.tooltip)
-          .direction('e')
-          .html((element, d: CementPad) => {
-            return `
-              <span class="${this.customClassNames.tooltipTitle}">LAJE DE PROTEÇÃO</span>
-              <span class="${this.customClassNames.tooltipPrimaryInfo}">${data.cement_pad.type}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Espessura:</strong>
-              ${this.fmtLen(data.cement_pad.thickness)} ${this.lenUnit}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Largura:</strong> ${this.fmtLen(data.cement_pad.width)} ${this.lenUnit}
-              </span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Comprimento:</strong> ${this.fmtLen(data.cement_pad.length)} ${this.lenUnit}
-              </span>
-            `;
-          });
-
-        svg.call(tipCP);
-
         const cementPad = cementPadGroup
           .selectAll('rect')
           .data([data.cement_pad]);
@@ -560,7 +538,7 @@ export class WellDrawer {
           .style('stroke', '#303030')
           .style('stroke-width', '2px');
 
-        newCementPad.on('mouseover', tipCP.show).on('mouseout', tipCP.hide);
+        newCementPad.on('mouseover', tooltips.cementPad.show).on('mouseout', tooltips.cementPad.hide);
       }
 
       const hole = holeGroup.selectAll('rect').data(data.bore_hole);

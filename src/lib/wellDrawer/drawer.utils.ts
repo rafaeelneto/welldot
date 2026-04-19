@@ -5,7 +5,7 @@ import textures from 'textures';
 
 import fdgcTextures from '@/src_old/utils/fgdcTextures';
 
-import { BoreHole, Cave, Fracture, HoleFill, Lithology, SurfaceCase, WellCase, WellScreen } from '@/src/lib/@types/well.types';
+import { BoreHole, Cave, CementPad, Fracture, HoleFill, Lithology, SurfaceCase, WellCase, WellScreen } from '@/src/lib/@types/well.types';
 import { ComponentsClassNames } from '../@types/drawer.types';
 import { Units, UnitsTypes } from '../@types/units.types';
 import { formatDiameter, formatLength } from '../utils/format.utils';
@@ -338,6 +338,20 @@ export function populateTooltips(svg: d3module.Selection<d3module.BaseType, unkn
           <span class="${customClasses.tooltipSecondaryInfo}"><strong>Mergulho:</strong> ${d.dip}°</span>
           <span class="${customClasses.tooltipSecondaryInfo}"><strong>Azimute:</strong> ${d.azimuth}°</span>
           ${d.description ? `<span class="${customClasses.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
+        `;
+      },
+      cementPad: (_event: unknown, d: CementPad) => {
+        return `
+          <span class="${customClasses.tooltipTitle}">LAJE DE PROTEÇÃO</span>
+          <span class="${customClasses.tooltipPrimaryInfo}">${d.type}</span>
+          <span class="${customClasses.tooltipSecondaryInfo}"><strong>Espessura:</strong>
+          ${formatLength(d.thickness, units.length)} ${units.length}</span>
+          <span class="${customClasses.tooltipSecondaryInfo}">
+            <strong>Largura:</strong> ${formatLength(d.width, units.length)} ${units.length}
+          </span>
+          <span class="${customClasses.tooltipSecondaryInfo}">
+            <strong>Comprimento:</strong> ${formatLength(d.length, units.length)} ${units.length}
+          </span>
         `;
       },
       cave: (_event: unknown, d: Cave) => {
