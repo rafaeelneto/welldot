@@ -1,3 +1,33 @@
+export type CssVarsConfig = {
+  // Strokes & fills
+  lithologyStroke?: string;
+  caveDryStroke?: string;
+  caveWetStroke?: string;
+  fractureDryStroke?: string;
+  fractureWetStroke?: string;
+  cementPadStroke?: string;
+  boreHoleFill?: string;
+  boreHoleStroke?: string;
+  surfaceCaseFill?: string;
+  holeFillStroke?: string;
+  wellCaseFill?: string;
+  wellCaseStroke?: string;
+  wellScreenStroke?: string;
+  conflictStroke?: string;
+  // Widths & opacities
+  lithologyStrokeWidth?: string;
+  caveFillOpacity?: string;
+  caveContactStrokeWidth?: string;
+  cementPadStrokeWidth?: string;
+  boreHoleOpacity?: string;
+  boreHoleStrokeWidth?: string;
+  surfaceCaseStrokeWidth?: string;
+  holeFillStrokeWidth?: string;
+  wellCaseStrokeWidth?: string;
+  wellScreenStrokeWidth?: string;
+  conflictStrokeWidth?: string;
+};
+
 export type ComponentsClassNames = {
   tooltip: {
     root: string;
@@ -54,6 +84,58 @@ export type ComponentsClassNames = {
     group: string;
     rect: string;
   };
+};
+
+export type DrawerRenderConfig = {
+  animation: {
+    duration: number;
+    ease: (t: number) => number;
+  };
+  geologic: {
+    xLeft: number;
+    xRightInset: number;
+  };
+  layout: {
+    pocoWidthRatio: number;
+    pocoCenterRatio: number;
+  };
+  caves: {
+    pathSteps: number;
+    amplitude: {
+      ratio: number;
+      min: number;
+      max: number;
+    };
+  };
+  fractures: {
+    widthMultiplier: number;
+    hitBuffer: {
+      single: number;
+      swarm: number;
+    };
+    swarm: {
+      lineCountBase: number;
+      lineCountVariance: number;
+      spread: number;
+      centralStrokeWidth: number;
+      sideStrokeWidthBase: number;
+      sideStrokeWidthVariance: number;
+    };
+    single: {
+      mainStrokeWidth: number;
+      crackStrokeWidth: number;
+    };
+  };
+  construction: {
+    cementPad: {
+      widthMultiplier: number;
+      thicknessMultiplier: number;
+    };
+    surfaceCase: {
+      diameterPaddingRatio: number;
+    };
+  };
+  cssVars?: CssVarsConfig;
 };
 
 export type SvgInstance = {

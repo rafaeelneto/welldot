@@ -34,7 +34,7 @@ import {
 } from '@/src/lib/wellDrawer/drawer.utils';
 import { Units } from '@/src/lib/@types/units.types';
 import { getLengthUnit } from '@/src/lib/utils/format.utils';
-import { SvgInstance, ComponentsClassNames } from '@/src/lib/@types/drawer.types';
+import { SvgInstance, ComponentsClassNames, DrawerRenderConfig, CssVarsConfig } from '@/src/lib/@types/drawer.types';
 import { DeepPartial } from '../@types/generic.types';
 
 const d3 = {
@@ -112,6 +112,59 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
 };
 
 
+const DEFAULT_RENDER_CONFIG: DrawerRenderConfig = {
+  animation:   { duration: 750, ease: d3.easeCubic },
+  geologic:    { xLeft: 10, xRightInset: 90 },
+  layout:      { pocoWidthRatio: 0.25, pocoCenterRatio: 0.75 },
+  caves: {
+    pathSteps: 32,
+    amplitude: { ratio: 0.06, min: 2, max: 5 },
+  },
+  fractures: {
+    widthMultiplier: 1.2,
+    hitBuffer: { single: 8, swarm: 14 },
+    swarm: {
+      lineCountBase: 4, lineCountVariance: 2,
+      spread: 18,
+      centralStrokeWidth: 1.8,
+      sideStrokeWidthBase: 0.6, sideStrokeWidthVariance: 0.7,
+    },
+    single: { mainStrokeWidth: 1.8, crackStrokeWidth: 0.9 },
+  },
+  construction: {
+    cementPad:   { widthMultiplier: 0.7, thicknessMultiplier: 0.7 },
+    surfaceCase: { diameterPaddingRatio: 0.1 },
+  },
+};
+
+const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {
+  lithologyStroke:        '--wp-lithology-stroke',
+  caveDryStroke:          '--wp-cave-dry-stroke',
+  caveWetStroke:          '--wp-cave-wet-stroke',
+  fractureDryStroke:      '--wp-fracture-dry-stroke',
+  fractureWetStroke:      '--wp-fracture-wet-stroke',
+  cementPadStroke:        '--wp-cement-pad-stroke',
+  boreHoleFill:           '--wp-bore-hole-fill',
+  boreHoleStroke:         '--wp-bore-hole-stroke',
+  surfaceCaseFill:        '--wp-surface-case-fill',
+  holeFillStroke:         '--wp-hole-fill-stroke',
+  wellCaseFill:           '--wp-well-case-fill',
+  wellCaseStroke:         '--wp-well-case-stroke',
+  wellScreenStroke:       '--wp-well-screen-stroke',
+  conflictStroke:         '--wp-conflict-stroke',
+  lithologyStrokeWidth:   '--wp-lithology-stroke-width',
+  caveFillOpacity:        '--wp-cave-fill-opacity',
+  caveContactStrokeWidth: '--wp-cave-contact-stroke-width',
+  cementPadStrokeWidth:   '--wp-cement-pad-stroke-width',
+  boreHoleOpacity:        '--wp-bore-hole-opacity',
+  boreHoleStrokeWidth:    '--wp-bore-hole-stroke-width',
+  surfaceCaseStrokeWidth: '--wp-surface-case-stroke-width',
+  holeFillStrokeWidth:    '--wp-hole-fill-stroke-width',
+  wellCaseStrokeWidth:    '--wp-well-case-stroke-width',
+  wellScreenStrokeWidth:  '--wp-well-screen-stroke-width',
+  conflictStrokeWidth:    '--wp-conflict-stroke-width',
+};
+
 const DEFAULTS_TEXTURES = createWellTextures();
 export class WellDrawer {
   private svgInstances: SvgInstance[] = [];
@@ -122,6 +175,7 @@ export class WellDrawer {
   private pocoCenter!: number;
 
   classes = DEFAULT_COMPONENTS_CLASS_NAMES;
+  private renderConfig: DrawerRenderConfig = DEFAULT_RENDER_CONFIG;
   private units: Units = {
     length: 'm',
     diameter: 'mm'
@@ -129,7 +183,7 @@ export class WellDrawer {
 
   get WIDTH(): number  { return this.instanceStates[0]?.width  ?? 0; }
 
-  constructor(svgs: SvgInstance[], options: { classNames?: DeepPartial<ComponentsClassNames>, units?: Units } = { }) {
+  constructor(svgs: SvgInstance[], options: { classNames?: DeepPartial<ComponentsClassNames>, units?: Units, renderConfig?: DeepPartial<DrawerRenderConfig> } = { }) {
     if (svgs.length === 0) return;
     this.svgInstances = svgs;
 
@@ -139,6 +193,10 @@ export class WellDrawer {
 
     if (options.units) {
       this.units = {...this.units, ...options.units}
+    }
+
+    if (options.renderConfig) {
+      this.renderConfig = defu(options.renderConfig, DEFAULT_RENDER_CONFIG) as DrawerRenderConfig;
     }
   }
 
@@ -156,6 +214,14 @@ export class WellDrawer {
       .attr('height', svgHeight)
       .attr('width',  svgWidth)
       .call(responsivefy);
+
+    if (this.renderConfig.cssVars) {
+      const vars = this.renderConfig.cssVars;
+      for (const key of Object.keys(vars) as (keyof CssVarsConfig)[]) {
+        const val = vars[key];
+        if (val !== undefined) svg.style(CSS_VAR_MAP[key], val);
+      }
+    }
 
     const defs = svg.append('defs');
     defs.append('clipPath')
@@ -209,8 +275,9 @@ export class WellDrawer {
     const { height, width, margins } = this.instanceStates[0];
     this.svgWidth  = width  + margins.left + margins.right;
     this.svgHeight = height + margins.top  + margins.bottom;
-    this.pocoWidth  = this.svgWidth / 4;
-    this.pocoCenter = (this.svgWidth * 3) / 4;
+    const { pocoWidthRatio, pocoCenterRatio } = this.renderConfig.layout;
+    this.pocoWidth  = this.svgWidth * pocoWidthRatio;
+    this.pocoCenter = this.svgWidth * pocoCenterRatio;
   }
 
   drawLog(profile: Well, options: { units?: Units } = { }) {
@@ -242,13 +309,17 @@ export class WellDrawer {
     const POCO_WIDTH  = this.pocoWidth;
     const POCO_CENTER = this.pocoCenter;
 
-    const transition = d3.transition().duration(750).ease(d3.easeCubic);
+    const { duration, ease } = this.renderConfig.animation;
+    const transition = d3.transition().duration(duration).ease(ease);
 
     const tooltips = populateTooltips(svg, this.classes, this.units);
 
     // ─────────────────────────────────────────────────────────────────────────
     // updateGeology
     // ─────────────────────────────────────────────────────────────────────────
+
+    const { xLeft: geoXLeft, xRightInset: geoXRightInset } = this.renderConfig.geologic;
+    const geoXRight = svgWidth - geoXRightInset;
 
     const drawLithology = async (
       data: Lithology[],
@@ -264,9 +335,8 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.lithology.rect)
-        .attr('x', 10)
-        .attr('width', svgWidth - 100)
-        .style('stroke-width', '1px')
+        .attr('x', geoXLeft)
+        .attr('width', geoXRight - geoXLeft)
         .on('mouseover', tooltips.geology.show)
         .on('mouseout', tooltips.geology.hide);
 
@@ -308,10 +378,7 @@ export class WellDrawer {
     const drawCaves = (data: Cave[], yScale) => {
       cavesGroup.selectAll(`g.${this.classes.caves.item}`).remove();
 
-      // x-extents match the lithology rect geometry exactly
-      const xLeft  = 10;
-      const xRight = svgWidth - 90;
-      const steps  = 32; // enough points for smooth Bézier curves
+      const rc = this.renderConfig.caves;
 
       data.forEach(cave => {
         // Two different seeds so top and bottom contacts are visually independent
@@ -324,11 +391,10 @@ export class WellDrawer {
         const yBot = yScale(cave.to);
         const span = yBot - yTop; // pixel height of the cave band
 
-        // Amplitude proportional to band height, clamped for readability
-        const amp = Math.max(2, Math.min(span * 0.06, 5));
+        const amp = Math.max(rc.amplitude.min, Math.min(span * rc.amplitude.ratio, rc.amplitude.max));
 
-        const topPts = wavyContact(xLeft, xRight, yTop, amp, steps, rngTop);
-        const botPts = wavyContact(xLeft, xRight, yBot, amp, steps, rngBot);
+        const topPts = wavyContact(geoXLeft, geoXRight, yTop, amp, rc.pathSteps, rngTop);
+        const botPts = wavyContact(geoXLeft, geoXRight, yBot, amp, rc.pathSteps, rngBot);
 
         // Smooth path strings for each contact
         const topPath = ptsToSmoothPath(topPts);
@@ -340,11 +406,11 @@ export class WellDrawer {
         const botReversed = ptsToSmoothPath([...botPts].reverse());
         const closedPath =
           topPath +
-          ` L ${xRight.toFixed(1)},${botPts[botPts.length - 1][1].toFixed(1)}` +
+          ` L ${geoXRight.toFixed(1)},${botPts[botPts.length - 1][1].toFixed(1)}` +
           // Strip the leading 'M x,y' from the reversed bottom path so the
           // concatenated path stays as one continuous sub-path.
           botReversed.replace(/^M [\d.-]+ [\d.-]+/, '') +
-          ` L ${xLeft.toFixed(1)},${topPts[0][1].toFixed(1)} Z`;
+          ` L ${geoXLeft.toFixed(1)},${topPts[0][1].toFixed(1)} Z`;
 
         const caveTexture = cave.water_intake
           ? DEFAULTS_TEXTURES.cave_wet
@@ -362,7 +428,6 @@ export class WellDrawer {
           .attr('class', this.classes.caves.fill)
           .attr('d', closedPath)
           .attr('fill', caveTexture.url())
-          .attr('fill-opacity', 0.6)
           .attr('stroke', 'none');
 
         g.append('path')
@@ -370,7 +435,6 @@ export class WellDrawer {
           .attr('data-wet', String(!!cave.water_intake))
           .attr('d', topPath)
           .attr('fill', 'none')
-          .attr('stroke-width', 1.2)
           .attr('stroke-linecap', 'round')
           .attr('stroke-linejoin', 'round');
 
@@ -379,7 +443,6 @@ export class WellDrawer {
           .attr('data-wet', String(!!cave.water_intake))
           .attr('d', botPath)
           .attr('fill', 'none')
-          .attr('stroke-width', 1.2)
           .attr('stroke-linecap', 'round')
           .attr('stroke-linejoin', 'round');
       });
@@ -392,7 +455,8 @@ export class WellDrawer {
     const drawFractures = (data: Fracture[], yScale) => {
       fracturesGroup.selectAll(`g.${this.classes.fractures.item}`).remove();
 
-      const halfWidth = (POCO_WIDTH * 1.2) / 2;
+      const rf = this.renderConfig.fractures;
+      const halfWidth = (POCO_WIDTH * rf.widthMultiplier) / 2;
       const pocoCenterInGroup = this.WIDTH / 2 + POCO_CENTER / 2;
       const xa = pocoCenterInGroup - halfWidth;
       const w  = halfWidth * 2;
@@ -440,7 +504,7 @@ export class WellDrawer {
           .on('mouseout', tooltips.fracture.hide)
           .style('cursor', 'pointer');
 
-        const hitBuffer = fracture.swarm ? 14 : 8;
+        const hitBuffer = fracture.swarm ? rf.hitBuffer.swarm : rf.hitBuffer.single;
         g.append('rect')
           .attr('class', this.classes.fractures.hitArea)
           .attr('x', xa)
@@ -468,16 +532,15 @@ export class WellDrawer {
             .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
 
         if (fracture.swarm) {
-          const lineCount  = 4 + Math.round(rng() * 2);
-          const spread     = 18;
-          const halfSpread = spread / 2;
+          const lineCount  = rf.swarm.lineCountBase + Math.round(rng() * rf.swarm.lineCountVariance);
+          const halfSpread = rf.swarm.spread / 2;
 
           const bases = Array.from({ length: lineCount }, () => (rng() * 2 - 1) * halfSpread)
             .sort((a, b) => a - b);
 
           bases.forEach((base, idx) => {
             const isCentral = idx === Math.floor(lineCount / 2);
-            const sw        = isCentral ? 1.8 : 0.6 + rng() * 0.7;
+            const sw        = isCentral ? rf.swarm.centralStrokeWidth : rf.swarm.sideStrokeWidthBase + rng() * rf.swarm.sideStrokeWidthVariance;
             const steps     = 6 + Math.round(rng() * 3);
             const jitter    = 0.8 + rng() * 1.2;
             const insetL    = 0.04 + rng() * 0.12;
@@ -504,14 +567,14 @@ export class WellDrawer {
           const steps  = 7 + Math.round(rng() * 3);
           const insetL = 0.03 + rng() * 0.08;
           const insetR = 0.03 + rng() * 0.08;
-          appendPolyline(wavyLine(rng, steps, 0, 2, insetL, insetR), 1.8);
+          appendPolyline(wavyLine(rng, steps, 0, 2, insetL, insetR), rf.single.mainStrokeWidth);
 
           const crackCount = 2 + Math.round(rng() * 2);
           for (let c = 0; c < crackCount; c++) {
             const nx  = insetL + rng() * (1 - insetL - insetR);
             const len = 3.5 + rng() * 3.5;
             const dir = rng() > 0.5 ? 1 : -1;
-            appendLine(xAt(nx), (rng() * 2 - 1) * 1.5, xAt(nx + (rng() - 0.5) * 0.03), dir * len, 0.9);
+            appendLine(xAt(nx), (rng() * 2 - 1) * 1.5, xAt(nx + (rng() - 0.5) * 0.03), dir * len, rf.single.crackStrokeWidth);
           }
         }
       });
@@ -535,6 +598,8 @@ export class WellDrawer {
         .domain([0, maxXValueConstruction])
         .range([0, POCO_WIDTH]);
 
+      const rcc = this.renderConfig.construction;
+
       constructionGroup.selectAll(`.${this.classes.cementPad.item}`).remove();
 
       if (data.cement_pad && data.cement_pad.thickness) {
@@ -551,17 +616,16 @@ export class WellDrawer {
           .attr(
             'x',
             (d: CementPad) =>
-              (POCO_CENTER - xScale((d.width * 0.7 * 1000) / 2)) / 2,
+              (POCO_CENTER - xScale((d.width * rcc.cementPad.widthMultiplier * 1000) / 2)) / 2,
           )
           .attr('y', (d: CementPad) => {
-            return yScale(0) - yScale(d.thickness * 0.7);
+            return yScale(0) - yScale(d.thickness * rcc.cementPad.thicknessMultiplier);
           })
-          .attr('width', (d: CementPad) => xScale((d.width * 0.7 * 1000) / 2))
+          .attr('width', (d: CementPad) => xScale((d.width * rcc.cementPad.widthMultiplier * 1000) / 2))
           .attr('height', (d: CementPad) => {
-            return yScale(d.thickness * 0.7);
+            return yScale(d.thickness * rcc.cementPad.thicknessMultiplier);
           })
-          .style('fill', () => DEFAULTS_TEXTURES.pad.url())
-          .style('stroke-width', '2px');
+          .style('fill', () => DEFAULTS_TEXTURES.pad.url());
 
         newCementPad.on('mouseover', tooltips.cementPad.show).on('mouseout', tooltips.cementPad.hide);
       }
@@ -574,8 +638,6 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.boreHole.rect)
-        .style('opacity', '0.6')
-        .style('stroke-width', '1px')
         .on('mouseover', tooltips.hole.show)
         .on('mouseout', tooltips.hole.hide);
 
@@ -613,10 +675,10 @@ export class WellDrawer {
         .attr(
           'x',
           (d: SurfaceCase) =>
-            (POCO_CENTER - xScale(d.diameter + d.diameter * 0.1)) / 2,
+            (POCO_CENTER - xScale(d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio)) / 2,
         )
         .attr('width', (d: SurfaceCase) =>
-          xScale(d.diameter + d.diameter * 0.1),
+          xScale(d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio),
         )
         // @ts-ignore
         .transition(transition)
@@ -631,7 +693,6 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.holeFill.rect)
-        .style('stroke-width', '2px')
         .on('mouseover', tooltips.holeFill.show)
         .on('mouseout', tooltips.holeFill.hide);
 
@@ -654,7 +715,6 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.wellCase.rect)
-        .style('stroke-width', '2px')
         .on('mouseover', tooltips.wellCase.show)
         .on('mouseout', tooltips.wellCase.hide);
 
@@ -678,7 +738,6 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.wellScreen.rect)
-        .style('stroke-width', '2px')
         .style('fill', () => DEFAULTS_TEXTURES.well_screen.url())
         .on('mouseover', tooltips.wellScreen.show)
         .on('mouseout', tooltips.wellScreen.hide);
@@ -707,7 +766,6 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.conflict.rect)
-        .style('stroke-width', '4px')
         .style('fill', () => DEFAULTS_TEXTURES.conflict.url())
         .on('mouseover', tooltips.conflict.show)
         .on('mouseout', tooltips.conflict.hide);
