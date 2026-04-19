@@ -86,7 +86,23 @@ export type ComponentsClassNames = {
   };
 };
 
+export type TooltipKey =
+  | 'geology'
+  | 'hole'
+  | 'surfaceCase'
+  | 'holeFill'
+  | 'wellCase'
+  | 'wellScreen'
+  | 'conflict'
+  | 'fracture'
+  | 'cementPad'
+  | 'cave';
+
 export type DrawerRenderConfig = {
+  zoom: boolean;
+  pan: boolean;
+  /** undefined = show all; false or [] = show none; array = show only listed keys */
+  tooltips?: TooltipKey[] | false;
   animation: {
     duration: number;
     ease: (t: number) => number;

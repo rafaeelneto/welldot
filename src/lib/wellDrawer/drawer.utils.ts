@@ -6,7 +6,7 @@ import textures from 'textures';
 import fdgcTextures from '@/src_old/utils/fgdcTextures';
 
 import { BoreHole, Cave, CementPad, Fracture, HoleFill, Lithology, SurfaceCase, WellCase, WellScreen } from '@/src/lib/@types/well.types';
-import { ComponentsClassNames } from '../@types/drawer.types';
+import { ComponentsClassNames, TooltipKey } from '../@types/drawer.types';
 import { Units, UnitsTypes } from '../@types/units.types';
 import { formatDiameter, formatLength } from '../utils/format.utils';
 
@@ -269,7 +269,7 @@ export function makeCavePrng(seed: number) {
 };
 
 
-export function populateTooltips(svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>, customClasses: ComponentsClassNames, units: Units) {
+export function populateTooltips(svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>, customClasses: ComponentsClassNames, units: Units, tooltipConfig?: TooltipKey[] | false) {
     const tipsText = {
       geology: (_, d: Lithology) => `
         <span class="${customClasses.tooltip.title}">Litologia</span>
@@ -365,9 +365,19 @@ export function populateTooltips(svg: d3module.Selection<d3module.BaseType, unkn
       },
     };
 
+    const noop = { show: () => {}, hide: () => {} };
     const tooltips: any = {};
 
     Object.getOwnPropertyNames(tipsText).forEach(tipTextKey => {
+      const enabled = tooltipConfig === undefined
+        ? true
+        : tooltipConfig !== false && (tooltipConfig as string[]).includes(tipTextKey);
+
+      if (!enabled) {
+        tooltips[tipTextKey] = noop;
+        return;
+      }
+
       tooltips[tipTextKey] = d3
         // @ts-ignore
         .tip()

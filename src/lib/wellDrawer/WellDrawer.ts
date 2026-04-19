@@ -112,6 +112,8 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
 
 
 const DEFAULT_RENDER_CONFIG: DrawerRenderConfig = {
+  zoom:        true,
+  pan:         true,
   animation:   { duration: 750, ease: d3.easeCubic },
   geologic:    { xLeft: 10, xRightInset: 90 },
   layout:      { pocoWidthRatio: 0.25, pocoCenterRatio: 0.75 },
@@ -330,7 +332,7 @@ export class WellDrawer {
     const { duration, ease } = this.renderConfig.animation;
     const transition = d3.transition().duration(duration).ease(ease);
 
-    const tooltips = populateTooltips(svg, this.classes, this.units);
+    const tooltips = populateTooltips(svg, this.classes, this.units, this.renderConfig.tooltips);
 
     // ─────────────────────────────────────────────────────────────────────────
     // updateGeology
@@ -922,12 +924,18 @@ export class WellDrawer {
         .attr('height', svgHeight);
     };
 
-    // @ts-ignore
-    const zoomNode = d3.zoom().on('zoom', zooming);
-
     drawProfile();
-    // @ts-ignore
-    svg.call(zoomNode).node();
+
+    const { zoom: zoomEnabled, pan: panEnabled } = this.renderConfig;
+    if (zoomEnabled || panEnabled) {
+      // @ts-ignore
+      const zoomNode = d3.zoom();
+      if (zoomEnabled || panEnabled) zoomNode.on('zoom', zooming);
+      if (!zoomEnabled) zoomNode.scaleExtent([1, 1]);
+      if (!panEnabled) zoomNode.filter((e: any) => e.type === 'wheel' || e.type === 'dblclick');
+      // @ts-ignore
+      svg.call(zoomNode).node();
+    }
   }
 }
 
