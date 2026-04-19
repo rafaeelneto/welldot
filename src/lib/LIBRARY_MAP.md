@@ -16,7 +16,8 @@ src/lib/
 └── wellDrawer/
     ├── WellDrawer.ts          — Interactive D3 visualizer
     ├── WellDrawerPDF.ts       — Paginated PDF visualizer
-    └── drawer.utils.ts        — Shared SVG/drawing helpers
+    ├── drawer.utils.ts        — Shared SVG/drawing helpers
+    └── drawer.textures.ts     — Shared well texture definitions (createWellTextures)
 ```
 
 ---
@@ -93,6 +94,26 @@ Handles: `geologic[]→lithology[]`, `diam_pol→diameter`, inch→mm conversion
 
 #### `numberFormater: Intl.NumberFormat`
 pt-BR locale, 2 decimal places.
+
+---
+
+## Well Textures — `wellDrawer/drawer.textures.ts`
+
+### `createWellTextures(): WellTextures`
+
+Factory that returns fresh `textures` library instances for all well-drawing fill patterns. Both drawers call this — `WellDrawer` once at module level, `WellDrawerPDF` once per `drawLog` call (fresh instances per SVG).
+
+| Key | Description |
+|-----|-------------|
+| `pad` | Cement pad — horizontal lines, heavy/thin |
+| `conflict` | Casing/screen overlap warning — red lines |
+| `cave_dry` | Dry cave band — diagonal lines, dark gray |
+| `cave_wet` | Wet cave band — diagonal lines, blue |
+| `seal` | Hole seal fill — thick lines |
+| `gravel_pack` | Gravel pack fill — circles complement |
+| `well_screen` | Well screen fill — short horizontal dashes |
+
+**Used by:** `WellDrawer.ts`, `WellDrawerPDF.ts`
 
 ---
 
@@ -250,7 +271,7 @@ Creates one or more `<svg>` elements inside `#svgDraftContainer`, each represent
 
 ```
 WellDrawer.ts
-  ├── d3, d3-tip, textures
+  ├── d3, d3-tip
   ├── @types/well.types
   ├── utils/well.utils
   │     └── @types/well.types
@@ -259,13 +280,15 @@ WellDrawer.ts
   │     ├── d3, textures
   │     ├── @types/well.types
   │     └── src_old/utils/fgdcTextures
+  ├── wellDrawer/drawer.textures  (createWellTextures)
   └── store/ui.store
 
 WellDrawerPDF.ts
-  ├── d3, textures
+  ├── d3, textures (textures kept for legend custom-color cave)
   ├── @types/well.types
   ├── utils/well.utils
   ├── wellDrawer/drawer.utils
+  ├── wellDrawer/drawer.textures  (createWellTextures)
   ├── src_old/utils/wrap
   ├── src_old/utils/fgdcTextures
   ├── src_old/utils/profileD3.utils

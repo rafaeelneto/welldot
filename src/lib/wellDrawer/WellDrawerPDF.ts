@@ -5,6 +5,8 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
+import { createWellTextures } from './drawer.textures';
+
 import wrap from '../../../src_old/utils/wrap';
 
 // eslint-disable-next-line import/namespace
@@ -229,20 +231,7 @@ const POCO_WIDTH = 100;
       .attr('fill', '#000000')
       .attr('font-size', 7.5);
 
-    const profileTexture = {
-      pad: textures.lines().heavier(10).thinner(1.5).background('#ffffff'),
-      seal: textures.lines().thicker().background('#ffffff'),
-      gravel_pack: textures.circles().complement().background('#ffffff'),
-      well_screen: textures
-        .paths()
-        .d(s => `M ${s / 4} ${s / 4} l ${s / 2} 0 `)
-        .size(40)
-        .strokeWidth(2)
-        .thicker(2)
-        .background('#fff'),
-      cave_dry: textures.lines().size(8).orientation('6/8').heavier(.3).thinner(.8).background('#ffffff').stroke('#333333'),
-      cave_wet: textures.lines().size(8).orientation('6/8').heavier(.3).thinner(.8).background('#ffffff').stroke('#1a6fa8'),
-    };
+    const profileTexture = createWellTextures();
 
     const updateGeology = async (data: Lithology[], yScale) => {
       const litologicalFill = getLithologicalFillList(data);
