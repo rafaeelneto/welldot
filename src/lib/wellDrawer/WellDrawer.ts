@@ -113,7 +113,7 @@ export class WellDrawer {
   private pocoWidth!: number;
   private pocoCenter!: number;
 
-  customClassNames = DEFAULT_COMPONENTS_CLASS_NAMES;
+  classes = DEFAULT_COMPONENTS_CLASS_NAMES;
   private colors: typeof COLORS = COLORS;
   private units: Units = {
     length: 'm',
@@ -127,7 +127,7 @@ export class WellDrawer {
     this.svgInstances = svgs;
 
     if (options.classNames) {
-      this.customClassNames = { ...DEFAULT_COMPONENTS_CLASS_NAMES, ...options.classNames };
+      this.classes = { ...DEFAULT_COMPONENTS_CLASS_NAMES, ...options.classNames };
     }
 
     if (options.units) {
@@ -166,35 +166,35 @@ export class WellDrawer {
 
     const poco = svg
       .append('g')
-      .attr('class', this.customClassNames.wellGroup);
+      .attr('class', this.classes.wellGroup);
 
     const geologic = poco
       .append('g')
-      .attr('class', this.customClassNames.geologicGroup)
+      .attr('class', this.classes.geologicGroup)
       .attr('transform', `translate(${margins.left}, ${margins.top})`);
 
-    geologic.append('g').attr('class', this.customClassNames.yAxis);
-    geologic.append('g').attr('class', this.customClassNames.lithologyGroup);
-    geologic.append('g').attr('class', this.customClassNames.cavesGroup).attr('clip-path', `url(#${clipId})`);
+    geologic.append('g').attr('class', this.classes.yAxis);
+    geologic.append('g').attr('class', this.classes.lithologyGroup);
+    geologic.append('g').attr('class', this.classes.cavesGroup).attr('clip-path', `url(#${clipId})`);
 
     const construction = poco
       .append('g')
-      .attr('class', this.customClassNames.constructionGroup)
+      .attr('class', this.classes.constructionGroup)
       .attr('transform', `translate(${margins.left + width / 2}, ${margins.top})`);
 
     poco
       .append('g')
-      .attr('class', this.customClassNames.fracturesGroup)
+      .attr('class', this.classes.fracturesGroup)
       .attr('transform', `translate(${margins.left}, ${margins.top})`)
       .attr('clip-path', `url(#${clipId})`);
 
-    construction.append('g').attr('class', this.customClassNames.cementPadGroup);
-    construction.append('g').attr('class', this.customClassNames.holeGroup);
-    construction.append('g').attr('class', this.customClassNames.surfaceCaseGroup);
-    construction.append('g').attr('class', this.customClassNames.holeFillGroup);
-    construction.append('g').attr('class', this.customClassNames.wellCaseGroup);
-    construction.append('g').attr('class', this.customClassNames.wellScreenGroup);
-    construction.append('g').attr('class', this.customClassNames.conflictGroup);
+    construction.append('g').attr('class', this.classes.cementPadGroup);
+    construction.append('g').attr('class', this.classes.holeGroup);
+    construction.append('g').attr('class', this.classes.surfaceCaseGroup);
+    construction.append('g').attr('class', this.classes.holeFillGroup);
+    construction.append('g').attr('class', this.classes.wellCaseGroup);
+    construction.append('g').attr('class', this.classes.wellScreenGroup);
+    construction.append('g').attr('class', this.classes.conflictGroup);
 
     Object.values(DEFAULTS_TEXTURES).forEach(texture => svg.call(texture));
 
@@ -221,7 +221,7 @@ export class WellDrawer {
 
   private drawLogToInstance(state: InstanceState, profile: Well) {
     const svg = state.svg;
-    const cn  = this.customClassNames;
+    const cn  = this.classes;
 
     const pocoGroup         = svg.select(`.${cn.wellGroup}`);
     const lithologyGroup    = svg.select(`.${cn.lithologyGroup}`);
@@ -243,7 +243,7 @@ export class WellDrawer {
 
     const transition = d3.transition().duration(750).ease(d3.easeCubic);
 
-    const tooltips = populateTooltips(svg, this.customClassNames, this.units);
+    const tooltips = populateTooltips(svg, this.classes, this.units);
 
     // ─────────────────────────────────────────────────────────────────────────
     // updateGeology
@@ -699,20 +699,6 @@ export class WellDrawer {
 
       const mergedConflicts = mergeConflicts(conflictAreas, 1);
 
-      const tipConflict = d3
-        // @ts-ignore
-        .tip()
-        .attr('class', `${this.customClassNames.tooltip} conflic`)
-        .direction('e')
-        .html((_, d) => {
-          return `
-        <span class="${this.customClassNames.tooltipTitle}">CONFLITO</span>
-            <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${d.from} m até ${d.to} m</span>
-        `;
-        });
-
-      svg.call(tipConflict);
-
       const conflict = conflictGroup.selectAll('rect').data(mergedConflicts);
 
       conflict.exit().remove();
@@ -723,8 +709,8 @@ export class WellDrawer {
         .style('stroke', this.colors.construction.conflict.stroke)
         .style('stroke-width', '4px')
         .style('fill', () => DEFAULTS_TEXTURES.conflict.url())
-        .on('mouseover', tipConflict.show)
-        .on('mouseout', tipConflict.hide);
+        .on('mouseover', tooltips.conflict.show)
+        .on('mouseout', tooltips.conflict.hide);
 
       newConflict
         // @ts-ignore

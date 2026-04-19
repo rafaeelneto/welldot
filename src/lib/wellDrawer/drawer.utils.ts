@@ -317,17 +317,11 @@ export function populateTooltips(svg: d3module.Selection<d3module.BaseType, unkn
               </span>
           `;
       },
-      conflict: (_, d: { from: number, to: number, diameter: number, screen_slot_mm: number, type: string}) => {
+      conflict: (_, d: { from: number, to: number }) => {
         return `
-          <span class="${customClasses.tooltipTitle}">FILTROS</span>
-              <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
-              <span class="${customClasses.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
-              <span class="${customClasses.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
-              <span class="${customClasses.tooltipSecondaryInfo}">
-                <strong>Ranhura:</strong> ${d.screen_slot_mm} mm
-              </span>
-          `;
+          <span class="${customClasses.tooltipTitle}">CONFLITO</span>
+          <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+        `;
       },
       fracture: (_event: unknown, d: Fracture) => {
         const title = d.swarm ? 'ENXAME DE FRATURAS' : 'FRATURA';
