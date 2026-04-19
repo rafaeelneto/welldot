@@ -607,10 +607,11 @@ export class WellDrawer {
     const drawConstructive = (
       data: Constructive,
       yScale,
+      fullData: Constructive,
     ) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale, { from: depthFrom, to: depthTo });
 
-      const maxXValues = getProfileDiamValues(data);
+      const maxXValues = getProfileDiamValues(fullData);
       const maxXValueConstruction = d3.max(maxXValues) || 0;
 
       const xScale = d3
@@ -916,7 +917,7 @@ export class WellDrawer {
           well_case:    constructionData.well_case.filter(filterByDepth),
           well_screen:  constructionData.well_screen.filter(filterByDepth),
           reduction:    constructionData.reduction?.filter(filterByDepth) ?? [],
-        }, yScaleLocal);
+        }, yScaleLocal, constructionData);
       }
 
       svg.select(`#${state.clipRectId}`)
