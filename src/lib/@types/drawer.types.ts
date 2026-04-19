@@ -1,5 +1,3 @@
-import { DeepPartial } from "./generic.types";
-
 export type ComponentsClassNames = {
   tooltip: {
     root: string;
@@ -69,54 +67,3 @@ export type SvgInstance = {
     bottom: number;
   };
 };
-
-export type Colors = {
-    geology: {
-        lithology: {
-            stroke: string;
-        };
-        cave: {
-            dry: {
-                stroke: string;
-            };
-            wet: {
-                stroke: string;
-            };
-        };
-        fracture: {
-            dry: {
-                stroke: string;
-            };
-            wet: {
-                stroke: string;
-            };
-        };
-    };
-    construction: {
-        cementPad: {
-            stroke: string;
-        };
-        boreHole: {
-            fill: string;
-            stroke: string;
-        };
-        surfaceCase: {
-            fill: string;
-        };
-        holeFill: {
-            stroke: string;
-        };
-        wellCase: {
-            fill: string;
-            stroke: string;
-        };
-        wellScreen: {
-            stroke: string;
-        };
-        conflict: {
-            stroke: string;
-        };
-    };
-};
-
-export type ColorsOverride = DeepPartial<Colors>;

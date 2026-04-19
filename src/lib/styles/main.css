@@ -1,0 +1,34 @@
+:root {
+  --wp-lithology-stroke:    #101010;
+  --wp-cave-dry-stroke:     #333333;
+  --wp-cave-wet-stroke:     #1a6fa8;
+  --wp-fracture-dry-stroke: #000000;
+  --wp-fracture-wet-stroke: #1a6fa8;
+  --wp-cement-pad-stroke:   #303030;
+  --wp-bore-hole-fill:      #ffffff;
+  --wp-bore-hole-stroke:    #303030;
+  --wp-surface-case-fill:   #000000;
+  --wp-hole-fill-stroke:    #303030;
+  --wp-well-case-fill:      #ffffff;
+  --wp-well-case-stroke:    #303030;
+  --wp-well-screen-stroke:  #303030;
+  --wp-conflict-stroke:     #E52117;
+}
+
+.well-group .lithology-rect    { stroke: var(--wp-lithology-stroke); }
+
+.well-group .cave-contact                   { stroke: var(--wp-cave-dry-stroke); }
+.well-group .cave-contact[data-wet="true"]  { stroke: var(--wp-cave-wet-stroke); }
+
+.well-group .fracture-line,
+.well-group .fracture-poly                  { stroke: var(--wp-fracture-dry-stroke); }
+.well-group .fracture-line[data-wet="true"],
+.well-group .fracture-poly[data-wet="true"] { stroke: var(--wp-fracture-wet-stroke); }
+
+.well-group .cement-pad-rect   { stroke: var(--wp-cement-pad-stroke); }
+.well-group .bore-hole-rect    { fill: var(--wp-bore-hole-fill); stroke: var(--wp-bore-hole-stroke); }
+.well-group .surface-case-rect { fill: var(--wp-surface-case-fill); }
+.well-group .hole-fill-rect    { stroke: var(--wp-hole-fill-stroke); }
+.well-group .well-case-rect    { fill: var(--wp-well-case-fill); stroke: var(--wp-well-case-stroke); }
+.well-group .well-screen-rect  { stroke: var(--wp-well-screen-stroke); }
+.well-group .conflict-rect     { stroke: var(--wp-conflict-stroke); }
