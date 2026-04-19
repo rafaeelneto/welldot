@@ -30,39 +30,27 @@ import {
   makeCavePrng,
   wavyContact,
   ptsToSmoothPath,
+  populateTooltips,
 } from '@/src/lib/wellDrawer/drawer.utils';
-import { DiameterUnits, LengthUnits } from '@/src/lib/@types/units.types';
+import { DiameterUnits, LengthUnits, Units } from '@/src/lib/@types/units.types';
 import { formatLength, formatDiameter, getLengthUnit, getDiameterUnit } from '@/src/lib/utils/format.utils';
+import { SvgInstance, ComponentsClassNames } from '@/src/lib/@types/drawer.types';
 
 const d3 = {
   ...d3module,
   tip: d3tip,
 };
 
-type ComponentsClassNames = {
-  tooltip: string;
-  tooltipTitle: string;
-  tooltipPrimaryInfo: string;
-  tooltipSecondaryInfo: string;
-  yAxis: string;
-  wellGroup: string;
-  geologicGroup: string;
-  lithologyGroup: string;
-  fracturesGroup: string;
-  cavesGroup: string;
-  constructionGroup: string;
-  cementPadGroup: string;
-  holeGroup: string;
-  surfaceCaseGroup: string;
-  holeFillGroup: string;
-  wellCaseGroup: string;
-  wellScreenGroup: string;
-  conflictGroup: string;
-};
-
 type Conflict = { from: number; to: number; diameter: number };
 
-type SvgGroup = d3module.Selection<any, any, any, any>;
+type InstanceState = {
+  svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
+  height: number;
+  width: number;
+  margins: { left: number; right: number; top: number; bottom: number };
+  clipId: string;
+  clipRectId: string;
+};
 
 const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
   tooltip: 'tooltip',
@@ -88,243 +76,143 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
 
 const DEFAULTS_TEXTURES = createWellTextures();
 
-export class WellDrawer {
-  private svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
 
-  customClassNames = DEFAULT_COMPONENTS_CLASS_NAMES;
-  private lengthUnits: LengthUnits = 'm';
-  private diameterUnits: DiameterUnits = 'mm';
+
+export class WellDrawer {
+  private svgInstances: SvgInstance[] = [];
+  private instanceStates: InstanceState[] = [];
   private svgWidth!: number;
   private svgHeight!: number;
   private pocoWidth!: number;
   private pocoCenter!: number;
-  private groups!: {
-    poco: SvgGroup;
-    geologic: SvgGroup;
-    lithology: SvgGroup;
-    fractures: SvgGroup;
-    caves: SvgGroup;
-    construction: SvgGroup;
-    cementPad: SvgGroup;
-    hole: SvgGroup;
-    surfaceCase: SvgGroup;
-    holeFill: SvgGroup;
-    wellCase: SvgGroup;
-    wellScreen: SvgGroup;
-    conflict: SvgGroup;
-    yAxis: SvgGroup;
-  };
 
-  private fmtLen(m: number): string { return formatLength(m, this.lengthUnits); }
-  private fmtDiam(mm: number): string { return formatDiameter(mm, this.diameterUnits); }
-  private get lenUnit(): string { return getLengthUnit(this.lengthUnits); }
-  private get diamUnit(): string { return getDiameterUnit(this.diameterUnits); }
-
-  constructor(
-    svgClassName: string,
-    public HEIGHT: number,
-    public WIDTH: number,
-    public MARGINS: {
-      LEFT: number;
-      RIGHT: number;
-      TOP: number;
-      BOTTOM: number;
-    },
-    customClassNames?: Partial<ComponentsClassNames>,
-  ) {
-    if (customClassNames) {
-      this.customClassNames = {
-        ...DEFAULT_COMPONENTS_CLASS_NAMES,
-        ...customClassNames,
-      };
-    }
-    this.svg = d3.select(svgClassName);
+  customClassNames = DEFAULT_COMPONENTS_CLASS_NAMES;
+  private units: Units = {
+    length: 'm',
+    diameter: 'mm'
   }
 
-  public async prepareSvg() {
-    this.svg.selectAll('*').remove();
+  get HEIGHT(): number { return this.instanceStates[0]?.height ?? 0; }
+  get WIDTH(): number  { return this.instanceStates[0]?.width  ?? 0; }
+  get MARGINS() {
+    const m = this.instanceStates[0]?.margins;
+    return m ? { LEFT: m.left, RIGHT: m.right, TOP: m.top, BOTTOM: m.bottom } : undefined;
+  }
 
-    this.svgWidth  = this.WIDTH  + this.MARGINS.LEFT + this.MARGINS.RIGHT;
-    this.svgHeight = this.HEIGHT + this.MARGINS.TOP  + this.MARGINS.BOTTOM;
-    this.pocoWidth  = this.svgWidth / 4;
-    this.pocoCenter = (this.svgWidth * 3) / 4;
+  private fmtLen(m: number): string { return formatLength(m, this.units.length); }
+  private fmtDiam(mm: number): string { return formatDiameter(mm, this.units.diameter); }
+  private get lenUnit(): string { return getLengthUnit(this.units.length); }
+  private get diamUnit(): string { return getDiameterUnit(this.units.diameter); }
 
-    this.svg
-      .attr('height', this.svgHeight)
-      .attr('width',  this.svgWidth)
+  constructor(svgs: SvgInstance[], options: { classNames?: Partial<ComponentsClassNames>, units?: Units } = { }) {
+    if (svgs.length === 0) return;
+    this.svgInstances = svgs;
+
+    if (options.classNames) {
+      this.customClassNames = { ...DEFAULT_COMPONENTS_CLASS_NAMES, ...options.classNames };
+    }
+
+    if (options.units) {
+      this.units = {...this.units, ...options.units}
+    }
+  }
+
+  private initInstanceSvg(inst: SvgInstance, index: number): InstanceState {
+    const clipId     = `fractures-clip-${index}`;
+    const clipRectId = `fractures-clip-rect-${index}`;
+    const { selector, height, width, margins } = inst;
+    const svgWidth  = width  + margins.left + margins.right;
+    const svgHeight = height + margins.top  + margins.bottom;
+
+    const svg = d3.select(selector) as d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
+    svg.selectAll('*').remove();
+
+    svg
+      .attr('height', svgHeight)
+      .attr('width',  svgWidth)
       .call(responsivefy);
 
-    const defs = this.svg.append('defs');
-
+    const defs = svg.append('defs');
     defs.append('clipPath')
-      .attr('id', 'fractures-clip')
+      .attr('id', clipId)
       .append('rect')
-      .attr('id', 'fractures-clip-rect')
+      .attr('id', clipRectId)
       .attr('x', 0)
       .attr('y', 0)
       .attr('width', 100000)
       .attr('height', 10000);
 
-    const poco = this.svg
+    const poco = svg
       .append('g')
       .attr('class', this.customClassNames.wellGroup);
 
     const geologic = poco
       .append('g')
       .attr('class', this.customClassNames.geologicGroup)
-      .attr('transform', `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`);
+      .attr('transform', `translate(${margins.left}, ${margins.top})`);
 
-    const yAxis       = geologic.append('g').attr('class', this.customClassNames.yAxis);
-    const lithology   = geologic.append('g').attr('class', this.customClassNames.lithologyGroup);
-    const caves       = geologic.append('g').attr('class', this.customClassNames.cavesGroup).attr('clip-path', 'url(#fractures-clip)');
+    geologic.append('g').attr('class', this.customClassNames.yAxis);
+    geologic.append('g').attr('class', this.customClassNames.lithologyGroup);
+    geologic.append('g').attr('class', this.customClassNames.cavesGroup).attr('clip-path', `url(#${clipId})`);
 
     const construction = poco
       .append('g')
       .attr('class', this.customClassNames.constructionGroup)
-      .attr('transform', `translate(${this.MARGINS.LEFT + this.WIDTH / 2}, ${this.MARGINS.TOP})`);
+      .attr('transform', `translate(${margins.left + width / 2}, ${margins.top})`);
 
-    const fractures = poco
+    poco
       .append('g')
       .attr('class', this.customClassNames.fracturesGroup)
-      .attr('transform', `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`)
-      .attr('clip-path', 'url(#fractures-clip)');
+      .attr('transform', `translate(${margins.left}, ${margins.top})`)
+      .attr('clip-path', `url(#${clipId})`);
 
-    const cementPad   = construction.append('g').attr('class', this.customClassNames.cementPadGroup);
-    const hole        = construction.append('g').attr('class', this.customClassNames.holeGroup);
-    const surfaceCase = construction.append('g').attr('class', this.customClassNames.surfaceCaseGroup);
-    const holeFill    = construction.append('g').attr('class', this.customClassNames.holeFillGroup);
-    const wellCase    = construction.append('g').attr('class', this.customClassNames.wellCaseGroup);
-    const wellScreen  = construction.append('g').attr('class', this.customClassNames.wellScreenGroup);
-    const conflict    = construction.append('g').attr('class', this.customClassNames.conflictGroup);
+    construction.append('g').attr('class', this.customClassNames.cementPadGroup);
+    construction.append('g').attr('class', this.customClassNames.holeGroup);
+    construction.append('g').attr('class', this.customClassNames.surfaceCaseGroup);
+    construction.append('g').attr('class', this.customClassNames.holeFillGroup);
+    construction.append('g').attr('class', this.customClassNames.wellCaseGroup);
+    construction.append('g').attr('class', this.customClassNames.wellScreenGroup);
+    construction.append('g').attr('class', this.customClassNames.conflictGroup);
 
-    this.groups = {
-      poco, geologic, lithology, fractures, caves,
-      construction, cementPad, hole, surfaceCase,
-      holeFill, wellCase, wellScreen, conflict, yAxis,
-    };
+    Object.values(DEFAULTS_TEXTURES).forEach(texture => svg.call(texture));
 
-    Object.values(DEFAULTS_TEXTURES).forEach(texture => this.svg.call(texture));
+    return { svg, height, width, margins, clipId, clipRectId };
   }
 
-  populateTooltips() {
-    const tipsText = {
-      geology: (_, d: Lithology) => `
-        <span class="${this.customClassNames.tooltipTitle}">Litologia</span>
-        <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
-        <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
-        ${d.geologic_unit ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Unidade geológica:</strong> ${d.geologic_unit}</span>` : ''}
-        ${d.aquifer_unit ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Unidade aquífera:</strong> ${d.aquifer_unit}</span>` : ''}
-      `,
-      hole: (_, d: HoleFill) => {
-        return `
-        <span class="${this.customClassNames.tooltipTitle}">FURO</span>
-        <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
-        <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
-        `;
-      },
-      surfaceCase: (_, d: SurfaceCase) => {
-        return `
-            <span class="${this.customClassNames.tooltipTitle}">TUBO DE BOCA</span>
-            <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
-            <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
-          `;
-      },
-      holeFill: (_, d: HoleFill) => {
-        return `
-          <span class="${this.customClassNames.tooltipTitle}">ESP. ANULAR</span>
-          <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
-          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
-          <span class="${this.customClassNames.tooltipSecondaryInfo}">
-            <strong>Descrição:</strong> ${d.description}
-          </span>
-          `;
-      },
-      wellCase: (_, d: WellCase) => {
-        return `
-          <span class="${this.customClassNames.tooltipTitle}">REVESTIMENTO</span>
-              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${this.fmtDiam(d.diameter)} ${this.diamUnit}
-              </span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
-          `;
-      },
-      wellScreen: (_, d: WellScreen) => {
-        return `
-          <span class="${this.customClassNames.tooltipTitle}">FILTROS</span>
-              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Ranhura:</strong> ${this.fmtDiam(d.screen_slot_mm)} ${this.diamUnit}
-              </span>
-          `;
-      },
-      conflict: (_, d: any) => {
-        return `
-          <span class="${this.customClassNames.tooltipTitle}">FILTROS</span>
-              <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Diâmetro:</strong> ${this.fmtDiam(d.diameter)} ${this.diamUnit}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
-              <span class="${this.customClassNames.tooltipSecondaryInfo}">
-                <strong>Ranhura:</strong> ${this.fmtDiam(d.screen_slot_mm)} ${this.diamUnit}
-              </span>
-          `;
-      },
-      fracture: (_event: unknown, d: Fracture) => {
-        const title = d.swarm ? 'ENXAME DE FRATURAS' : 'FRATURA';
-        return `
-          <span class="${this.customClassNames.tooltipTitle}">${title}</span>
-          <span class="${this.customClassNames.tooltipPrimaryInfo}"><strong>Profundidade:</strong> ${this.fmtLen(d.depth)} ${this.lenUnit}</span>
-          ${d.water_intake ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Entrada d'água:</strong> ${this.fmtLen(d.depth)} ${this.lenUnit}</span>` : ''}
-          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Mergulho:</strong> ${d.dip}°</span>
-          <span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Azimute:</strong> ${d.azimuth}°</span>
-          ${d.description ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
-        `;
-      },
-      cave: (_event: unknown, d: Cave) => {
-        return `
-          <span class="${this.customClassNames.tooltipTitle}">CAVERNA</span>
-          <span class="${this.customClassNames.tooltipPrimaryInfo}">De ${this.fmtLen(d.from)} ${this.lenUnit} até ${this.fmtLen(d.to)} ${this.lenUnit}</span>
-          ${d.water_intake ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Entrada d'água</strong></span>` : ''}
-          ${d.description ? `<span class="${this.customClassNames.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
-        `;
-      },
-    };
-
-    const tooltips: any = {};
-
-    Object.getOwnPropertyNames(tipsText).forEach(tipTextKey => {
-      tooltips[tipTextKey] = d3
-        // @ts-ignore
-        .tip()
-        .attr('class', this.customClassNames.tooltip)
-        .direction('e')
-        .html(tipsText[tipTextKey]);
-
-      this.svg.call(tooltips[tipTextKey]);
-    });
-
-    return tooltips;
+  public async prepareSvg() {
+    this.instanceStates = this.svgInstances.map((inst, i) => this.initInstanceSvg(inst, i));
+    const { height, width, margins } = this.instanceStates[0];
+    this.svgWidth  = width  + margins.left + margins.right;
+    this.svgHeight = height + margins.top  + margins.bottom;
+    this.pocoWidth  = this.svgWidth / 4;
+    this.pocoCenter = (this.svgWidth * 3) / 4;
   }
 
   drawLog(profile: Well, lengthUnits: LengthUnits = 'm', diameterUnits: DiameterUnits = 'mm') {
-    if (!this.svg) return;
-
     if (checkIfProfileIsEmpty(profile)) return;
+    this.units.length   = lengthUnits;
+    this.units.diameter = diameterUnits;
+    for (const state of this.instanceStates) {
+      this.drawLogToInstance(state, profile);
+    }
+  }
 
-    this.lengthUnits = lengthUnits;
-    this.diameterUnits = diameterUnits;
+  private drawLogToInstance(state: InstanceState, profile: Well) {
+    const svg = state.svg;
+    const cn  = this.customClassNames;
 
-    const svg = this.svg;
-
-    const { poco: pocoGroup, lithology: lithologyGroup,
-            fractures: fracturesGroup, caves: cavesGroup, construction: constructionGroup,
-            cementPad: cementPadGroup, hole: holeGroup, surfaceCase: surfaceCaseGroup,
-            holeFill: holeFillGroup, wellCase: wellCaseGroup, wellScreen: wellScreenGroup,
-            conflict: conflictGroup } = this.groups;
+    const pocoGroup         = svg.select(`.${cn.wellGroup}`);
+    const lithologyGroup    = svg.select(`.${cn.lithologyGroup}`);
+    const fracturesGroup    = svg.select(`.${cn.fracturesGroup}`);
+    const cavesGroup        = svg.select(`.${cn.cavesGroup}`);
+    const constructionGroup = svg.select(`.${cn.constructionGroup}`);
+    const cementPadGroup    = svg.select(`.${cn.cementPadGroup}`);
+    const holeGroup         = svg.select(`.${cn.holeGroup}`);
+    const surfaceCaseGroup  = svg.select(`.${cn.surfaceCaseGroup}`);
+    const holeFillGroup     = svg.select(`.${cn.holeFillGroup}`);
+    const wellCaseGroup     = svg.select(`.${cn.wellCaseGroup}`);
+    const wellScreenGroup   = svg.select(`.${cn.wellScreenGroup}`);
+    const conflictGroup     = svg.select(`.${cn.conflictGroup}`);
 
     const svgWidth  = this.svgWidth;
     const svgHeight = this.svgHeight;
@@ -333,7 +221,7 @@ export class WellDrawer {
 
     const transition = d3.transition().duration(750).ease(d3.easeCubic);
 
-    const tooltips = this.populateTooltips();
+    const tooltips = populateTooltips(svg, this.customClassNames, this.units);
 
     // ─────────────────────────────────────────────────────────────────────────
     // updateGeology
@@ -871,19 +759,19 @@ export class WellDrawer {
     const yScaleGlobal = d3
       .scaleLinear()
       .domain([0, maxYValues])
-      .range([0, svgHeight - this.MARGINS.TOP - this.MARGINS.BOTTOM]);
+      .range([0, svgHeight - state.margins.top - state.margins.bottom]);
 
     const yZero = yScaleGlobal(0);
 
-    const maxYDisplay = this.lengthUnits === 'ft' ? maxYValues * 3.28084 : maxYValues;
+    const maxYDisplay = this.units.length === 'ft' ? maxYValues * 3.28084 : maxYValues;
     const yScaleAxis = d3
       .scaleLinear()
       .domain([0, maxYDisplay])
-      .range([0, svgHeight - this.MARGINS.TOP - this.MARGINS.BOTTOM]);
+      .range([0, svgHeight - state.margins.top - state.margins.bottom]);
 
     const yAxis = d3.axisLeft(yScaleAxis).tickFormat((d: any) => `${d}${this.lenUnit}`);
 
-    const gY = this.groups.yAxis
+    const gY = svg.select(`.${cn.yAxis}`)
       // @ts-ignore
       .call(yAxis);
 
@@ -947,7 +835,7 @@ export class WellDrawer {
       if (geologicData.fractures) updateFractures(geologicData.fractures, yScaleGlobal);
       if (constructionData) updatePoco(constructionData, yScaleGlobal);
 
-      this.svg.select('#fractures-clip-rect')
+      svg.select(`#${state.clipRectId}`)
         .attr('y', yZero)
         .attr('height', svgHeight);
     };
@@ -957,7 +845,7 @@ export class WellDrawer {
 
     drawProfile();
     // @ts-ignore
-    this.svg.call(zoomNode).node();
+    svg.call(zoomNode).node();
   }
 }
 

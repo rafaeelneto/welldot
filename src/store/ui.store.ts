@@ -2,12 +2,12 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CoordFormat } from '@/src/utils/coords.utils';
 
-import type { Units, LengthUnits, DiameterUnits } from '@/src/lib/@types/units.types';
-export type { Units, LengthUnits, DiameterUnits };
+import type { UnitsTypes, LengthUnits, DiameterUnits } from '@/src/lib/@types/units.types';
+export type { UnitsTypes, LengthUnits, DiameterUnits };
 export type { CoordFormat };
 
 interface IUIState {
-  units: Units;
+  units: UnitsTypes;
   diameter_units: DiameterUnits;
   length_units: LengthUnits;
   pdf_header: string;
@@ -15,7 +15,7 @@ interface IUIState {
   pdf_zoom_value: number;
   pdf_metadata_position: 'before' | 'after' | null;
   coord_format: CoordFormat;
-  setUnits: (units: Units) => void;
+  setUnits: (units: UnitsTypes) => void;
   setDiameterUnits: (diameter_units: DiameterUnits) => void;
   setLengthUnits: (length_units: LengthUnits) => void;
   setPdfHeader: (pdf_header: string) => void;
@@ -29,7 +29,7 @@ interface IUIState {
 export const DEFAULT_PDF_HEADER = 'PERFIL GEOLÓGICO';
 
 const defaultState = {
-  units: 'metric' as Units,
+  units: 'metric' as UnitsTypes,
   diameter_units: 'inches' as DiameterUnits,
   length_units: 'm' as LengthUnits,
   pdf_header: DEFAULT_PDF_HEADER,
@@ -43,7 +43,7 @@ export const useUIStore = create<IUIState>()(
   persist(
     (set) => ({
       ...defaultState,
-      setUnits: (units: Units) => set({ units }),
+      setUnits: (units: UnitsTypes) => set({ units }),
       setDiameterUnits: (diameter_units: DiameterUnits) => set({ diameter_units }),
       setLengthUnits: (length_units: LengthUnits) => set({ length_units }),
       setPdfHeader: (pdf_header: string) => set({ pdf_header }),

@@ -27,19 +27,26 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
       return;
     }
 
-    profileDrawer.current = new WellDrawer(
-      // @ts-ignore
-      svgContainer.current,
-      HEIGHT,
-      WIDTH,
-      MARGINS,
+    profileDrawer.current = new WellDrawer([
       {
+       selector: `.${styles.svgContainer}`,
+       height: HEIGHT,
+       width: WIDTH,
+       margins: {
+          top: MARGINS.TOP,
+          right: MARGINS.RIGHT,
+          bottom: MARGINS.BOTTOM,
+          left: MARGINS.LEFT,
+        },
+      }
+    ], {
+      classNames: {
         tooltip: styles.tooltip,
         tooltipTitle: styles.title,
         tooltipPrimaryInfo: styles.primaryInfo,
         tooltipSecondaryInfo: styles.secondaryInfo,
-      },
-    );
+      }
+    });
 
     profileDrawer.current.prepareSvg();
 
@@ -66,6 +73,7 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
         ''
       )}
       <svg
+        id='#svg_drawer'
         className={`${styles.svgContainer} ${noProfile ? styles.hide : ''}`}
         ref={svgContainer}
       />

@@ -5,7 +5,10 @@ import textures from 'textures';
 
 import fdgcTextures from '@/src_old/utils/fgdcTextures';
 
-import { Lithology } from '@/src/lib/@types/well.types';
+import { BoreHole, Cave, Fracture, HoleFill, Lithology, SurfaceCase, WellCase, WellScreen } from '@/src/lib/@types/well.types';
+import { ComponentsClassNames } from '../@types/drawer.types';
+import { Units, UnitsTypes } from '../@types/units.types';
+import { formatDiameter, formatLength } from '../utils/format.utils';
 
 const d3 = {
   ...d3module,
@@ -257,3 +260,108 @@ export function makeCavePrng(seed: number) {
     return (s - 1) / 2147483646;
   };
 };
+
+
+export function populateTooltips(svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>, customClasses: ComponentsClassNames, units: Units) {
+    const tipsText = {
+      geology: (_, d: Lithology) => `
+        <span class="${customClasses.tooltipTitle}">Litologia</span>
+        <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+        <span class="${customClasses.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
+        ${d.geologic_unit ? `<span class="${customClasses.tooltipSecondaryInfo}"><strong>Unidade geológica:</strong> ${d.geologic_unit}</span>` : ''}
+        ${d.aquifer_unit ? `<span class="${customClasses.tooltipSecondaryInfo}"><strong>Unidade aquífera:</strong> ${d.aquifer_unit}</span>` : ''}
+      `,
+      hole: (_, d: BoreHole) => {
+        return `
+        <span class="${customClasses.tooltipTitle}">FURO</span>
+        <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+        <span class="${customClasses.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
+        `;
+      },
+      surfaceCase: (_, d: SurfaceCase) => {
+        return `
+            <span class="${customClasses.tooltipTitle}">TUBO DE BOCA</span>
+            <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+            <span class="${customClasses.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
+          `;
+      },
+      holeFill: (_, d: HoleFill) => {
+        return `
+          <span class="${customClasses.tooltipTitle}">ESP. ANULAR</span>
+          <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+          <span class="${customClasses.tooltipSecondaryInfo}"><strong>Diâmetro:</strong>${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
+          <span class="${customClasses.tooltipSecondaryInfo}">
+            <strong>Descrição:</strong> ${d.description}
+          </span>
+          `;
+      },
+      wellCase: (_, d: WellCase) => {
+        return `
+          <span class="${customClasses.tooltipTitle}">REVESTIMENTO</span>
+              <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+              <span class="${customClasses.tooltipSecondaryInfo}">
+                <strong>Diâmetro:</strong> ${formatDiameter(d.diameter, units.diameter)} ${units.diameter}
+              </span>
+              <span class="${customClasses.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
+          `;
+      },
+      wellScreen: (_, d: WellScreen) => {
+        return `
+          <span class="${customClasses.tooltipTitle}">FILTROS</span>
+              <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+              <span class="${customClasses.tooltipSecondaryInfo}">
+                <strong>Diâmetro:</strong> ${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
+              <span class="${customClasses.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
+              <span class="${customClasses.tooltipSecondaryInfo}">
+                <strong>Ranhura:</strong> ${d.screen_slot_mm} mm
+              </span>
+          `;
+      },
+      conflict: (_, d: { from: number, to: number, diameter: number, screen_slot_mm: number, type: string}) => {
+        return `
+          <span class="${customClasses.tooltipTitle}">FILTROS</span>
+              <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+              <span class="${customClasses.tooltipSecondaryInfo}">
+                <strong>Diâmetro:</strong> ${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
+              <span class="${customClasses.tooltipSecondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
+              <span class="${customClasses.tooltipSecondaryInfo}">
+                <strong>Ranhura:</strong> ${d.screen_slot_mm} mm
+              </span>
+          `;
+      },
+      fracture: (_event: unknown, d: Fracture) => {
+        const title = d.swarm ? 'ENXAME DE FRATURAS' : 'FRATURA';
+        return `
+          <span class="${customClasses.tooltipTitle}">${title}</span>
+          <span class="${customClasses.tooltipPrimaryInfo}"><strong>Profundidade:</strong> ${formatLength(d.depth, units.length)} ${units.length}</span>
+          ${d.water_intake ? `<span class="${customClasses.tooltipSecondaryInfo}"><strong>Entrada d'água:</strong> ${formatLength(d.depth, units.length)} ${units.length}</span>` : ''}
+          <span class="${customClasses.tooltipSecondaryInfo}"><strong>Mergulho:</strong> ${d.dip}°</span>
+          <span class="${customClasses.tooltipSecondaryInfo}"><strong>Azimute:</strong> ${d.azimuth}°</span>
+          ${d.description ? `<span class="${customClasses.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
+        `;
+      },
+      cave: (_event: unknown, d: Cave) => {
+        return `
+          <span class="${customClasses.tooltipTitle}">CAVERNA</span>
+          <span class="${customClasses.tooltipPrimaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
+          ${d.water_intake ? `<span class="${customClasses.tooltipSecondaryInfo}"><strong>Entrada d'água</strong></span>` : ''}
+          ${d.description ? `<span class="${customClasses.tooltipSecondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
+        `;
+      },
+    };
+
+    const tooltips: any = {};
+
+    Object.getOwnPropertyNames(tipsText).forEach(tipTextKey => {
+      tooltips[tipTextKey] = d3
+        // @ts-ignore
+        .tip()
+        .attr('class', customClasses.tooltip)
+        .direction('e')
+        .html(tipsText[tipTextKey]);
+
+      svg.call(tooltips[tipTextKey]);
+    });
+
+    return tooltips;
+  }
