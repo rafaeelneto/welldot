@@ -25,7 +25,7 @@ import {
   SurfaceCase,
   WellCase,
   WellScreen,
-} from '@/src/types/profile.types';
+} from '@/src/lib/@types/well.types';
 
 const typedFloatColumn = floatColumn as Partial<Column<number, any, string>>;
 const typedTextColumn = textColumn as Partial<Column<string, any, string>>;

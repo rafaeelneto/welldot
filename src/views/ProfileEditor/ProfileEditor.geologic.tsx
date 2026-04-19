@@ -4,7 +4,7 @@ import DataSheet from '@/src/components/organisms/DataSheet/DataSheet.component'
 
 import { useProfileStore } from '@/src/store/profile/profile.store';
 
-import { Cave, Fracture, Lithology } from '@/src/types/profile.types';
+import { Cave, Fracture, Lithology } from '@/src/lib/@types/well.types';
 
 import {
   CAVE_FEATURE_DEFAULT,

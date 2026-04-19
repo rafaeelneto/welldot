@@ -16,15 +16,15 @@ import { infoType } from '../../../src_old/types/profile2Export.types';
 
 
 import {
-  Profile,
-} from '@/src/types/profile.types';
+  Well,
+} from '@/src/lib/@types/well.types';
 
 
 const profile2Export = (
   header: string,
   headingInfo: infoType[],
   endInfo: infoType[],
-  profile: Profile,
+  profile: Well,
   breakPages: boolean,
   zoomLevel: number,
   iframeId?: string,

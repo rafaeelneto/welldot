@@ -23,7 +23,7 @@ import {
   SurfaceCase,
   WellCase,
   WellScreen,
-} from '@/src/types/profile.types';
+} from '@/src/lib/@types/well.types';
 
 import { useUIStore } from '@/src/store/ui.store';
 import { inchesColumn, ftColumn } from './unitColumn';

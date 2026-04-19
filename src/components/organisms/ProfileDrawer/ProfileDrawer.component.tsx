@@ -2,20 +2,20 @@ import React, { useEffect, useRef } from 'react';
 
 import { checkIfProfileIsEmpty } from '@/src/utils/profile.utils';
 
-import { DinamicDrawer } from '@/src/utils/ProfileDrawer/ProfileDrawer';
+import { WellDrawer } from '@/src/lib/wellDrawer/WellDrawer';
 
-import { Profile } from '@/src/types/profile.types';
+import { Well } from '@/src/lib/@types/well.types';
 import { useUIStore } from '@/src/store/ui.store';
 
 import styles from './profileDrawer.module.scss';
 
 interface ProfileDrawerProps {
-  profile: Profile;
+  profile: Well;
 }
 
 const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
   const svgContainer = useRef(null);
-  const profileDrawer = useRef<DinamicDrawer | null>(null);
+  const profileDrawer = useRef<WellDrawer | null>(null);
   const { length_units, diameter_units } = useUIStore();
 
   const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 50 };
@@ -27,7 +27,7 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
       return;
     }
 
-    profileDrawer.current = new DinamicDrawer(
+    profileDrawer.current = new WellDrawer(
       // @ts-ignore
       svgContainer.current,
       HEIGHT,

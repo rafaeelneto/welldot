@@ -1,5 +1,5 @@
 import {
-  Profile,
+  Well,
   Constructive,
   HoleFill,
   BoreHole,
@@ -9,7 +9,7 @@ import {
   Geologic,
   SurfaceCase,
   Lithology,
-} from '@/src/types/profile.types';
+} from '@/src/lib/@types/well.types';
 import { getEmptyProfile } from '../data/profile/profile.data';
 
 type PointItem = {
@@ -32,7 +32,7 @@ function getLowestPointFromList(data: (PointItem | ExtensionItem)[]): number {
   return (lastItem as ExtensionItem).to;
 }
 
-export const getProfileLastItemsDepths = (profile: Profile): number[] => {
+export const getProfileLastItemsDepths = (profile: Well): number[] => {
   return [
     getLowestPointFromList(profile.lithology),
     getLowestPointFromList(profile.fractures),
@@ -109,7 +109,7 @@ export const calculateCilindricVolume = (diameter: number, height: number) => {
   return Math.PI * (diameter / 1000 / 2) ** 2 * height;
 };
 
-export const calculateHoleFillVolume = (type: string, profile: Profile) => {
+export const calculateHoleFillVolume = (type: string, profile: Well) => {
   let volume = 0;
 
   const { well_case: wellCase, well_screen: wellScreen } = profile;
@@ -166,7 +166,7 @@ export const calculateHoleFillVolume = (type: string, profile: Profile) => {
 
 const WELL_FORMAT_VERSION = 1;
 
-export function profileToWell(profile: Profile): string {
+export function profileToWell(profile: Well): string {
   const well: Record<string, unknown> = {
     version: WELL_FORMAT_VERSION,
     ...(profile.well_type !== undefined && { well_type: profile.well_type }),
@@ -192,7 +192,7 @@ export function profileToWell(profile: Profile): string {
   return JSON.stringify(well);
 }
 
-function decodeWell(raw: any): Profile {
+function decodeWell(raw: any): Well {
   return {
     ...getEmptyProfile(),
     ...(raw.well_type !== undefined && { well_type: raw.well_type }),
@@ -261,7 +261,7 @@ function normalizeGeologic(raw: any): Geologic {
   };
 }
 
-export function convertProfileFromJSON(jsonString: string): Profile | null {
+export function convertProfileFromJSON(jsonString: string): Well | null {
   let raw: any;
   try {
     raw = JSON.parse(jsonString);

@@ -5,7 +5,7 @@ import textures from 'textures';
 
 import fdgcTextures from './fgdcTextures';
 
-import { Lithology } from '@/src/types/profile.types';
+import { Lithology } from '@/src/lib/@types/well.types';
 
 const d3 = {
   ...d3module,

@@ -28,8 +28,8 @@ import {
   Fracture,
   HoleFill,
   Lithology,
-  Profile,
-} from '@/src/types/profile.types';
+  Well,
+} from '@/src/lib/@types/well.types';
 
 const d3 = {
   ...d3module,
@@ -41,7 +41,7 @@ const DARK_GRAY = '#303030';
 export const A4_SVG_HEIGHT = 480 * 1.33;
 
 export function buildSvgProfiles(props: {
-    profile: Profile;
+    profile: Well;
     lengthUnits: LengthUnits,
     diameterUnits: DiameterUnits,
     breakPages?: boolean,

@@ -5,7 +5,7 @@ import textures from 'textures';
 import Fractures from '@/public/fractures.svg?url';
 
 import {
-  Profile,
+  Well,
   Geologic,
   Constructive,
   Lithology,
@@ -17,7 +17,7 @@ import {
   WellScreen,
   Fracture,
   Cave,
-} from '@/src/types/profile.types';
+} from '@/src/lib/@types/well.types';
 import {
   checkIfProfileIsEmpty,
   getProfileDiamValues,
@@ -29,7 +29,7 @@ import {
   responsivefy,
   getLithologyFiller,
   getYAxisFunctions,
-} from '@/src/utils/ProfileDrawer/ProfileDrawer.utils';
+} from '@/src/lib/wellDrawer/drawer.utils';
 import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
 
 const d3 = {
@@ -98,7 +98,7 @@ const DEFAULTS_TEXTURES = {
     .background('#fff'),
 };
 
-export class DinamicDrawer {
+export class WellDrawer {
   private svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
 
   customClassNames = DEFAULT_COMPONENTS_CLASS_NAMES;
@@ -301,7 +301,7 @@ export class DinamicDrawer {
     return tooltips;
   }
 
-  drawLog(profile: Profile, lengthUnits: LengthUnits = 'm', diameterUnits: DiameterUnits = 'mm') {
+  drawLog(profile: Well, lengthUnits: LengthUnits = 'm', diameterUnits: DiameterUnits = 'mm') {
     if (!this.svg) return;
 
     if (checkIfProfileIsEmpty(profile)) return;
@@ -1086,5 +1086,5 @@ export class DinamicDrawer {
 }
 
 export default {
-  DinamicDrawer,
+  WellDrawer,
 };

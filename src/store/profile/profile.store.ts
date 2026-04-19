@@ -13,12 +13,12 @@ import {
   Geologic,
   HoleFill,
   Lithology,
-  Profile,
+  Well,
   Reduction,
   SurfaceCase,
   WellCase,
   WellScreen,
-} from '@/src/types/profile.types';
+} from '@/src/lib/@types/well.types';
 import { convertProfileFromJSON } from '@/src/utils/profile.utils';
 
 // TODO move this function to utils
@@ -39,9 +39,9 @@ function reorderComponentsDepth<T>(
 }
 
 interface IProfileState {
-  profile: Profile;
+  profile: Well;
   mutationCount: number;
-  updateProfile: (newProfile: Profile) => void;
+  updateProfile: (newProfile: Well) => void;
   updateProfileFromJSON: (jsonProfile: string) => void;
   updateCementPad: (property: keyof CementPad, value: string | number) => void;
   getUpdateListingFeatures: <T extends ListingTypes>(
@@ -50,7 +50,7 @@ interface IProfileState {
   clear: () => void;
 }
 
-type EnforceToExtendProfileKeys<T> = T extends keyof Profile ? T : never;
+type EnforceToExtendProfileKeys<T> = T extends keyof Well ? T : never;
 
 type ListingKeys = EnforceToExtendProfileKeys<
   | 'bore_hole'
@@ -81,8 +81,8 @@ type ListingTypes =
 
 type ChainingTypes = BoreHole | SurfaceCase | HoleFill | Lithology;
 
-type ListingFeatures = Pick<Profile, ListingKeys>;
-type ChainingFeatures = Pick<Profile, ChainingKeys>;
+type ListingFeatures = Pick<Well, ListingKeys>;
+type ChainingFeatures = Pick<Well, ChainingKeys>;
 
 const CHAING_TYPES = new Set<ChainingKeys>([
   'bore_hole',
@@ -97,7 +97,7 @@ const state: StateCreator<IProfileState> = (set, get) => ({
   clear: () => {
     set(() => ({ profile: getEmptyProfile() }));
   },
-  updateProfile: (newProfileState: Profile) => {
+  updateProfile: (newProfileState: Well) => {
     const counterUpdated = get().mutationCount + 1;
     set(() => ({
       profile: { ...newProfileState },

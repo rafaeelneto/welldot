@@ -52,7 +52,7 @@ import { getWindow } from '@/src/utils/window.utils';
 
 import styles from './profileEditor.module.scss';
 import { EMPTY_PROFILE, PROFILE_EXAMPLE } from '@/src/data/profile/profile.data';
-import { Profile } from '@/src/types/profile.types';
+import { Well } from '@/src/lib/@types/well.types';
 import dynamic from 'next/dynamic';
 
 function ProfileEditor() {
@@ -251,7 +251,7 @@ function ProfileEditor() {
             <Modal.Body style={{ height: 'calc(100% - 60px)' }}>
               <PDFExport
                 profile={
-                  { ...profile } as Profile & {
+                  { ...profile } as Well & {
                     info: {
                       headingInfo: { label: string; value: string }[];
                       endInfo: { label: string; value: string }[];

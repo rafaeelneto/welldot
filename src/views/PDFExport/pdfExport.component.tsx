@@ -32,7 +32,7 @@ import {
   FileText,
 } from 'react-feather';
 
-import { Profile } from '@/src/types/profile.types';
+import { Well } from '@/src/lib/@types/well.types';
 import { infoType } from '../../../src_old/types/profile2Export.types';
 
 import styles from './pdfExport.module.scss';
@@ -40,9 +40,9 @@ import styles from './pdfExport.module.scss';
 import profile2Export from './profile2Export.component';
 import { useUIStore, DEFAULT_PDF_HEADER } from '@/src/store/ui.store';
 
-type InfoItem = infoType & { profileField?: keyof Profile };
+type InfoItem = infoType & { profileField?: keyof Well };
 
-const WELL_METADATA_FIELDS: { key: keyof Profile; label: string }[] = [
+const WELL_METADATA_FIELDS: { key: keyof Well; label: string }[] = [
   { key: 'name', label: 'Nome' },
   { key: 'well_type', label: 'Tipo' },
   { key: 'well_driller', label: 'Perfurador' },
@@ -53,7 +53,7 @@ const WELL_METADATA_FIELDS: { key: keyof Profile; label: string }[] = [
   { key: 'obs', label: 'Observações' },
 ];
 
-const resolveInfo = (items: InfoItem[], profile: Profile): infoType[] =>
+const resolveInfo = (items: InfoItem[], profile: Well): infoType[] =>
   items.map(item =>
     item.profileField
       ? { label: item.label, value: String(profile[item.profileField] ?? '') }
@@ -61,7 +61,7 @@ const resolveInfo = (items: InfoItem[], profile: Profile): infoType[] =>
   );
 
 type PDFEProps = {
-  profile: Profile & {
+  profile: Well & {
     info: {
       headingInfo: InfoItem[];
       endInfo: InfoItem[];
@@ -105,7 +105,7 @@ function SortableList({
   onChangeList: (newComponents: InfoItem[]) => void;
   onChangeValues: (newComponent: InfoItem, index: number) => void;
   limit?: number | null;
-  profile: Profile;
+  profile: Well;
 }) {
   const dragEndEvent = (e: DragEndEvent) => {
     const { over, active } = e;

@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 
 // import '../../register-files';
-import { Profile } from '@/src/types/profile.types';
+import { Well } from '@/src/lib/@types/well.types';
 
 import {
   calculateHoleFillVolume,
@@ -110,7 +110,7 @@ const buildMetadataRows = (arr: { label: string; value: any }[], maxColumns: num
 
 
 export const exportPdfProfile = (
-  profile: Profile,
+  profile: Well,
   headingInfo: infoType[],
   endInfo: infoType[],
   breakPages: boolean,
@@ -131,8 +131,8 @@ export const exportPdfProfile = (
   const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
   const diamUnit = diameterUnits === 'inches' ? 'in' : 'mm';
 
-  const buildProfileMetadataTable = (profile: Profile) =>  {
-    const metaFields: { key: keyof Profile | string; label: string, getter?: (profile: Profile) => string }[] = [
+  const buildProfileMetadataTable = (profile: Well) =>  {
+    const metaFields: { key: keyof Well | string; label: string, getter?: (profile: Well) => string }[] = [
       { key: 'name', label: 'Nome' },
       { key: 'well_type', label: 'Tipo' },
       { key: 'well_driller', label: 'Perfurador' },
@@ -656,7 +656,7 @@ export const exportPdfProfile = (
 };
 
 export const innerRenderPdf = (
-  profile: Profile,
+  profile: Well,
   headingInfo: infoType[],
   endInfo: infoType[],
   breakPages: boolean,
@@ -696,7 +696,7 @@ export const innerRenderPdf = (
 };
 
 export const printPdf = (
-  profile: Profile,
+  profile: Well,
   headingInfo: infoType[],
   endInfo: infoType[],
   breakPages: boolean,
@@ -723,7 +723,7 @@ export const printPdf = (
 };
 
 export const downloadPdf = (
-  profile: Profile,
+  profile: Well,
   headingInfo: infoType[],
   endInfo: infoType[],
   breakPages: boolean,

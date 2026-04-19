@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { convertProfileFromJSON, profileToWell } from './profile.utils';
-import type { Profile } from '@/src/types/profile.types';
+import type { Well } from '@/src/lib/@types/well.types';
 
 const INCHES_TO_MM = 25.4;
 
@@ -406,7 +406,7 @@ describe('convertProfileFromJSON — full legacy profile (PROFILE_EXAMPLE)', () 
 // .well format — profileToWell serialisation
 // ---------------------------------------------------------------------------
 
-const fullProfile: Profile = {
+const fullProfile: Well = {
   name: 'Poço PP-01',
   well_driller: 'Driller Corp',
   construction_date: '2024-03-15',
@@ -441,7 +441,7 @@ describe('profileToWell — serialisation', () => {
   });
 
   it('serialises well_type when present', () => {
-    const p: Profile = { ...fullProfile, well_type: 'tubular' };
+    const p: Well = { ...fullProfile, well_type: 'tubular' };
     expect(JSON.parse(profileToWell(p)).well_type).toBe('tubular');
   });
 
@@ -468,7 +468,7 @@ describe('profileToWell — serialisation', () => {
   });
 
   it('omits drilling_method when absent', () => {
-    const p: Profile = { ...fullProfile, bore_hole: [{ from: 0, to: 10, diameter: 200 }] };
+    const p: Well = { ...fullProfile, bore_hole: [{ from: 0, to: 10, diameter: 200 }] };
     const { bore_hole } = JSON.parse(profileToWell(p));
     expect(bore_hole[0]).not.toHaveProperty('drilling_method');
   });
@@ -539,7 +539,7 @@ describe('convertProfileFromJSON — .well format', () => {
   });
 
   it('round-trips well_type losslessly', () => {
-    const p: Profile = { ...fullProfile, well_type: 'artesian' };
+    const p: Well = { ...fullProfile, well_type: 'artesian' };
     expect(convertProfileFromJSON(profileToWell(p))?.well_type).toBe('artesian');
   });
 

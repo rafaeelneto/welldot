@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import {
-  Profile,
+  Well,
   Lithology,
   BoreHole,
   WellCase,
@@ -9,9 +9,9 @@ import {
   HoleFill,
   Fracture,
   Cave,
-} from '@/src/types/profile.types';
+} from '@/src/lib/@types/well.types';
 
-export const PROFILE_EXAMPLE: Profile = {
+export const PROFILE_EXAMPLE: Well = {
   name: 'P4 - Exemplo',
 
   // Geologic
@@ -78,7 +78,7 @@ export const PROFILE_EXAMPLE: Profile = {
   cement_pad: { type: 'Concreto', thickness: 0.25, width: 2.5, length: 2.5 },
 };
 
-export const EMPTY_PROFILE: Profile = JSON.parse(
+export const EMPTY_PROFILE: Well = JSON.parse(
   JSON.stringify({
     // Constructive
     bore_hole: [],
@@ -98,11 +98,11 @@ export const EMPTY_PROFILE: Profile = JSON.parse(
     lithology: [],
     caves: [],
     fractures: [],
-  } as Profile),
+  } as Well),
 );
 
-export function getEmptyProfile(): Profile {
-  return JSON.parse(JSON.stringify(EMPTY_PROFILE)) as Profile;
+export function getEmptyProfile(): Well {
+  return JSON.parse(JSON.stringify(EMPTY_PROFILE)) as Well;
 }
 
 export const LITHOLOGY_FEATURE_DEFAULT: Lithology = {

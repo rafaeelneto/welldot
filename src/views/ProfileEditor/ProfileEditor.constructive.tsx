@@ -12,7 +12,7 @@ import {
   SurfaceCase,
   WellCase,
   WellScreen,
-} from '@/src/types/profile.types';
+} from '@/src/lib/@types/well.types';
 
 import {
   EMPTY_PROFILE,

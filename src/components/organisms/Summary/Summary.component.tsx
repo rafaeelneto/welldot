@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table } from '@mantine/core';
 
-import { Profile } from '@/src/types/profile.types';
+import { Well } from '@/src/lib/@types/well.types';
 
 import {
   numberFormater,
@@ -13,7 +13,7 @@ import { useUIStore } from '@/src/store/ui.store';
 import styles from './Summary.module.scss';
 
 type InfoProps = {
-  profile: Profile;
+  profile: Well;
 };
 
 type RowType = {
