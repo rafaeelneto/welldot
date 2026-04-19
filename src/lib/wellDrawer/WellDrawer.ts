@@ -197,6 +197,8 @@ export class WellDrawer {
     if (options.renderConfig) {
       this.renderConfig = defu(options.renderConfig, DEFAULT_RENDER_CONFIG) as DrawerRenderConfig;
     }
+
+    return this;
   }
 
   private initInstanceSvg(inst: SvgInstance, index: number): InstanceState {
@@ -278,7 +280,7 @@ export class WellDrawer {
     this.pocoCenter = this.svgWidth * pocoCenterRatio;
   }
 
-  drawLog(profile: Well, options: { units?: Units } = { }) {
+  draw(profile: Well, options: { units?: Units } = { }) {
     if (checkIfProfileIsEmpty(profile)) return;
     this.units = { ...this.units, ...options.units };
     for (const state of this.instanceStates) {

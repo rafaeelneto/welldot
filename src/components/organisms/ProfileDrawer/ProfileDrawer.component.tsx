@@ -97,12 +97,12 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
     });
 
     profileDrawer.current.prepareSvg();
-    profileDrawer.current.drawLog(profile, { units: { length: length_units, diameter: diameter_units } });
+    profileDrawer.current.draw(profile, { units: { length: length_units, diameter: diameter_units } });
   }, [svgContainer.current, config, containerWidth]);
 
   useEffect(() => {
     if (!profileDrawer.current) return;
-    profileDrawer.current.drawLog(profile, { units: { length: length_units, diameter: diameter_units } });
+    profileDrawer.current.draw(profile, { units: { length: length_units, diameter: diameter_units } });
   }, [profile, length_units, diameter_units]);
 
   const noProfile = checkIfProfileIsEmpty(profile);
