@@ -9,7 +9,10 @@ Overview of all drawer/profile functions, their signatures, and dependency chain
 ```
 src/lib/
 ├── @types/
-│   └── well.types.ts          — All domain type definitions
+│   ├── well.types.ts          — All domain type definitions
+│   ├── drawer.types.ts        — ComponentsClassNames, SvgInstance, Colors, ColorsOverride
+│   ├── units.types.ts         — Units, LengthUnits, DiameterUnits
+│   └── generic.types.ts       — DeepPartial<T>
 ├── utils/
 │   ├── well.utils.ts          — Profile data utilities
 │   └── well.utils.test.ts     — Test suite for well.utils
@@ -165,49 +168,112 @@ Creates a seeded LCG PRNG. Ensures cave shapes are identical across zoom levels 
 
 ---
 
+## Shared Types — `@types/drawer.types.ts`
+
+### `ComponentsClassNames`
+
+Nested semantic class-name map. Every drawn element has a named slot. Passed to `WellDrawer` constructor and to `populateTooltips`.
+
+```
+tooltip       → { root, title, primaryInfo, secondaryInfo }
+yAxis         → string
+wellGroup     → string
+geologicGroup → string
+lithology     → { group, rect }
+fractures     → { group, item, hitArea, line, polyline }
+caves         → { group, item, fill, contact }
+constructionGroup → string
+cementPad     → { group, item }
+boreHole      → { group, rect }
+surfaceCase   → { group, rect }
+holeFill      → { group, rect }
+wellCase      → { group, rect }
+wellScreen    → { group, rect }
+conflict      → { group, rect }
+```
+
+| Sub-key | Element |
+|---------|---------|
+| `*.group` | `<g>` container appended during `prepareSvg` |
+| `*.item` | Per-datum `<g>` appended per fracture / cave |
+| `*.rect` | `<rect>` data elements |
+| `fractures.hitArea` | Transparent hit buffer rect inside each fracture group |
+| `fractures.line` | `<line>` crack and bridge elements |
+| `fractures.polyline` | `<polyline>` wavy stroke paths |
+| `caves.fill` | Closed textured fill `<path>` |
+| `caves.contact` | Top and bottom contact stroke `<path>` elements |
+
+### `Colors` / `ColorsOverride`
+
+`Colors` is the full type for the default color palette. `ColorsOverride` is `DeepPartial<Colors>`, used as the `colors` option in the constructor.
+
+### `SvgInstance`
+
+Shape passed per SVG panel: `{ selector, height, width, margins }`.
+
+---
+
+## Generic Types — `@types/generic.types.ts`
+
+### `DeepPartial<T>`
+
+Recursively makes all properties optional. Used by `ColorsOverride` and the `classNames` constructor option.
+
+---
+
 ## Interactive Visualizer — `wellDrawer/WellDrawer.ts`
 
 ### `class WellDrawer`
 
 ```typescript
 constructor(
-  svgClassName: string,
-  HEIGHT: number,
-  WIDTH: number,
-  MARGINS: { LEFT, RIGHT, TOP, BOTTOM },
-  customClassNames?: Partial<ComponentsClassNames>
+  svgs: SvgInstance[],
+  options?: {
+    classNames?: DeepPartial<ComponentsClassNames>;
+    units?:      Units;
+    colors?:     ColorsOverride;
+  }
 )
 ```
+
+All three options are deep-merged with their defaults via `defu`, so partial overrides are safe at any nesting depth.
+
+#### Public Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `classes` | `ComponentsClassNames` | Resolved class-name map (defaults merged with overrides) |
 
 #### Public Methods
 
 | Method | Description |
 |--------|-------------|
 | `prepareSvg(): Promise<void>` | Initializes SVG groups, clip paths, and D3 structure |
-| `populateTooltips(): Object` | Creates D3 tooltip instances for all element types |
-| `drawLog(profile: Well, lengthUnits?, diameterUnits?): void` | **Main entry point** — renders the full well profile |
+| `drawLog(profile: Well, options?: { units?: Units }): void` | **Main entry point** — renders the full well profile |
 
-#### Internal Rendering Closures (within `drawLog`)
+#### Internal Rendering Closures (within `drawLogToInstance`)
 
 | Function | Renders |
 |----------|---------|
-| `updateGeology(data, yScale)` | Lithology rectangles with fills and tooltips |
-| `updateCaves(data, yScale)` | Wavy-edged cave bands with textures |
-| `updateFractures(data, yScale)` | Fracture symbols with rotation, swarms, water-intake markers |
-| `updatePoco(data, yScale)` | Bore hole, casings, screens, cement pad |
-| `drawProfile()` | Orchestrates all `update*` calls |
-| `zooming(e)` | Zoom handler — rescales axes and redraws fractures/caves |
+| `drawLithology(data, yScale)` | Lithology `rect` elements with fills and tooltips |
+| `drawCaves(data, yScale)` | Wavy-edged cave bands: fill path + two contact paths |
+| `drawFractures(data, yScale)` | Fracture groups: hit area, lines, polylines, swarms |
+| `drawWellConstructive(data, yScale)` | Bore hole, casings, screens, hole fill, cement pad, conflicts |
+| `drawProfile()` | Orchestrates all `draw*` calls for the initial render |
+| `zooming(e)` | Zoom handler — rescales y-axis, repositions rects and fracture groups, redraws caves |
 
 #### Dependencies
 
 | Dependency | What is used |
 |-----------|--------------|
 | `d3`, `d3-tip` | SVG rendering, scales, zoom, tooltips |
-| `textures` | Lithology fill patterns |
-| `well.types` | All type definitions |
+| `defu` | Deep-merge for `classNames`, `units`, `colors` options |
+| `drawer.types` | `ComponentsClassNames`, `SvgInstance`, `Colors`, `ColorsOverride` |
+| `generic.types` | `DeepPartial<T>` |
+| `well.types` | All domain type definitions |
 | `well.utils` | `checkIfProfileIsEmpty`, `getProfileDiamValues`, `getProfileLastItemsDepths` |
-| `drawer.utils` | `responsivefy`, `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `getLithologyFill`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng` |
-| `ui.store` | `LengthUnits`, `DiameterUnits` |
+| `drawer.utils` | `responsivefy`, `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `getLithologyFill`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng`, `populateTooltips` |
+| `drawer.textures` | `createWellTextures` |
 
 ---
 
@@ -271,8 +337,11 @@ Creates one or more `<svg>` elements inside `#svgDraftContainer`, each represent
 
 ```
 WellDrawer.ts
-  ├── d3, d3-tip
+  ├── d3, d3-tip, defu
   ├── @types/well.types
+  ├── @types/drawer.types  (ComponentsClassNames, SvgInstance, Colors, ColorsOverride)
+  ├── @types/generic.types (DeepPartial)
+  ├── @types/units.types
   ├── utils/well.utils
   │     └── @types/well.types
   │     └── data/profile.data (getEmptyProfile)
@@ -280,8 +349,7 @@ WellDrawer.ts
   │     ├── d3, textures
   │     ├── @types/well.types
   │     └── src_old/utils/fgdcTextures
-  ├── wellDrawer/drawer.textures  (createWellTextures)
-  └── store/ui.store
+  └── wellDrawer/drawer.textures  (createWellTextures)
 
 WellDrawerPDF.ts
   ├── d3, textures (textures kept for legend custom-color cave)
@@ -331,5 +399,6 @@ views/PDFExport/profile2Export.component.ts
 | `wavyContact` | drawer.utils | `(xL, xR, y, amp, steps, rng)` | `[number, number][]` |
 | `ptsToSmoothPath` | drawer.utils | `(pts: [number, number][])` | `string` (SVG path `d`) |
 | `makeCavePrng` | drawer.utils | `(seed: number)` | `() => number` |
-| `WellDrawer.drawLog` | WellDrawer | `(profile, lengthUnits?, diameterUnits?)` | `void` |
+| `populateTooltips` | drawer.utils | `(svg, classes, units)` | tooltip map |
+| `WellDrawer.drawLog` | WellDrawer | `(profile, options?: { units? })` | `void` |
 | `buildSvgProfiles` | WellDrawerPDF | `(props)` | `SvgInfo[]` |

@@ -5,7 +5,6 @@ import { createWellTextures } from './drawer.textures';
 
 import {
   Well,
-  Geologic,
   Constructive,
   Lithology,
   HoleFill,
@@ -33,9 +32,10 @@ import {
   ptsToSmoothPath,
   populateTooltips,
 } from '@/src/lib/wellDrawer/drawer.utils';
-import { DiameterUnits, LengthUnits, Units } from '@/src/lib/@types/units.types';
-import { formatLength, formatDiameter, getLengthUnit, getDiameterUnit } from '@/src/lib/utils/format.utils';
-import { SvgInstance, ComponentsClassNames } from '@/src/lib/@types/drawer.types';
+import { Units } from '@/src/lib/@types/units.types';
+import { getLengthUnit } from '@/src/lib/utils/format.utils';
+import { SvgInstance, ComponentsClassNames, ColorsOverride, Colors } from '@/src/lib/@types/drawer.types';
+import { DeepPartial } from '../@types/generic.types';
 
 const d3 = {
   ...d3module,
@@ -112,7 +112,7 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
 };
 
 
-const COLORS = {
+const COLORS: Colors = {
   geology: {
     lithology: { stroke: '#101010' },
     cave: {
@@ -134,14 +134,7 @@ const COLORS = {
     conflict:    { stroke: '#E52117' },
   },
 };
-
-type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
-export type ColorsOverride = DeepPartial<typeof COLORS>;
-
 const DEFAULTS_TEXTURES = createWellTextures();
-
-
-
 export class WellDrawer {
   private svgInstances: SvgInstance[] = [];
   private instanceStates: InstanceState[] = [];
