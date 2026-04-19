@@ -63,26 +63,52 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
   yAxis: 'yAxis',
   wellGroup: 'poco-group',
   geologicGroup: 'geologic-group',
-  lithologyGroup: 'litho-group',
+  lithology: {
+    group: 'litho-group',
+    rect: 'litho-rect',
+  },
   fractures: {
     group: 'fractures-group',
     item: 'fracture-group',
+    hitArea: 'fracture-hit',
+    line: 'fracture-line',
+    polyline: 'fracture-poly',
   },
   caves: {
     group: 'caves-group',
     item: 'cave-group',
+    fill: 'cave-fill',
+    contact: 'cave-contact',
   },
   constructionGroup: 'const-group',
   cementPad: {
     group: 'cement-pad',
-    item: 'cement_pad',
+    item: 'cement-pad-rect',
   },
-  holeGroup: 'hole',
-  surfaceCaseGroup: 'surface-case',
-  holeFillGroup: 'hole-fill',
-  wellCaseGroup: 'well-case',
-  wellScreenGroup: 'well-screen',
-  conflictGroup: 'conflict',
+  boreHole: {
+    group: 'hole',
+    rect: 'bore-hole-rect',
+  },
+  surfaceCase: {
+    group: 'surface-case',
+    rect: 'surface-case-rect',
+  },
+  holeFill: {
+    group: 'hole-fill',
+    rect: 'hole-fill-rect',
+  },
+  wellCase: {
+    group: 'well-case',
+    rect: 'well-case-rect',
+  },
+  wellScreen: {
+    group: 'well-screen',
+    rect: 'well-screen-rect',
+  },
+  conflict: {
+    group: 'conflict',
+    rect: 'conflict-rect',
+  },
 };
 
 
@@ -185,7 +211,7 @@ export class WellDrawer {
       .attr('transform', `translate(${margins.left}, ${margins.top})`);
 
     geologic.append('g').attr('class', this.classes.yAxis);
-    geologic.append('g').attr('class', this.classes.lithologyGroup);
+    geologic.append('g').attr('class', this.classes.lithology.group);
     geologic.append('g').attr('class', this.classes.caves.group).attr('clip-path', `url(#${clipId})`);
 
     const construction = poco
@@ -200,12 +226,12 @@ export class WellDrawer {
       .attr('clip-path', `url(#${clipId})`);
 
     construction.append('g').attr('class', this.classes.cementPad.group);
-    construction.append('g').attr('class', this.classes.holeGroup);
-    construction.append('g').attr('class', this.classes.surfaceCaseGroup);
-    construction.append('g').attr('class', this.classes.holeFillGroup);
-    construction.append('g').attr('class', this.classes.wellCaseGroup);
-    construction.append('g').attr('class', this.classes.wellScreenGroup);
-    construction.append('g').attr('class', this.classes.conflictGroup);
+    construction.append('g').attr('class', this.classes.boreHole.group);
+    construction.append('g').attr('class', this.classes.surfaceCase.group);
+    construction.append('g').attr('class', this.classes.holeFill.group);
+    construction.append('g').attr('class', this.classes.wellCase.group);
+    construction.append('g').attr('class', this.classes.wellScreen.group);
+    construction.append('g').attr('class', this.classes.conflict.group);
 
     Object.values(DEFAULTS_TEXTURES).forEach(texture => svg.call(texture));
 
@@ -234,17 +260,17 @@ export class WellDrawer {
     const cn  = this.classes;
 
     const pocoGroup         = svg.select(`.${cn.wellGroup}`);
-    const lithologyGroup    = svg.select(`.${cn.lithologyGroup}`);
+    const lithologyGroup    = svg.select(`.${cn.lithology.group}`);
     const fracturesGroup    = svg.select(`.${cn.fractures.group}`);
     const cavesGroup        = svg.select(`.${cn.caves.group}`);
     const constructionGroup = svg.select(`.${cn.constructionGroup}`);
     const cementPadGroup    = svg.select(`.${cn.cementPad.group}`);
-    const holeGroup         = svg.select(`.${cn.holeGroup}`);
-    const surfaceCaseGroup  = svg.select(`.${cn.surfaceCaseGroup}`);
-    const holeFillGroup     = svg.select(`.${cn.holeFillGroup}`);
-    const wellCaseGroup     = svg.select(`.${cn.wellCaseGroup}`);
-    const wellScreenGroup   = svg.select(`.${cn.wellScreenGroup}`);
-    const conflictGroup     = svg.select(`.${cn.conflictGroup}`);
+    const holeGroup         = svg.select(`.${cn.boreHole.group}`);
+    const surfaceCaseGroup  = svg.select(`.${cn.surfaceCase.group}`);
+    const holeFillGroup     = svg.select(`.${cn.holeFill.group}`);
+    const wellCaseGroup     = svg.select(`.${cn.wellCase.group}`);
+    const wellScreenGroup   = svg.select(`.${cn.wellScreen.group}`);
+    const conflictGroup     = svg.select(`.${cn.conflict.group}`);
 
     const svgWidth  = this.svgWidth;
     const svgHeight = this.svgHeight;
@@ -265,13 +291,14 @@ export class WellDrawer {
     ) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
 
-      const rects = lithologyGroup.selectAll('rect').data(data);
+      const rects = lithologyGroup.selectAll(`.${cn.lithology.rect}`).data(data);
 
       rects.exit().remove();
 
       const newLayers = rects
         .enter()
         .append('rect')
+        .attr('class', cn.lithology.rect)
         .attr('x', 10)
         .attr('width', svgWidth - 100)
         .style('stroke', this.colors.geology.lithology.stroke)
@@ -369,15 +396,15 @@ export class WellDrawer {
           .on('mouseover', tooltips.cave.show)
           .on('mouseout', tooltips.cave.hide);
 
-        // Filled band — covers the lithology fill in this depth interval
         g.append('path')
+          .attr('class', this.classes.caves.fill)
           .attr('d', closedPath)
           .attr('fill', caveTexture.url())
           .attr('fill-opacity', 0.6)
           .attr('stroke', 'none');
 
-        // Top contact line — rendered above the fill so it's always visible
         g.append('path')
+          .attr('class', this.classes.caves.contact)
           .attr('d', topPath)
           .attr('fill', 'none')
           .attr('stroke', strokeColor)
@@ -385,8 +412,8 @@ export class WellDrawer {
           .attr('stroke-linecap', 'round')
           .attr('stroke-linejoin', 'round');
 
-        // Bottom contact line
         g.append('path')
+          .attr('class', this.classes.caves.contact)
           .attr('d', botPath)
           .attr('fill', 'none')
           .attr('stroke', strokeColor)
@@ -453,6 +480,7 @@ export class WellDrawer {
 
         const hitBuffer = fracture.swarm ? 14 : 8;
         g.append('rect')
+          .attr('class', this.classes.fractures.hitArea)
           .attr('x', xa)
           .attr('y', -hitBuffer)
           .attr('width', w)
@@ -464,11 +492,13 @@ export class WellDrawer {
 
         const appendLine = (x1: number, y1: number, x2: number, y2: number, sw: number) =>
           g.append('line')
+            .attr('class', this.classes.fractures.line)
             .attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2)
             .attr('stroke', strokeColor).attr('stroke-width', sw).attr('stroke-linecap', RC);
 
         const appendPolyline = (pts: [number, number][], sw: number) =>
           g.append('polyline')
+            .attr('class', this.classes.fractures.polyline)
             .attr('points', pts.map(([nx, dy]) => `${xAt(nx)},${dy}`).join(' '))
             .attr('stroke', strokeColor).attr('stroke-width', sw)
             .attr('fill', 'none').attr('stroke-linecap', RC).attr('stroke-linejoin', RC);
@@ -573,13 +603,14 @@ export class WellDrawer {
         newCementPad.on('mouseover', tooltips.cementPad.show).on('mouseout', tooltips.cementPad.hide);
       }
 
-      const hole = holeGroup.selectAll('rect').data(data.bore_hole);
+      const hole = holeGroup.selectAll(`.${cn.boreHole.rect}`).data(data.bore_hole);
 
       hole.exit().remove();
 
       const newHole = hole
         .enter()
         .append('rect')
+        .attr('class', cn.boreHole.rect)
         .style('fill', this.colors.construction.boreHole.fill)
         .style('opacity', '0.6')
         .style('stroke', this.colors.construction.boreHole.stroke)
@@ -598,7 +629,7 @@ export class WellDrawer {
         .attr('height', getHeight);
 
       const surfaceCase = surfaceCaseGroup
-        .selectAll('rect')
+        .selectAll(`.${cn.surfaceCase.rect}`)
         .data(data.surface_case);
 
       surfaceCase
@@ -612,6 +643,7 @@ export class WellDrawer {
       const newSurfaceCase = surfaceCase
         .enter()
         .append('rect')
+        .attr('class', cn.surfaceCase.rect)
         .style('fill', this.colors.construction.surfaceCase.fill)
         .on('mouseover', tooltips.surfaceCase.show)
         .on('mouseout', tooltips.surfaceCase.hide);
@@ -632,13 +664,14 @@ export class WellDrawer {
         .attr('y', getYPos)
         .attr('height', getHeight);
 
-      const holeFill = holeFillGroup.selectAll('rect').data(data.hole_fill);
+      const holeFill = holeFillGroup.selectAll(`.${cn.holeFill.rect}`).data(data.hole_fill);
 
       holeFill.exit().remove();
 
       const newHoleFill = holeFill
         .enter()
         .append('rect')
+        .attr('class', cn.holeFill.rect)
         .style('stroke', this.colors.construction.holeFill.stroke)
         .style('stroke-width', '2px')
         .on('mouseover', tooltips.holeFill.show)
@@ -655,13 +688,14 @@ export class WellDrawer {
         .attr('height', getHeight)
         .style('fill', (d: HoleFill) => DEFAULTS_TEXTURES[d.type].url());
 
-      const wellCase = wellCaseGroup.selectAll('rect').data(data.well_case);
+      const wellCase = wellCaseGroup.selectAll(`.${cn.wellCase.rect}`).data(data.well_case);
 
       wellCase.exit().remove();
 
       const newWellCase = wellCase
         .enter()
         .append('rect')
+        .attr('class', cn.wellCase.rect)
         .style('fill', this.colors.construction.wellCase.fill)
         .style('stroke', this.colors.construction.wellCase.stroke)
         .style('stroke-width', '2px')
@@ -679,7 +713,7 @@ export class WellDrawer {
         .attr('height', getHeight);
 
       const wellScreen = wellScreenGroup
-        .selectAll('rect')
+        .selectAll(`.${cn.wellScreen.rect}`)
         .data(data.well_screen);
 
       wellScreen.exit().remove();
@@ -687,6 +721,7 @@ export class WellDrawer {
       const newWellScreen = wellScreen
         .enter()
         .append('rect')
+        .attr('class', cn.wellScreen.rect)
         .style('stroke', this.colors.construction.wellScreen.stroke)
         .style('stroke-width', '2px')
         .style('fill', () => DEFAULTS_TEXTURES.well_screen.url())
@@ -709,13 +744,14 @@ export class WellDrawer {
 
       const mergedConflicts = mergeConflicts(conflictAreas, 1);
 
-      const conflict = conflictGroup.selectAll('rect').data(mergedConflicts);
+      const conflict = conflictGroup.selectAll(`.${cn.conflict.rect}`).data(mergedConflicts);
 
       conflict.exit().remove();
 
       const newConflict = conflict
         .enter()
         .append('rect')
+        .attr('class', cn.conflict.rect)
         .style('stroke', this.colors.construction.conflict.stroke)
         .style('stroke-width', '4px')
         .style('fill', () => DEFAULTS_TEXTURES.conflict.url())
