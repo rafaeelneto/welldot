@@ -56,16 +56,16 @@ type InstanceState = {
 const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
   tooltip: {
     root: 'tooltip',
-    title: 'tittle',
+    title: 'title',
     primaryInfo: 'primaryInfo',
     secondaryInfo: 'secondaryInfo',
   },
   yAxis: 'yAxis',
-  wellGroup: 'poco-group',
+  wellGroup: 'well-group',
   geologicGroup: 'geologic-group',
   lithology: {
-    group: 'litho-group',
-    rect: 'litho-rect',
+    group: 'lithology-group',
+    rect: 'lithology-rect',
   },
   fractures: {
     group: 'fractures-group',
@@ -80,7 +80,7 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     fill: 'cave-fill',
     contact: 'cave-contact',
   },
-  constructionGroup: 'const-group',
+  constructionGroup: 'construction-group',
   cementPad: {
     group: 'cement-pad',
     item: 'cement-pad-rect',
