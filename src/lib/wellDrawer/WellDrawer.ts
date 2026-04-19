@@ -74,6 +74,29 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
 };
 
 
+const COLORS = {
+  geology: {
+    lithology: { stroke: '#101010' },
+    cave: {
+      dry: { stroke: '#333333' },
+      wet: { stroke: '#1a6fa8' },
+    },
+    fracture: {
+      dry: { stroke: '#000000' },
+      wet: { stroke: '#1a6fa8' },
+    },
+  },
+  construction: {
+    cementPad:   { stroke: '#303030' },
+    boreHole:    { fill: '#ffffff', stroke: '#303030' },
+    surfaceCase: { fill: '#000000' },
+    holeFill:    { stroke: '#303030' },
+    wellCase:    { fill: '#ffffff', stroke: '#303030' },
+    wellScreen:  { stroke: '#303030' },
+    conflict:    { stroke: '#E52117' },
+  },
+};
+
 const DEFAULTS_TEXTURES = createWellTextures();
 
 
@@ -232,7 +255,7 @@ export class WellDrawer {
         .append('rect')
         .attr('x', 10)
         .attr('width', svgWidth - 100)
-        .style('stroke', '#101010')
+        .style('stroke', COLORS.geology.lithology.stroke)
         .style('stroke-width', '1px')
         .on('mouseover', tooltips.geology.show)
         .on('mouseout', tooltips.geology.hide);
@@ -317,7 +340,7 @@ export class WellDrawer {
           ? DEFAULTS_TEXTURES.cave_wet
           : DEFAULTS_TEXTURES.cave_dry;
 
-        const strokeColor = cave.water_intake ? '#1a6fa8' : '#333333';
+        const strokeColor = cave.water_intake ? COLORS.geology.cave.wet.stroke : COLORS.geology.cave.dry.stroke;
 
         const g = cavesGroup
           .append('g')
@@ -418,7 +441,7 @@ export class WellDrawer {
           .attr('fill', 'transparent')
           .style('pointer-events', 'all');
 
-        const strokeColor = fracture.water_intake ? '#1a6fa8' : '#000000';
+        const strokeColor = fracture.water_intake ? COLORS.geology.fracture.wet.stroke : COLORS.geology.fracture.dry.stroke;
 
         const appendLine = (x1: number, y1: number, x2: number, y2: number, sw: number) =>
           g.append('line')
@@ -525,7 +548,7 @@ export class WellDrawer {
             return yScale(d.thickness * 0.7);
           })
           .style('fill', () => DEFAULTS_TEXTURES.pad.url())
-          .style('stroke', '#303030')
+          .style('stroke', COLORS.construction.cementPad.stroke)
           .style('stroke-width', '2px');
 
         newCementPad.on('mouseover', tooltips.cementPad.show).on('mouseout', tooltips.cementPad.hide);
@@ -538,9 +561,9 @@ export class WellDrawer {
       const newHole = hole
         .enter()
         .append('rect')
-        .style('fill', '#fff')
+        .style('fill', COLORS.construction.boreHole.fill)
         .style('opacity', '0.6')
-        .style('stroke', '#303030')
+        .style('stroke', COLORS.construction.boreHole.stroke)
         .style('stroke-width', '1px')
         .on('mouseover', tooltips.hole.show)
         .on('mouseout', tooltips.hole.hide);
@@ -564,13 +587,13 @@ export class WellDrawer {
         // @ts-ignore
         .transition(transition)
         .attr('height', 0)
-        .style('fill', '#000')
+        .style('fill', COLORS.construction.surfaceCase.fill)
         .remove();
 
       const newSurfaceCase = surfaceCase
         .enter()
         .append('rect')
-        .style('fill', '#000')
+        .style('fill', COLORS.construction.surfaceCase.fill)
         .on('mouseover', tooltips.surfaceCase.show)
         .on('mouseout', tooltips.surfaceCase.hide);
 
@@ -597,7 +620,7 @@ export class WellDrawer {
       const newHoleFill = holeFill
         .enter()
         .append('rect')
-        .style('stroke', '#303030')
+        .style('stroke', COLORS.construction.holeFill.stroke)
         .style('stroke-width', '2px')
         .on('mouseover', tooltips.holeFill.show)
         .on('mouseout', tooltips.holeFill.hide);
@@ -620,8 +643,8 @@ export class WellDrawer {
       const newWellCase = wellCase
         .enter()
         .append('rect')
-        .style('fill', '#fff')
-        .style('stroke', '#303030')
+        .style('fill', COLORS.construction.wellCase.fill)
+        .style('stroke', COLORS.construction.wellCase.stroke)
         .style('stroke-width', '2px')
         .on('mouseover', tooltips.wellCase.show)
         .on('mouseout', tooltips.wellCase.hide);
@@ -645,7 +668,7 @@ export class WellDrawer {
       const newWellScreen = wellScreen
         .enter()
         .append('rect')
-        .style('stroke', '#303030')
+        .style('stroke', COLORS.construction.wellScreen.stroke)
         .style('stroke-width', '2px')
         .style('fill', () => DEFAULTS_TEXTURES.well_screen.url())
         .on('mouseover', tooltips.wellScreen.show)
@@ -688,7 +711,7 @@ export class WellDrawer {
       const newConflict = conflict
         .enter()
         .append('rect')
-        .style('stroke', '#E52117')
+        .style('stroke', COLORS.construction.conflict.stroke)
         .style('stroke-width', '4px')
         .style('fill', () => DEFAULTS_TEXTURES.conflict.url())
         .on('mouseover', tipConflict.show)
