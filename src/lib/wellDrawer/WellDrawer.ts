@@ -92,17 +92,7 @@ export class WellDrawer {
     diameter: 'mm'
   }
 
-  get HEIGHT(): number { return this.instanceStates[0]?.height ?? 0; }
   get WIDTH(): number  { return this.instanceStates[0]?.width  ?? 0; }
-  get MARGINS() {
-    const m = this.instanceStates[0]?.margins;
-    return m ? { LEFT: m.left, RIGHT: m.right, TOP: m.top, BOTTOM: m.bottom } : undefined;
-  }
-
-  private fmtLen(m: number): string { return formatLength(m, this.units.length); }
-  private fmtDiam(mm: number): string { return formatDiameter(mm, this.units.diameter); }
-  private get lenUnit(): string { return getLengthUnit(this.units.length); }
-  private get diamUnit(): string { return getDiameterUnit(this.units.diameter); }
 
   constructor(svgs: SvgInstance[], options: { classNames?: Partial<ComponentsClassNames>, units?: Units } = { }) {
     if (svgs.length === 0) return;
@@ -747,7 +737,7 @@ export class WellDrawer {
       .domain([0, maxYDisplay])
       .range([0, svgHeight - state.margins.top - state.margins.bottom]);
 
-    const yAxis = d3.axisLeft(yScaleAxis).tickFormat((d: any) => `${d}${this.lenUnit}`);
+    const yAxis = d3.axisLeft(yScaleAxis).tickFormat((d: any) => `${d}${getLengthUnit(this.units.length)}`);
 
     const gY = svg.select(`.${cn.yAxis}`)
       // @ts-ignore
