@@ -10,9 +10,11 @@ Overview of all drawer/profile functions, their signatures, and dependency chain
 src/lib/
 ├── @types/
 │   ├── well.types.ts          — All domain type definitions
-│   ├── drawer.types.ts        — ComponentsClassNames, SvgInstance, Colors, ColorsOverride
+│   ├── drawer.types.ts        — CssVarsConfig, ComponentsClassNames, DrawerRenderConfig, SvgInstance
 │   ├── units.types.ts         — Units, LengthUnits, DiameterUnits
 │   └── generic.types.ts       — DeepPartial<T>
+├── styles/
+│   └── main.css               — CSS custom properties (--wp-*) and element rules
 ├── utils/
 │   ├── well.utils.ts          — Profile data utilities
 │   └── well.utils.test.ts     — Test suite for well.utils
@@ -100,6 +102,44 @@ pt-BR locale, 2 decimal places.
 
 ---
 
+## Styles — `styles/main.css`
+
+Defines all `--wp-*` CSS custom properties on `:root` and applies them via element selectors scoped to `.well-group`. This is the single source of truth for default visual appearance — stroke colors, fill colors, opacities, and stroke widths.
+
+### CSS Custom Properties
+
+| Variable | Default | Applied to |
+|----------|---------|-----------|
+| `--wp-lithology-stroke` | `#101010` | lithology rect stroke |
+| `--wp-cave-dry-stroke` | `#333333` | dry cave contact stroke |
+| `--wp-cave-wet-stroke` | `#1a6fa8` | wet cave contact stroke |
+| `--wp-fracture-dry-stroke` | `#000000` | dry fracture line/poly stroke |
+| `--wp-fracture-wet-stroke` | `#1a6fa8` | wet fracture line/poly stroke |
+| `--wp-cement-pad-stroke` | `#303030` | cement pad rect stroke |
+| `--wp-bore-hole-fill` | `#ffffff` | bore hole rect fill |
+| `--wp-bore-hole-stroke` | `#303030` | bore hole rect stroke |
+| `--wp-surface-case-fill` | `#000000` | surface case rect fill |
+| `--wp-hole-fill-stroke` | `#303030` | hole fill rect stroke |
+| `--wp-well-case-fill` | `#ffffff` | well case rect fill |
+| `--wp-well-case-stroke` | `#303030` | well case rect stroke |
+| `--wp-well-screen-stroke` | `#303030` | well screen rect stroke |
+| `--wp-conflict-stroke` | `#E52117` | conflict rect stroke |
+| `--wp-lithology-stroke-width` | `1px` | lithology rect stroke-width |
+| `--wp-cave-fill-opacity` | `0.6` | cave fill path fill-opacity |
+| `--wp-cave-contact-stroke-width` | `1.2px` | cave contact path stroke-width |
+| `--wp-cement-pad-stroke-width` | `2px` | cement pad rect stroke-width |
+| `--wp-bore-hole-opacity` | `0.6` | bore hole rect opacity |
+| `--wp-bore-hole-stroke-width` | `1px` | bore hole rect stroke-width |
+| `--wp-surface-case-stroke-width` | `2px` | surface case rect stroke-width |
+| `--wp-hole-fill-stroke-width` | `2px` | hole fill rect stroke-width |
+| `--wp-well-case-stroke-width` | `2px` | well case rect stroke-width |
+| `--wp-well-screen-stroke-width` | `2px` | well screen rect stroke-width |
+| `--wp-conflict-stroke-width` | `4px` | conflict rect stroke-width |
+
+All of these can be overridden at runtime via `DrawerRenderConfig.cssVars` (see below).
+
+---
+
 ## Well Textures — `wellDrawer/drawer.textures.ts`
 
 ### `createWellTextures(): WellTextures`
@@ -170,6 +210,25 @@ Creates a seeded LCG PRNG. Ensures cave shapes are identical across zoom levels 
 
 ## Shared Types — `@types/drawer.types.ts`
 
+### `CssVarsConfig`
+
+All-optional map of CSS custom property overrides. Each key corresponds to a `--wp-*` variable. When passed as `renderConfig.cssVars`, `WellDrawer` applies them inline on the SVG element via `CSS_VAR_MAP`, overriding the `:root` defaults from `main.css`.
+
+```
+// Strokes & fills
+lithologyStroke, caveDryStroke, caveWetStroke
+fractureDryStroke, fractureWetStroke
+cementPadStroke, boreHoleFill, boreHoleStroke
+surfaceCaseFill, holeFillStroke
+wellCaseFill, wellCaseStroke, wellScreenStroke, conflictStroke
+
+// Widths & opacities
+lithologyStrokeWidth, caveFillOpacity, caveContactStrokeWidth
+cementPadStrokeWidth, boreHoleOpacity, boreHoleStrokeWidth
+surfaceCaseStrokeWidth, holeFillStrokeWidth
+wellCaseStrokeWidth, wellScreenStrokeWidth, conflictStrokeWidth
+```
+
 ### `ComponentsClassNames`
 
 Nested semantic class-name map. Every drawn element has a named slot. Passed to `WellDrawer` constructor and to `populateTooltips`.
@@ -203,9 +262,27 @@ conflict      → { group, rect }
 | `caves.fill` | Closed textured fill `<path>` |
 | `caves.contact` | Top and bottom contact stroke `<path>` elements |
 
-### `Colors` / `ColorsOverride`
+### `DrawerRenderConfig`
 
-`Colors` is the full type for the default color palette. `ColorsOverride` is `DeepPartial<Colors>`, used as the `colors` option in the constructor.
+Controls layout, animation, and geometry parameters. Visual styling (colors, stroke widths, opacities) is handled by CSS via `main.css` and can be overridden per-instance via `cssVars`.
+
+```
+animation:    { duration: number, ease: EaseFn }
+geologic:     { xLeft: number, xRightInset: number }
+layout:       { pocoWidthRatio: number, pocoCenterRatio: number }
+caves:        { pathSteps: number, amplitude: { ratio, min, max } }
+fractures:    {
+                widthMultiplier, hitBuffer: { single, swarm },
+                swarm: { lineCountBase, lineCountVariance, spread,
+                         centralStrokeWidth, sideStrokeWidthBase, sideStrokeWidthVariance },
+                single: { mainStrokeWidth, crackStrokeWidth }
+              }
+construction: {
+                cementPad:   { widthMultiplier, thicknessMultiplier },
+                surfaceCase: { diameterPaddingRatio }
+              }
+cssVars?:     CssVarsConfig
+```
 
 ### `SvgInstance`
 
@@ -217,11 +294,20 @@ Shape passed per SVG panel: `{ selector, height, width, margins }`.
 
 ### `DeepPartial<T>`
 
-Recursively makes all properties optional. Used by `ColorsOverride` and the `classNames` constructor option.
+Recursively makes all properties optional. Used by `classNames` and `renderConfig` constructor options.
 
 ---
 
 ## Interactive Visualizer — `wellDrawer/WellDrawer.ts`
+
+### Module-level constants
+
+| Constant | Description |
+|----------|-------------|
+| `DEFAULT_COMPONENTS_CLASS_NAMES` | Default CSS class names for all SVG elements |
+| `DEFAULT_RENDER_CONFIG` | Default geometry/animation config (no CSS values) |
+| `CSS_VAR_MAP` | Maps each `CssVarsConfig` key to its `--wp-*` CSS variable name |
+| `DEFAULTS_TEXTURES` | Shared `WellTextures` instance created once at module load |
 
 ### `class WellDrawer`
 
@@ -229,14 +315,14 @@ Recursively makes all properties optional. Used by `ColorsOverride` and the `cla
 constructor(
   svgs: SvgInstance[],
   options?: {
-    classNames?: DeepPartial<ComponentsClassNames>;
-    units?:      Units;
-    colors?:     ColorsOverride;
+    classNames?:   DeepPartial<ComponentsClassNames>;
+    units?:        Units;
+    renderConfig?: DeepPartial<DrawerRenderConfig>;
   }
 )
 ```
 
-All three options are deep-merged with their defaults via `defu`, so partial overrides are safe at any nesting depth.
+All options are deep-merged with their defaults via `defu`. `renderConfig.cssVars`, when provided, is applied as inline SVG styles during `prepareSvg`, overriding the `:root` CSS defaults.
 
 #### Public Properties
 
@@ -248,7 +334,7 @@ All three options are deep-merged with their defaults via `defu`, so partial ove
 
 | Method | Description |
 |--------|-------------|
-| `prepareSvg(): Promise<void>` | Initializes SVG groups, clip paths, and D3 structure |
+| `prepareSvg(): Promise<void>` | Initializes SVG groups, clip paths, and D3 structure; applies `cssVars` overrides |
 | `drawLog(profile: Well, options?: { units?: Units }): void` | **Main entry point** — renders the full well profile |
 
 #### Internal Rendering Closures (within `drawLogToInstance`)
@@ -267,8 +353,8 @@ All three options are deep-merged with their defaults via `defu`, so partial ove
 | Dependency | What is used |
 |-----------|--------------|
 | `d3`, `d3-tip` | SVG rendering, scales, zoom, tooltips |
-| `defu` | Deep-merge for `classNames`, `units`, `colors` options |
-| `drawer.types` | `ComponentsClassNames`, `SvgInstance`, `Colors`, `ColorsOverride` |
+| `defu` | Deep-merge for `classNames`, `units`, `renderConfig` options |
+| `drawer.types` | `CssVarsConfig`, `ComponentsClassNames`, `DrawerRenderConfig`, `SvgInstance` |
 | `generic.types` | `DeepPartial<T>` |
 | `well.types` | All domain type definitions |
 | `well.utils` | `checkIfProfileIsEmpty`, `getProfileDiamValues`, `getProfileLastItemsDepths` |
@@ -339,7 +425,7 @@ Creates one or more `<svg>` elements inside `#svgDraftContainer`, each represent
 WellDrawer.ts
   ├── d3, d3-tip, defu
   ├── @types/well.types
-  ├── @types/drawer.types  (ComponentsClassNames, SvgInstance, Colors, ColorsOverride)
+  ├── @types/drawer.types  (CssVarsConfig, ComponentsClassNames, DrawerRenderConfig, SvgInstance)
   ├── @types/generic.types (DeepPartial)
   ├── @types/units.types
   ├── utils/well.utils
@@ -352,7 +438,7 @@ WellDrawer.ts
   └── wellDrawer/drawer.textures  (createWellTextures)
 
 WellDrawerPDF.ts
-  ├── d3, textures (textures kept for legend custom-color cave)
+  ├── d3, textures
   ├── @types/well.types
   ├── utils/well.utils
   ├── wellDrawer/drawer.utils
