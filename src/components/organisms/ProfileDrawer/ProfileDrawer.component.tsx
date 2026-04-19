@@ -41,16 +41,18 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
       }
     ], {
       classNames: {
-        tooltip: styles.tooltip,
-        tooltipTitle: styles.title,
-        tooltipPrimaryInfo: styles.primaryInfo,
-        tooltipSecondaryInfo: styles.secondaryInfo,
+        tooltip: {
+          root: styles.tooltip,
+          title: styles.title,
+          primaryInfo: styles.primaryInfo,
+          secondaryInfo: styles.secondaryInfo,
+        },
       }
     });
 
     profileDrawer.current.prepareSvg();
 
-    profileDrawer.current.drawLog(profile, length_units, diameter_units);
+    profileDrawer.current.drawLog(profile, { units: { length: length_units, diameter: diameter_units } });
   };
 
   useEffect(() => {
@@ -59,7 +61,7 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
 
   useEffect(() => {
     if (profileDrawer.current) {
-      profileDrawer.current.drawLog(profile, length_units, diameter_units);
+      profileDrawer.current.drawLog(profile, { units: { length: length_units, diameter: diameter_units } });
     }
   }, [profile, svgContainer.current, length_units, diameter_units]);
 

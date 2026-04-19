@@ -54,18 +54,29 @@ type InstanceState = {
 };
 
 const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
-  tooltip: 'tooltip',
-  tooltipTitle: 'tittle',
-  tooltipPrimaryInfo: 'primaryInfo',
-  tooltipSecondaryInfo: 'secondaryInfo',
+  tooltip: {
+    root: 'tooltip',
+    title: 'tittle',
+    primaryInfo: 'primaryInfo',
+    secondaryInfo: 'secondaryInfo',
+  },
   yAxis: 'yAxis',
   wellGroup: 'poco-group',
   geologicGroup: 'geologic-group',
   lithologyGroup: 'litho-group',
-  fracturesGroup: 'fractures-group',
-  cavesGroup: 'caves-group',
+  fractures: {
+    group: 'fractures-group',
+    item: 'fracture-group',
+  },
+  caves: {
+    group: 'caves-group',
+    item: 'cave-group',
+  },
   constructionGroup: 'const-group',
-  cementPadGroup: 'cement-pad',
+  cementPad: {
+    group: 'cement-pad',
+    item: 'cement_pad',
+  },
   holeGroup: 'hole',
   surfaceCaseGroup: 'surface-case',
   holeFillGroup: 'hole-fill',
@@ -122,12 +133,12 @@ export class WellDrawer {
 
   get WIDTH(): number  { return this.instanceStates[0]?.width  ?? 0; }
 
-  constructor(svgs: SvgInstance[], options: { classNames?: Partial<ComponentsClassNames>, units?: Units, colors?: ColorsOverride } = { }) {
+  constructor(svgs: SvgInstance[], options: { classNames?: DeepPartial<ComponentsClassNames>, units?: Units, colors?: ColorsOverride } = { }) {
     if (svgs.length === 0) return;
     this.svgInstances = svgs;
 
     if (options.classNames) {
-      this.classes = { ...DEFAULT_COMPONENTS_CLASS_NAMES, ...options.classNames };
+      this.classes = defu(options.classNames, DEFAULT_COMPONENTS_CLASS_NAMES) as ComponentsClassNames;
     }
 
     if (options.units) {
@@ -175,7 +186,7 @@ export class WellDrawer {
 
     geologic.append('g').attr('class', this.classes.yAxis);
     geologic.append('g').attr('class', this.classes.lithologyGroup);
-    geologic.append('g').attr('class', this.classes.cavesGroup).attr('clip-path', `url(#${clipId})`);
+    geologic.append('g').attr('class', this.classes.caves.group).attr('clip-path', `url(#${clipId})`);
 
     const construction = poco
       .append('g')
@@ -184,11 +195,11 @@ export class WellDrawer {
 
     poco
       .append('g')
-      .attr('class', this.classes.fracturesGroup)
+      .attr('class', this.classes.fractures.group)
       .attr('transform', `translate(${margins.left}, ${margins.top})`)
       .attr('clip-path', `url(#${clipId})`);
 
-    construction.append('g').attr('class', this.classes.cementPadGroup);
+    construction.append('g').attr('class', this.classes.cementPad.group);
     construction.append('g').attr('class', this.classes.holeGroup);
     construction.append('g').attr('class', this.classes.surfaceCaseGroup);
     construction.append('g').attr('class', this.classes.holeFillGroup);
@@ -224,10 +235,10 @@ export class WellDrawer {
 
     const pocoGroup         = svg.select(`.${cn.wellGroup}`);
     const lithologyGroup    = svg.select(`.${cn.lithologyGroup}`);
-    const fracturesGroup    = svg.select(`.${cn.fracturesGroup}`);
-    const cavesGroup        = svg.select(`.${cn.cavesGroup}`);
+    const fracturesGroup    = svg.select(`.${cn.fractures.group}`);
+    const cavesGroup        = svg.select(`.${cn.caves.group}`);
     const constructionGroup = svg.select(`.${cn.constructionGroup}`);
-    const cementPadGroup    = svg.select(`.${cn.cementPadGroup}`);
+    const cementPadGroup    = svg.select(`.${cn.cementPad.group}`);
     const holeGroup         = svg.select(`.${cn.holeGroup}`);
     const surfaceCaseGroup  = svg.select(`.${cn.surfaceCaseGroup}`);
     const holeFillGroup     = svg.select(`.${cn.holeFillGroup}`);
@@ -304,7 +315,7 @@ export class WellDrawer {
      *      registered via svg.call() exactly as every other texture in this file.
      */
     const drawCaves = (data: Cave[], yScale) => {
-      cavesGroup.selectAll('g.cave-group').remove();
+      cavesGroup.selectAll(`g.${this.classes.caves.item}`).remove();
 
       // x-extents match the lithology rect geometry exactly
       const xLeft  = 10;
@@ -352,7 +363,7 @@ export class WellDrawer {
 
         const g = cavesGroup
           .append('g')
-          .attr('class', 'cave-group')
+          .attr('class', this.classes.caves.item)
           .datum(cave)
           .style('cursor', 'pointer')
           .on('mouseover', tooltips.cave.show)
@@ -390,7 +401,7 @@ export class WellDrawer {
     // ─────────────────────────────────────────────────────────────────────────
 
     const drawFractures = (data: Fracture[], yScale) => {
-      fracturesGroup.selectAll('g.fracture-group').remove();
+      fracturesGroup.selectAll(`g.${this.classes.fractures.item}`).remove();
 
       const halfWidth = (POCO_WIDTH * 1.2) / 2;
       const pocoCenterInGroup = this.WIDTH / 2 + POCO_CENTER / 2;
@@ -432,7 +443,7 @@ export class WellDrawer {
 
         const g = fracturesGroup
           .append('g')
-          .attr('class', 'fracture-group')
+          .attr('class', this.classes.fractures.item)
           .datum(fracture)
           .attr('transform',
             `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterInGroup},0)`)
@@ -530,7 +541,7 @@ export class WellDrawer {
         .domain([0, maxXValueConstruction])
         .range([0, POCO_WIDTH]);
 
-      constructionGroup.selectAll('.cement_pad').remove();
+      constructionGroup.selectAll(`.${this.classes.cementPad.item}`).remove();
 
       if (data.cement_pad && data.cement_pad.thickness) {
         const cementPad = cementPadGroup
@@ -542,7 +553,7 @@ export class WellDrawer {
         const newCementPad = cementPad
           .enter()
           .append('rect')
-          .attr('class', 'cement_pad')
+          .attr('class', this.classes.cementPad.item)
           .attr(
             'x',
             (d: CementPad) =>
@@ -795,7 +806,7 @@ export class WellDrawer {
 
       // Fractures: recompute transform so rotation pivot tracks the scaled depth
       fracturesGroup
-        .selectAll('g.fracture-group')
+        .selectAll(`g.${this.classes.fractures.item}`)
         .attr('transform', (d: any) => {
           if (!d) return null;
           const cx = pocoCenterInGroup;

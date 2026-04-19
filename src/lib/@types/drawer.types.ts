@@ -1,16 +1,27 @@
 export type ComponentsClassNames = {
-  tooltip: string;
-  tooltipTitle: string;
-  tooltipPrimaryInfo: string;
-  tooltipSecondaryInfo: string;
+  tooltip: {
+    root: string;
+    title: string;
+    primaryInfo: string;
+    secondaryInfo: string;
+  };
   yAxis: string;
   wellGroup: string;
   geologicGroup: string;
   lithologyGroup: string;
-  fracturesGroup: string;
-  cavesGroup: string;
+  fractures: {
+    group: string;
+    item: string;
+  };
+  caves: {
+    group: string;
+    item: string;
+  };
   constructionGroup: string;
-  cementPadGroup: string;
+  cementPad: {
+    group: string;
+    item: string;
+  };
   holeGroup: string;
   surfaceCaseGroup: string;
   holeFillGroup: string;
