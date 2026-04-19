@@ -10,7 +10,7 @@ import {
   SurfaceCase,
   Lithology,
 } from '@/src/lib/@types/well.types';
-import { getEmptyProfile } from '../data/profile/profile.data';
+import { getEmptyProfile } from '../../data/profile/profile.data';
 
 type PointItem = {
   depth: number;

@@ -32,7 +32,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 import download from 'downloadjs';
-import { profileToWell, checkIfProfileIsEmpty } from '@/src/utils/profile.utils';
+import { profileToWell, checkIfProfileIsEmpty } from '@/src/lib/utils/well.utils';
 
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
 import Info from '@/src/components/organisms/Summary/Summary.component';

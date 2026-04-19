@@ -6,7 +6,7 @@ import { Well } from '@/src/lib/@types/well.types';
 import {
   numberFormater,
   calculateHoleFillVolume,
-} from '@/src/utils/profile.utils';
+} from '@/src/lib/utils/well.utils';
 
 import { useUIStore } from '@/src/store/ui.store';
 

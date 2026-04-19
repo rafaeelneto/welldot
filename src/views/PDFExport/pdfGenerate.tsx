@@ -10,11 +10,11 @@ import { Well } from '@/src/lib/@types/well.types';
 import {
   calculateHoleFillVolume,
   numberFormater,
-} from '../../utils/profile.utils';
+} from '../../lib/utils/well.utils';
 import { DiameterUnits, LengthUnits, CoordFormat, useUIStore } from '@/src/store/ui.store';
 import { formatCoord } from '@/src/utils/coords.utils';
 import { width } from 'pdfkit/js/page';
-import { buildSvgProfiles, A4_SVG_HEIGHT } from './buildSvgProfiles';
+import { buildSvgProfiles, A4_SVG_HEIGHT } from '../../lib/wellDrawer/WellDrawerPDF';
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign

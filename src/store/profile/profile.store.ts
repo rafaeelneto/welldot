@@ -19,7 +19,7 @@ import {
   WellCase,
   WellScreen,
 } from '@/src/lib/@types/well.types';
-import { convertProfileFromJSON } from '@/src/utils/profile.utils';
+import { convertProfileFromJSON } from '@/src/lib/utils/well.utils';
 
 // TODO move this function to utils
 function reorderComponentsDepth<T>(

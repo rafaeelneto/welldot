@@ -9,7 +9,7 @@ import {
   getProfileLastItemsDepths,
   getProfileDiamValues,
   checkIfProfileIsEmpty,
-} from '../../utils/profile.utils';
+} from '../../lib/utils/well.utils';
 import { DiameterUnits, LengthUnits, CoordFormat } from '@/src/store/ui.store';
 
 import { infoType } from '../../../src_old/types/profile2Export.types';

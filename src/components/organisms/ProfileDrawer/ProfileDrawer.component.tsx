@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-import { checkIfProfileIsEmpty } from '@/src/utils/profile.utils';
+import { checkIfProfileIsEmpty } from '@/src/lib/utils/well.utils';
 
 import { WellDrawer } from '@/src/lib/wellDrawer/WellDrawer';
 

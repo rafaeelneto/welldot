@@ -2,8 +2,6 @@ import * as d3module from 'd3';
 import d3tip from 'd3-tip';
 import textures from 'textures';
 
-import Fractures from '@/public/fractures.svg?url';
-
 import {
   Well,
   Geologic,
@@ -22,7 +20,7 @@ import {
   checkIfProfileIsEmpty,
   getProfileDiamValues,
   getProfileLastItemsDepths,
-} from '@/src/utils/profile.utils';
+} from '@/src/lib/utils/well.utils';
 import {
   getConflictAreas,
   mergeConflicts,

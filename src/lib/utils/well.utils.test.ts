@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { convertProfileFromJSON, profileToWell } from './profile.utils';
+import { convertProfileFromJSON, profileToWell } from '@/src/lib/utils/well.utils';
 import type { Well } from '@/src/lib/@types/well.types';
 
 const INCHES_TO_MM = 25.4;

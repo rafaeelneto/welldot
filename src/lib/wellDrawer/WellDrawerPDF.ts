@@ -8,7 +8,7 @@ import textures from 'textures';
 import wrap from '../../../src_old/utils/wrap';
 
 // eslint-disable-next-line import/namespace
-import { innerRenderPdf, printPdf, downloadPdf } from './pdfGenerate';
+import { innerRenderPdf, printPdf, downloadPdf } from '../../views/PDFExport/pdfGenerate';
 
 import fdgcTextures from '../../../src_old/utils/fgdcTextures';
 
@@ -16,7 +16,7 @@ import {
   getProfileLastItemsDepths,
   getProfileDiamValues,
   checkIfProfileIsEmpty,
-} from '../../utils/profile.utils';
+} from '../utils/well.utils';
 import { DiameterUnits, LengthUnits, CoordFormat } from '@/src/store/ui.store';
 
 import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
