@@ -173,7 +173,7 @@ export function getYAxisFunctions(yScale: any) {
   };
 }
 
-export function getLithologyFiller(geologyData: Lithology[], svg) {
+export function getLithologyFill(geologyData: Lithology[], svg) {
   const lithologicalFill = getLithologicalFillList(geologyData);
   return (d: Lithology) => {
     if (!lithologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
@@ -183,3 +183,77 @@ export function getLithologyFiller(geologyData: Lithology[], svg) {
     return lithologicalFill[`${d.fgdc_texture}.${d.from}`].url();
   };
 }
+
+/**
+ * Build a wavy horizontal contact line as an array of [x, y] points.
+ *
+ * The line spans from xLeft to xRight at a nominal y of baseY.
+ * Each sample is displaced vertically by a combination of a low-frequency
+ * sinusoidal curve (for large-scale curvature) and a high-frequency random
+ * component (for small-scale roughness), giving a natural geological contact.
+ *
+ * @param xLeft   - leftmost x coordinate (matches lithology rect x)
+ * @param xRight  - rightmost x coordinate (matches lithology rect right edge)
+ * @param baseY   - nominal pixel y for this contact depth
+ * @param amp     - maximum vertical displacement in pixels
+ * @param steps   - number of sample points (more = smoother)
+ * @param rng     - seeded PRNG; must be freshly constructed per call
+ */
+export function wavyContact (
+  xLeft: number,
+  xRight: number,
+  baseY: number,
+  amp: number,
+  steps: number,
+  rng: () => number,
+): [number, number][] {
+  const pts: [number, number][] = [];
+
+  // Damped random walk: each step nudges the current offset by a small
+  // delta then damps it back toward zero, so adjacent samples are correlated
+  // (no jagged spikes) and the line never wanders far from baseY.
+  let offset = 0;
+  for (let i = 0; i < steps; i++) {
+    const t = i / (steps - 1);
+    const x = xLeft + t * (xRight - xLeft);
+    offset += (rng() - 0.5) * amp * 0.6;
+    offset *= 0.75; // damping keeps the line close to baseY
+    pts.push([x, baseY + offset]);
+  }
+  return pts;
+};
+
+/**
+ * Convert an array of [x, y] points into a smooth SVG cubic-Bézier path
+ * string using Catmull-Rom tension. Produces natural curved contacts rather
+ * than the jagged edges of a raw polyline.
+ */
+export function ptsToSmoothPath (pts: [number, number][]): string {
+  if (pts.length < 2) return '';
+  const n       = pts.length;
+  const tension = 0.35;
+  let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < n - 1; i++) {
+    const p0   = pts[Math.max(0, i - 1)];
+    const p1   = pts[i];
+    const p2   = pts[i + 1];
+    const p3   = pts[Math.min(n - 1, i + 2)];
+    const cp1x = p1[0] + (p2[0] - p0[0]) * tension;
+    const cp1y = p1[1] + (p2[1] - p0[1]) * tension;
+    const cp2x = p2[0] - (p3[0] - p1[0]) * tension;
+    const cp2y = p2[1] - (p3[1] - p1[1]) * tension;
+    d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d;
+};
+
+/**
+ * Seeded PRNG — deterministic so every zoom/redraw produces identical shapes.
+ */
+export function makeCavePrng(seed: number) {
+  let s = Math.abs(seed * 6271) | 1;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+};
