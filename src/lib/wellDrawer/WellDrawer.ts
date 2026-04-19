@@ -62,6 +62,8 @@ type ComponentsClassNames = {
 
 type Conflict = { from: number; to: number; diameter: number };
 
+type SvgGroup = d3module.Selection<any, any, any, any>;
+
 const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
   tooltip: 'tooltip',
   tooltipTitle: 'tittle',
@@ -92,6 +94,26 @@ export class WellDrawer {
   customClassNames = DEFAULT_COMPONENTS_CLASS_NAMES;
   private lengthUnits: LengthUnits = 'm';
   private diameterUnits: DiameterUnits = 'mm';
+  private svgWidth!: number;
+  private svgHeight!: number;
+  private pocoWidth!: number;
+  private pocoCenter!: number;
+  private groups!: {
+    poco: SvgGroup;
+    geologic: SvgGroup;
+    lithology: SvgGroup;
+    fractures: SvgGroup;
+    caves: SvgGroup;
+    construction: SvgGroup;
+    cementPad: SvgGroup;
+    hole: SvgGroup;
+    surfaceCase: SvgGroup;
+    holeFill: SvgGroup;
+    wellCase: SvgGroup;
+    wellScreen: SvgGroup;
+    conflict: SvgGroup;
+    yAxis: SvgGroup;
+  };
 
   private fmtLen(m: number): string { return formatLength(m, this.lengthUnits); }
   private fmtDiam(mm: number): string { return formatDiameter(mm, this.diameterUnits); }
@@ -122,6 +144,16 @@ export class WellDrawer {
   public async prepareSvg() {
     this.svg.selectAll('*').remove();
 
+    this.svgWidth  = this.WIDTH  + this.MARGINS.LEFT + this.MARGINS.RIGHT;
+    this.svgHeight = this.HEIGHT + this.MARGINS.TOP  + this.MARGINS.BOTTOM;
+    this.pocoWidth  = this.svgWidth / 4;
+    this.pocoCenter = (this.svgWidth * 3) / 4;
+
+    this.svg
+      .attr('height', this.svgHeight)
+      .attr('width',  this.svgWidth)
+      .call(responsivefy);
+
     const defs = this.svg.append('defs');
 
     defs.append('clipPath')
@@ -133,52 +165,45 @@ export class WellDrawer {
       .attr('width', 100000)
       .attr('height', 10000);
 
-    const pocoGroup = this.svg
+    const poco = this.svg
       .append('g')
       .attr('class', this.customClassNames.wellGroup);
 
-    const geologicGroup = pocoGroup
+    const geologic = poco
       .append('g')
-      .attr('class', this.customClassNames.geologicGroup);
+      .attr('class', this.customClassNames.geologicGroup)
+      .attr('transform', `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`);
 
-    geologicGroup.append('g').attr('class', this.customClassNames.yAxis);
+    const yAxis       = geologic.append('g').attr('class', this.customClassNames.yAxis);
+    const lithology   = geologic.append('g').attr('class', this.customClassNames.lithologyGroup);
+    const caves       = geologic.append('g').attr('class', this.customClassNames.cavesGroup).attr('clip-path', 'url(#fractures-clip)');
 
-    geologicGroup
+    const construction = poco
       .append('g')
-      .attr('class', this.customClassNames.lithologyGroup);
+      .attr('class', this.customClassNames.constructionGroup)
+      .attr('transform', `translate(${this.MARGINS.LEFT + this.WIDTH / 2}, ${this.MARGINS.TOP})`);
 
-    // Caves render on top of the lithology rects, below fractures
-    geologicGroup
+    const fractures = poco
       .append('g')
-      .attr('class', this.customClassNames.cavesGroup);
+      .attr('class', this.customClassNames.fracturesGroup)
+      .attr('transform', `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`)
+      .attr('clip-path', 'url(#fractures-clip)');
 
-    const constructionGroup = pocoGroup
-      .append('g')
-      .attr('class', this.customClassNames.constructionGroup);
+    const cementPad   = construction.append('g').attr('class', this.customClassNames.cementPadGroup);
+    const hole        = construction.append('g').attr('class', this.customClassNames.holeGroup);
+    const surfaceCase = construction.append('g').attr('class', this.customClassNames.surfaceCaseGroup);
+    const holeFill    = construction.append('g').attr('class', this.customClassNames.holeFillGroup);
+    const wellCase    = construction.append('g').attr('class', this.customClassNames.wellCaseGroup);
+    const wellScreen  = construction.append('g').attr('class', this.customClassNames.wellScreenGroup);
+    const conflict    = construction.append('g').attr('class', this.customClassNames.conflictGroup);
 
-    pocoGroup.append('g').attr('class', this.customClassNames.fracturesGroup);
+    this.groups = {
+      poco, geologic, lithology, fractures, caves,
+      construction, cementPad, hole, surfaceCase,
+      holeFill, wellCase, wellScreen, conflict, yAxis,
+    };
 
-    constructionGroup
-      .append('g')
-      .attr('class', this.customClassNames.cementPadGroup);
-    constructionGroup
-      .append('g')
-      .attr('class', this.customClassNames.holeGroup);
-    constructionGroup
-      .append('g')
-      .attr('class', this.customClassNames.surfaceCaseGroup);
-    constructionGroup
-      .append('g')
-      .attr('class', this.customClassNames.holeFillGroup);
-    constructionGroup
-      .append('g')
-      .attr('class', this.customClassNames.wellCaseGroup);
-    constructionGroup
-      .append('g')
-      .attr('class', this.customClassNames.wellScreenGroup);
-    constructionGroup
-      .append('g')
-      .attr('class', this.customClassNames.conflictGroup);
+    Object.values(DEFAULTS_TEXTURES).forEach(texture => this.svg.call(texture));
   }
 
   populateTooltips() {
@@ -293,56 +318,18 @@ export class WellDrawer {
     this.lengthUnits = lengthUnits;
     this.diameterUnits = diameterUnits;
 
-    const svg = this.svg
-      .attr('height', this.HEIGHT + this.MARGINS.TOP + this.MARGINS.BOTTOM)
-      .attr('width', this.WIDTH + this.MARGINS.LEFT + this.MARGINS.RIGHT)
-      .call(responsivefy);
+    const svg = this.svg;
 
-    const pocoGroup = svg.select(`.${this.customClassNames.wellGroup}`);
+    const { poco: pocoGroup, lithology: lithologyGroup,
+            fractures: fracturesGroup, caves: cavesGroup, construction: constructionGroup,
+            cementPad: cementPadGroup, hole: holeGroup, surfaceCase: surfaceCaseGroup,
+            holeFill: holeFillGroup, wellCase: wellCaseGroup, wellScreen: wellScreenGroup,
+            conflict: conflictGroup } = this.groups;
 
-    const geologicGroup = svg
-      .select(`.${this.customClassNames.geologicGroup}`)
-      .attr(
-        'transform',
-        `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
-      );
-
-    const lithologyGroup = geologicGroup.select(`.${this.customClassNames.lithologyGroup}`);
-
-    const fracturesGroup = svg
-      .select(`.${this.customClassNames.fracturesGroup}`)
-      .attr(
-        'transform',
-        `translate(${this.MARGINS.LEFT}, ${this.MARGINS.TOP})`,
-      )
-      .attr('clip-path', 'url(#fractures-clip)');
-
-    // cavesGroup is a child of geologicGroup so it already inherits the
-    // translate(MARGINS.LEFT, MARGINS.TOP) transform — no extra transform here.
-    const cavesGroup = svg
-      .select(`.${this.customClassNames.cavesGroup}`)
-      .attr('clip-path', 'url(#fractures-clip)');
-
-    const constructionGroup = svg
-      .select(`.${this.customClassNames.constructionGroup}`)
-      .attr(
-        'transform',
-        `translate(${this.MARGINS.LEFT + this.WIDTH / 2}, ${this.MARGINS.TOP})`,
-      );
-
-    const cementPadGroup = constructionGroup.select('.cement-pad');
-    const holeGroup = constructionGroup.select('.hole');
-    const surfaceCaseGroup = constructionGroup.select('.surface-case');
-    const holeFillGroup = constructionGroup.select('.hole-fill');
-    const wellCaseGroup = constructionGroup.select('.well-case');
-    const wellScreenGroup = constructionGroup.select('.well-screen');
-    const conflictGroup = constructionGroup.select('.conflict');
-
-    const svgWidth: any = svg.attr('width');
-    const svgHeight: any = svg.attr('height');
-
-    const POCO_WIDTH = svgWidth / 4;
-    const POCO_CENTER = (svgWidth * 3) / 4;
+    const svgWidth  = this.svgWidth;
+    const svgHeight = this.svgHeight;
+    const POCO_WIDTH  = this.pocoWidth;
+    const POCO_CENTER = this.pocoCenter;
 
     const transition = d3.transition().duration(750).ease(d3.easeCubic);
 
@@ -448,12 +435,9 @@ export class WellDrawer {
           botReversed.replace(/^M [\d.-]+ [\d.-]+/, '') +
           ` L ${xLeft.toFixed(1)},${topPts[0][1].toFixed(1)} Z`;
 
-        // Register the texture before reading its url() — same pattern as
-        // conflict, pad, and every other texture in this file.
         const caveTexture = cave.water_intake
           ? DEFAULTS_TEXTURES.cave_wet
           : DEFAULTS_TEXTURES.cave_dry;
-        svg.call(caveTexture);
 
         const strokeColor = cave.water_intake ? '#1a6fa8' : '#333333';
 
@@ -684,10 +668,7 @@ export class WellDrawer {
           .attr('height', (d: CementPad) => {
             return yScale(d.thickness * 0.7);
           })
-          .style('fill', d => {
-            svg.call(DEFAULTS_TEXTURES.pad);
-            return DEFAULTS_TEXTURES.pad.url();
-          })
+          .style('fill', () => DEFAULTS_TEXTURES.pad.url())
           .style('stroke', '#303030')
           .style('stroke-width', '2px');
 
@@ -774,10 +755,7 @@ export class WellDrawer {
         .transition(transition)
         .attr('y', getYPos)
         .attr('height', getHeight)
-        .style('fill', (d: HoleFill) => {
-          svg.call(DEFAULTS_TEXTURES[d.type]);
-          return DEFAULTS_TEXTURES[d.type].url();
-        });
+        .style('fill', (d: HoleFill) => DEFAULTS_TEXTURES[d.type].url());
 
       const wellCase = wellCaseGroup.selectAll('rect').data(data.well_case);
 
@@ -813,10 +791,7 @@ export class WellDrawer {
         .append('rect')
         .style('stroke', '#303030')
         .style('stroke-width', '2px')
-        .style('fill', () => {
-          svg.call(DEFAULTS_TEXTURES.well_screen);
-          return DEFAULTS_TEXTURES.well_screen.url();
-        })
+        .style('fill', () => DEFAULTS_TEXTURES.well_screen.url())
         .on('mouseover', tooltips.wellScreen.show)
         .on('mouseout', tooltips.wellScreen.hide);
 
@@ -859,10 +834,7 @@ export class WellDrawer {
         .append('rect')
         .style('stroke', '#E52117')
         .style('stroke-width', '4px')
-        .style('fill', () => {
-          svg.call(DEFAULTS_TEXTURES.conflict);
-          return DEFAULTS_TEXTURES.conflict.url();
-        })
+        .style('fill', () => DEFAULTS_TEXTURES.conflict.url())
         .on('mouseover', tipConflict.show)
         .on('mouseout', tipConflict.hide);
 
@@ -911,8 +883,7 @@ export class WellDrawer {
 
     const yAxis = d3.axisLeft(yScaleAxis).tickFormat((d: any) => `${d}${this.lenUnit}`);
 
-    const gY = geologicGroup
-      .select(`.${this.customClassNames.yAxis}`)
+    const gY = this.groups.yAxis
       // @ts-ignore
       .call(yAxis);
 
