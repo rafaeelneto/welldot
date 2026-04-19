@@ -31,7 +31,8 @@ import {
   wavyContact,
   ptsToSmoothPath,
 } from '@/src/lib/wellDrawer/drawer.utils';
-import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
+import { DiameterUnits, LengthUnits } from '@/src/lib/@types/units.types';
+import { formatLength, formatDiameter, getLengthUnit, getDiameterUnit } from '@/src/lib/utils/format.utils';
 
 const d3 = {
   ...d3module,
@@ -106,14 +107,10 @@ export class WellDrawer {
   private lengthUnits: LengthUnits = 'm';
   private diameterUnits: DiameterUnits = 'mm';
 
-  private fmtLen(m: number): string {
-    return this.lengthUnits === 'ft' ? (m * 3.28084).toFixed(1) : String(m);
-  }
-  private fmtDiam(mm: number): string {
-    return this.diameterUnits === 'inches' ? (mm * 0.0393701).toFixed(2) : String(mm);
-  }
-  private get lenUnit(): string { return this.lengthUnits === 'ft' ? 'ft' : 'm'; }
-  private get diamUnit(): string { return this.diameterUnits === 'inches' ? 'in' : 'mm'; }
+  private fmtLen(m: number): string { return formatLength(m, this.lengthUnits); }
+  private fmtDiam(mm: number): string { return formatDiameter(mm, this.diameterUnits); }
+  private get lenUnit(): string { return getLengthUnit(this.lengthUnits); }
+  private get diamUnit(): string { return getDiameterUnit(this.diameterUnits); }
 
   constructor(
     svgClassName: string,

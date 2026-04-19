@@ -17,7 +17,8 @@ import {
   getProfileDiamValues,
   checkIfProfileIsEmpty,
 } from '../utils/well.utils';
-import { DiameterUnits, LengthUnits, CoordFormat } from '@/src/store/ui.store';
+import { DiameterUnits, LengthUnits } from '@/src/lib/@types/units.types';
+import { formatDiameter, getLengthUnit, getDiameterUnit } from '@/src/lib/utils/format.utils';
 
 import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 
@@ -56,9 +57,9 @@ export function buildSvgProfiles(props: {
         zoomLevel = 1,
         firstPageAvailableHeight,
     } = props;
-    const fmtDiam = (mm: number): string => diameterUnits === 'inches' ? (mm * 0.0393701).toFixed(2) : String(mm);
-  const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
-  const diamUnit = diameterUnits === 'inches' ? '"' : 'mm';
+    const fmtDiam = (mm: number): string => formatDiameter(mm, diameterUnits);
+  const lenUnit = getLengthUnit(lengthUnits);
+  const diamUnit = getDiameterUnit(diameterUnits);
 
   const MARGINS = { TOP: 15, RIGHT: 30, BOTTOM: 30, LEFT: 20 };
 

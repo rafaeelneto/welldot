@@ -2,9 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CoordFormat } from '@/src/utils/coords.utils';
 
-export type Units = 'metric' | 'imperial';
-export type DiameterUnits = 'mm' | 'inches';
-export type LengthUnits = 'm' | 'ft';
+import type { Units, LengthUnits, DiameterUnits } from '@/src/lib/@types/units.types';
+export type { Units, LengthUnits, DiameterUnits };
 export type { CoordFormat };
 
 interface IUIState {
