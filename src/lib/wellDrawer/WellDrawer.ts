@@ -223,20 +223,19 @@ export class WellDrawer {
 
   private drawLogToInstance(state: InstanceState, profile: Well) {
     const svg = state.svg;
-    const cn  = this.classes;
 
-    const pocoGroup         = svg.select(`.${cn.wellGroup}`);
-    const lithologyGroup    = svg.select(`.${cn.lithology.group}`);
-    const fracturesGroup    = svg.select(`.${cn.fractures.group}`);
-    const cavesGroup        = svg.select(`.${cn.caves.group}`);
-    const constructionGroup = svg.select(`.${cn.constructionGroup}`);
-    const cementPadGroup    = svg.select(`.${cn.cementPad.group}`);
-    const holeGroup         = svg.select(`.${cn.boreHole.group}`);
-    const surfaceCaseGroup  = svg.select(`.${cn.surfaceCase.group}`);
-    const holeFillGroup     = svg.select(`.${cn.holeFill.group}`);
-    const wellCaseGroup     = svg.select(`.${cn.wellCase.group}`);
-    const wellScreenGroup   = svg.select(`.${cn.wellScreen.group}`);
-    const conflictGroup     = svg.select(`.${cn.conflict.group}`);
+    const pocoGroup         = svg.select(`.${this.classes.wellGroup}`);
+    const lithologyGroup    = svg.select(`.${this.classes.lithology.group}`);
+    const fracturesGroup    = svg.select(`.${this.classes.fractures.group}`);
+    const cavesGroup        = svg.select(`.${this.classes.caves.group}`);
+    const constructionGroup = svg.select(`.${this.classes.constructionGroup}`);
+    const cementPadGroup    = svg.select(`.${this.classes.cementPad.group}`);
+    const holeGroup         = svg.select(`.${this.classes.boreHole.group}`);
+    const surfaceCaseGroup  = svg.select(`.${this.classes.surfaceCase.group}`);
+    const holeFillGroup     = svg.select(`.${this.classes.holeFill.group}`);
+    const wellCaseGroup     = svg.select(`.${this.classes.wellCase.group}`);
+    const wellScreenGroup   = svg.select(`.${this.classes.wellScreen.group}`);
+    const conflictGroup     = svg.select(`.${this.classes.conflict.group}`);
 
     const svgWidth  = this.svgWidth;
     const svgHeight = this.svgHeight;
@@ -257,14 +256,14 @@ export class WellDrawer {
     ) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale);
 
-      const rects = lithologyGroup.selectAll(`.${cn.lithology.rect}`).data(data);
+      const rects = lithologyGroup.selectAll(`.${this.classes.lithology.rect}`).data(data);
 
       rects.exit().remove();
 
       const newLayers = rects
         .enter()
         .append('rect')
-        .attr('class', cn.lithology.rect)
+        .attr('class', this.classes.lithology.rect)
         .attr('x', 10)
         .attr('width', svgWidth - 100)
         .style('stroke-width', '1px')
@@ -567,14 +566,14 @@ export class WellDrawer {
         newCementPad.on('mouseover', tooltips.cementPad.show).on('mouseout', tooltips.cementPad.hide);
       }
 
-      const hole = holeGroup.selectAll(`.${cn.boreHole.rect}`).data(data.bore_hole);
+      const hole = holeGroup.selectAll(`.${this.classes.boreHole.rect}`).data(data.bore_hole);
 
       hole.exit().remove();
 
       const newHole = hole
         .enter()
         .append('rect')
-        .attr('class', cn.boreHole.rect)
+        .attr('class', this.classes.boreHole.rect)
         .style('opacity', '0.6')
         .style('stroke-width', '1px')
         .on('mouseover', tooltips.hole.show)
@@ -591,7 +590,7 @@ export class WellDrawer {
         .attr('height', getHeight);
 
       const surfaceCase = surfaceCaseGroup
-        .selectAll(`.${cn.surfaceCase.rect}`)
+        .selectAll(`.${this.classes.surfaceCase.rect}`)
         .data(data.surface_case);
 
       surfaceCase
@@ -604,7 +603,7 @@ export class WellDrawer {
       const newSurfaceCase = surfaceCase
         .enter()
         .append('rect')
-        .attr('class', cn.surfaceCase.rect)
+        .attr('class', this.classes.surfaceCase.rect)
         .on('mouseover', tooltips.surfaceCase.show)
         .on('mouseout', tooltips.surfaceCase.hide);
 
@@ -624,14 +623,14 @@ export class WellDrawer {
         .attr('y', getYPos)
         .attr('height', getHeight);
 
-      const holeFill = holeFillGroup.selectAll(`.${cn.holeFill.rect}`).data(data.hole_fill);
+      const holeFill = holeFillGroup.selectAll(`.${this.classes.holeFill.rect}`).data(data.hole_fill);
 
       holeFill.exit().remove();
 
       const newHoleFill = holeFill
         .enter()
         .append('rect')
-        .attr('class', cn.holeFill.rect)
+        .attr('class', this.classes.holeFill.rect)
         .style('stroke-width', '2px')
         .on('mouseover', tooltips.holeFill.show)
         .on('mouseout', tooltips.holeFill.hide);
@@ -647,14 +646,14 @@ export class WellDrawer {
         .attr('height', getHeight)
         .style('fill', (d: HoleFill) => DEFAULTS_TEXTURES[d.type].url());
 
-      const wellCase = wellCaseGroup.selectAll(`.${cn.wellCase.rect}`).data(data.well_case);
+      const wellCase = wellCaseGroup.selectAll(`.${this.classes.wellCase.rect}`).data(data.well_case);
 
       wellCase.exit().remove();
 
       const newWellCase = wellCase
         .enter()
         .append('rect')
-        .attr('class', cn.wellCase.rect)
+        .attr('class', this.classes.wellCase.rect)
         .style('stroke-width', '2px')
         .on('mouseover', tooltips.wellCase.show)
         .on('mouseout', tooltips.wellCase.hide);
@@ -670,7 +669,7 @@ export class WellDrawer {
         .attr('height', getHeight);
 
       const wellScreen = wellScreenGroup
-        .selectAll(`.${cn.wellScreen.rect}`)
+        .selectAll(`.${this.classes.wellScreen.rect}`)
         .data(data.well_screen);
 
       wellScreen.exit().remove();
@@ -678,7 +677,7 @@ export class WellDrawer {
       const newWellScreen = wellScreen
         .enter()
         .append('rect')
-        .attr('class', cn.wellScreen.rect)
+        .attr('class', this.classes.wellScreen.rect)
         .style('stroke-width', '2px')
         .style('fill', () => DEFAULTS_TEXTURES.well_screen.url())
         .on('mouseover', tooltips.wellScreen.show)
@@ -700,14 +699,14 @@ export class WellDrawer {
 
       const mergedConflicts = mergeConflicts(conflictAreas, 1);
 
-      const conflict = conflictGroup.selectAll(`.${cn.conflict.rect}`).data(mergedConflicts);
+      const conflict = conflictGroup.selectAll(`.${this.classes.conflict.rect}`).data(mergedConflicts);
 
       conflict.exit().remove();
 
       const newConflict = conflict
         .enter()
         .append('rect')
-        .attr('class', cn.conflict.rect)
+        .attr('class', this.classes.conflict.rect)
         .style('stroke-width', '4px')
         .style('fill', () => DEFAULTS_TEXTURES.conflict.url())
         .on('mouseover', tooltips.conflict.show)
@@ -758,7 +757,7 @@ export class WellDrawer {
 
     const yAxis = d3.axisLeft(yScaleAxis).tickFormat((d: any) => `${d}${getLengthUnit(this.units.length)}`);
 
-    const gY = svg.select(`.${cn.yAxis}`)
+    const gY = svg.select(`.${this.classes.yAxis}`)
       // @ts-ignore
       .call(yAxis);
 
