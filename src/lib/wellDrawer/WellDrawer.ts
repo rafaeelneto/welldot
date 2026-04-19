@@ -24,7 +24,6 @@ import {
 import {
   getConflictAreas,
   mergeConflicts,
-  responsivefy,
   getLithologyFill,
   getYAxisFunctions,
   makeCavePrng,
@@ -212,8 +211,7 @@ export class WellDrawer {
 
     svg
       .attr('height', svgHeight)
-      .attr('width',  svgWidth)
-      .call(responsivefy);
+      .attr('width',  svgWidth);
 
     if (this.renderConfig.cssVars) {
       const vars = this.renderConfig.cssVars;
