@@ -210,10 +210,9 @@ export class WellDrawer {
     this.pocoCenter = (this.svgWidth * 3) / 4;
   }
 
-  drawLog(profile: Well, lengthUnits: LengthUnits = 'm', diameterUnits: DiameterUnits = 'mm') {
+  drawLog(profile: Well, options: { units?: Units } = { }) {
     if (checkIfProfileIsEmpty(profile)) return;
-    this.units.length   = lengthUnits;
-    this.units.diameter = diameterUnits;
+    this.units = { ...this.units, ...options.units };
     for (const state of this.instanceStates) {
       this.drawLogToInstance(state, profile);
     }
@@ -249,7 +248,7 @@ export class WellDrawer {
     // updateGeology
     // ─────────────────────────────────────────────────────────────────────────
 
-    const updateGeology = async (
+    const drawLithology = async (
       data: Lithology[],
       yScale,
     ) => {
@@ -304,7 +303,7 @@ export class WellDrawer {
      *   5. Fill with the cave_dry / cave_wet texture from DEFAULTS_TEXTURES,
      *      registered via svg.call() exactly as every other texture in this file.
      */
-    const updateCaves = (data: Cave[], yScale) => {
+    const drawCaves = (data: Cave[], yScale) => {
       cavesGroup.selectAll('g.cave-group').remove();
 
       // x-extents match the lithology rect geometry exactly
@@ -390,7 +389,7 @@ export class WellDrawer {
     // updateFractures
     // ─────────────────────────────────────────────────────────────────────────
 
-    const updateFractures = (data: Fracture[], yScale) => {
+    const drawFractures = (data: Fracture[], yScale) => {
       fracturesGroup.selectAll('g.fracture-group').remove();
 
       const halfWidth = (POCO_WIDTH * 1.2) / 2;
@@ -517,7 +516,7 @@ export class WellDrawer {
     // updatePoco
     // ─────────────────────────────────────────────────────────────────────────
 
-    const updatePoco = (
+    const drawWellConstructive = (
       data: Constructive & { fractures: Fracture[] },
       yScale,
     ) => {
@@ -807,7 +806,7 @@ export class WellDrawer {
       // Caves: full redraw with the rescaled yScale.
       // Path geometry is cheap and this keeps the zoom handler simple.
       if (geologicData.caves?.length) {
-        updateCaves(geologicData.caves, transform.rescaleY(yScaleGlobal));
+        drawCaves(geologicData.caves, transform.rescaleY(yScaleGlobal));
       }
     };
 
@@ -816,10 +815,10 @@ export class WellDrawer {
     // ─────────────────────────────────────────────────────────────────────────
 
     const drawProfile = () => {
-      if (geologicData.lithology) updateGeology(geologicData.lithology, yScaleGlobal);
-      if (geologicData.caves?.length) updateCaves(geologicData.caves, yScaleGlobal);
-      if (geologicData.fractures) updateFractures(geologicData.fractures, yScaleGlobal);
-      if (constructionData) updatePoco(constructionData, yScaleGlobal);
+      if (geologicData.lithology) drawLithology(geologicData.lithology, yScaleGlobal);
+      if (geologicData.caves?.length) drawCaves(geologicData.caves, yScaleGlobal);
+      if (geologicData.fractures) drawFractures(geologicData.fractures, yScaleGlobal);
+      if (constructionData) drawWellConstructive(constructionData, yScaleGlobal);
 
       svg.select(`#${state.clipRectId}`)
         .attr('y', yZero)
