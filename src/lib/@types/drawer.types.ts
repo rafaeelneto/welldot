@@ -42,6 +42,14 @@ export type ComponentsClassNames = {
     group: string;
     rect: string;
   };
+  labels: {
+    lithology: {
+      group:   string;
+      depth:   string;
+      label:   string;
+      divider: string;
+    };
+  };
   fractures: {
     group: string;
     item: string;
@@ -149,6 +157,19 @@ export type DrawerRenderConfig = {
     };
     surfaceCase: {
       diameterPaddingRatio: number;
+    };
+  };
+  labels: {
+    /** false = hide all; true = show all; array = show only listed items */
+    lithology: boolean | ('depth' | 'description' | 'dividers')[];
+    style: {
+      fontSize:            number;
+      depthTipHeight:      number;
+      depthTipPadX:        number;
+      descriptionXOffset:  number;
+      descriptionMaxWidth: number;
+      stackingLineHeight:  number;
+      stackingGap:         number;
     };
   };
   cssVars?: CssVarsConfig;

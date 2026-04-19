@@ -108,6 +108,14 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     group: 'conflict',
     rect: 'conflict-rect',
   },
+  labels: {
+    lithology: {
+      group:   'lithology-labels-group',
+      depth:   'lithology-depth-tip',
+      label:   'lithology-label',
+      divider: 'lithology-label-divider',
+    },
+  },
 };
 
 
@@ -135,6 +143,18 @@ const DEFAULT_RENDER_CONFIG: DrawerRenderConfig = {
   construction: {
     cementPad:   { widthMultiplier: 0.7, thicknessMultiplier: 0.7 },
     surfaceCase: { diameterPaddingRatio: 0.1 },
+  },
+  labels: {
+    lithology: false,
+    style: {
+      fontSize:            7.5,
+      depthTipHeight:      11,
+      depthTipPadX:        2,
+      descriptionXOffset:  5,
+      descriptionMaxWidth: 75,
+      stackingLineHeight:  11,
+      stackingGap:         4,
+    },
   },
 };
 
@@ -248,6 +268,7 @@ export class WellDrawer {
     geologic.append('g').attr('class', this.classes.yAxis);
     geologic.append('g').attr('class', this.classes.lithology.group);
     geologic.append('g').attr('class', this.classes.caves.group).attr('clip-path', `url(#${clipId})`);
+    geologic.append('g').attr('class', this.classes.labels.lithology.group);
 
     const construction = poco
       .append('g')
@@ -311,10 +332,11 @@ export class WellDrawer {
   private drawLogToInstance(state: InstanceState, profile: Well, depthFrom: number, depthTo: number) {
     const svg = state.svg;
 
-    const pocoGroup         = svg.select(`.${this.classes.wellGroup}`);
-    const lithologyGroup    = svg.select(`.${this.classes.lithology.group}`);
-    const fracturesGroup    = svg.select(`.${this.classes.fractures.group}`);
-    const cavesGroup        = svg.select(`.${this.classes.caves.group}`);
+    const pocoGroup              = svg.select(`.${this.classes.wellGroup}`);
+    const lithologyGroup         = svg.select(`.${this.classes.lithology.group}`);
+    const fracturesGroup         = svg.select(`.${this.classes.fractures.group}`);
+    const cavesGroup             = svg.select(`.${this.classes.caves.group}`);
+    const lithologyLabelsGroup   = svg.select(`.${this.classes.labels.lithology.group}`);
     const constructionGroup = svg.select(`.${this.classes.constructionGroup}`);
     const cementPadGroup    = svg.select(`.${this.classes.cementPad.group}`);
     const holeGroup         = svg.select(`.${this.classes.boreHole.group}`);
@@ -598,6 +620,96 @@ export class WellDrawer {
           }
         }
       });
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // drawLithologyLabels
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const lithologyShowSet = (cfg: boolean | ('depth' | 'description' | 'dividers')[]) => {
+      if (cfg === false) return new Set<string>();
+      if (cfg === true)  return new Set(['depth', 'description', 'dividers']);
+      return new Set(cfg as string[]);
+    };
+
+    const drawLithologyLabels = (data: Lithology[], yScale: d3module.ScaleLinear<number, number>) => {
+      const show = lithologyShowSet(this.renderConfig.labels.lithology);
+      const s    = this.renderConfig.labels.style;
+
+      lithologyLabelsGroup.selectAll('*').remove();
+
+      // ── Depth tips ────────────────────────────────────────────────────────
+      if (show.has('depth')) {
+        data
+          .filter(d => d.to <= depthTo)
+          .forEach(d => {
+            const text    = `${d.to}`;
+            const approxW = text.length * (s.fontSize * 0.52) + s.depthTipPadX * 2;
+            const y       = yScale(d.to) - s.depthTipHeight / 2;
+
+            lithologyLabelsGroup
+              .append('foreignObject')
+              .attr('class', this.classes.labels.lithology.depth)
+              .attr('x', geoXLeft + 1)
+              .attr('y', y)
+              .attr('width', approxW)
+              .attr('height', s.depthTipHeight)
+              .append('xhtml:div')
+              .attr('class', 'wp-lithology-depth-tip')
+              .text(text);
+          });
+      }
+
+      // ── Stacking pass: compute label y-positions ──────────────────────────
+      type LabelPos = { d: Lithology; yLabel: number; estH: number };
+      const labelPositions: LabelPos[] = [];
+      let currY = 0;
+      const charsPerLine = Math.max(1, Math.floor(s.descriptionMaxWidth / (s.fontSize * 0.6)));
+
+      data
+        .filter(d => d.from < depthTo)
+        .forEach(d => {
+          const baseY  = yScale(Math.max(d.from, depthFrom));
+          const lines  = Math.ceil((d.description?.length || 1) / charsPerLine);
+          const estH   = lines * s.stackingLineHeight;
+          const yLabel = Math.max(baseY, currY + s.stackingGap);
+          currY = yLabel + estH;
+          labelPositions.push({ d, yLabel, estH });
+        });
+
+      // ── Dividers ──────────────────────────────────────────────────────────
+      const labelX = geoXRight + s.descriptionXOffset;
+
+      if (show.has('dividers') && show.has('description')) {
+        labelPositions.forEach(({ d, yLabel }) => {
+          const yFrom = yScale(Math.max(d.from, depthFrom));
+          lithologyLabelsGroup
+            .append('path')
+            .attr('class', this.classes.labels.lithology.divider)
+            .attr('d', `M ${geoXRight},${yFrom} L ${geoXRight + 3},${yFrom} L ${labelX},${yLabel}`)
+            .attr('fill', 'none')
+            .attr('stroke', '#888888')
+            .attr('stroke-width', 0.5)
+            .attr('stroke-dasharray', '2,2');
+        });
+      }
+
+      // ── Description labels ────────────────────────────────────────────────
+      if (show.has('description')) {
+        labelPositions.forEach(({ d, yLabel, estH }) => {
+          if (!d.description) return;
+          lithologyLabelsGroup
+            .append('foreignObject')
+            .attr('class', this.classes.labels.lithology.label)
+            .attr('x', labelX)
+            .attr('y', yLabel)
+            .attr('width', s.descriptionMaxWidth)
+            .attr('height', estH + 4)
+            .append('xhtml:div')
+            .attr('class', 'wp-lithology-label')
+            .text(d.description);
+        });
+      }
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -888,6 +1000,13 @@ export class WellDrawer {
           transform.rescaleY(yScaleLocal),
         );
       }
+
+      if (this.renderConfig.labels.lithology !== false && profile.lithology?.length) {
+        drawLithologyLabels(
+          profile.lithology.filter(filterByDepth),
+          transform.rescaleY(yScaleLocal),
+        );
+      }
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -899,6 +1018,9 @@ export class WellDrawer {
 
     const drawProfile = () => {
       if (profile.lithology) drawLithology(profile.lithology.filter(filterByDepth), yScaleLocal);
+      if (profile.lithology && this.renderConfig.labels.lithology !== false) {
+        drawLithologyLabels(profile.lithology.filter(filterByDepth), yScaleLocal);
+      }
       if (profile.caves?.length) {
         drawCaves(profile.caves.filter(c => c.to > depthFrom && c.from < depthTo), yScaleLocal);
       }

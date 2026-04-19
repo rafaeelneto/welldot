@@ -45,3 +45,30 @@
 .well-group .well-case-rect    { fill: var(--wp-well-case-fill); stroke: var(--wp-well-case-stroke); stroke-width: var(--wp-well-case-stroke-width); }
 .well-group .well-screen-rect  { stroke: var(--wp-well-screen-stroke); stroke-width: var(--wp-well-screen-stroke-width); }
 .well-group .conflict-rect     { stroke: var(--wp-conflict-stroke); stroke-width: var(--wp-conflict-stroke-width); }
+
+/* ── Lithology label foreignObject HTML elements ─────────────────────────── */
+.wp-lithology-depth-tip {
+  background:    white;
+  border:        0.5px solid var(--wp-lithology-stroke, #303030);
+  border-radius: 2px;
+  font-size:     7.5px;
+  font-family:   sans-serif;
+  color:         #303030;
+  padding:       1px 2px;
+  line-height:   1;
+  white-space:   nowrap;
+  display:       inline-block;
+  box-sizing:    border-box;
+}
+
+.wp-lithology-label {
+  font-size:     7.5px;
+  font-family:   sans-serif;
+  color:         #303030;
+  line-height:   1.4;
+  word-break:    break-word;
+  overflow-wrap: break-word;
+  white-space:   normal;
+  overflow:      hidden;
+  box-sizing:    border-box;
+}
