@@ -165,13 +165,20 @@ export function mergeConflicts(
   return mergedConflicts;
 }
 
-export function getYAxisFunctions(yScale: any) {
+export function getYAxisFunctions(
+  yScale: any,
+  clamp?: { from: number; to: number },
+) {
+  const clampFrom = clamp?.from ?? -Infinity;
+  const clampTo   = clamp?.to   ??  Infinity;
   return {
     getHeight: ({ from, to }: { from: number; to: number }) => {
-      return yScale(to - from);
+      const effectiveFrom = Math.max(from, clampFrom);
+      const effectiveTo   = Math.min(to,   clampTo);
+      return Math.max(0, yScale(effectiveTo) - yScale(effectiveFrom));
     },
     getYPos: ({ from }: { from: number }) => {
-      return yScale(from);
+      return yScale(Math.max(from, clampFrom));
     },
   };
 }

@@ -184,6 +184,7 @@ export class WellDrawer {
 
   constructor(svgs: SvgInstance[], options: { classNames?: DeepPartial<ComponentsClassNames>, units?: Units, renderConfig?: DeepPartial<DrawerRenderConfig> } = { }) {
     if (svgs.length === 0) return;
+    console.log('Initializing WellDrawer with SVG instances:', svgs);
     this.svgInstances = svgs;
 
     if (options.classNames) {
@@ -283,12 +284,29 @@ export class WellDrawer {
   draw(profile: Well, options: { units?: Units } = { }) {
     if (checkIfProfileIsEmpty(profile)) return;
     this.units = { ...this.units, ...options.units };
+
+    const maxValues  = getProfileLastItemsDepths(profile);
+    const maxYValues = d3.max(maxValues) || 0;
+
+    if (this.instanceStates.length === 1) {
+      this.drawLogToInstance(this.instanceStates[0], profile, 0, maxYValues);
+      return;
+    }
+
+    const totalHeight = this.instanceStates.reduce((s, st) => s + st.height, 0) || 1;
+    const yScaleGlobal = d3.scaleLinear()
+      .domain([0, maxYValues])
+      .range([0, totalHeight]);
+
+    let currentDepth = 0;
     for (const state of this.instanceStates) {
-      this.drawLogToInstance(state, profile);
+      const maxSvgDepth = yScaleGlobal.invert(yScaleGlobal(currentDepth) + state.height);
+      this.drawLogToInstance(state, profile, currentDepth, maxSvgDepth);
+      currentDepth = maxSvgDepth;
     }
   }
 
-  private drawLogToInstance(state: InstanceState, profile: Well) {
+  private drawLogToInstance(state: InstanceState, profile: Well, depthFrom: number, depthTo: number) {
     const svg = state.svg;
 
     const pocoGroup         = svg.select(`.${this.classes.wellGroup}`);
@@ -325,7 +343,7 @@ export class WellDrawer {
       data: Lithology[],
       yScale,
     ) => {
-      const { getHeight, getYPos } = getYAxisFunctions(yScale);
+      const { getHeight, getYPos } = getYAxisFunctions(yScale, { from: depthFrom, to: depthTo });
 
       const rects = lithologyGroup.selectAll(`.${this.classes.lithology.rect}`).data(data);
 
@@ -584,11 +602,11 @@ export class WellDrawer {
     // updatePoco
     // ─────────────────────────────────────────────────────────────────────────
 
-    const drawWellConstructive = (
-      data: Constructive & { fractures: Fracture[] },
+    const drawConstructive = (
+      data: Constructive,
       yScale,
     ) => {
-      const { getHeight, getYPos } = getYAxisFunctions(yScale);
+      const { getHeight, getYPos } = getYAxisFunctions(yScale, { from: depthFrom, to: depthTo });
 
       const maxXValues = getProfileDiamValues(data);
       const maxXValueConstruction = d3.max(maxXValues) || 0;
@@ -602,7 +620,7 @@ export class WellDrawer {
 
       constructionGroup.selectAll(`.${this.classes.cementPad.item}`).remove();
 
-      if (data.cement_pad && data.cement_pad.thickness) {
+      if (data.cement_pad && data.cement_pad.thickness && depthFrom === 0) {
         const cementPad = cementPadGroup
           .selectAll('rect')
           .data([data.cement_pad]);
@@ -795,23 +813,20 @@ export class WellDrawer {
       well_screen:  profile.well_screen,
       reduction:    profile.reduction,
       fractures:    profile.fractures,
-    } as Constructive & { fractures: Fracture[] };
+    } as Constructive;
 
-    const maxValues = getProfileLastItemsDepths(profile);
-    const maxYValues = d3.max(maxValues) || 0;
+    const contentHeight = svgHeight - state.margins.top - state.margins.bottom;
 
-    const yScaleGlobal = d3
+    const yScaleLocal = d3
       .scaleLinear()
-      .domain([0, maxYValues])
-      .range([0, svgHeight - state.margins.top - state.margins.bottom]);
+      .domain([depthFrom, depthTo])
+      .range([0, contentHeight]);
 
-    const yZero = yScaleGlobal(0);
-
-    const maxYDisplay = this.units.length === 'ft' ? maxYValues * 3.28084 : maxYValues;
+    const depthFactor = this.units.length === 'ft' ? 3.28084 : 1;
     const yScaleAxis = d3
       .scaleLinear()
-      .domain([0, maxYDisplay])
-      .range([0, svgHeight - state.margins.top - state.margins.bottom]);
+      .domain([depthFrom * depthFactor, depthTo * depthFactor])
+      .range([0, contentHeight]);
 
     const yAxis = d3.axisLeft(yScaleAxis).tickFormat((d: any) => `${d}${getLengthUnit(this.units.length)}`);
 
@@ -820,13 +835,13 @@ export class WellDrawer {
       .call(yAxis);
 
     const spanY = d => {
-      if (d.thickness) return yScaleGlobal(0) - yScaleGlobal(d.thickness);
-      return yScaleGlobal(d.from);
+      if (d.thickness) return yScaleLocal(0) - yScaleLocal(d.thickness);
+      return yScaleLocal(Math.max(d.from, depthFrom));
     };
 
     const spanH = d => {
-      if (d.thickness) return yScaleGlobal(d.thickness);
-      return yScaleGlobal(d.to - d.from);
+      if (d.thickness) return yScaleLocal(d.thickness) - yScaleLocal(0);
+      return Math.max(0, yScaleLocal(Math.min(d.to, depthTo)) - yScaleLocal(Math.max(d.from, depthFrom)));
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -858,14 +873,17 @@ export class WellDrawer {
         .attr('transform', (d: any) => {
           if (!d) return null;
           const cx = pocoCenterInGroup;
-          const cy = transform.applyY(yScaleGlobal(d.depth));
+          const cy = transform.applyY(yScaleLocal(d.depth));
           return `translate(0,${cy}) rotate(${d.dip},${cx},0)`;
         });
 
       // Caves: full redraw with the rescaled yScale.
       // Path geometry is cheap and this keeps the zoom handler simple.
       if (geologicData.caves?.length) {
-        drawCaves(geologicData.caves, transform.rescaleY(yScaleGlobal));
+        drawCaves(
+          geologicData.caves.filter(c => c.to > depthFrom && c.from < depthTo),
+          transform.rescaleY(yScaleLocal),
+        );
       }
     };
 
@@ -873,14 +891,34 @@ export class WellDrawer {
     // Initial draw
     // ─────────────────────────────────────────────────────────────────────────
 
+    const filterByDepth = (l: { from: number; to: number }) =>
+      !(l.to <= depthFrom || l.from >= depthTo);
+
     const drawProfile = () => {
-      if (geologicData.lithology) drawLithology(geologicData.lithology, yScaleGlobal);
-      if (geologicData.caves?.length) drawCaves(geologicData.caves, yScaleGlobal);
-      if (geologicData.fractures) drawFractures(geologicData.fractures, yScaleGlobal);
-      if (constructionData) drawWellConstructive(constructionData, yScaleGlobal);
+      if (profile.lithology) drawLithology(profile.lithology.filter(filterByDepth), yScaleLocal);
+      if (profile.caves?.length) {
+        drawCaves(profile.caves.filter(c => c.to > depthFrom && c.from < depthTo), yScaleLocal);
+      }
+      if (profile.fractures) {
+        drawFractures(
+          profile.fractures.filter(f => f.depth >= depthFrom && f.depth <= depthTo),
+          yScaleLocal,
+        );
+      }
+      if (constructionData) {
+        drawConstructive({
+          ...constructionData,
+          bore_hole:    constructionData.bore_hole.filter(filterByDepth),
+          hole_fill:    constructionData.hole_fill.filter(filterByDepth),
+          surface_case: constructionData.surface_case.filter(filterByDepth),
+          well_case:    constructionData.well_case.filter(filterByDepth),
+          well_screen:  constructionData.well_screen.filter(filterByDepth),
+          reduction:    constructionData.reduction?.filter(filterByDepth) ?? [],
+        }, yScaleLocal);
+      }
 
       svg.select(`#${state.clipRectId}`)
-        .attr('y', yZero)
+        .attr('y', 0)
         .attr('height', svgHeight);
     };
 
