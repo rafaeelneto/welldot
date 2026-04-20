@@ -34,6 +34,7 @@ import {
 import { Units } from '@/src/lib/@types/units.types';
 import { getLengthUnit } from '@/src/lib/utils/format.utils';
 import { SvgInstance, ComponentsClassNames, DrawerRenderConfig, CssVarsConfig } from '@/src/lib/@types/drawer.types';
+import { INTERACTIVE_RENDER_CONFIG } from './drawer.configs';
 import { DeepPartial } from '../@types/generic.types';
 
 const d3 = {
@@ -119,45 +120,6 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
 };
 
 
-const DEFAULT_RENDER_CONFIG: DrawerRenderConfig = {
-  zoom:        true,
-  pan:         true,
-  animation:   { duration: 750, ease: d3.easeCubic },
-  geologic:    { xLeft: 10, xRightInset: 90 },
-  layout:      { pocoWidthRatio: 0.25, pocoCenterRatio: 0.75 },
-  caves: {
-    pathSteps: 32,
-    amplitude: { ratio: 0.06, min: 2, max: 5 },
-  },
-  fractures: {
-    widthMultiplier: 1.2,
-    hitBuffer: { single: 8, swarm: 14 },
-    swarm: {
-      lineCountBase: 4, lineCountVariance: 2,
-      spread: 18,
-      centralStrokeWidth: 1.8,
-      sideStrokeWidthBase: 0.6, sideStrokeWidthVariance: 0.7,
-    },
-    single: { mainStrokeWidth: 1.8, crackStrokeWidth: 0.9 },
-  },
-  construction: {
-    cementPad:   { widthMultiplier: 0.7, thicknessMultiplier: 0.7 },
-    surfaceCase: { diameterPaddingRatio: 0.1 },
-  },
-  labels: {
-    lithology: false,
-    style: {
-      fontSize:            7.5,
-      depthTipHeight:      11,
-      depthTipPadX:        2,
-      descriptionXOffset:  5,
-      descriptionMaxWidth: 75,
-      stackingLineHeight:  11,
-      stackingGap:         4,
-    },
-  },
-};
-
 const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {
   lithologyStroke:        '--wp-lithology-stroke',
   caveDryStroke:          '--wp-cave-dry-stroke',
@@ -196,7 +158,7 @@ export class WellDrawer {
   private pocoCenter!: number;
 
   classes = DEFAULT_COMPONENTS_CLASS_NAMES;
-  private renderConfig: DrawerRenderConfig = DEFAULT_RENDER_CONFIG;
+  private renderConfig: DrawerRenderConfig = INTERACTIVE_RENDER_CONFIG;
   private units: Units = {
     length: 'm',
     diameter: 'mm'
@@ -218,7 +180,7 @@ export class WellDrawer {
     }
 
     if (options.renderConfig) {
-      this.renderConfig = defu(options.renderConfig, DEFAULT_RENDER_CONFIG) as DrawerRenderConfig;
+      this.renderConfig = defu(options.renderConfig, INTERACTIVE_RENDER_CONFIG) as DrawerRenderConfig;
     }
 
     return this;
@@ -362,6 +324,7 @@ export class WellDrawer {
 
     const { xLeft: geoXLeft, xRightInset: geoXRightInset } = this.renderConfig.geologic;
     const geoXRight = svgWidth - geoXRightInset;
+    const pocoCenterX = this.WIDTH / 2 + POCO_CENTER / 2;
 
     const drawLithology = async (
       data: Lithology[],
@@ -499,8 +462,7 @@ export class WellDrawer {
 
       const rf = this.renderConfig.fractures;
       const halfWidth = (POCO_WIDTH * rf.widthMultiplier) / 2;
-      const pocoCenterInGroup = this.WIDTH / 2 + POCO_CENTER / 2;
-      const xa = pocoCenterInGroup - halfWidth;
+      const xa = pocoCenterX - halfWidth;
       const w  = halfWidth * 2;
 
       const xAt = (nx: number) => xa + nx * w;
@@ -541,7 +503,7 @@ export class WellDrawer {
           .attr('class', this.classes.fractures.item)
           .datum(fracture)
           .attr('transform',
-            `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterInGroup},0)`)
+            `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterX},0)`)
           .on('mouseover', tooltips.fracture.show)
           .on('mouseout', tooltips.fracture.hide)
           .style('cursor', 'pointer');
@@ -623,24 +585,45 @@ export class WellDrawer {
     };
 
     // ─────────────────────────────────────────────────────────────────────────
-    // drawLithologyLabels
+    // drawAnnotationLabels
     // ─────────────────────────────────────────────────────────────────────────
 
-    const lithologyShowSet = (cfg: boolean | ('depth' | 'description' | 'dividers')[]) => {
+    const activeLabelsSet = (cfg: boolean | ('lithology' | 'fractures' | 'caves')[]) => {
       if (cfg === false) return new Set<string>();
-      if (cfg === true)  return new Set(['depth', 'description', 'dividers']);
+      if (cfg === true)  return new Set(['lithology', 'fractures', 'caves']);
       return new Set(cfg as string[]);
     };
 
-    const drawLithologyLabels = (data: Lithology[], yScale: d3module.ScaleLinear<number, number>) => {
-      const show = lithologyShowSet(this.renderConfig.labels.lithology);
-      const s    = this.renderConfig.labels.style;
+    const lithologySubSet = (cfg: boolean | ('depth' | 'description' | 'dividers')[] | undefined) => {
+      if (cfg === false) return new Set<string>();
+      if (!cfg || cfg === true) return new Set(['depth', 'description', 'dividers']);
+      return new Set(cfg as string[]);
+    };
+
+    type AnnotationItem = {
+      sortDepth:   number;
+      baseY:       number;
+      originX:     number;
+      originY:     number;
+      header:      string;
+      description: string;
+    };
+
+    const drawAnnotationLabels = (
+      lithologyData: Lithology[],
+      fractureData:  Fracture[],
+      caveData:      Cave[],
+      yScale:        d3module.ScaleLinear<number, number>,
+    ) => {
+      const active = activeLabelsSet(this.renderConfig.labels.active);
+      const show   = lithologySubSet(this.renderConfig.labels.lithology);
+      const s      = this.renderConfig.labels.style;
 
       lithologyLabelsGroup.selectAll('*').remove();
 
       // ── Depth tips ────────────────────────────────────────────────────────
-      if (show.has('depth')) {
-        data
+      if (active.has('lithology') && show.has('depth')) {
+        lithologyData
           .filter(d => d.to <= depthTo)
           .forEach(d => {
             const text    = `${d.to}`;
@@ -660,33 +643,76 @@ export class WellDrawer {
           });
       }
 
-      // ── Stacking pass: compute label y-positions ──────────────────────────
-      type LabelPos = { d: Lithology; yLabel: number; estH: number };
+      // ── Build unified annotation items ────────────────────────────────────
+      const items: AnnotationItem[] = [];
+
+      if (active.has('lithology')) {
+        lithologyData.filter(d => d.from < depthTo).forEach(d => {
+          items.push({
+            sortDepth:   d.from,
+            baseY:       yScale(Math.max(d.from, depthFrom)),
+            originX:     geoXRight,
+            originY:     yScale(Math.max(d.from, depthFrom)),
+            header:      `${d.from}–${d.to} m`,
+            description: d.description || '',
+          });
+        });
+      }
+
+      if (active.has('fractures')) {
+        fractureData.filter(d => d.depth >= depthFrom && d.depth < depthTo).forEach(d => {
+          const typeLabel = d.water_intake ? 'fratura aberta' : 'fratura';
+          items.push({
+            sortDepth:   d.depth,
+            baseY:       yScale(d.depth),
+            originX:     pocoCenterX,
+            originY:     yScale(d.depth),
+            header:      `${d.depth} m · ${typeLabel}`,
+            description: d.description || '',
+          });
+        });
+      }
+
+      if (active.has('caves')) {
+        caveData.filter(d => d.from < depthTo).forEach(d => {
+          const midDepth  = (d.from + d.to) / 2;
+          const typeLabel = d.water_intake ? 'caverna úmida' : 'caverna';
+          items.push({
+            sortDepth:   d.from,
+            baseY:       yScale(Math.max(d.from, depthFrom)),
+            originX:     geoXRight,
+            originY:     yScale(Math.max(midDepth, depthFrom)),
+            header:      `${d.from}–${d.to} m · ${typeLabel}`,
+            description: d.description || '',
+          });
+        });
+      }
+
+      items.sort((a, b) => a.sortDepth - b.sortDepth);
+
+      // ── Stacking pass ─────────────────────────────────────────────────────
+      type LabelPos = { item: AnnotationItem; yLabel: number; estH: number };
       const labelPositions: LabelPos[] = [];
       let currY = 0;
       const charsPerLine = Math.max(1, Math.floor(s.descriptionMaxWidth / (s.fontSize * 0.6)));
 
-      data
-        .filter(d => d.from < depthTo)
-        .forEach(d => {
-          const baseY  = yScale(Math.max(d.from, depthFrom));
-          const lines  = Math.ceil((d.description?.length || 1) / charsPerLine);
-          const estH   = lines * s.stackingLineHeight;
-          const yLabel = Math.max(baseY, currY + s.stackingGap);
-          currY = yLabel + estH;
-          labelPositions.push({ d, yLabel, estH });
-        });
+      items.forEach(item => {
+        const descLines = Math.ceil((item.description.length || 1) / charsPerLine);
+        const estH      = (1 + descLines) * s.stackingLineHeight + 4;
+        const yLabel    = Math.max(item.baseY, currY + s.stackingGap);
+        currY = yLabel + estH;
+        labelPositions.push({ item, yLabel, estH });
+      });
 
-      // ── Dividers ──────────────────────────────────────────────────────────
       const labelX = geoXRight + s.descriptionXOffset;
 
+      // ── Dividers ──────────────────────────────────────────────────────────
       if (show.has('dividers') && show.has('description')) {
-        labelPositions.forEach(({ d, yLabel }) => {
-          const yFrom = yScale(Math.max(d.from, depthFrom));
+        labelPositions.forEach(({ item, yLabel }) => {
           lithologyLabelsGroup
             .append('path')
             .attr('class', this.classes.labels.lithology.divider)
-            .attr('d', `M ${geoXRight},${yFrom} L ${geoXRight + 3},${yFrom} L ${labelX},${yLabel}`)
+            .attr('d', `M ${item.originX},${item.originY} L ${geoXRight + 3},${item.originY} L ${labelX},${yLabel}`)
             .attr('fill', 'none')
             .attr('stroke', '#888888')
             .attr('stroke-width', 0.5)
@@ -694,20 +720,22 @@ export class WellDrawer {
         });
       }
 
-      // ── Description labels ────────────────────────────────────────────────
+      // ── Labels ────────────────────────────────────────────────────────────
       if (show.has('description')) {
-        labelPositions.forEach(({ d, yLabel, estH }) => {
-          if (!d.description) return;
-          lithologyLabelsGroup
+        labelPositions.forEach(({ item, yLabel, estH }) => {
+          const fo = lithologyLabelsGroup
             .append('foreignObject')
             .attr('class', this.classes.labels.lithology.label)
             .attr('x', labelX)
             .attr('y', yLabel)
             .attr('width', s.descriptionMaxWidth)
-            .attr('height', estH + 4)
-            .append('xhtml:div')
-            .attr('class', 'wp-lithology-label')
-            .text(d.description);
+            .attr('height', estH);
+
+          const wrapper = fo.append('xhtml:div').attr('class', 'wp-annotation-label');
+          wrapper.append('xhtml:div').attr('class', 'wp-annotation-header').text(item.header);
+          if (item.description) {
+            wrapper.append('xhtml:div').attr('class', 'wp-annotation-body').text(item.description);
+          }
         });
       }
     };
@@ -980,14 +1008,12 @@ export class WellDrawer {
           return transform.k * spanH(d);
         });
 
-      const pocoCenterInGroup = this.WIDTH / 2 + POCO_CENTER / 2;
-
       // Fractures: recompute transform so rotation pivot tracks the scaled depth
       fracturesGroup
         .selectAll(`g.${this.classes.fractures.item}`)
         .attr('transform', (d: any) => {
           if (!d) return null;
-          const cx = pocoCenterInGroup;
+          const cx = pocoCenterX;
           const cy = transform.applyY(yScaleLocal(d.depth));
           return `translate(0,${cy}) rotate(${d.dip},${cx},0)`;
         });
@@ -1001,9 +1027,11 @@ export class WellDrawer {
         );
       }
 
-      if (this.renderConfig.labels.lithology !== false && profile.lithology?.length) {
-        drawLithologyLabels(
-          profile.lithology.filter(filterByDepth),
+      if (this.renderConfig.labels.active !== false) {
+        drawAnnotationLabels(
+          profile.lithology?.filter(filterByDepth) ?? [],
+          profile.fractures?.filter(f => f.depth >= depthFrom && f.depth < depthTo) ?? [],
+          profile.caves?.filter(c => c.to > depthFrom && c.from < depthTo) ?? [],
           transform.rescaleY(yScaleLocal),
         );
       }
@@ -1018,8 +1046,13 @@ export class WellDrawer {
 
     const drawProfile = () => {
       if (profile.lithology) drawLithology(profile.lithology.filter(filterByDepth), yScaleLocal);
-      if (profile.lithology && this.renderConfig.labels.lithology !== false) {
-        drawLithologyLabels(profile.lithology.filter(filterByDepth), yScaleLocal);
+      if (this.renderConfig.labels.active !== false) {
+        drawAnnotationLabels(
+          profile.lithology?.filter(filterByDepth) ?? [],
+          profile.fractures?.filter(f => f.depth >= depthFrom && f.depth < depthTo) ?? [],
+          profile.caves?.filter(c => c.to > depthFrom && c.from < depthTo) ?? [],
+          yScaleLocal,
+        );
       }
       if (profile.caves?.length) {
         drawCaves(profile.caves.filter(c => c.to > depthFrom && c.from < depthTo), yScaleLocal);

@@ -72,3 +72,24 @@
   overflow:      hidden;
   box-sizing:    border-box;
 }
+
+.wp-annotation-label {
+  font-size:   var(--wp-label-font-size, 7.5px);
+  line-height: var(--wp-label-line-height, 1.35);
+  color:       var(--wp-label-color, #333);
+  font-family: sans-serif;
+  word-break:  break-word;
+  overflow:    hidden;
+  box-sizing:  border-box;
+}
+
+.wp-annotation-header {
+  font-weight: 600;
+  font-family: var(--wp-label-header-font, monospace);
+  margin-bottom: 1px;
+}
+
+.wp-annotation-body {
+  font-weight: 400;
+  color:       var(--wp-label-body-color, #555);
+}

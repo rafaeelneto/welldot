@@ -160,16 +160,29 @@ export type DrawerRenderConfig = {
     };
   };
   labels: {
-    /** false = hide all; true = show all; array = show only listed items */
-    lithology: boolean | ('depth' | 'description' | 'dividers')[];
+    /** false = hide all; true = show all; array = show only listed types */
+    active: boolean | ('lithology' | 'fractures' | 'caves')[];
+    /** Fine-grained lithology sub-item control; defaults to true when lithology is active */
+    lithology?: boolean | ('depth' | 'description' | 'dividers')[];
+    typeLabels?: {
+      fracture?: string;
+      cave?: string;
+    };
     style: {
-      fontSize:            number;
-      depthTipHeight:      number;
-      depthTipPadX:        number;
-      descriptionXOffset:  number;
-      descriptionMaxWidth: number;
-      stackingLineHeight:  number;
-      stackingGap:         number;
+      fontSize:                  number;
+      depthTipHeight:            number;
+      depthTipPadX:              number;
+      descriptionXOffset:        number;
+      descriptionMaxWidth:       number;
+      stackingLineHeight:        number;
+      stackingGap:               number;
+      fractureLabelLeaderGap?:   number;
+      fractureLabelFontSize?:    number;
+      fractureLabelPadX?:        number;
+      fractureLabelPadY?:        number;
+      caveLabelFontSize?:        number;
+      caveLabelHeight?:          number;
+      caveLabelPadX?:            number;
     };
   };
   cssVars?: CssVarsConfig;
