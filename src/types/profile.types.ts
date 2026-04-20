@@ -56,25 +56,27 @@ export type Lithology = {
   color: string;
   fgdc_texture: string;
   geologic_unit: string;
+  aquifer_unit: string;
 };
 
 export type Fracture = {
   depth: number;
   water_intake: boolean;
-  description?: string;
-  swarm?: boolean;
-  azimuth?: number;
-  dip?: number;
+  description: string;
+  swarm: boolean;
+  azimuth: number;
+  dip: number;
 };
 
 export type Cave = {
   from: number;
   to: number;
   water_intake: boolean;
-  description?: string;
+  description: string;
 };
 
 export type Profile = {
+  well_type?: string;
   name?: string;
   well_driller?: string;
   construction_date?: string;

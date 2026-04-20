@@ -23,8 +23,9 @@ export const customSelectColumn = (
   disabled: params.disabled,
   deleteValue: () => null,
   // @ts-ignore
-  copyValue: ({ rowData }) =>
-    params.options.find(choice => choice.value === rowData)?.label,
+  copyValue: ({ rowData }) => {
+    return rowData ?? null
+  },
   pasteValue: ({ value }) =>
     params.options.find(choice => choice.label === value)?.value ?? null,
 });

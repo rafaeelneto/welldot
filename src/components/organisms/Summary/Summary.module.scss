@@ -1,0 +1,67 @@
+@import '@/styles/colors';
+@import '@/styles/global.scss';
+@import '@/styles/fonts';
+@import '@/styles/breakpoints';
+
+.tableContainer {
+  padding: 20px;
+}
+
+.tableTitle {
+  font-family: $fontPoppins;
+  font-size: 20px;
+  color: $gray2;
+}
+
+.table {
+  padding: 20px;
+  border-spacing: 1;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+
+  .tableBody tr:last-child {
+    border: 0;
+  }
+
+  .tableBody {
+    .tableRow {
+      td {
+        font-family: $fontOpenSans;
+        font-size: 16px;
+        color: #808080;
+        line-height: 1.2;
+        font-weight: unset;
+      }
+
+      .sumCell {
+        font-weight: 600;
+        font-size: 18px;
+        background-color: $gray3;
+      }
+
+      &:hover {
+        color: #555555;
+        background-color: #f5f5f5;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.header {
+  height: 60px;
+  background: $colorPrimary;
+}
+
+.headerCell {
+  font-family: $fontOpenSans;
+  font-size: 18px;
+  color: #fff;
+  line-height: 1.2;
+  font-weight: unset;
+}

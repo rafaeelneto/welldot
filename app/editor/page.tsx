@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 import PerfilEditor from '@/src/views/ProfileEditor/ProfileEditor.component';
 
@@ -9,7 +10,11 @@ export const metadata: Metadata = {
 };
 
 function Page() {
-  return <PerfilEditor />;
+  return (
+    <Suspense>
+      <PerfilEditor />
+    </Suspense>
+  );
 }
 
 export default Page;
