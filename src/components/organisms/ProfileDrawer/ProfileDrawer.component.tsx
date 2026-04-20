@@ -8,6 +8,7 @@ import { DeepPartial } from '@/src/lib/@types/generic.types';
 import { useUIStore } from '@/src/store/ui.store';
 
 import RenderConfigEditor, { RENDER_EDITOR_DEFAULTS } from './RenderConfigEditor.component';
+import { drawWellLegend } from '@/src/lib/wellDrawer/drawer.legend';
 import styles from './profileDrawer.module.scss';
 
 interface ProfileDrawerProps {
@@ -16,6 +17,7 @@ interface ProfileDrawerProps {
 
 const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
   const svgContainer  = useRef(null);
+  const legendSvgRef  = useRef<SVGSVGElement>(null);
   const wrapperRef    = useRef<HTMLDivElement>(null);
   const profileDrawer = useRef<WellDrawer | null>(null);
   const { length_units, diameter_units } = useUIStore();
@@ -62,12 +64,18 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
     profileDrawer.current.draw(profile, { units: { length: length_units, diameter: diameter_units } });
   }, [profile, length_units, diameter_units]);
 
+  useEffect(() => {
+    if (!legendSvgRef.current) return;
+    drawWellLegend('#svg_legend', profile);
+  }, [profile]);
+
   const noProfile = checkIfProfileIsEmpty(profile);
 
   return (
     <div className={styles.editorWrapper} ref={wrapperRef}>
       <RenderConfigEditor config={config} onChange={setConfig} />
       {noProfile && <span className={styles.noFilesMsg}>Perfil não configurado</span>}
+      <svg id='svg_legend' ref={legendSvgRef} />
       <svg
         id='#svg_drawer'
         className={`${styles.svgContainer} ${noProfile ? styles.hide : ''}`}

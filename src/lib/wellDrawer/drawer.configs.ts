@@ -48,4 +48,18 @@ export const INTERACTIVE_RENDER_CONFIG: DrawerRenderConfig = {
     innerDividerWidth: 1.5,
     outerEdgeWidth:    0.6,
   },
+  legend: {
+    title:     'LEGENDA',
+    fontSize:  7,
+    itemWidth: 110,
+    height:    44,
+    padding:   4,
+    labels: {
+      fractureSingle: 'Fratura simples',
+      fractureSwarm:  'Enxame de fraturas',
+      fractureWater:  "Entrada d'água",
+      caveDry:        'Caverna seca',
+      caveWet:        "Caverna c/ água",
+    },
+  },
 };

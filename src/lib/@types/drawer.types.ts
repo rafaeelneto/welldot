@@ -209,6 +209,22 @@ export type DrawerRenderConfig = {
     outerEdgeWidth:     number;
   };
   cssVars?: CssVarsConfig;
+  legend?: LegendRenderConfig;
+};
+
+export type LegendRenderConfig = {
+  title:     string;
+  fontSize:  number;
+  itemWidth: number;
+  height:    number;
+  padding:   number;
+  labels: {
+    fractureSingle: string;
+    fractureSwarm:  string;
+    fractureWater:  string;
+    caveDry:        string;
+    caveWet:        string;
+  };
 };
 
 export type SvgInstance = {
