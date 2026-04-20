@@ -159,6 +159,9 @@ Defines all `--wp-*` CSS custom properties on `:root` and applies them via eleme
 | `--wp-well-case-stroke-width` | `2px` | well case rect stroke-width |
 | `--wp-well-screen-stroke-width` | `2px` | well screen rect stroke-width |
 | `--wp-conflict-stroke-width` | `4px` | conflict rect stroke-width |
+| `--wp-unit-geo-fill`         | `#f0f0f0` | geologic_unit strip fill |
+| `--wp-unit-aq-fill`          | `#dff0ff` | aquifer_unit strip fill |
+| `--wp-unit-label-stroke`     | `#303030` | unit strip stroke and text color |
 
 All of these can be overridden at runtime via `DrawerRenderConfig.cssVars` (see below).
 
@@ -318,6 +321,10 @@ labels        → { lithology: { group, depth, label, divider } }
 
 | Sub-key | Element |
 |---------|---------|
+| `unitLabels.group`   | `<g>` container for geologic/aquifer unit strips |
+| `unitLabels.geoRect` | `<rect>` elements for the geologic_unit strip |
+| `unitLabels.aqRect`  | `<rect>` elements for the aquifer_unit strip |
+| `unitLabels.text`    | Rotated `<text>` unit name labels inside strips |
 | `*.group` | `<g>` container appended during `prepareSvg` |
 | `*.item` | Per-datum `<g>` appended per fracture / cave |
 | `*.rect` | `<rect>` data elements |
@@ -348,6 +355,11 @@ fractures:    {
 construction: {
                 cementPad:   { widthMultiplier, thicknessMultiplier },
                 surfaceCase: { diameterPaddingRatio }
+              }
+unitLabels:   {
+                active: boolean,
+                stripWidth, fontSize, minHeightForText,
+                innerDividerWidth, outerEdgeWidth
               }
 labels:       {
                 active: boolean | ('lithology' | 'fractures' | 'caves')[],
@@ -431,6 +443,7 @@ All options are deep-merged with their defaults via `defu`. `renderConfig.cssVar
 | `drawLithology(data, yScale)` | Lithology `rect` elements with fills and tooltips |
 | `drawCaves(data, yScale)` | Wavy-edged cave bands: fill path + two contact paths |
 | `drawFractures(data, yScale)` | Fracture groups: hit area, lines, polylines, swarms |
+| `drawUnitLabels(data, yScale)` | Geologic and aquifer unit strips with rotated text labels |
 | `drawWellConstructive(data, yScale)` | Bore hole, casings, screens, hole fill, cement pad, conflicts |
 | `drawProfile()` | Orchestrates all `draw*` calls for the initial render |
 | `zooming(e)` | Zoom handler — rescales y-axis, repositions rects and fracture groups, redraws caves |

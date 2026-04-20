@@ -313,6 +313,26 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
             {numInput('Leader Gap',            ['labels', 'style', 'fractureLabelLeaderGap'],1)}
           </div>
 
+          <div className={styles.editorSection}>
+            <h4 className={styles.editorSectionTitle}>Unit Labels</h4>
+            <div className={styles.editorRow}>
+              <label className={styles.editorLabel}>Active</label>
+              <input
+                type="checkbox"
+                checked={!!config.unitLabels?.active}
+                onChange={e => setConfig(prev => ({
+                  ...prev,
+                  unitLabels: { ...prev.unitLabels, active: e.target.checked },
+                }))}
+              />
+            </div>
+            {numInput('X Offset',             ['unitLabels', 'xOffset'],            1)}
+            {numInput('Strip Width',          ['unitLabels', 'stripWidth'],         1)}
+            {numInput('Font Size',            ['unitLabels', 'fontSize'],           0.5)}
+            {numInput('Inner Divider Width',  ['unitLabels', 'innerDividerWidth'],  0.1)}
+            {numInput('Outer Edge Width',     ['unitLabels', 'outerEdgeWidth'],     0.1)}
+          </div>
+
           <button
             className={styles.copyBtn}
             onClick={() => {

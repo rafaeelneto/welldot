@@ -26,6 +26,10 @@ export type CssVarsConfig = {
   wellCaseStrokeWidth?: string;
   wellScreenStrokeWidth?: string;
   conflictStrokeWidth?: string;
+  // Unit label strips
+  unitLabelGeologicFill?: string;
+  unitLabelAquiferFill?:  string;
+  unitLabelStroke?:       string;
 };
 
 export type ComponentsClassNames = {
@@ -91,6 +95,12 @@ export type ComponentsClassNames = {
   conflict: {
     group: string;
     rect: string;
+  };
+  unitLabels: {
+    group:   string;
+    geoRect: string;
+    aqRect:  string;
+    text:    string;
   };
 };
 
@@ -184,6 +194,19 @@ export type DrawerRenderConfig = {
       caveLabelHeight?:          number;
       caveLabelPadX?:            number;
     };
+  };
+  unitLabels: {
+    /** Show geologic_unit and aquifer_unit strips to the left of the lithology column */
+    active:             boolean;
+    /** X position of the first (leftmost) strip in geologic group coordinates */
+    xOffset:            number;
+    stripWidth:         number;
+    fontSize:           number;
+    minHeightForText:   number;
+    /** Stroke width of divider lines between adjacent segments of different units */
+    innerDividerWidth:  number;
+    /** Stroke width of the top/bottom boundary (and page-clip edges in multi-SVG rendering) */
+    outerEdgeWidth:     number;
   };
   cssVars?: CssVarsConfig;
 };

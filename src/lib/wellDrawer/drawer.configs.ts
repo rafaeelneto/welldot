@@ -39,4 +39,13 @@ export const INTERACTIVE_RENDER_CONFIG: DrawerRenderConfig = {
       stackingGap:         0,
     },
   },
+  unitLabels: {
+    active:            false,
+    xOffset:           0,
+    stripWidth:        8,
+    fontSize:          5.5,
+    minHeightForText:  8,
+    innerDividerWidth: 1.5,
+    outerEdgeWidth:    0.6,
+  },
 };

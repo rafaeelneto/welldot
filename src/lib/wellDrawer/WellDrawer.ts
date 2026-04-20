@@ -109,6 +109,12 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     group: 'conflict',
     rect: 'conflict-rect',
   },
+  unitLabels: {
+    group:   'unit-labels-group',
+    geoRect: 'unit-geo-rect',
+    aqRect:  'unit-aq-rect',
+    text:    'unit-label-text',
+  },
   labels: {
     lithology: {
       group:   'lithology-labels-group',
@@ -146,6 +152,9 @@ const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {
   wellCaseStrokeWidth:    '--wp-well-case-stroke-width',
   wellScreenStrokeWidth:  '--wp-well-screen-stroke-width',
   conflictStrokeWidth:    '--wp-conflict-stroke-width',
+  unitLabelGeologicFill:  '--wp-unit-geo-fill',
+  unitLabelAquiferFill:   '--wp-unit-aq-fill',
+  unitLabelStroke:        '--wp-unit-label-stroke',
 };
 
 const DEFAULTS_TEXTURES = createWellTextures();
@@ -228,6 +237,7 @@ export class WellDrawer {
       .attr('transform', `translate(${margins.left}, ${margins.top})`);
 
     geologic.append('g').attr('class', this.classes.yAxis);
+    geologic.append('g').attr('class', this.classes.unitLabels.group);
     geologic.append('g').attr('class', this.classes.lithology.group);
     geologic.append('g').attr('class', this.classes.caves.group).attr('clip-path', `url(#${clipId})`);
     geologic.append('g').attr('class', this.classes.labels.lithology.group);
@@ -353,6 +363,91 @@ export class WellDrawer {
         .transition(transition)
         .attr('height', getHeight)
         .style('fill', getLithologyFill(data, svg));
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // drawUnitLabels
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const drawUnitLabels = (data: Lithology[], yScale: d3module.ScaleLinear<number, number>) => {
+      const unitLabelsGroup = svg.select(`.${this.classes.unitLabels.group}`);
+      unitLabelsGroup.selectAll('*').remove();
+
+      const ru = this.renderConfig.unitLabels;
+      const sw = ru.stripWidth;
+
+      const groupByField = (field: 'geologic_unit' | 'aquifer_unit') => {
+        const groups: { unit: string; from: number; to: number }[] = [];
+        for (const layer of data) {
+          const unit = layer[field];
+          if (!unit) continue;
+          const from = Math.max(layer.from, depthFrom);
+          const to   = Math.min(layer.to,   depthTo);
+          if (from >= to) continue;
+          const last = groups[groups.length - 1];
+          if (last && last.unit === unit) { last.to = to; }
+          else groups.push({ unit, from, to });
+        }
+        return groups;
+      };
+
+      const hasGeo = data.some(d => d.geologic_unit);
+      const hasAq  = data.some(d => d.aquifer_unit);
+
+      // Strips start at ru.xOffset (geologic group coordinates).
+      // When both exist: geo at xOffset, aq at xOffset + stripWidth + 1.
+      const geoX = ru.xOffset;
+      const aqX  = hasGeo && hasAq ? ru.xOffset + sw + 1 : ru.xOffset;
+
+      const drawStrip = (
+        groups: { unit: string; from: number; to: number }[],
+        stripX: number,
+        rectClass: string,
+      ) => {
+        groups.forEach((group, idx) => {
+          const yTop   = yScale(group.from);
+          const yBot   = yScale(group.to);
+          const height = yBot - yTop;
+          if (height < 1) return;
+
+          const isFirst = idx === 0;
+          const isLast  = idx === groups.length - 1;
+
+          unitLabelsGroup.append('rect')
+            .attr('class', rectClass)
+            .attr('x', stripX).attr('y', yTop)
+            .attr('width', sw).attr('height', height);
+
+          const appendEdge = (y: number, strokeWidth: number) =>
+            unitLabelsGroup.append('line')
+              .attr('class', 'unit-divider-line')
+              .attr('x1', stripX).attr('x2', stripX + sw)
+              .attr('y1', y).attr('y2', y)
+              .attr('stroke-width', strokeWidth);
+
+          appendEdge(yTop, isFirst ? ru.outerEdgeWidth : ru.innerDividerWidth);
+          appendEdge(yBot, isLast  ? ru.outerEdgeWidth : ru.innerDividerWidth);
+
+          if (height >= ru.minHeightForText) {
+            const maxChars = Math.floor(height / (ru.fontSize * 0.55));
+            const label = group.unit.length > maxChars
+              ? group.unit.slice(0, maxChars - 1) + '…'
+              : group.unit;
+
+            unitLabelsGroup.append('text')
+              .attr('class', this.classes.unitLabels.text)
+              .attr('transform',
+                `translate(${(stripX + sw / 2).toFixed(1)},${((yTop + yBot) / 2).toFixed(1)}) rotate(-90)`)
+              .attr('text-anchor', 'middle')
+              .attr('dominant-baseline', 'middle')
+              .attr('font-size', ru.fontSize)
+              .text(label);
+          }
+        });
+      };
+
+      if (hasGeo) drawStrip(groupByField('geologic_unit'), geoX, this.classes.unitLabels.geoRect);
+      if (hasAq)  drawStrip(groupByField('aquifer_unit'),  aqX,  this.classes.unitLabels.aqRect);
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1027,6 +1122,9 @@ export class WellDrawer {
         );
       }
 
+      if (this.renderConfig.unitLabels.active && profile.lithology?.length) {
+        drawUnitLabels(profile.lithology.filter(filterByDepth), transform.rescaleY(yScaleLocal));
+      }
       if (this.renderConfig.labels.active !== false) {
         drawAnnotationLabels(
           profile.lithology?.filter(filterByDepth) ?? [],
@@ -1046,6 +1144,9 @@ export class WellDrawer {
 
     const drawProfile = () => {
       if (profile.lithology) drawLithology(profile.lithology.filter(filterByDepth), yScaleLocal);
+      if (this.renderConfig.unitLabels.active && profile.lithology?.length) {
+        drawUnitLabels(profile.lithology.filter(filterByDepth), yScaleLocal);
+      }
       if (this.renderConfig.labels.active !== false) {
         drawAnnotationLabels(
           profile.lithology?.filter(filterByDepth) ?? [],

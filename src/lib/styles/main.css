@@ -25,6 +25,10 @@
   --wp-well-case-stroke-width:    2px;
   --wp-well-screen-stroke-width:  2px;
   --wp-conflict-stroke-width:     4px;
+
+  --wp-unit-geo-fill:     #f0f0f0;
+  --wp-unit-aq-fill:      #dff0ff;
+  --wp-unit-label-stroke: #303030;
 }
 
 .well-group .lithology-rect    { stroke: var(--wp-lithology-stroke); stroke-width: var(--wp-lithology-stroke-width); }
@@ -45,6 +49,14 @@
 .well-group .well-case-rect    { fill: var(--wp-well-case-fill); stroke: var(--wp-well-case-stroke); stroke-width: var(--wp-well-case-stroke-width); }
 .well-group .well-screen-rect  { stroke: var(--wp-well-screen-stroke); stroke-width: var(--wp-well-screen-stroke-width); }
 .well-group .conflict-rect     { stroke: var(--wp-conflict-stroke); stroke-width: var(--wp-conflict-stroke-width); }
+
+/* ── Unit label strips (geologic_unit / aquifer_unit) ───────────────────── */
+.well-group .unit-geo-rect,
+.well-group .unit-aq-rect  { stroke: var(--wp-unit-label-stroke); stroke-width: 0.4px; }
+.well-group .unit-geo-rect { fill: var(--wp-unit-geo-fill); }
+.well-group .unit-aq-rect  { fill: var(--wp-unit-aq-fill); }
+.well-group .unit-label-text { fill: var(--wp-unit-label-stroke); font-family: sans-serif; }
+.well-group .unit-divider-line { stroke: var(--wp-unit-label-stroke); fill: none; }
 
 /* ── Lithology label foreignObject HTML elements ─────────────────────────── */
 .wp-lithology-depth-tip {
