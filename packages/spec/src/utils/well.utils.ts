@@ -28,6 +28,10 @@ function createEmptyWell(): Well {
   return JSON.parse(JSON.stringify(EMPTY_WELL)) as Well;
 }
 
+function normalizeLithology(items: RawJSON[]): Lithology[] {
+  return items.map(item => ({ aquifer_unit: '', ...item })) as Lithology[];
+}
+
 function decodeV1Well(raw: RawJSON): Well {
   return {
     ...createEmptyWell(),
@@ -52,7 +56,7 @@ function decodeV1Well(raw: RawJSON): Well {
     ...(raw.cement_pad
       ? { cement_pad: raw.cement_pad as Well['cement_pad'] }
       : {}),
-    lithology: (raw.lithology as Well['lithology']) ?? [],
+    lithology: normalizeLithology((raw.lithology as RawJSON[]) ?? []),
     fractures: (raw.fractures as Well['fractures']) ?? [],
     caves: (raw.caves as Well['caves']) ?? [],
   };
@@ -68,10 +72,6 @@ function convertLegacyDiameters(
     ...rest,
     diameter: (diam_pol || 0) * INCHES_TO_MM,
   }));
-}
-
-function normalizeLithology(items: RawJSON[]): Lithology[] {
-  return items.map(item => ({ aquifer_unit: '', ...item })) as Lithology[];
 }
 
 // "bole_hole" is a typo present in older saved profiles; kept for compatibility
@@ -193,6 +193,10 @@ export function deserializeWell(jsonString: string): Well | null {
   try {
     raw = JSON.parse(jsonString) as RawJSON;
   } catch {
+    throw new Error('Invalid profile format');
+  }
+
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new Error('Invalid profile format');
   }
 
