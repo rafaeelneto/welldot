@@ -113,6 +113,13 @@ function normalizeGeologic(raw: RawJSON): Geologic {
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
+/**
+ * Serializes a {@link Well} object into a versioned JSON string suitable for
+ * storage or transmission.
+ *
+ * @param well - The well profile to serialize.
+ * @returns A JSON string containing the versioned well payload.
+ */
 export function serializeWell(well: Well): string {
   const payload: Record<string, unknown> = {
     version: WELL_FORMAT_VERSION,
@@ -141,6 +148,14 @@ export function serializeWell(well: Well): string {
   return JSON.stringify(payload);
 }
 
+/**
+ * Returns `true` when the well has no meaningful data — all constructive and
+ * geologic arrays are empty and no legacy nested structure is present.
+ *
+ * @param well - The well profile to check. Accepts `null` / `undefined`
+ *   (both treated as empty).
+ * @returns `true` if the well is considered empty, `false` otherwise.
+ */
 export function isWellEmpty(well: Well | null | undefined): boolean {
   if (!well) return true;
 
@@ -158,6 +173,21 @@ export function isWellEmpty(well: Well | null | undefined): boolean {
   );
 }
 
+/**
+ * Parses a JSON string produced by {@link serializeWell} (or older legacy
+ * formats) and returns a normalized {@link Well} object.
+ *
+ * Handles:
+ * - Versioned format (v1)
+ * - Legacy format with `constructive` / `geologic` sub-objects
+ * - Legacy `diam_pol` inch diameters → `diameter` mm conversion
+ * - Typo `bole_hole` → `bore_hole` compatibility
+ *
+ * @param jsonString - Raw JSON string to parse.
+ * @returns A normalized {@link Well}, or `null` if the parsed data is empty.
+ * @throws {Error} If `jsonString` is not valid JSON.
+ * @throws {Error} If the `version` field is present but not supported.
+ */
 export function deserializeWell(jsonString: string): Well | null {
   let raw: RawJSON;
   try {
