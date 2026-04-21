@@ -1,0 +1,39 @@
+{
+  "name": "@well/drawer",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles": "./src/styles/main.css"
+  },
+  "files": ["dist", "src/styles"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@well/spec": "workspace:*",
+    "defu": "^6.1.4"
+  },
+  "peerDependencies": {
+    "d3": "^7.0.0",
+    "d3-tip": "^0.9.1",
+    "textures": "^1.2.3"
+  },
+  "devDependencies": {
+    "@well/lint": "workspace:*",
+    "tsup": "^8.3.0",
+    "typescript": "^5.3.3",
+    "@types/d3": "^7.4.3",
+    "@types/d3-tip": "^3.5.8"
+  }
+}
