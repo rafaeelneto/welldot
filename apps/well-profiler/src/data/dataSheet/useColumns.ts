@@ -10,6 +10,7 @@ import {
 import {
   colorPickerColumn,
   customSelectColumn,
+  customSelectTextureColumn,
 } from '@/src_old/utils/customColumns';
 import { FGDC_TEXTURES_OPTIONS } from '@/src_old/utils/fgdcTextures';
 import TextureHelper from '@/src_old/components/textureHelperColumn/textureHelper.component';
@@ -70,7 +71,7 @@ export function useColumns() {
       {
         ...keyColumn<Lithology, 'fgdc_texture'>(
           'fgdc_texture',
-          customSelectColumn({ options: FGDC_TEXTURES_OPTIONS }) as Partial<
+          customSelectTextureColumn({ options: FGDC_TEXTURES_OPTIONS }) as Partial<
             Column<string, any, string>
           >,
         ),

@@ -24,7 +24,8 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
 
 ```json
 {
-  "v": 1,
+  "version": 1,
+  "well_type": "tubular",
   "name": "Poço PP-01",
   "well_driller": "Perfuradora XYZ",
   "construction_date": "2024-03-15",
@@ -34,7 +35,7 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
   "bore_hole": [{ "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }],
   "well_case": [{ "from": 0, "to": 60, "type": "steel", "diameter": 200 }],
   "reduction": [{ "from": 58, "to": 60, "diam_from": 200, "diam_to": 150, "type": "conical" }],
-  "well_screen": [{ "from": 60, "to": 80, "type": "pvc", "diameter": 150, "screen_slot_mm": 0.5 }],
+  "well_screen": [{ "from": 60, "to": 80, "type": "wire_wound", "diameter": 150, "screen_slot_mm": 0.5 }],
   "surface_case": [{ "from": 0, "to": 3, "diameter": 300 }],
   "hole_fill": [{ "from": 60, "to": 80, "type": "gravel_pack", "diameter": 250, "description": "Seixo 2-4mm" }],
   "cement_pad": { "type": "square", "width": 1.0, "thickness": 0.15, "length": 1.0 },
@@ -48,7 +49,7 @@ The format captures:
 
 | Section | Field | Description |
 |---|---|---|
-| Metadata | `v`, `name`, `well_driller`, `construction_date`, `lat`, `lng`, `elevation`, `obs` | Version, name, driller, date, coordinates, elevation, observations |
+| Metadata | `version`, `well_type`, `name`, `well_driller`, `construction_date`, `lat`, `lng`, `elevation`, `obs` | Version, well classification, name, driller, date, coordinates, elevation, observations |
 | Borehole | `bore_hole[]` | Depth intervals and drilling method |
 | Well casing | `well_case[]` | Casing material, diameter, and depth |
 | Reductions | `reduction[]` | Diameter transitions between casing sections |
@@ -109,6 +110,14 @@ The following extensions are planned for future versions of the `.well` format a
 - **History log** — timestamped records of maintenance events, rehabilitations, and operational changes over the well's lifespan
 - **Extended metadata** — owner, responsible hydrogeologist, licensing authority, permit number, and operational status
 - **Production data** — installed pump capacity, operational depth, and average yield
+
+---
+
+## Known Issues
+
+The codebase carries some technical debt from early development. There are areas with inconsistent patterns, legacy abstractions, and code that could be better organized. These will be addressed in upcoming work, which includes extracting the core rendering and file format logic into a standalone library and improving the overall code quality.
+
+Contributions and bug reports are welcome in the meantime.
 
 ---
 

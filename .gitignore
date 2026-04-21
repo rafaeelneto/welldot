@@ -1,11 +1,31 @@
-*/node_modules/
-/node_modules
-*/.env*
-*/debug.log
-*/build/
-*.env*
-node_modules
-.next
-*.DS_Store
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Build outputs
+build/
+dist/
+
+# Turbo
+.turbo/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Debug logs
+*.log
+debug.log
+
+# macOS
 .DS_Store
+
+# Firebase
 .firebase/
+
+# TypeScript
+*.tsbuildinfo
