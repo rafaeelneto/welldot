@@ -5,7 +5,6 @@ export {
   getConstructivePropertySummary,
   getProfileDiamValues,
   getProfileLastItemsDepths,
-  numberFormater,
 } from '@welldot/utils';
 export { INTERACTIVE_RENDER_CONFIG } from './configs/render.configs';
 export { WellRenderer } from './Renderer';
@@ -15,7 +14,7 @@ export type {
   CssVarsConfig,
   DeepPartial,
   LegendRenderConfig,
-  RendererRenderConfig,
+  RenderConfig,
   SvgInstance,
   TooltipKey,
 } from './types/render.types';

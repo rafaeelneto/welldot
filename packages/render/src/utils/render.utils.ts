@@ -1,7 +1,8 @@
-import * as d3 from 'd3';
-
 // TODO remove this dependency on d3-tip by implementing our own tooltip logic using plain divs and mouse events, which will also allow us to support touch devices
-import 'd3-tip';
+import * as d3module from 'd3';
+// eslint-disable-next-line import-x/default
+import d3tip from 'd3-tip';
+
 import textures from 'textures';
 import fdgcTextures from '~/utils/fgdcTextures';
 
@@ -19,176 +20,137 @@ import {
 } from '@welldot/core';
 import {
   ComponentsClassNames,
+  Conflict,
   SvgSelection,
   TooltipKey,
 } from '~/types/render.types';
 import { formatDiameter, formatLength } from '~/utils/format.utils';
 
+const d3 = Object.assign(d3module, { tip: d3tip });
+
+interface D3Tip {
+  attr(name: string, value: string): D3Tip;
+  direction(dir: string): D3Tip;
+  html(fn: (event: unknown, d: unknown) => string): D3Tip;
+  show(...args: unknown[]): void;
+  hide(...args: unknown[]): void;
+}
+
+/** Returns a map from "texture.from" keys to textures.js fill objects for each lithology entry. */
 export const getLithologicalFillList = (data: Lithology[]) => {
-  const profileTextures: (number | string)[] = [];
-  data.forEach(element => {
-    const texture: number | string = element.fgdc_texture;
-    if (profileTextures.indexOf(texture) < 0) {
-      profileTextures.push(texture);
-    }
-  });
+  const uniqueTextureCodes = [...new Set(data.map(d => d.fgdc_texture))];
+  const texturesLoaded = Object.fromEntries(
+    uniqueTextureCodes
+      .filter(code => fdgcTextures[code])
+      .map(code => [code, fdgcTextures[code]]),
+  );
 
-  const litologicalFill = {};
-  const texturesLoaded = {};
-
-  profileTextures.forEach(textureCode => {
-    if (fdgcTextures[textureCode]) {
-      texturesLoaded[textureCode] = fdgcTextures[textureCode];
-    }
-  });
-
-  data.forEach(d => {
-    litologicalFill[`${d.fgdc_texture}.${d.from}`] = textures
-      .paths()
-      .d(s => texturesLoaded[d.fgdc_texture])
-      .size(150)
-      .strokeWidth(0.8)
-      .stroke('#303030')
-      .background(d.color);
-  });
-  return litologicalFill;
+  return Object.fromEntries(
+    data.map(d => [
+      `${d.fgdc_texture}.${d.from}`,
+      textures
+        .paths()
+        .d(() => texturesLoaded[d.fgdc_texture])
+        .size(150)
+        .strokeWidth(0.8)
+        .stroke('#303030')
+        .background(d.color),
+    ]),
+  );
 };
 
-export function getConflictAreas(array1: any[], array2: any[]) {
-  const conflicts: { from: number; to: number; diameter: number }[] = [];
-  array1.forEach(item1 => {
-    array2.forEach(item2 => {
-      if (
-        (item2.from >= item1.from && item2.from < item1.to) ||
-        (item2.to <= item1.to && item2.to > item1.from)
-      ) {
-        // calculate ends of conflicts areas
-        const a = Math.max(item2.from, item1.from);
-        const b = Math.min(item2.to, item1.to);
+/** Returns all overlapping depth intervals between two arrays of depth-ranged items, carrying the max diameter of each pair. */
+export const getConflictAreas = (
+  array1: Conflict[],
+  array2: Conflict[],
+): Conflict[] =>
+  array1.flatMap(item1 =>
+    array2
+      .filter(item2 => item2.from < item1.to && item2.to > item1.from)
+      .map(item2 => ({
+        from: Math.max(item2.from, item1.from),
+        to: Math.min(item2.to, item1.to),
+        diameter: Math.max(item1.diameter, item2.diameter),
+      })),
+  );
 
-        conflicts.push({
-          from: a,
-          to: b,
-          diameter: Math.max(item1.diameter, item2.diameter),
-        });
-      }
-    });
-  });
-  return conflicts;
-}
-
-export function mergeConflicts(
-  conflicts: { from: number; to: number; diameter: number }[],
+/** Merges overlapping or near-adjacent conflict segments (within `buffer` units) into single spans. */
+export const mergeConflicts = (
+  conflicts: Conflict[],
   buffer: number,
-) {
-  const sortedConflicts = conflicts.sort((a, b) => a.from - b.from);
+): Conflict[] => {
+  if (conflicts.length === 0) return [];
 
-  const mergedConflicts: { from: number; to: number; diameter: number }[] = [];
-
-  let index = 0;
-  while (index < sortedConflicts.length) {
-    const conflict = sortedConflicts[index];
-
-    const { from, diameter } = conflict;
-    let { to } = conflict;
-
-    // Default: advance past all remaining items (when every remaining conflict overlaps)
-    let jumpTo = sortedConflicts.length;
-
-    for (let i = index + 1; i < sortedConflicts.length; i++) {
-      const nextConflict = sortedConflicts[i];
-
-      if (nextConflict.from > to + buffer) {
-        jumpTo = i;
-        break;
+  return [...conflicts]
+    .sort((a, b) => a.from - b.from)
+    .reduce<Conflict[]>((merged, current) => {
+      const last = merged[merged.length - 1];
+      if (last && current.from <= last.to + buffer) {
+        last.to = Math.max(last.to, current.to);
+        return merged;
       }
+      merged.push({ ...current });
+      return merged;
+    }, []);
+};
 
-      if (nextConflict.to > to) {
-        to = nextConflict.to;
-      }
-    }
-
-    mergedConflicts.push({ from, to, diameter });
-
-    index = jumpTo;
-  }
-  return mergedConflicts;
-}
-
-export function getYAxisFunctions(
-  yScale: any,
+/** Returns clamped `getHeight` and `getYPos` helpers bound to a D3 scale and optional depth clamp range. */
+export const getYAxisFunctions = (
+  yScale: (value: number) => number,
   clamp?: { from: number; to: number },
-) {
+) => {
   const clampFrom = clamp?.from ?? -Infinity;
   const clampTo = clamp?.to ?? Infinity;
   return {
-    getHeight: ({ from, to }: { from: number; to: number }) => {
-      const effectiveFrom = Math.max(from, clampFrom);
-      const effectiveTo = Math.min(to, clampTo);
-      return Math.max(0, yScale(effectiveTo) - yScale(effectiveFrom));
-    },
-    getYPos: ({ from }: { from: number }) => {
-      return yScale(Math.max(from, clampFrom));
-    },
+    getHeight: ({ from, to }: { from: number; to: number }) =>
+      Math.max(
+        0,
+        yScale(Math.min(to, clampTo)) - yScale(Math.max(from, clampFrom)),
+      ),
+    getYPos: ({ from }: { from: number }) => yScale(Math.max(from, clampFrom)),
   };
-}
+};
 
-export function getLithologyFill(geologyData: Lithology[], svg) {
+/** Returns a fill-value function for a lithology datum, registering texture patterns on the SVG as needed. */
+export const getLithologyFill = (
+  geologyData: Lithology[],
+  svg: SvgSelection,
+) => {
   const lithologicalFill = getLithologicalFillList(geologyData);
   return (d: Lithology) => {
-    if (!lithologicalFill[`${d.fgdc_texture}.${d.from}`].url) {
-      return lithologicalFill[`${d.fgdc_texture}.${d.from}`];
-    }
-    svg.call(lithologicalFill[`${d.fgdc_texture}.${d.from}`]);
-    return lithologicalFill[`${d.fgdc_texture}.${d.from}`].url();
+    const fill = lithologicalFill[`${d.fgdc_texture}.${d.from}`];
+    if (!fill.url) return fill;
+    svg.call(fill as unknown as (selection: SvgSelection) => void);
+    return fill.url();
   };
-}
+};
 
 /**
- * Build a wavy horizontal contact line as an array of [x, y] points.
- *
- * The line spans from xLeft to xRight at a nominal y of baseY.
- * Each sample is displaced vertically by a combination of a low-frequency
- * sinusoidal curve (for large-scale curvature) and a high-frequency random
- * component (for small-scale roughness), giving a natural geological contact.
- *
- * @param xLeft   - leftmost x coordinate (matches lithology rect x)
- * @param xRight  - rightmost x coordinate (matches lithology rect right edge)
- * @param baseY   - nominal pixel y for this contact depth
- * @param amp     - maximum vertical displacement in pixels
- * @param steps   - number of sample points (more = smoother)
- * @param rng     - seeded PRNG; must be freshly constructed per call
+ * Builds a wavy horizontal contact line as an array of [x, y] points using a
+ * damped random walk, giving a natural geological contact appearance.
  */
-export function wavyContact(
+export const wavyContact = (
   xLeft: number,
   xRight: number,
   baseY: number,
   amp: number,
   steps: number,
   rng: () => number,
-): [number, number][] {
+): [number, number][] => {
   const pts: [number, number][] = [];
-
-  // Damped random walk: each step nudges the current offset by a small
-  // delta then damps it back toward zero, so adjacent samples are correlated
-  // (no jagged spikes) and the line never wanders far from baseY.
   let offset = 0;
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1);
     const x = xLeft + t * (xRight - xLeft);
     offset += (rng() - 0.5) * amp * 0.6;
-    offset *= 0.75; // damping keeps the line close to baseY
+    offset *= 0.75;
     pts.push([x, baseY + offset]);
   }
   return pts;
-}
+};
 
-/**
- * Convert an array of [x, y] points into a smooth SVG cubic-Bézier path
- * string using Catmull-Rom tension. Produces natural curved contacts rather
- * than the jagged edges of a raw polyline.
- */
-export function ptsToSmoothPath(pts: [number, number][]): string {
+/** Converts an array of [x, y] points into a smooth SVG cubic-Bézier path string using Catmull-Rom tension. */
+export const ptsToSmoothPath = (pts: [number, number][]): string => {
   if (pts.length < 2) return '';
   const n = pts.length;
   const tension = 0.35;
@@ -205,69 +167,59 @@ export function ptsToSmoothPath(pts: [number, number][]): string {
     d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
   }
   return d;
-}
+};
 
-/**
- * Seeded PRNG — deterministic so every zoom/redraw produces identical shapes.
- */
-export function makeCavePrng(seed: number) {
+/** Seeded PRNG — deterministic so every zoom/redraw produces identical shapes. */
+export const makeCavePrng = (seed: number) => {
   let s = Math.abs(seed * 6271) | 1;
   return () => {
     s = (s * 16807) % 2147483647;
     return (s - 1) / 2147483646;
   };
-}
+};
 
-export function populateTooltips(
+/** Initialises d3-tip tooltip instances for each well component, respecting the `tooltipConfig` allow-list. */
+export const populateTooltips = (
   svg: SvgSelection,
   customClasses: ComponentsClassNames,
   units: Units,
   tooltipConfig?: TooltipKey[] | false,
-) {
+) => {
   const tipsText = {
-    geology: (_, d: Lithology) => `
+    geology: (_: unknown, d: Lithology) => `
         <span class="${customClasses.tooltip.title}">Litologia</span>
         <span class="${customClasses.tooltip.primaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
         <span class="${customClasses.tooltip.secondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>
         ${d.geologic_unit ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>Unidade geológica:</strong> ${d.geologic_unit}</span>` : ''}
         ${d.aquifer_unit ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>Unidade aquífera:</strong> ${d.aquifer_unit}</span>` : ''}
       `,
-    hole: (_, d: BoreHole) => {
-      return `
+    hole: (_: unknown, d: BoreHole) => `
         <span class="${customClasses.tooltip.title}">FURO</span>
         <span class="${customClasses.tooltip.primaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
         <span class="${customClasses.tooltip.secondaryInfo}"><strong>Diâmetro:</strong>${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
-        `;
-    },
-    surfaceCase: (_, d: SurfaceCase) => {
-      return `
+        `,
+    surfaceCase: (_: unknown, d: SurfaceCase) => `
             <span class="${customClasses.tooltip.title}">TUBO DE BOCA</span>
             <span class="${customClasses.tooltip.primaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
             <span class="${customClasses.tooltip.secondaryInfo}"><strong>Diâmetro:</strong>${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
-          `;
-    },
-    holeFill: (_, d: HoleFill) => {
-      return `
+          `,
+    holeFill: (_: unknown, d: HoleFill) => `
           <span class="${customClasses.tooltip.title}">ESP. ANULAR</span>
           <span class="${customClasses.tooltip.primaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
           <span class="${customClasses.tooltip.secondaryInfo}"><strong>Diâmetro:</strong>${formatDiameter(d.diameter, units.diameter)} ${units.diameter}</span>
           <span class="${customClasses.tooltip.secondaryInfo}">
             <strong>Descrição:</strong> ${d.description}
           </span>
-          `;
-    },
-    wellCase: (_, d: WellCase) => {
-      return `
+          `,
+    wellCase: (_: unknown, d: WellCase) => `
           <span class="${customClasses.tooltip.title}">REVESTIMENTO</span>
               <span class="${customClasses.tooltip.primaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
               <span class="${customClasses.tooltip.secondaryInfo}">
                 <strong>Diâmetro:</strong> ${formatDiameter(d.diameter, units.diameter)} ${units.diameter}
               </span>
               <span class="${customClasses.tooltip.secondaryInfo}"><strong>Tipo:</strong> ${d.type}</span>
-          `;
-    },
-    wellScreen: (_, d: WellScreen) => {
-      return `
+          `,
+    wellScreen: (_: unknown, d: WellScreen) => `
           <span class="${customClasses.tooltip.title}">FILTROS</span>
               <span class="${customClasses.tooltip.primaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
               <span class="${customClasses.tooltip.secondaryInfo}">
@@ -276,15 +228,12 @@ export function populateTooltips(
               <span class="${customClasses.tooltip.secondaryInfo}">
                 <strong>Ranhura:</strong> ${d.screen_slot_mm} mm
               </span>
-          `;
-    },
-    conflict: (_, d: { from: number; to: number }) => {
-      return `
+          `,
+    conflict: (_: unknown, d: { from: number; to: number }) => `
           <span class="${customClasses.tooltip.title}">CONFLITO</span>
           <span class="${customClasses.tooltip.primaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
-        `;
-    },
-    fracture: (_event: unknown, d: Fracture) => {
+        `,
+    fracture: (_: unknown, d: Fracture) => {
       const title = d.swarm ? 'ENXAME DE FRATURAS' : 'FRATURA';
       return `
           <span class="${customClasses.tooltip.title}">${title}</span>
@@ -295,8 +244,7 @@ export function populateTooltips(
           ${d.description ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
         `;
     },
-    cementPad: (_event: unknown, d: CementPad) => {
-      return `
+    cementPad: (_: unknown, d: CementPad) => `
           <span class="${customClasses.tooltip.title}">LAJE DE PROTEÇÃO</span>
           <span class="${customClasses.tooltip.primaryInfo}">${d.type}</span>
           <span class="${customClasses.tooltip.secondaryInfo}"><strong>Espessura:</strong>
@@ -307,20 +255,17 @@ export function populateTooltips(
           <span class="${customClasses.tooltip.secondaryInfo}">
             <strong>Comprimento:</strong> ${formatLength(d.length, units.length)} ${units.length}
           </span>
-        `;
-    },
-    cave: (_event: unknown, d: Cave) => {
-      return `
+        `,
+    cave: (_: unknown, d: Cave) => `
           <span class="${customClasses.tooltip.title}">CAVERNA</span>
           <span class="${customClasses.tooltip.primaryInfo}">De ${formatLength(d.from, units.length)} ${units.length} até ${formatLength(d.to, units.length)} ${units.length}</span>
           ${d.water_intake ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>Entrada d'água</strong></span>` : ''}
           ${d.description ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>Descrição:</strong> ${d.description}</span>` : ''}
-        `;
-    },
+        `,
   };
 
   const noop = { show: () => {}, hide: () => {} };
-  const tooltips: any = {};
+  const tooltips: Record<string, D3Tip | typeof noop> = {};
 
   Object.getOwnPropertyNames(tipsText).forEach(tipTextKey => {
     const enabled =
@@ -334,16 +279,16 @@ export function populateTooltips(
       return;
     }
 
-    tooltips[tipTextKey] = d3
-      // @ts-ignore
-      // eslint-disable-next-line import-x/namespace
+    tooltips[tipTextKey] = (d3 as unknown as { tip: () => D3Tip })
       .tip()
       .attr('class', customClasses.tooltip.root)
       .direction('e')
       .html(tipsText[tipTextKey]);
 
-    svg.call(tooltips[tipTextKey]);
+    svg.call(
+      tooltips[tipTextKey] as unknown as (selection: SvgSelection) => void,
+    );
   });
 
   return tooltips;
-}
+};

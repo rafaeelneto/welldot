@@ -2,10 +2,10 @@ import { easeCubic } from 'd3';
 import {
   ComponentsClassNames,
   CssVarsConfig,
-  RendererRenderConfig,
+  RenderConfig,
 } from '~/types/render.types';
 
-export const INTERACTIVE_RENDER_CONFIG: RendererRenderConfig = {
+export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
   zoom: true,
   pan: true,
   animation: { duration: 600, ease: easeCubic },

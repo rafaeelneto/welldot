@@ -1,7 +1,12 @@
-import * as d3 from 'd3';
-import 'd3-tip';
+// TODO use only the need parts of d3 instead of importing the whole library, which will reduce bundle size and improve performance
+import * as d3module from 'd3';
+// eslint-disable-next-line import-x/default
+import d3tip from 'd3-tip';
+
 import { defu } from 'defu';
 import { createWellTextures } from './configs/render.textures';
+
+const d3 = Object.assign(d3module, { tip: d3tip });
 
 import {
   isWellEmpty,
@@ -28,7 +33,7 @@ import {
   CssVarsConfig,
   DeepPartial,
   InstanceState,
-  RendererRenderConfig,
+  RenderConfig,
   SvgInstance,
   SvgSelection,
 } from '~/types/render.types';
@@ -59,7 +64,7 @@ export class WellRenderer {
   private instanceStates: InstanceState[] = [];
 
   classes = DEFAULT_COMPONENTS_CLASS_NAMES;
-  private renderConfig: RendererRenderConfig = INTERACTIVE_RENDER_CONFIG;
+  private renderConfig: RenderConfig = INTERACTIVE_RENDER_CONFIG;
   private units: Units = {
     length: 'm',
     diameter: 'mm',
@@ -70,7 +75,7 @@ export class WellRenderer {
     options: {
       classNames?: DeepPartial<ComponentsClassNames>;
       units?: Units;
-      renderConfig?: DeepPartial<RendererRenderConfig>;
+      renderConfig?: DeepPartial<RenderConfig>;
     } = {},
   ) {
     if (svgs.length === 0) return;
@@ -92,7 +97,7 @@ export class WellRenderer {
       this.renderConfig = defu(
         options.renderConfig,
         INTERACTIVE_RENDER_CONFIG,
-      ) as RendererRenderConfig;
+      ) as RenderConfig;
     }
 
     return this;

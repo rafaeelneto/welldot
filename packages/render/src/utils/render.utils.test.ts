@@ -8,7 +8,7 @@ import type {
   Units,
 } from '@welldot/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ComponentsClassNames } from '~/types/render.types';
+import type { ComponentsClassNames, SvgSelection } from '~/types/render.types';
 
 // vi.hoisted lets these be referenced inside vi.mock factories (which are hoisted)
 const mockTexturePaths = vi.hoisted(() => ({
@@ -91,7 +91,7 @@ const makeClasses = (): ComponentsClassNames => ({
   unitLabels: { group: '', geoRect: '', aqRect: '', text: '' },
 });
 
-const makeSvg = () => ({ call: vi.fn() });
+const makeSvg = () => ({ call: vi.fn() }) as unknown as SvgSelection;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -537,7 +537,9 @@ describe('populateTooltips', () => {
   describe('HTML content', () => {
     function getHtmlFn(key: string) {
       const tooltips = populateTooltips(makeSvg(), makeClasses(), makeUnits());
-      return (tooltips[key].html as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return ((tooltips[key] as any).html as ReturnType<typeof vi.fn>).mock
+        .calls[0][0];
     }
 
     it('geology tooltip includes lithology description and depth range', () => {
