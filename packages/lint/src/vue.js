@@ -1,5 +1,5 @@
 import pluginVue from 'eslint-plugin-vue';
-import typescript from './src/typescript.js';
+import typescript from './typescript.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
