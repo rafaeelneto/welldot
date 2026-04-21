@@ -1,0 +1,25 @@
+{
+  "name": "@well/lint",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./src/base.js",
+    "./typescript": "./src/typescript.js",
+    "./react": "./src/react.js",
+    "./vue": "./src/vue.js",
+    "./nuxt": "./src/nuxt.js"
+  },
+  "dependencies": {
+    "@eslint/js": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "eslint-config-prettier": "*",
+    "eslint-plugin-import-x": "*",
+    "eslint-plugin-prettier": "*"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0"
+  }
+}
