@@ -1,5 +1,5 @@
-import tseslint from 'typescript-eslint'
-import base from './base.js'
+import tseslint from 'typescript-eslint';
+import base from './base.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -17,4 +17,4 @@ export default [
       'no-unused-vars': 'off', // use TS version instead
     },
   },
-]
+];
