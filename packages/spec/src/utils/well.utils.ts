@@ -1,8 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Profile } from '..';
 import { Constructive, Geologic, Lithology, Well } from '../types/well.types';
 
-// ─── Empty well template ─────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type RawJSON = Record<string, unknown>;
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const WELL_FORMAT_VERSION = 1;
+const INCHES_TO_MM = 25.4;
 
 const EMPTY_WELL: Well = {
   bore_hole: [],
@@ -17,73 +22,45 @@ const EMPTY_WELL: Well = {
   caves: [],
 };
 
-function getEmptyProfile(): Well {
-  return JSON.parse(JSON.stringify(EMPTY_WELL));
+// ─── Internal helpers ────────────────────────────────────────────────────────
+
+function createEmptyWell(): Well {
+  return JSON.parse(JSON.stringify(EMPTY_WELL)) as Well;
 }
 
-// ─── .well format (compact keys) ────────────────────────────────────────────
-
-const WELL_FORMAT_VERSION = 1;
-
-export function profileToWell(profile: Well): string {
-  const well: Record<string, unknown> = {
-    version: WELL_FORMAT_VERSION,
-    ...(profile.well_type !== undefined && { well_type: profile.well_type }),
-    ...(profile.name !== undefined && { name: profile.name }),
-    ...(profile.well_driller !== undefined && {
-      well_driller: profile.well_driller,
-    }),
-    ...(profile.construction_date !== undefined && {
-      construction_date: profile.construction_date,
-    }),
-    ...(profile.lat !== undefined && { lat: profile.lat }),
-    ...(profile.lng !== undefined && { lng: profile.lng }),
-    ...(profile.elevation !== undefined && { elevation: profile.elevation }),
-    ...(profile.obs !== undefined && { obs: profile.obs }),
-    bore_hole: profile.bore_hole,
-    well_case: profile.well_case,
-    reduction: profile.reduction,
-    well_screen: profile.well_screen,
-    surface_case: profile.surface_case,
-    hole_fill: profile.hole_fill,
-    ...(profile.cement_pad && { cement_pad: profile.cement_pad }),
-    lithology: profile.lithology,
-    fractures: profile.fractures,
-    caves: profile.caves,
-  };
-
-  return JSON.stringify(well);
-}
-
-function decodeWell(raw: any): Well {
+function decodeV1Well(raw: RawJSON): Well {
   return {
-    ...getEmptyProfile(),
-    ...(raw.well_type !== undefined && { well_type: raw.well_type }),
-    ...(raw.name !== undefined && { name: raw.name }),
-    ...(raw.well_driller !== undefined && { well_driller: raw.well_driller }),
-    ...(raw.construction_date !== undefined && {
-      construction_date: raw.construction_date,
+    ...createEmptyWell(),
+    ...(raw.well_type !== undefined && { well_type: raw.well_type as string }),
+    ...(raw.name !== undefined && { name: raw.name as string }),
+    ...(raw.well_driller !== undefined && {
+      well_driller: raw.well_driller as string,
     }),
-    ...(raw.lat !== undefined && { lat: raw.lat }),
-    ...(raw.lng !== undefined && { lng: raw.lng }),
-    ...(raw.elevation !== undefined && { elevation: raw.elevation }),
-    ...(raw.obs !== undefined && { obs: raw.obs }),
-    bore_hole: raw.bore_hole ?? [],
-    well_case: raw.well_case ?? [],
-    reduction: raw.reduction ?? [],
-    well_screen: raw.well_screen ?? [],
-    surface_case: raw.surface_case ?? [],
-    hole_fill: raw.hole_fill ?? [],
-    ...(raw.cement_pad && { cement_pad: raw.cement_pad }),
-    lithology: raw.lithology ?? [],
-    fractures: raw.fractures ?? [],
-    caves: raw.caves ?? [],
+    ...(raw.construction_date !== undefined && {
+      construction_date: raw.construction_date as string,
+    }),
+    ...(raw.lat !== undefined && { lat: raw.lat as number }),
+    ...(raw.lng !== undefined && { lng: raw.lng as number }),
+    ...(raw.elevation !== undefined && { elevation: raw.elevation as number }),
+    ...(raw.obs !== undefined && { obs: raw.obs as string }),
+    bore_hole: (raw.bore_hole as Well['bore_hole']) ?? [],
+    well_case: (raw.well_case as Well['well_case']) ?? [],
+    reduction: (raw.reduction as Well['reduction']) ?? [],
+    well_screen: (raw.well_screen as Well['well_screen']) ?? [],
+    surface_case: (raw.surface_case as Well['surface_case']) ?? [],
+    hole_fill: (raw.hole_fill as Well['hole_fill']) ?? [],
+    ...(raw.cement_pad
+      ? { cement_pad: raw.cement_pad as Well['cement_pad'] }
+      : {}),
+    lithology: (raw.lithology as Well['lithology']) ?? [],
+    fractures: (raw.fractures as Well['fractures']) ?? [],
+    caves: (raw.caves as Well['caves']) ?? [],
   };
 }
 
-const INCHES_TO_MM = 25.4;
-
-function inchesToMM(items: { diam_pol?: number }[]): any[] {
+function convertLegacyDiameters(
+  items: (RawJSON & { diam_pol?: number })[],
+): RawJSON[] {
   if (!items?.length) return items ?? [];
   if (!items.some(item => item.diam_pol !== undefined)) return items;
 
@@ -93,104 +70,140 @@ function inchesToMM(items: { diam_pol?: number }[]): any[] {
   }));
 }
 
-function normalizeLithology(items: any[]): Lithology[] {
-  return items.map(item => ({ aquifer_unit: '', ...item }));
+function normalizeLithology(items: RawJSON[]): Lithology[] {
+  return items.map(item => ({ aquifer_unit: '', ...item })) as Lithology[];
 }
 
-// done due a typo in the original spec, to be removed in future versions
-function normalizeConstructive(src: any): Partial<Constructive> {
-  const boreHoleData = src.bole_hole ?? src.bore_hole ?? [];
+// "bole_hole" is a typo present in older saved profiles; kept for compatibility
+function normalizeConstructive(src: RawJSON): Partial<Constructive> {
+  const boreHoleData = (src.bole_hole ?? src.bore_hole ?? []) as (RawJSON & {
+    diam_pol?: number;
+  })[];
 
   return {
-    bore_hole: inchesToMM(boreHoleData),
-    hole_fill: inchesToMM(src.hole_fill ?? []),
-    surface_case: inchesToMM(src.surface_case ?? []),
-    well_case: inchesToMM(src.well_case ?? []),
-    well_screen: inchesToMM(src.well_screen ?? []),
-    reduction: src.reduction ?? [],
-    ...(src.cement_pad && { cement_pad: src.cement_pad }),
+    bore_hole: convertLegacyDiameters(boreHoleData) as Well['bore_hole'],
+    hole_fill: convertLegacyDiameters(
+      (src.hole_fill ?? []) as (RawJSON & { diam_pol?: number })[],
+    ) as Well['hole_fill'],
+    surface_case: convertLegacyDiameters(
+      (src.surface_case ?? []) as (RawJSON & { diam_pol?: number })[],
+    ) as Well['surface_case'],
+    well_case: convertLegacyDiameters(
+      (src.well_case ?? []) as (RawJSON & { diam_pol?: number })[],
+    ) as Well['well_case'],
+    well_screen: convertLegacyDiameters(
+      (src.well_screen ?? []) as (RawJSON & { diam_pol?: number })[],
+    ) as Well['well_screen'],
+    reduction: (src.reduction ?? []) as Well['reduction'],
+    ...(src.cement_pad
+      ? { cement_pad: src.cement_pad as Well['cement_pad'] }
+      : {}),
   };
 }
 
-function normalizeGeologic(raw: any): Geologic {
-  const lithologySource: any[] = raw.lithology ?? raw.geologic ?? [];
+function normalizeGeologic(raw: RawJSON): Geologic {
+  const lithologySource = (raw.lithology ?? raw.geologic ?? []) as RawJSON[];
 
   return {
     lithology: normalizeLithology(lithologySource),
-    fractures: raw.fractures ?? [],
-    caves: raw.caves ?? [],
+    fractures: (raw.fractures ?? []) as Well['fractures'],
+    caves: (raw.caves ?? []) as Well['caves'],
   };
 }
 
-export function checkIfProfileIsEmpty(
-  profile: Profile | null | undefined,
-): boolean {
-  if (!profile) return true;
+// ─── Public API ──────────────────────────────────────────────────────────────
 
-  if ((profile as any).constructive || (profile as any).geologic) {
-    return false;
-  }
+export function serializeWell(well: Well): string {
+  const payload: Record<string, unknown> = {
+    version: WELL_FORMAT_VERSION,
+    ...(well.well_type !== undefined && { well_type: well.well_type }),
+    ...(well.name !== undefined && { name: well.name }),
+    ...(well.well_driller !== undefined && { well_driller: well.well_driller }),
+    ...(well.construction_date !== undefined && {
+      construction_date: well.construction_date,
+    }),
+    ...(well.lat !== undefined && { lat: well.lat }),
+    ...(well.lng !== undefined && { lng: well.lng }),
+    ...(well.elevation !== undefined && { elevation: well.elevation }),
+    ...(well.obs !== undefined && { obs: well.obs }),
+    bore_hole: well.bore_hole,
+    well_case: well.well_case,
+    reduction: well.reduction,
+    well_screen: well.well_screen,
+    surface_case: well.surface_case,
+    hole_fill: well.hole_fill,
+    ...(well.cement_pad && { cement_pad: well.cement_pad }),
+    lithology: well.lithology,
+    fractures: well.fractures,
+    caves: well.caves,
+  };
 
-  const noComponent =
-    profile.lithology?.length === 0 &&
-    profile.fractures?.length === 0 &&
-    profile.caves?.length === 0 &&
-    profile.bore_hole?.length === 0 &&
-    profile.hole_fill?.length === 0 &&
-    profile.well_case?.length === 0 &&
-    profile.well_screen?.length === 0;
-
-  return noComponent;
+  return JSON.stringify(payload);
 }
 
-export function convertProfileFromJSON(jsonString: string): Well | null {
-  let raw: any;
+export function isWellEmpty(well: Well | null | undefined): boolean {
+  if (!well) return true;
+
+  const raw = well as RawJSON;
+  if (raw.constructive || raw.geologic) return false;
+
+  return (
+    well.lithology?.length === 0 &&
+    well.fractures?.length === 0 &&
+    well.caves?.length === 0 &&
+    well.bore_hole?.length === 0 &&
+    well.hole_fill?.length === 0 &&
+    well.well_case?.length === 0 &&
+    well.well_screen?.length === 0
+  );
+}
+
+export function deserializeWell(jsonString: string): Well | null {
+  let raw: RawJSON;
   try {
-    raw = JSON.parse(jsonString);
+    raw = JSON.parse(jsonString) as RawJSON;
   } catch {
     throw new Error('Invalid profile format');
   }
 
-  if (raw && typeof raw.version === 'number') {
+  if (typeof raw.version === 'number') {
     if (raw.version !== 1)
       throw new Error(`Unsupported .well format version: ${raw.version}`);
-    return decodeWell(raw);
+    return decodeV1Well(raw);
   }
 
-  if (checkIfProfileIsEmpty(raw)) return null;
+  if (isWellEmpty(raw as unknown as Well)) return null;
 
-  const constructiveSource = raw.constructive ?? raw;
+  const constructiveSource = (raw.constructive ?? raw) as RawJSON;
 
-  const {
-    constructive: _c,
-    geologic: _g,
-    info: _i,
-    units: _u,
-    well_type,
-    name,
-    well_driller,
-    construction_date,
-    lat,
-    lng,
-    elevation,
-    obs,
-  } = raw;
-
-  const topLevelFields = {
-    ...(well_type !== undefined && { well_type }),
-    ...(name !== undefined && { name }),
-    ...(well_driller !== undefined && { well_driller }),
-    ...(construction_date !== undefined && { construction_date }),
-    ...(lat !== undefined && { lat }),
-    ...(lng !== undefined && { lng }),
-    ...(elevation !== undefined && { elevation }),
-    ...(obs !== undefined && { obs }),
+  const metadata: Partial<Well> = {
+    ...(raw.well_type !== undefined && { well_type: raw.well_type as string }),
+    ...(raw.name !== undefined && { name: raw.name as string }),
+    ...(raw.well_driller !== undefined && {
+      well_driller: raw.well_driller as string,
+    }),
+    ...(raw.construction_date !== undefined && {
+      construction_date: raw.construction_date as string,
+    }),
+    ...(raw.lat !== undefined && { lat: raw.lat as number }),
+    ...(raw.lng !== undefined && { lng: raw.lng as number }),
+    ...(raw.elevation !== undefined && { elevation: raw.elevation as number }),
+    ...(raw.obs !== undefined && { obs: raw.obs as string }),
   };
 
   return {
-    ...getEmptyProfile(),
-    ...topLevelFields,
+    ...createEmptyWell(),
+    ...metadata,
     ...normalizeConstructive(constructiveSource),
     ...normalizeGeologic(raw),
   };
 }
+
+// ─── Backward-compat aliases ─────────────────────────────────────────────────
+
+/** @deprecated Use {@link serializeWell} */
+export const profileToWell = serializeWell;
+/** @deprecated Use {@link isWellEmpty} */
+export const checkIfProfileIsEmpty = isWellEmpty;
+/** @deprecated Use {@link deserializeWell} */
+export const convertProfileFromJSON = deserializeWell;
