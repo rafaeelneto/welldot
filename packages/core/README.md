@@ -161,10 +161,10 @@ For the complete schema reference, field vocabulary, design rationale, and versi
 
 ## Contributing
 
-Issues and pull requests are welcome. The source lives in `packages/core` within the [well-profiler monorepo](https://github.com/rafaeelneto/well-profiler).
+Issues and pull requests are welcome. The source lives in `packages/core` within the [well-profiler monorepo](https://github.com/rafaeelneto/welldot).
 
 ```bash
-git clone https://github.com/rafaeelneto/well-profiler.git
+git clone https://github.com/rafaeelneto/welldot.git
 cd well-profiler
 pnpm install
 cd packages/core
@@ -175,5 +175,3 @@ pnpm test
 ## License
 
 [Apache 2.0](./LICENSE) — see `LICENSE` for the full text.
-
-The broader well-profiler application is licensed separately under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
