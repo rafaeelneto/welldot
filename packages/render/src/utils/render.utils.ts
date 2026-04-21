@@ -69,7 +69,7 @@ export function getConflictAreas(array1: any[], array2: any[]) {
         conflicts.push({
           from: a,
           to: b,
-          diameter: Math.max(item1.diamenter, item2.diameter),
+          diameter: Math.max(item1.diameter, item2.diameter),
         });
       }
     });
@@ -81,11 +81,7 @@ export function mergeConflicts(
   conflicts: { from: number; to: number; diameter: number }[],
   buffer: number,
 ) {
-  // SORT ARRAY BY THE FROM PROPERTY
-  const sortedConflicts = conflicts.sort(
-    // @ts-ignore
-    (a, b) => parseFloat(a.from) - parseFloat(b.from),
-  );
+  const sortedConflicts = conflicts.sort((a, b) => a.from - b.from);
 
   const mergedConflicts: { from: number; to: number; diameter: number }[] = [];
 
@@ -96,32 +92,20 @@ export function mergeConflicts(
     const { from, diameter } = conflict;
     let { to } = conflict;
 
-    let jumpTo = index + 1;
+    // Default: advance past all remaining items (when every remaining conflict overlaps)
+    let jumpTo = sortedConflicts.length;
 
     for (let i = index + 1; i < sortedConflicts.length; i++) {
       const nextConflict = sortedConflicts[i];
-      // if (nextConflict.to < conflict.to) {
-      //   // eslint-disable-next-line no-continue
-      //   continue;
-      // }
 
-      if (nextConflict.from > conflict.to + buffer) {
+      if (nextConflict.from > to + buffer) {
         jumpTo = i;
         break;
       }
 
-      if (nextConflict.to > conflict.to && nextConflict.from >= conflict.from) {
+      if (nextConflict.to > to) {
         to = nextConflict.to;
       }
-    }
-
-    const nextConflict = sortedConflicts[index + 1];
-    if (
-      nextConflict &&
-      nextConflict.to === conflict.to &&
-      nextConflict.from === conflict.from
-    ) {
-      jumpTo = jumpTo + 1;
     }
 
     mergedConflicts.push({ from, to, diameter });
