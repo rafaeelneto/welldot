@@ -1,0 +1,13 @@
+{
+  "name": "well",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "devDependencies": {
+    "turbo": "latest"
+  }
+}
