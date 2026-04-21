@@ -2,11 +2,11 @@
   "singleQuote": true,
   "trailingComma": "all",
   "arrowParens": "avoid",
-  "endOfLine": "auto",
+  "endOfLine": "lf",
   "semi": true,
   "printWidth": 80,
   "tabWidth": 2,
   "useTabs": false,
   "jsxSingleQuote": false,
-  "jsxBracketSameLine": false
+  "plugins": ["prettier-plugin-organize-imports"]
 }
