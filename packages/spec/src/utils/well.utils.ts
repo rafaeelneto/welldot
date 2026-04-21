@@ -1,15 +1,6 @@
-import {
-  Well,
-  Constructive,
-  HoleFill,
-  BoreHole,
-  WellCase,
-  WellScreen,
-  Reduction,
-  Geologic,
-  SurfaceCase,
-  Lithology,
-} from '../types/well.types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Profile } from '..';
+import { Constructive, Geologic, Lithology, Well } from '../types/well.types';
 
 // ─── Empty well template ─────────────────────────────────────────────────────
 
@@ -39,8 +30,12 @@ export function profileToWell(profile: Well): string {
     version: WELL_FORMAT_VERSION,
     ...(profile.well_type !== undefined && { well_type: profile.well_type }),
     ...(profile.name !== undefined && { name: profile.name }),
-    ...(profile.well_driller !== undefined && { well_driller: profile.well_driller }),
-    ...(profile.construction_date !== undefined && { construction_date: profile.construction_date }),
+    ...(profile.well_driller !== undefined && {
+      well_driller: profile.well_driller,
+    }),
+    ...(profile.construction_date !== undefined && {
+      construction_date: profile.construction_date,
+    }),
     ...(profile.lat !== undefined && { lat: profile.lat }),
     ...(profile.lng !== undefined && { lng: profile.lng }),
     ...(profile.elevation !== undefined && { elevation: profile.elevation }),
@@ -66,7 +61,9 @@ function decodeWell(raw: any): Well {
     ...(raw.well_type !== undefined && { well_type: raw.well_type }),
     ...(raw.name !== undefined && { name: raw.name }),
     ...(raw.well_driller !== undefined && { well_driller: raw.well_driller }),
-    ...(raw.construction_date !== undefined && { construction_date: raw.construction_date }),
+    ...(raw.construction_date !== undefined && {
+      construction_date: raw.construction_date,
+    }),
     ...(raw.lat !== undefined && { lat: raw.lat }),
     ...(raw.lng !== undefined && { lng: raw.lng }),
     ...(raw.elevation !== undefined && { elevation: raw.elevation }),
@@ -86,13 +83,13 @@ function decodeWell(raw: any): Well {
 
 const INCHES_TO_MM = 25.4;
 
-function inchesToMM(items: any[]): any[] {
+function inchesToMM(items: { diam_pol?: number }[]): any[] {
   if (!items?.length) return items ?? [];
   if (!items.some(item => item.diam_pol !== undefined)) return items;
 
   return items.map(({ diam_pol, ...rest }) => ({
     ...rest,
-    diameter: diam_pol * INCHES_TO_MM,
+    diameter: (diam_pol || 0) * INCHES_TO_MM,
   }));
 }
 
@@ -100,6 +97,7 @@ function normalizeLithology(items: any[]): Lithology[] {
   return items.map(item => ({ aquifer_unit: '', ...item }));
 }
 
+// done due a typo in the original spec, to be removed in future versions
 function normalizeConstructive(src: any): Partial<Constructive> {
   const boreHoleData = src.bole_hole ?? src.bore_hole ?? [];
 
@@ -124,10 +122,12 @@ function normalizeGeologic(raw: any): Geologic {
   };
 }
 
-export function checkIfProfileIsEmpty(profile: any): boolean {
+export function checkIfProfileIsEmpty(
+  profile: Profile | null | undefined,
+): boolean {
   if (!profile) return true;
 
-  if (profile.constructive || profile.geologic) {
+  if ((profile as any).constructive || (profile as any).geologic) {
     return false;
   }
 
@@ -152,7 +152,8 @@ export function convertProfileFromJSON(jsonString: string): Well | null {
   }
 
   if (raw && typeof raw.version === 'number') {
-    if (raw.version !== 1) throw new Error(`Unsupported .well format version: ${raw.version}`);
+    if (raw.version !== 1)
+      throw new Error(`Unsupported .well format version: ${raw.version}`);
     return decodeWell(raw);
   }
 

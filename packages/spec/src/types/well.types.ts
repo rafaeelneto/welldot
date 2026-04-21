@@ -76,6 +76,7 @@ export type Cave = {
 };
 
 export type Well = {
+  // Metadata
   well_type?: string;
   name?: string;
   well_driller?: string;

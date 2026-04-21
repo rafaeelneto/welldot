@@ -19,6 +19,7 @@ export default [
       'prefer-template': ['error'],
       'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
       radix: ['error', 'as-needed'],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 
       // safety
       'no-use-before-define': 'off', // handled by TS version
