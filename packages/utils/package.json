@@ -23,7 +23,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run"
   },
   "dependencies": {
     "@welldot/core": "workspace:*"
@@ -31,7 +32,8 @@
   "devDependencies": {
     "@welldot/lint": "workspace:*",
     "tsup": "^8.3.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.5"
   },
   "files": ["dist"]
 }
