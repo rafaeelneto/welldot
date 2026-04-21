@@ -379,6 +379,9 @@ importers:
       '@welldot/core':
         specifier: workspace:*
         version: link:../core
+      '@welldot/utils':
+        specifier: workspace:*
+        version: link:../utils
       d3:
         specifier: ^7.0.0
         version: 7.9.0
@@ -398,6 +401,22 @@ importers:
       '@types/d3-tip':
         specifier: ^3.5.8
         version: 3.5.8
+      '@welldot/lint':
+        specifier: workspace:*
+        version: link:../lint
+      tsup:
+        specifier: ^8.3.0
+        version: 8.5.1(jiti@1.21.7)(postcss@8.5.10)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/utils:
+    dependencies:
+      '@welldot/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
       '@welldot/lint':
         specifier: workspace:*
         version: link:../lint
