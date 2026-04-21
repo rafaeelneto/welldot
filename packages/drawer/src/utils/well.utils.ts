@@ -7,7 +7,7 @@ import {
   Well,
   WellCase,
   WellScreen,
-} from '@well/spec';
+} from '@welldot/core';
 
 type PointItem = {
   depth: number;

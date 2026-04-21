@@ -21,7 +21,7 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@well/spec": "workspace:*",
+    "@welldot/core": "workspace:*",
     "defu": "^6.1.4"
   },
   "peerDependencies": {

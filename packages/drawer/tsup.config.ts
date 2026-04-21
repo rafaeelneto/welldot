@@ -6,7 +6,7 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ['d3', 'd3-tip', 'textures', '@well/spec'],
+  external: ['d3', 'd3-tip', 'textures', '@welldot/core'],
   esbuildOptions(options) {
     options.alias = { '~': './src' };
   },

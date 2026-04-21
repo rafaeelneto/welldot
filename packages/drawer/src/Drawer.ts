@@ -16,7 +16,7 @@ import {
   Well,
   WellCase,
   WellScreen,
-} from '@well/spec';
+} from '@welldot/core';
 import {
   ComponentsClassNames,
   CssVarsConfig,

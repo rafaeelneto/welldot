@@ -12,4 +12,4 @@ export type {
   Cave,
   Geologic,
   Constructive,
-} from '@well/spec';
+} from '@welldot/core';

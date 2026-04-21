@@ -1,7 +1,7 @@
 import * as d3module from 'd3';
 import { defu } from 'defu';
 
-import { Well } from '@well/spec';
+import { Well } from '@welldot/core';
 import { CssVarsConfig, LegendRenderConfig } from '~/types/drawer.types';
 import { INTERACTIVE_RENDER_CONFIG } from '../configs/drawer.configs';
 import { createWellTextures } from '../configs/drawer.textures';

@@ -1,4 +1,4 @@
-export { profileToWell, convertProfileFromJSON, checkIfProfileIsEmpty } from '@well/spec';
+export { profileToWell, convertProfileFromJSON, checkIfProfileIsEmpty } from '@welldot/core';
 export {
   getProfileLastItemsDepths,
   getProfileDiamValues,

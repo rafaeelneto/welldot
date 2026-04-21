@@ -13,7 +13,7 @@ import { createWellTextures } from '../configs/drawer.textures';
 
 // TODO: remove (src_old ref) // import fdgcTextures from '../../../src_old/utils/fgdcTextures';
 
-import { DiameterUnits, LengthUnits } from '@well/spec';
+import { DiameterUnits, LengthUnits } from '@welldot/core';
 import {
   formatDiameter,
   getDiameterUnit,
@@ -34,7 +34,7 @@ import {
   HoleFill,
   Lithology,
   Well,
-} from '@well/spec';
+} from '@welldot/core';
 
 const d3 = {
   ...d3module,
@@ -45,7 +45,7 @@ const DARK_GRAY = '#303030';
 
 export const A4_SVG_HEIGHT = 480 * 1.33;
 
-// Temporary local type — replace with SvgInfo from @well/spec once src_old is removed
+// Temporary local type — replace with SvgInfo from @welldot/core once src_old is removed
 type SvgInfo = { id: string; height: number };
 
 export function buildSvgProfiles(props: {

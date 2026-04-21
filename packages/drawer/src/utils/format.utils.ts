@@ -1,4 +1,4 @@
-import type { DiameterUnits, LengthUnits } from '@well/spec';
+import type { DiameterUnits, LengthUnits } from '@welldot/core';
 
 const MM_TO_INCHES = 0.0393701;
 const M_TO_FT = 3.28084;

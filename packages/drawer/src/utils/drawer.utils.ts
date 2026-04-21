@@ -16,7 +16,7 @@ import {
   Units,
   WellCase,
   WellScreen,
-} from '@well/spec';
+} from '@welldot/core';
 import { ComponentsClassNames, TooltipKey } from '~/types/drawer.types';
 import { formatDiameter, formatLength } from '~/utils/format.utils';
 
