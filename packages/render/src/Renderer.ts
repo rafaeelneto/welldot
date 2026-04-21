@@ -1,7 +1,7 @@
 import * as d3module from 'd3';
 import 'd3-tip';
 import { defu } from 'defu';
-import { createWellTextures } from './configs/drawer.textures';
+import { createWellTextures } from './configs/render.textures';
 
 import {
   BoreHole,
@@ -21,9 +21,9 @@ import {
   ComponentsClassNames,
   CssVarsConfig,
   DeepPartial,
-  DrawerRenderConfig,
+  RendererRenderConfig,
   SvgInstance,
-} from '~/types/drawer.types';
+} from '~/types/render.types';
 import {
   formatDiameter,
   getDiameterUnit,
@@ -34,7 +34,7 @@ import {
   getProfileDiamValues,
   getProfileLastItemsDepths,
 } from '~/utils/well.utils';
-import { INTERACTIVE_RENDER_CONFIG } from './configs/drawer.configs';
+import { INTERACTIVE_RENDER_CONFIG } from './configs/render.configs';
 import {
   getConflictAreas,
   getLithologyFill,
@@ -44,7 +44,7 @@ import {
   populateTooltips,
   ptsToSmoothPath,
   wavyContact,
-} from './utils/drawer.utils';
+} from './utils/render.utils';
 
 const d3 = {
   ...d3module,
@@ -168,7 +168,7 @@ const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {
 };
 
 const DEFAULTS_TEXTURES = createWellTextures();
-export class WellDrawer {
+export class WellRenderer {
   private svgInstances: SvgInstance[] = [];
   private instanceStates: InstanceState[] = [];
   private svgWidth!: number;
@@ -177,7 +177,7 @@ export class WellDrawer {
   private pocoCenter!: number;
 
   classes = DEFAULT_COMPONENTS_CLASS_NAMES;
-  private renderConfig: DrawerRenderConfig = INTERACTIVE_RENDER_CONFIG;
+  private renderConfig: RendererRenderConfig = INTERACTIVE_RENDER_CONFIG;
   private units: Units = {
     length: 'm',
     diameter: 'mm',
@@ -192,11 +192,11 @@ export class WellDrawer {
     options: {
       classNames?: DeepPartial<ComponentsClassNames>;
       units?: Units;
-      renderConfig?: DeepPartial<DrawerRenderConfig>;
+      renderConfig?: DeepPartial<RendererRenderConfig>;
     } = {},
   ) {
     if (svgs.length === 0) return;
-    console.log('Initializing WellDrawer with SVG instances:', svgs);
+    console.log('Initializing WellRenderer with SVG instances:', svgs);
     this.svgInstances = svgs;
 
     if (options.classNames) {
@@ -214,7 +214,7 @@ export class WellDrawer {
       this.renderConfig = defu(
         options.renderConfig,
         INTERACTIVE_RENDER_CONFIG,
-      ) as DrawerRenderConfig;
+      ) as RendererRenderConfig;
     }
 
     return this;
@@ -1537,5 +1537,5 @@ export class WellDrawer {
 }
 
 export default {
-  WellDrawer,
+  WellRenderer,
 };

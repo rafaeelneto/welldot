@@ -5,7 +5,7 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
-import { createWellTextures } from '../configs/drawer.textures';
+import { createWellTextures } from '../configs/render.textures';
 
 // TODO: remove (src_old ref) // import wrap from '../../../src_old/utils/wrap';
 

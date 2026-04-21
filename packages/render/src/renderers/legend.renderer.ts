@@ -2,15 +2,15 @@ import * as d3module from 'd3';
 import { defu } from 'defu';
 
 import { Well } from '@welldot/core';
-import { CssVarsConfig, LegendRenderConfig } from '~/types/drawer.types';
-import { INTERACTIVE_RENDER_CONFIG } from '../configs/drawer.configs';
-import { createWellTextures } from '../configs/drawer.textures';
+import { CssVarsConfig, LegendRenderConfig } from '~/types/render.types';
+import { INTERACTIVE_RENDER_CONFIG } from '../configs/render.configs';
+import { createWellTextures } from '../configs/render.textures';
 
 const d3 = { ...d3module };
 
 const DEFAULTS_TEXTURES = createWellTextures();
 
-// CSS variable names mirror those in WellDrawer.ts
+// CSS variable names mirror those in Renderer.ts
 const CSS_VAR_MAP = {
   fractureDryStroke: '--wp-fracture-dry-stroke',
   fractureWetStroke: '--wp-fracture-wet-stroke',

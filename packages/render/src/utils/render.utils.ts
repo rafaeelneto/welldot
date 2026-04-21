@@ -17,7 +17,7 @@ import {
   WellCase,
   WellScreen,
 } from '@welldot/core';
-import { ComponentsClassNames, TooltipKey } from '~/types/drawer.types';
+import { ComponentsClassNames, TooltipKey } from '~/types/render.types';
 import { formatDiameter, formatLength } from '~/utils/format.utils';
 
 const d3 = {

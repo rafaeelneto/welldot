@@ -123,7 +123,7 @@ export type TooltipKey =
   | 'cementPad'
   | 'cave';
 
-export type DrawerRenderConfig = {
+export type RendererRenderConfig = {
   zoom: boolean;
   pan: boolean;
   /** undefined = show all; false or [] = show none; array = show only listed keys */

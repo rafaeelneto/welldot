@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
-import { DrawerRenderConfig } from '~/types/drawer.types';
+import { RendererRenderConfig } from '~/types/render.types';
 
-export const INTERACTIVE_RENDER_CONFIG: DrawerRenderConfig = {
+export const INTERACTIVE_RENDER_CONFIG: RendererRenderConfig = {
   zoom: true,
   pan: true,
   animation: { duration: 600, ease: d3.easeCubic },

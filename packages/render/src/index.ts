@@ -1,15 +1,15 @@
-export { INTERACTIVE_RENDER_CONFIG } from './configs/drawer.configs';
-export { WellDrawer } from './Drawer';
-export { drawWellLegend } from './drawers/legend.drawer';
+export { INTERACTIVE_RENDER_CONFIG } from './configs/render.configs';
+export { WellRenderer } from './Renderer';
+export { drawWellLegend } from './renderers/legend.renderer';
 export type {
   ComponentsClassNames,
   CssVarsConfig,
   DeepPartial,
-  DrawerRenderConfig,
+  RendererRenderConfig,
   LegendRenderConfig,
   SvgInstance,
   TooltipKey,
-} from './types/drawer.types';
+} from './types/render.types';
 export {
   formatDiameter,
   formatLength,
@@ -25,4 +25,4 @@ export {
   getProfileLastItemsDepths,
   numberFormater,
 } from './utils/well.utils';
-// WellDrawerPDF intentionally not exported — pending removal of src_old dependency
+// WellRendererPDF intentionally not exported — pending removal of src_old dependency

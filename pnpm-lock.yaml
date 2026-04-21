@@ -104,9 +104,9 @@ importers:
       '@welldot/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@welldot/drawer':
+      '@welldot/render':
         specifier: workspace:*
-        version: link:../../packages/drawer
+        version: link:../../packages/render
       arraybuffer-loader:
         specifier: ^1.0.8
         version: 1.0.8
@@ -347,7 +347,34 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@20.19.37)(jsdom@23.2.0)(vite@8.0.9(@types/node@20.19.37)(esbuild@0.27.7)(jiti@1.21.7)(sass@1.97.3)(sugarss@5.0.1(postcss@8.5.10))(terser@5.46.0))
 
-  packages/drawer:
+  packages/lint:
+    dependencies:
+      '@eslint/js':
+        specifier: '*'
+        version: 8.57.1
+      '@typescript-eslint/eslint-plugin':
+        specifier: '*'
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: '*'
+        version: 6.21.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      eslint-config-prettier:
+        specifier: '*'
+        version: 9.1.2(eslint@9.39.4(jiti@1.21.7))
+      eslint-plugin-import-x:
+        specifier: '*'
+        version: 4.16.2(@typescript-eslint/utils@8.59.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.39.4(jiti@1.21.7))
+      eslint-plugin-prettier:
+        specifier: '*'
+        version: 5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@9.1.2(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))(prettier@3.8.1)
+      prettier:
+        specifier: ^3.0.0
+        version: 3.8.1
+
+  packages/render:
     dependencies:
       '@welldot/core':
         specifier: workspace:*
@@ -380,33 +407,6 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
-
-  packages/lint:
-    dependencies:
-      '@eslint/js':
-        specifier: '*'
-        version: 8.57.1
-      '@typescript-eslint/eslint-plugin':
-        specifier: '*'
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
-      '@typescript-eslint/parser':
-        specifier: '*'
-        version: 6.21.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
-      eslint:
-        specifier: ^9.0.0
-        version: 9.39.4(jiti@1.21.7)
-      eslint-config-prettier:
-        specifier: '*'
-        version: 9.1.2(eslint@9.39.4(jiti@1.21.7))
-      eslint-plugin-import-x:
-        specifier: '*'
-        version: 4.16.2(@typescript-eslint/utils@8.59.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.39.4(jiti@1.21.7))
-      eslint-plugin-prettier:
-        specifier: '*'
-        version: 5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@9.1.2(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))(prettier@3.8.1)
-      prettier:
-        specifier: ^3.0.0
-        version: 3.8.1
 
 packages:
 

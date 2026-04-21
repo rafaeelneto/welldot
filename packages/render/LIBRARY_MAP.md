@@ -10,7 +10,7 @@ Overview of all drawer/profile functions, their signatures, and dependency chain
 src/lib/
 ├── @types/
 │   ├── well.types.ts          — All domain type definitions
-│   ├── drawer.types.ts        — CssVarsConfig, ComponentsClassNames, DrawerRenderConfig, SvgInstance, TooltipKey
+│   ├── render.types.ts        — CssVarsConfig, ComponentsClassNames, RendererRenderConfig, SvgInstance, TooltipKey
 │   ├── units.types.ts         — Units, LengthUnits, DiameterUnits
 │   └── generic.types.ts       — DeepPartial<T>
 ├── styles/
@@ -19,12 +19,12 @@ src/lib/
 │   ├── well.utils.ts          — Profile data utilities
 │   ├── well.utils.test.ts     — Test suite for well.utils
 │   └── format.utils.ts        — Unit-aware length/diameter formatting helpers
-└── wellDrawer/
-    ├── WellDrawer.ts          — Interactive D3 visualizer
-    ├── WellDrawerPDF.ts       — Paginated PDF visualizer
-    ├── drawer.configs.ts      — Default render config preset (INTERACTIVE_RENDER_CONFIG)
-    ├── drawer.utils.ts        — Shared SVG/drawing helpers
-    └── drawer.textures.ts     — Shared well texture definitions (createWellTextures)
+└── renderers/
+    ├── WellRenderer.ts          — Interactive D3 visualizer
+    ├── WellRendererPDF.ts       — Paginated PDF visualizer
+    ├── render.configs.ts      — Default render config preset (INTERACTIVE_RENDER_CONFIG)
+    ├── render.utils.ts        — Shared SVG/drawing helpers
+    └── render.textures.ts     — Shared well texture definitions (createWellTextures)
 ```
 
 ---
@@ -67,18 +67,18 @@ src/lib/
 
 #### `getProfileLastItemsDepths(profile: Well): number[]`
 Returns the maximum `to` depth from each constructive/geologic section of the profile.  
-**Used by:** `WellDrawer.draw`, `WellDrawerPDF.buildSvgProfiles`, `profile2Export`
+**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`, `profile2Export`
 
 #### `getProfileDiamValues(constructionData: Constructive): number[]`
 Collects all diameter values from bore holes, cases, screens, etc.  
-**Used by:** `WellDrawer.draw`, `WellDrawerPDF.buildSvgProfiles`
+**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
 
 #### `getConstructivePropertySummary<T>(constructionData: any, property: string): T[]`
 Generic extractor — pulls a named property from all items across constructive arrays.
 
 #### `checkIfProfileIsEmpty(profile: any): boolean`
 Returns `true` if the profile has no meaningful data.  
-**Used by:** `WellDrawer.draw`, `profile2Export`
+**Used by:** `WellRenderer.draw`, `profile2Export`
 
 #### `calculateCilindricVolume(diameter: number, height: number): number`
 Volume of a cylinder in m³. Inputs: diameter in mm, height in m.  
@@ -106,7 +106,7 @@ pt-BR locale, 2 decimal places.
 
 ## Format Utilities — `utils/format.utils.ts`
 
-Unit-aware formatters for depth and diameter values. Used by `drawer.utils.ts` (tooltips) and `WellDrawerPDF.ts`.
+Unit-aware formatters for depth and diameter values. Used by `render.utils.ts` (tooltips) and `WellRendererPDF.ts`.
 
 ### Functions
 
@@ -163,15 +163,15 @@ Defines all `--wp-*` CSS custom properties on `:root` and applies them via eleme
 | `--wp-unit-aq-fill`          | `#dff0ff` | aquifer_unit strip fill |
 | `--wp-unit-label-stroke`     | `#303030` | unit strip stroke and text color |
 
-All of these can be overridden at runtime via `DrawerRenderConfig.cssVars` (see below).
+All of these can be overridden at runtime via `RendererRenderConfig.cssVars` (see below).
 
 ---
 
-## Well Textures — `wellDrawer/drawer.textures.ts`
+## Well Textures — `renderers/render.textures.ts`
 
 ### `createWellTextures(): WellTextures`
 
-Factory that returns fresh `textures` library instances for all well-drawing fill patterns. Both drawers call this — `WellDrawer` once at module level, `WellDrawerPDF` once per `drawLog` call (fresh instances per SVG).
+Factory that returns fresh `textures` library instances for all well-drawing fill patterns. Both drawers call this — `WellRenderer` once at module level, `WellRendererPDF` once per `drawLog` call (fresh instances per SVG).
 
 | Key | Description |
 |-----|-------------|
@@ -183,17 +183,17 @@ Factory that returns fresh `textures` library instances for all well-drawing fil
 | `gravel_pack` | Gravel pack fill — circles complement |
 | `well_screen` | Well screen fill — short horizontal dashes |
 
-**Used by:** `WellDrawer.ts`, `WellDrawerPDF.ts`
+**Used by:** `WellRenderer.ts`, `WellRendererPDF.ts`
 
 ---
 
-## Drawing Utilities — `wellDrawer/drawer.utils.ts`
+## Drawing Utilities — `renderers/render.utils.ts`
 
 ### Functions
 
 #### `responsivefy(svg): svg`
 Makes an SVG element responsive to container resizes. Adds a `resize` listener to `window`.  
-**Used by:** `WellDrawer.draw`
+**Used by:** `WellRenderer.draw`
 
 #### `getLithologicalFillList(data: Lithology[]): { [key: string]: Texture }`
 Builds FGDC-based texture objects for lithology fill patterns.  
@@ -203,48 +203,48 @@ Key format: `"${fgdc_texture}.${from}"`.
 #### `getConflictAreas(array1: any[], array2: any[]): { from, to, diameter }[]`
 Finds depth-interval overlaps between two arrays (e.g. well_case vs well_screen).  
 Pure computation — no external dependencies.  
-**Used by:** `WellDrawer.draw`, `WellDrawerPDF.buildSvgProfiles`
+**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
 
 #### `mergeConflicts(conflicts: { from, to, diameter }[], buffer: number): { from, to, diameter }[]`
 Merges adjacent conflict regions, accounting for a buffer distance.  
 Pure computation.  
-**Used by:** `WellDrawer.draw`, `WellDrawerPDF.buildSvgProfiles`
+**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
 
 #### `getYAxisFunctions(yScale: d3.ScaleLinear, clamp?: boolean): { getHeight, getYPos }`
 Returns accessor functions that convert depth values to SVG y-coordinates. Optional `clamp` flag clamps outputs to the scale domain.  
 **Depends on:** D3 scale object  
-**Used by:** `WellDrawer.draw`, `WellDrawerPDF.buildSvgProfiles`
+**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
 
 #### `getLithologyFill(geologyData: Lithology[], svg): (d: Lithology) => string`
 Higher-order function — registers textures with the SVG and returns a fill accessor.  
 **Depends on:** `getLithologicalFillList`  
-**Used by:** `WellDrawer` (geology rendering)
+**Used by:** `WellRenderer` (geology rendering)
 
 #### `wavyContact(xLeft, xRight, baseY, amp, steps, rng): [number, number][]`
 Generates a wavy geological contact line using a damped random walk.  
 **Depends on:** caller-supplied seeded PRNG (`rng`)  
-**Used by:** `WellDrawer` and `WellDrawerPDF` (cave rendering)
+**Used by:** `WellRenderer` and `WellRendererPDF` (cave rendering)
 
 #### `ptsToSmoothPath(pts: [number, number][]): string`
 Converts a point array to an SVG path `d` string via Catmull-Rom cubic Bézier.  
-**Used by:** `WellDrawer` and `WellDrawerPDF` (cave/contact rendering)
+**Used by:** `WellRenderer` and `WellRendererPDF` (cave/contact rendering)
 
 #### `makeCavePrng(seed: number): () => number`
 Creates a seeded LCG PRNG. Ensures cave shapes are identical across zoom levels and redraws.  
-**Used by:** `WellDrawer.draw`, `WellDrawerPDF.buildSvgProfiles`
+**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
 
 #### `populateTooltips(svg, customClasses: ComponentsClassNames, units: Units, tooltipConfig?: TooltipKey[] | false): tooltip map`
 Registers `d3-tip` tooltips on all drawn elements. `tooltipConfig` controls which tooltip types are active; `false` disables all tooltips.  
 **Depends on:** `d3-tip`, `formatLength`, `formatDiameter` from `format.utils`  
-**Used by:** `WellDrawer.draw`
+**Used by:** `WellRenderer.draw`
 
 ---
 
-## Render Config Preset — `wellDrawer/drawer.configs.ts`
+## Render Config Preset — `renderers/render.configs.ts`
 
-### `INTERACTIVE_RENDER_CONFIG: DrawerRenderConfig`
+### `INTERACTIVE_RENDER_CONFIG: RendererRenderConfig`
 
-Complete `DrawerRenderConfig` preset used as the default configuration for `WellDrawer`. Includes all geometry, animation, label, and interaction settings pre-tuned for the interactive SVG viewer.
+Complete `RendererRenderConfig` preset used as the default configuration for `WellRenderer`. Includes all geometry, animation, label, and interaction settings pre-tuned for the interactive SVG viewer.
 
 Key values:
 
@@ -263,11 +263,11 @@ Key values:
 
 Fracture, construction, and label sub-objects are also fully populated.
 
-**Used by:** `WellDrawer.ts` (as the merged base config)
+**Used by:** `WellRenderer.ts` (as the merged base config)
 
 ---
 
-## Shared Types — `@types/drawer.types.ts`
+## Shared Types — `@types/render.types.ts`
 
 ### `TooltipKey`
 
@@ -279,7 +279,7 @@ Union type controlling which tooltip categories are active:
 
 ### `CssVarsConfig`
 
-All-optional map of CSS custom property overrides. Each key corresponds to a `--wp-*` variable. When passed as `renderConfig.cssVars`, `WellDrawer` applies them inline on the SVG element via `CSS_VAR_MAP`, overriding the `:root` defaults from `main.css`.
+All-optional map of CSS custom property overrides. Each key corresponds to a `--wp-*` variable. When passed as `renderConfig.cssVars`, `WellRenderer` applies them inline on the SVG element via `CSS_VAR_MAP`, overriding the `:root` defaults from `main.css`.
 
 ```
 // Strokes & fills
@@ -298,7 +298,7 @@ wellCaseStrokeWidth, wellScreenStrokeWidth, conflictStrokeWidth
 
 ### `ComponentsClassNames`
 
-Nested semantic class-name map. Every drawn element has a named slot. Passed to `WellDrawer` constructor and to `populateTooltips`.
+Nested semantic class-name map. Every drawn element has a named slot. Passed to `WellRenderer` constructor and to `populateTooltips`.
 
 ```
 tooltip       → { root, title, primaryInfo, secondaryInfo }
@@ -335,7 +335,7 @@ labels        → { lithology: { group, depth, label, divider } }
 | `caves.contact` | Top and bottom contact stroke `<path>` elements |
 | `labels.lithology.*` | Text label elements for depth ticks and description text |
 
-### `DrawerRenderConfig`
+### `RendererRenderConfig`
 
 Controls interaction, layout, animation, labels, and geometry parameters. Visual styling (colors, stroke widths, opacities) is handled by CSS via `main.css` and can be overridden per-instance via `cssVars`.
 
@@ -392,7 +392,7 @@ Recursively makes all properties optional. Used by `classNames` and `renderConfi
 
 ---
 
-## Interactive Visualizer — `wellDrawer/WellDrawer.ts`
+## Interactive Visualizer — `renderers/WellRenderer.ts`
 
 ### Module-level internals
 
@@ -404,9 +404,9 @@ The following are **private** module-level constants (not exported):
 | `CSS_VAR_MAP` | Maps each `CssVarsConfig` key to its `--wp-*` CSS variable name |
 | `DEFAULTS_TEXTURES` | Shared `WellTextures` instance created once at module load |
 
-The default render config is imported as `INTERACTIVE_RENDER_CONFIG` from `drawer.configs.ts`.
+The default render config is imported as `INTERACTIVE_RENDER_CONFIG` from `render.configs.ts`.
 
-### `class WellDrawer`
+### `class WellRenderer`
 
 ```typescript
 constructor(
@@ -414,14 +414,14 @@ constructor(
   options?: {
     classNames?:   DeepPartial<ComponentsClassNames>;
     units?:        Units;
-    renderConfig?: DeepPartial<DrawerRenderConfig>;
+    renderConfig?: DeepPartial<RendererRenderConfig>;
   }
 )
 ```
 
 All options are deep-merged with their defaults via `defu`. `renderConfig.cssVars`, when provided, is applied as inline SVG styles during `prepareSvg`, overriding the `:root` CSS defaults.
 
-**Export:** default export as `{ WellDrawer }`.
+**Export:** default export as `{ WellRenderer }`.
 
 #### Public Properties
 
@@ -454,17 +454,17 @@ All options are deep-merged with their defaults via `defu`. `renderConfig.cssVar
 |-----------|--------------|
 | `d3`, `d3-tip` | SVG rendering, scales, zoom, tooltips |
 | `defu` | Deep-merge for `classNames`, `units`, `renderConfig` options |
-| `drawer.types` | `CssVarsConfig`, `ComponentsClassNames`, `DrawerRenderConfig`, `SvgInstance`, `TooltipKey` |
+| `drawer.types` | `CssVarsConfig`, `ComponentsClassNames`, `RendererRenderConfig`, `SvgInstance`, `TooltipKey` |
 | `generic.types` | `DeepPartial<T>` |
 | `well.types` | All domain type definitions |
 | `well.utils` | `checkIfProfileIsEmpty`, `getProfileDiamValues`, `getProfileLastItemsDepths` |
-| `drawer.configs` | `INTERACTIVE_RENDER_CONFIG` |
-| `drawer.utils` | `responsivefy`, `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `getLithologyFill`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng`, `populateTooltips` |
-| `drawer.textures` | `createWellTextures` |
+| `render.configs` | `INTERACTIVE_RENDER_CONFIG` |
+| `render.utils` | `responsivefy`, `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `getLithologyFill`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng`, `populateTooltips` |
+| `render.textures` | `createWellTextures` |
 
 ---
 
-## PDF Visualizer — `wellDrawer/WellDrawerPDF.ts`
+## PDF Visualizer — `renderers/WellRendererPDF.ts`
 
 ### `A4_SVG_HEIGHT: number`
 `480 * 1.33` ≈ 638.4 px — height of a single A4 page SVG.
@@ -513,8 +513,8 @@ Creates one or more `<svg>` elements inside `#svgDraftContainer`, each represent
 | `well.types` | All type definitions |
 | `well.utils` | `getProfileLastItemsDepths`, `getProfileDiamValues` |
 | `format.utils` | `formatLength`, `formatDiameter` |
-| `drawer.utils` | `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng` |
-| `drawer.textures` | `createWellTextures` |
+| `render.utils` | `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng` |
+| `render.textures` | `createWellTextures` |
 | `src_old/utils/wrap` | SVG text wrapping |
 | `src_old/utils/fgdcTextures` | Geological texture patterns |
 | `src_old/utils/profileD3.utils` | Legacy D3 utilities |
@@ -525,30 +525,30 @@ Creates one or more `<svg>` elements inside `#svgDraftContainer`, each represent
 ## Dependency Graph
 
 ```
-WellDrawer.ts
+WellRenderer.ts
   ├── d3, d3-tip, defu
   ├── @types/well.types
-  ├── @types/drawer.types  (CssVarsConfig, ComponentsClassNames, DrawerRenderConfig, SvgInstance, TooltipKey)
+  ├── @types/drawer.types  (CssVarsConfig, ComponentsClassNames, RendererRenderConfig, SvgInstance, TooltipKey)
   ├── @types/generic.types (DeepPartial)
   ├── @types/units.types
   ├── utils/well.utils
   │     └── @types/well.types
   │     └── data/profile.data (getEmptyProfile)
-  ├── wellDrawer/drawer.configs  (INTERACTIVE_RENDER_CONFIG)
-  ├── wellDrawer/drawer.utils
+  ├── renderers/render.configs  (INTERACTIVE_RENDER_CONFIG)
+  ├── renderers/render.utils
   │     ├── d3, textures
   │     ├── @types/well.types
   │     ├── utils/format.utils
   │     └── src_old/utils/fgdcTextures
-  └── wellDrawer/drawer.textures  (createWellTextures)
+  └── renderers/render.textures  (createWellTextures)
 
-WellDrawerPDF.ts
+WellRendererPDF.ts
   ├── d3, textures
   ├── @types/well.types
   ├── utils/well.utils
   ├── utils/format.utils
-  ├── wellDrawer/drawer.utils
-  ├── wellDrawer/drawer.textures  (createWellTextures)
+  ├── renderers/render.utils
+  ├── renderers/render.textures  (createWellTextures)
   ├── src_old/utils/wrap
   ├── src_old/utils/fgdcTextures
   ├── src_old/utils/profileD3.utils
@@ -558,7 +558,7 @@ views/PDFExport/pdfGenerate.tsx
   ├── pdfmake, date-fns
   ├── @types/well.types
   ├── utils/well.utils  (calculateHoleFillVolume, numberFormater)
-  ├── wellDrawer/WellDrawerPDF  (buildSvgProfiles, A4_SVG_HEIGHT)
+  ├── renderers/WellRendererPDF  (buildSvgProfiles, A4_SVG_HEIGHT)
   ├── utils/coords.utils  (formatCoord)
   └── store/ui.store
 
@@ -586,15 +586,15 @@ views/PDFExport/profile2Export.component.ts
 | `formatDiameter` | format.utils | `(mm: number, units: DiameterUnits)` | `string` |
 | `getLengthUnit` | format.utils | `(units: LengthUnits)` | `string` |
 | `getDiameterUnit` | format.utils | `(units: DiameterUnits)` | `string` |
-| `responsivefy` | drawer.utils | `(svg)` | `svg` |
-| `getLithologicalFillList` | drawer.utils | `(data: Lithology[])` | `{ [key]: Texture }` |
-| `getConflictAreas` | drawer.utils | `(array1, array2)` | `Conflict[]` |
-| `mergeConflicts` | drawer.utils | `(conflicts, buffer)` | `Conflict[]` |
-| `getYAxisFunctions` | drawer.utils | `(yScale, clamp?)` | `{ getHeight, getYPos }` |
-| `getLithologyFill` | drawer.utils | `(geologyData, svg)` | `(d: Lithology) => string` |
-| `wavyContact` | drawer.utils | `(xL, xR, y, amp, steps, rng)` | `[number, number][]` |
-| `ptsToSmoothPath` | drawer.utils | `(pts: [number, number][])` | `string` (SVG path `d`) |
-| `makeCavePrng` | drawer.utils | `(seed: number)` | `() => number` |
-| `populateTooltips` | drawer.utils | `(svg, classes, units, tooltipConfig?)` | tooltip map |
-| `WellDrawer.draw` | WellDrawer | `(profile, options?: { units? })` | `void` |
-| `buildSvgProfiles` | WellDrawerPDF | `(props)` | `SvgInfo[]` |
+| `responsivefy` | render.utils | `(svg)` | `svg` |
+| `getLithologicalFillList` | render.utils | `(data: Lithology[])` | `{ [key]: Texture }` |
+| `getConflictAreas` | render.utils | `(array1, array2)` | `Conflict[]` |
+| `mergeConflicts` | render.utils | `(conflicts, buffer)` | `Conflict[]` |
+| `getYAxisFunctions` | render.utils | `(yScale, clamp?)` | `{ getHeight, getYPos }` |
+| `getLithologyFill` | render.utils | `(geologyData, svg)` | `(d: Lithology) => string` |
+| `wavyContact` | render.utils | `(xL, xR, y, amp, steps, rng)` | `[number, number][]` |
+| `ptsToSmoothPath` | render.utils | `(pts: [number, number][])` | `string` (SVG path `d`) |
+| `makeCavePrng` | render.utils | `(seed: number)` | `() => number` |
+| `populateTooltips` | render.utils | `(svg, classes, units, tooltipConfig?)` | tooltip map |
+| `WellRenderer.draw` | WellRenderer | `(profile, options?: { units? })` | `void` |
+| `buildSvgProfiles` | WellRendererPDF | `(props)` | `SvgInfo[]` |
