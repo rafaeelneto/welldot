@@ -20,14 +20,14 @@
     "email": "rafaelneto.g@gmail.com"
   },
   "license": "Apache-2.0",
-  "homepage": "https://github.com/rafaeelneto/well-profiler#readme",
+  "homepage": "https://github.com/rafaeelneto/welldot#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rafaeelneto/well-profiler.git",
+    "url": "git+https://github.com/rafaeelneto/welldot.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/rafaeelneto/well-profiler/issues"
+    "url": "https://github.com/rafaeelneto/welldot/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -36,14 +36,14 @@
   "engines": {
     "node": ">=18"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": ["dist", "README.md", "LICENSE", "well-specifications.md"],
