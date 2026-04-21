@@ -1,23 +1,28 @@
-export { WellDrawer } from './wellDrawer/WellDrawer';
-export { drawWellLegend } from './wellDrawer/drawer.legend';
+export { INTERACTIVE_RENDER_CONFIG } from './configs/drawer.configs';
+export { WellDrawer } from './Drawer';
+export { drawWellLegend } from './drawers/legend.drawer';
 export type {
-  DrawerRenderConfig,
+  ComponentsClassNames,
   CssVarsConfig,
+  DeepPartial,
+  DrawerRenderConfig,
   LegendRenderConfig,
   SvgInstance,
-  ComponentsClassNames,
   TooltipKey,
-  DeepPartial,
 } from './types/drawer.types';
-export { INTERACTIVE_RENDER_CONFIG } from './wellDrawer/drawer.configs';
-export { formatLength, formatDiameter, getLengthUnit, getDiameterUnit } from './utils/format.utils';
 export {
-  getProfileLastItemsDepths,
-  getProfileDiamValues,
-  getConstructivePropertySummary,
-  checkIfProfileIsEmpty,
-  numberFormater,
+  formatDiameter,
+  formatLength,
+  getDiameterUnit,
+  getLengthUnit,
+} from './utils/format.utils';
+export {
   calculateCilindricVolume,
   calculateHoleFillVolume,
+  checkIfProfileIsEmpty,
+  getConstructivePropertySummary,
+  getProfileDiamValues,
+  getProfileLastItemsDepths,
+  numberFormater,
 } from './utils/well.utils';
 // WellDrawerPDF intentionally not exported — pending removal of src_old dependency

@@ -3,8 +3,8 @@ import { defu } from 'defu';
 
 import { Well } from '@well/spec';
 import { CssVarsConfig, LegendRenderConfig } from '~/types/drawer.types';
-import { INTERACTIVE_RENDER_CONFIG } from './drawer.configs';
-import { createWellTextures } from './drawer.textures';
+import { INTERACTIVE_RENDER_CONFIG } from '../configs/drawer.configs';
+import { createWellTextures } from '../configs/drawer.textures';
 
 const d3 = { ...d3module };
 

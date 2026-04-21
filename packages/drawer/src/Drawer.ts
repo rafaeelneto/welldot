@@ -1,7 +1,7 @@
 import * as d3module from 'd3';
 import 'd3-tip';
 import { defu } from 'defu';
-import { createWellTextures } from './drawer.textures';
+import { createWellTextures } from './configs/drawer.textures';
 
 import {
   BoreHole,
@@ -34,7 +34,7 @@ import {
   getProfileDiamValues,
   getProfileLastItemsDepths,
 } from '~/utils/well.utils';
-import { INTERACTIVE_RENDER_CONFIG } from './drawer.configs';
+import { INTERACTIVE_RENDER_CONFIG } from './configs/drawer.configs';
 import {
   getConflictAreas,
   getLithologyFill,
@@ -44,7 +44,7 @@ import {
   populateTooltips,
   ptsToSmoothPath,
   wavyContact,
-} from './drawer.utils';
+} from './utils/drawer.utils';
 
 const d3 = {
   ...d3module,
