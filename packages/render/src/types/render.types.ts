@@ -1,6 +1,21 @@
+import { type BaseType, type Selection } from 'd3';
+
 export type DeepPartial<T> = T extends object
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : T;
+
+export type Conflict = { from: number; to: number; diameter: number };
+
+export type SvgSelection = Selection<BaseType, unknown, HTMLElement, unknown>;
+
+export type InstanceState = {
+  svg: SvgSelection;
+  height: number;
+  width: number;
+  margins: { left: number; right: number; top: number; bottom: number };
+  clipId: string;
+  clipRectId: string;
+};
 
 export type CssVarsConfig = {
   // Strokes & fills

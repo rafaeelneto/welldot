@@ -22,7 +22,7 @@ import {
 import {
   getProfileDiamValues,
   getProfileLastItemsDepths,
-} from '~/utils/well.utils';
+} from '@welldot/utils';
 
 // TODO: remove (src_old ref) // import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 

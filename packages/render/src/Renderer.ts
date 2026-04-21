@@ -1,28 +1,36 @@
-import * as d3module from 'd3';
+import * as d3 from 'd3';
 import 'd3-tip';
 import { defu } from 'defu';
 import { createWellTextures } from './configs/render.textures';
 
 import {
-  BoreHole,
-  Cave,
-  CementPad,
-  Constructive,
-  Fracture,
-  HoleFill,
-  Lithology,
-  SurfaceCase,
-  Units,
-  Well,
-  WellCase,
-  WellScreen,
+  isWellEmpty,
+  type BoreHole,
+  type Cave,
+  type CementPad,
+  type Constructive,
+  type Fracture,
+  type HoleFill,
+  type Lithology,
+  type SurfaceCase,
+  type Units,
+  type Well,
+  type WellCase,
+  type WellScreen,
 } from '@welldot/core';
 import {
+  getProfileDiamValues,
+  getProfileLastItemsDepths,
+} from '@welldot/utils';
+import {
   ComponentsClassNames,
+  Conflict,
   CssVarsConfig,
   DeepPartial,
+  InstanceState,
   RendererRenderConfig,
   SvgInstance,
+  SvgSelection,
 } from '~/types/render.types';
 import {
   formatDiameter,
@@ -30,11 +38,10 @@ import {
   getLengthUnit,
 } from '~/utils/format.utils';
 import {
-  checkIfProfileIsEmpty,
-  getProfileDiamValues,
-  getProfileLastItemsDepths,
-} from '~/utils/well.utils';
-import { INTERACTIVE_RENDER_CONFIG } from './configs/render.configs';
+  CSS_VAR_MAP,
+  DEFAULT_COMPONENTS_CLASS_NAMES,
+  INTERACTIVE_RENDER_CONFIG,
+} from './configs/render.configs';
 import {
   getConflictAreas,
   getLithologyFill,
@@ -46,135 +53,10 @@ import {
   wavyContact,
 } from './utils/render.utils';
 
-const d3 = {
-  ...d3module,
-};
-
-type Conflict = { from: number; to: number; diameter: number };
-
-type InstanceState = {
-  svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
-  height: number;
-  width: number;
-  margins: { left: number; right: number; top: number; bottom: number };
-  clipId: string;
-  clipRectId: string;
-};
-
-const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
-  tooltip: {
-    root: 'tooltip',
-    title: 'title',
-    primaryInfo: 'primaryInfo',
-    secondaryInfo: 'secondaryInfo',
-  },
-  yAxis: 'yAxis',
-  wellGroup: 'well-group',
-  geologicGroup: 'geologic-group',
-  lithology: {
-    group: 'lithology-group',
-    rect: 'lithology-rect',
-  },
-  fractures: {
-    group: 'fractures-group',
-    item: 'fracture-group',
-    hitArea: 'fracture-hit',
-    line: 'fracture-line',
-    polyline: 'fracture-poly',
-  },
-  caves: {
-    group: 'caves-group',
-    item: 'cave-group',
-    fill: 'cave-fill',
-    contact: 'cave-contact',
-  },
-  constructionGroup: 'construction-group',
-  constructionLabels: {
-    group: 'construction-labels-group',
-  },
-  cementPad: {
-    group: 'cement-pad',
-    item: 'cement-pad-rect',
-  },
-  boreHole: {
-    group: 'hole',
-    rect: 'bore-hole-rect',
-  },
-  surfaceCase: {
-    group: 'surface-case',
-    rect: 'surface-case-rect',
-  },
-  holeFill: {
-    group: 'hole-fill',
-    rect: 'hole-fill-rect',
-  },
-  wellCase: {
-    group: 'well-case',
-    rect: 'well-case-rect',
-  },
-  wellScreen: {
-    group: 'well-screen',
-    rect: 'well-screen-rect',
-  },
-  conflict: {
-    group: 'conflict',
-    rect: 'conflict-rect',
-  },
-  unitLabels: {
-    group: 'unit-labels-group',
-    geoRect: 'unit-geo-rect',
-    aqRect: 'unit-aq-rect',
-    text: 'unit-label-text',
-  },
-  labels: {
-    lithology: {
-      group: 'lithology-labels-group',
-      depth: 'lithology-depth-tip',
-      label: 'lithology-label',
-      divider: 'lithology-label-divider',
-    },
-  },
-};
-
-const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {
-  lithologyStroke: '--wp-lithology-stroke',
-  caveDryStroke: '--wp-cave-dry-stroke',
-  caveWetStroke: '--wp-cave-wet-stroke',
-  fractureDryStroke: '--wp-fracture-dry-stroke',
-  fractureWetStroke: '--wp-fracture-wet-stroke',
-  cementPadStroke: '--wp-cement-pad-stroke',
-  boreHoleFill: '--wp-bore-hole-fill',
-  boreHoleStroke: '--wp-bore-hole-stroke',
-  surfaceCaseFill: '--wp-surface-case-fill',
-  holeFillStroke: '--wp-hole-fill-stroke',
-  wellCaseFill: '--wp-well-case-fill',
-  wellCaseStroke: '--wp-well-case-stroke',
-  wellScreenStroke: '--wp-well-screen-stroke',
-  conflictStroke: '--wp-conflict-stroke',
-  lithologyStrokeWidth: '--wp-lithology-stroke-width',
-  caveFillOpacity: '--wp-cave-fill-opacity',
-  caveContactStrokeWidth: '--wp-cave-contact-stroke-width',
-  cementPadStrokeWidth: '--wp-cement-pad-stroke-width',
-  boreHoleOpacity: '--wp-bore-hole-opacity',
-  boreHoleStrokeWidth: '--wp-bore-hole-stroke-width',
-  surfaceCaseStrokeWidth: '--wp-surface-case-stroke-width',
-  holeFillStrokeWidth: '--wp-hole-fill-stroke-width',
-  wellCaseStrokeWidth: '--wp-well-case-stroke-width',
-  wellScreenStrokeWidth: '--wp-well-screen-stroke-width',
-  conflictStrokeWidth: '--wp-conflict-stroke-width',
-  unitLabelGeologicFill: '--wp-unit-geo-fill',
-  unitLabelAquiferFill: '--wp-unit-aq-fill',
-  unitLabelStroke: '--wp-unit-label-stroke',
-};
-
 const DEFAULTS_TEXTURES = createWellTextures();
 export class WellRenderer {
   private svgInstances: SvgInstance[] = [];
   private instanceStates: InstanceState[] = [];
-  private svgWidth!: number;
-  private svgHeight!: number;
-  private pocoWidth!: number;
-  private pocoCenter!: number;
 
   classes = DEFAULT_COMPONENTS_CLASS_NAMES;
   private renderConfig: RendererRenderConfig = INTERACTIVE_RENDER_CONFIG;
@@ -182,10 +64,6 @@ export class WellRenderer {
     length: 'm',
     diameter: 'mm',
   };
-
-  get WIDTH(): number {
-    return this.instanceStates[0]?.width ?? 0;
-  }
 
   constructor(
     svgs: SvgInstance[],
@@ -227,12 +105,7 @@ export class WellRenderer {
     const svgWidth = width + margins.left + margins.right;
     const svgHeight = height + margins.top + margins.bottom;
 
-    const svg = d3.select(selector) as d3module.Selection<
-      d3module.BaseType,
-      unknown,
-      HTMLElement,
-      any
-    >;
+    const svg = d3.select(selector) as SvgSelection;
     svg.selectAll('*').remove();
 
     svg.attr('height', svgHeight).attr('width', svgWidth);
@@ -306,16 +179,10 @@ export class WellRenderer {
     this.instanceStates = this.svgInstances.map((inst, i) =>
       this.initInstanceSvg(inst, i),
     );
-    const { height, width, margins } = this.instanceStates[0];
-    this.svgWidth = width + margins.left + margins.right;
-    this.svgHeight = height + margins.top + margins.bottom;
-    const { pocoWidthRatio, pocoCenterRatio } = this.renderConfig.layout;
-    this.pocoWidth = this.svgWidth * pocoWidthRatio;
-    this.pocoCenter = this.svgWidth * pocoCenterRatio;
   }
 
   draw(profile: Well, options: { units?: Units } = {}) {
-    if (checkIfProfileIsEmpty(profile)) return;
+    if (isWellEmpty(profile)) return;
     this.units = { ...this.units, ...options.units };
 
     const maxValues = getProfileLastItemsDepths(profile);
@@ -370,10 +237,11 @@ export class WellRenderer {
       `.${this.classes.constructionLabels.group}`,
     );
 
-    const svgWidth = this.svgWidth;
-    const svgHeight = this.svgHeight;
-    const POCO_WIDTH = this.pocoWidth;
-    const POCO_CENTER = this.pocoCenter;
+    const svgWidth = state.width + state.margins.left + state.margins.right;
+    const svgHeight = state.height + state.margins.top + state.margins.bottom;
+    const { pocoWidthRatio, pocoCenterRatio } = this.renderConfig.layout;
+    const POCO_WIDTH = svgWidth * pocoWidthRatio;
+    const POCO_CENTER = svgWidth * pocoCenterRatio;
 
     const { duration, ease } = this.renderConfig.animation;
     const transition = d3.transition().duration(duration).ease(ease);
@@ -392,7 +260,7 @@ export class WellRenderer {
     const { xLeft: geoXLeft, xRightInset: geoXRightInset } =
       this.renderConfig.geologic;
     const geoXRight = svgWidth - geoXRightInset;
-    const pocoCenterX = this.WIDTH / 2 + POCO_CENTER / 2;
+    const pocoCenterX = state.width / 2 + POCO_CENTER / 2;
 
     const drawLithology = async (data: Lithology[], yScale) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale, {
@@ -431,7 +299,7 @@ export class WellRenderer {
 
     const drawUnitLabels = (
       data: Lithology[],
-      yScale: d3module.ScaleLinear<number, number>,
+      yScale: d3.ScaleLinear<number, number>,
     ) => {
       const unitLabelsGroup = svg.select(`.${this.classes.unitLabels.group}`);
       unitLabelsGroup.selectAll('*').remove();
@@ -835,7 +703,7 @@ export class WellRenderer {
     const drawConstructionLabels = (
       data: { well_case: WellCase[]; well_screen: WellScreen[] },
       fullData: Constructive,
-      yScale: d3module.ScaleLinear<number, number>,
+      yScale: d3.ScaleLinear<number, number>,
     ) => {
       constructionLabelsGroup.selectAll('*').remove();
 
@@ -958,7 +826,7 @@ export class WellRenderer {
       lithologyData: Lithology[],
       fractureData: Fracture[],
       caveData: Cave[],
-      yScale: d3module.ScaleLinear<number, number>,
+      yScale: d3.ScaleLinear<number, number>,
     ) => {
       const active = activeLabelsSet(this.renderConfig.labels.active);
       const show = lithologySubSet(this.renderConfig.labels.lithology);
@@ -1072,11 +940,7 @@ export class WellRenderer {
             .attr(
               'd',
               `M ${item.originX},${item.originY} L ${geoXRight + 3},${item.originY} L ${labelX},${yLabel}`,
-            )
-            .attr('fill', 'none')
-            .attr('stroke', '#888888')
-            .attr('stroke-width', 0.5)
-            .attr('stroke-dasharray', '2,2');
+            );
         });
       }
 

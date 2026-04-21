@@ -29,6 +29,10 @@
   --wp-unit-geo-fill:     #f0f0f0;
   --wp-unit-aq-fill:      #dff0ff;
   --wp-unit-label-stroke: #303030;
+
+  --wp-label-divider-stroke:           #888888;
+  --wp-label-divider-stroke-width:     0.5px;
+  --wp-label-divider-stroke-dasharray: 2,2;
 }
 
 .well-group .lithology-rect    { stroke: var(--wp-lithology-stroke); stroke-width: var(--wp-lithology-stroke-width); }
@@ -57,6 +61,13 @@
 .well-group .unit-aq-rect  { fill: var(--wp-unit-aq-fill); }
 .well-group .unit-label-text { fill: var(--wp-unit-label-stroke); font-family: sans-serif; }
 .well-group .unit-divider-line { stroke: var(--wp-unit-label-stroke); fill: none; }
+
+.well-group .lithology-label-divider {
+  fill:             none;
+  stroke:           var(--wp-label-divider-stroke, #888888);
+  stroke-width:     var(--wp-label-divider-stroke-width, 0.5px);
+  stroke-dasharray: var(--wp-label-divider-stroke-dasharray, 2,2);
+}
 
 /* ── Lithology label foreignObject HTML elements ─────────────────────────── */
 .wp-lithology-depth-tip {

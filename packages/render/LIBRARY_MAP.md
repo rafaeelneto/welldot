@@ -1,134 +1,446 @@
-# Well Profiler – Library Map
+# Well Profiler – Render Package Library Map
 
-Overview of all drawer/profile functions, their signatures, and dependency chains under `src/lib/`.
+Overview of all exported symbols, their signatures, and dependency chains under `src/`.
 
 ---
 
 ## File Structure
 
 ```
-src/lib/
-├── @types/
-│   ├── well.types.ts          — All domain type definitions
-│   ├── render.types.ts        — CssVarsConfig, ComponentsClassNames, RendererRenderConfig, SvgInstance, TooltipKey
-│   ├── units.types.ts         — Units, LengthUnits, DiameterUnits
-│   └── generic.types.ts       — DeepPartial<T>
-├── styles/
-│   └── main.css               — CSS custom properties (--wp-*) and element rules
+src/
+├── index.ts                   — Public exports (re-exports utils from @welldot/utils)
+├── Renderer.ts                — Interactive D3 visualizer (WellRenderer class)
+├── configs/
+│   ├── render.configs.ts      — INTERACTIVE_RENDER_CONFIG, DEFAULT_COMPONENTS_CLASS_NAMES, CSS_VAR_MAP
+│   └── render.textures.ts     — WellTextures type + createWellTextures factory
+├── types/
+│   └── render.types.ts        — All render-specific type definitions
+├── renderers/
+│   ├── legend.renderer.ts     — drawWellLegend: horizontal legend for fractures & caves
+│   └── WellRendererPDF.ts     — Paginated PDF visualizer (not exported; pending src_old removal)
 ├── utils/
-│   ├── well.utils.ts          — Profile data utilities
-│   ├── well.utils.test.ts     — Test suite for well.utils
-│   └── format.utils.ts        — Unit-aware length/diameter formatting helpers
-└── renderers/
-    ├── WellRenderer.ts          — Interactive D3 visualizer
-    ├── WellRendererPDF.ts       — Paginated PDF visualizer
-    ├── render.configs.ts      — Default render config preset (INTERACTIVE_RENDER_CONFIG)
-    ├── render.utils.ts        — Shared SVG/drawing helpers
-    └── render.textures.ts     — Shared well texture definitions (createWellTextures)
+│   ├── render.utils.ts        — Shared SVG/drawing helpers
+│   ├── format.utils.ts        — Unit-aware length/diameter formatting
+│   └── fgdcTextures.ts        — FGDC texture code lists (FGDC_TEXTURES_LIST, FGDC_TEXTURES_OPTIONS)
+└── styles/
+    └── main.css               — CSS custom properties (--wp-*) and element rules
 ```
 
 ---
 
-## Types — `@types/well.types.ts`
+## Public API — `index.ts`
 
-### Constructive (physical well structure)
+### Re-exported from `@welldot/utils`
 
-| Type | Key Fields |
-|------|-----------|
-| `BoreHole` | `from, to, diameter, drilling_method?` |
-| `WellCase` | `from, to, type, diameter` |
-| `Reduction` | `from, to, diam_from, diam_to, type` |
-| `WellScreen` | `from, to, type, diameter, screen_slot_mm` |
-| `HoleFill` | `from, to, type ('gravel_pack' \| 'seal'), diameter, description` |
-| `SurfaceCase` | `from, to, diameter` |
-| `CementPad` | `type, width, thickness, length` |
-| `Constructive` | Container: `bore_hole[], well_case[], reduction[], well_screen[], surface_case[], hole_fill[], cement_pad` |
+| Symbol | Description |
+|--------|-------------|
+| `getProfileLastItemsDepths` | Max `to` depth per constructive/geologic section |
+| `getProfileDiamValues` | All diameter values from a `Constructive` |
+| `getConstructivePropertySummary` | Generic named-property extractor across constructive arrays |
+| `checkIfProfileIsEmpty` | Returns `true` if the profile has no meaningful data |
+| `calculateCilindricVolume` | Cylinder volume in m³ (diameter mm, height m) |
+| `calculateHoleFillVolume` | Fill volume for a type, subtracting casing/screen overlap |
+| `numberFormater` | `Intl.NumberFormat` — pt-BR, 2 decimal places |
 
-### Geologic
+### Exported from this package
 
-| Type | Key Fields |
-|------|-----------|
-| `Lithology` | `from, to, description, color, fgdc_texture, geologic_unit, aquifer_unit` |
-| `Fracture` | `depth, water_intake, description, swarm, azimuth, dip` |
-| `Cave` | `from, to, water_intake, description` |
-| `Geologic` | Container: `lithology[], fractures[], caves[]` |
+| Symbol | Source | Description |
+|--------|--------|-------------|
+| `WellRenderer` | `Renderer.ts` | Interactive SVG renderer class |
+| `drawWellLegend` | `renderers/legend.renderer.ts` | Renders a horizontal fracture/cave legend into an SVG |
+| `INTERACTIVE_RENDER_CONFIG` | `configs/render.configs.ts` | Default `RendererRenderConfig` preset |
+| `formatLength` | `utils/format.utils.ts` | Depth value → unit-aware string |
+| `formatDiameter` | `utils/format.utils.ts` | Diameter value → unit-aware string |
+| `getLengthUnit` | `utils/format.utils.ts` | Label string for a `LengthUnits` value |
+| `getDiameterUnit` | `utils/format.utils.ts` | Label string for a `DiameterUnits` value |
 
-### Root
+### Exported Types
 
 | Type | Description |
 |------|-------------|
-| `Well` | Full profile: combines `Constructive` + `Geologic` + metadata fields (`name`, `lat`, `lng`, `elevation`, etc.) |
+| `ComponentsClassNames` | Full CSS class-name map for every SVG element |
+| `CssVarsConfig` | Runtime CSS variable overrides |
+| `DeepPartial<T>` | Recursive partial utility |
+| `LegendRenderConfig` | Config shape for the legend renderer |
+| `RendererRenderConfig` | Master renderer configuration |
+| `SvgInstance` | Input descriptor `{ selector, height, width, margins }` |
+| `TooltipKey` | Union of tooltip category strings |
+
+> **Note:** `WellRendererPDF` is intentionally not exported — it depends on `src_old` legacy code pending removal.
 
 ---
 
-## Utilities — `utils/well.utils.ts`
+## Types — `types/render.types.ts`
 
-### Functions
+### `DeepPartial<T>`
+Recursively makes all properties optional. Used for `classNames` and `renderConfig` constructor options.
 
-#### `getProfileLastItemsDepths(profile: Well): number[]`
-Returns the maximum `to` depth from each constructive/geologic section of the profile.  
-**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`, `profile2Export`
+---
 
-#### `getProfileDiamValues(constructionData: Constructive): number[]`
-Collects all diameter values from bore holes, cases, screens, etc.  
-**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
+### `Conflict`
+```typescript
+{ from: number; to: number; diameter: number }
+```
+Represents a depth-interval overlap between two construction element arrays.
 
-#### `getConstructivePropertySummary<T>(constructionData: any, property: string): T[]`
-Generic extractor — pulls a named property from all items across constructive arrays.
+---
 
-#### `checkIfProfileIsEmpty(profile: any): boolean`
-Returns `true` if the profile has no meaningful data.  
-**Used by:** `WellRenderer.draw`, `profile2Export`
+### `InstanceState`
+Internal per-SVG state produced by `initInstanceSvg`:
+```typescript
+{
+  svg:       d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
+  height:    number;
+  width:     number;
+  margins:   { left: number; right: number; top: number; bottom: number };
+  clipId:    string;
+  clipRectId: string;
+}
+```
 
-#### `calculateCilindricVolume(diameter: number, height: number): number`
-Volume of a cylinder in m³. Inputs: diameter in mm, height in m.  
-**Used by:** `calculateHoleFillVolume`
+---
 
-#### `calculateHoleFillVolume(type: string, profile: Well): number`
-Volume of a given fill type, subtracting overlapping casing/screen volumes.  
-**Depends on:** `calculateCilindricVolume`, `Well.hole_fill`, `Well.well_case`, `Well.well_screen`  
-**Used by:** `pdfGenerate.tsx`
+### `SvgInstance`
+Passed to the `WellRenderer` constructor to describe each target SVG panel:
+```typescript
+{
+  selector: string;   // CSS selector for the <svg> element
+  height:   number;
+  width:    number;
+  margins:  { left: number; right: number; top: number; bottom: number };
+}
+```
 
-#### `profileToWell(profile: Well): string`
-Serializes a `Well` to the `.well` v1 JSON string format.
+---
 
-#### `convertProfileFromJSON(jsonString: string): Well | null`
-Parses multiple legacy formats and the current `.well` format.  
-Handles: `geologic[]→lithology[]`, `diam_pol→diameter`, inch→mm conversions.  
-**Depends on:** `getEmptyProfile` (from `src/data/profile/profile.data`), `checkIfProfileIsEmpty`
+### `TooltipKey`
+```
+'geology' | 'hole' | 'surfaceCase' | 'holeFill' | 'wellCase'
+| 'wellScreen' | 'conflict' | 'fracture' | 'cementPad' | 'cave'
+```
 
-### Constant
+---
 
-#### `numberFormater: Intl.NumberFormat`
-pt-BR locale, 2 decimal places.
+### `CssVarsConfig`
+All-optional map of CSS custom property overrides. Applied inline on the SVG element via `CSS_VAR_MAP`, overriding the `:root` defaults from `main.css`.
+
+```
+// Stroke & fill colors
+lithologyStroke, caveDryStroke, caveWetStroke
+fractureDryStroke, fractureWetStroke, cementPadStroke
+boreHoleFill, boreHoleStroke, surfaceCaseFill
+holeFillStroke, wellCaseFill, wellCaseStroke
+wellScreenStroke, conflictStroke
+
+// Widths & opacities
+lithologyStrokeWidth, caveFillOpacity, caveContactStrokeWidth
+cementPadStrokeWidth, boreHoleOpacity, boreHoleStrokeWidth
+surfaceCaseStrokeWidth, holeFillStrokeWidth
+wellCaseStrokeWidth, wellScreenStrokeWidth, conflictStrokeWidth
+
+// Unit label strips
+unitLabelGeologicFill, unitLabelAquiferFill, unitLabelStroke
+```
+
+---
+
+### `ComponentsClassNames`
+
+Nested semantic class-name map. Every drawn element has a named slot.
+
+```
+tooltip         → { root, title, primaryInfo, secondaryInfo }
+yAxis           → string
+wellGroup       → string
+geologicGroup   → string
+lithology       → { group, rect }
+labels          → { lithology: { group, depth, label, divider } }
+fractures       → { group, item, hitArea, line, polyline }
+caves           → { group, item, fill, contact }
+constructionGroup   → string
+constructionLabels  → { group }
+cementPad       → { group, item }
+boreHole        → { group, rect }
+surfaceCase     → { group, rect }
+holeFill        → { group, rect }
+wellCase        → { group, rect }
+wellScreen      → { group, rect }
+conflict        → { group, rect }
+unitLabels      → { group, geoRect, aqRect, text }
+```
+
+---
+
+### `LegendRenderConfig`
+
+Controls legend layout and label text:
+
+```typescript
+{
+  title:     string;
+  fontSize:  number;
+  itemWidth: number;
+  height:    number;
+  padding:   number;
+  labels: {
+    fractureSingle: string;
+    fractureSwarm:  string;
+    fractureWater:  string;
+    caveDry:        string;
+    caveWet:        string;
+  };
+}
+```
+
+---
+
+### `RendererRenderConfig`
+
+Master configuration object. Visual styling is handled by CSS — this controls interaction, layout, animation, and geometry.
+
+```
+zoom:         boolean
+pan:          boolean
+tooltips?:    TooltipKey[] | false
+animation:    { duration: number; ease: d3.EasingFunction }
+geologic:     { xLeft: number; xRightInset: number }
+layout:       { pocoWidthRatio: number; pocoCenterRatio: number }
+caves:        { pathSteps: number; amplitude: { ratio, min, max } }
+fractures:    {
+                widthMultiplier,
+                hitBuffer: { single, swarm },
+                swarm: { lineCountBase, lineCountVariance, spread,
+                         centralStrokeWidth, sideStrokeWidthBase, sideStrokeWidthVariance },
+                single: { mainStrokeWidth, crackStrokeWidth }
+              }
+construction: {
+                cementPad:   { widthMultiplier, thicknessMultiplier },
+                surfaceCase: { diameterPaddingRatio }
+              }
+constructionLabels: { active: boolean; fontSize: number; xOffset: number; labels: {...} }
+unitLabels:   { active, xOffset, stripWidth, fontSize, minHeightForText,
+                innerDividerWidth, outerEdgeWidth }
+labels:       {
+                active: boolean | ('lithology' | 'fractures' | 'caves')[],
+                lithology?: boolean | ('depth' | 'description' | 'dividers')[],
+                typeLabels?: { fracture?: string; cave?: string },
+                style: { fontSize, depthTipHeight, depthTipPadX, ... }
+              }
+cssVars?:     CssVarsConfig
+legend?:      LegendRenderConfig
+```
+
+---
+
+## Interactive Visualizer — `Renderer.ts`
+
+### `class WellRenderer`
+
+```typescript
+constructor(
+  svgs: SvgInstance[],
+  options?: {
+    classNames?:   DeepPartial<ComponentsClassNames>;
+    units?:        Units;
+    renderConfig?: DeepPartial<RendererRenderConfig>;
+  }
+)
+```
+
+All options are deep-merged with defaults via `defu`. `renderConfig.cssVars`, when provided, is applied as inline SVG styles during `prepareSvg`, overriding `:root` CSS defaults from `main.css`.
+
+#### Public Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `classes` | `ComponentsClassNames` | Resolved class-name map (defaults merged with overrides) |
+| `WIDTH` | `number` (getter) | Read-only instance width |
+
+#### Public Methods
+
+| Method | Description |
+|--------|-------------|
+| `prepareSvg(): Promise<void>` | Creates SVG groups, clip paths, and D3 structure; applies `cssVars` |
+| `draw(profile: Well, options?: { units?: Units }): void` | **Main entry point** — renders the full well profile |
+
+#### Internal Methods / Closures (within `drawLogToInstance`)
+
+| Function | Renders |
+|----------|---------|
+| `initInstanceSvg(inst, index)` | Sets up a single SVG: clip paths, defs, group structure → `InstanceState` |
+| `drawLithology(data, yScale)` | Lithology `rect` elements with texture fills and tooltips |
+| `drawUnitLabels(data, yScale)` | Geologic and aquifer unit vertical strips with rotated text |
+| `drawCaves(data, yScale)` | Wavy-edged cave bands: textured fill path + two contact paths |
+| `drawFractures(data, yScale)` | Fracture groups: hit area, lines, polylines, swarms |
+| `drawConstructionLabels(data, yScale)` | Labels for well cases and screens |
+| `drawAnnotationLabels(data, yScale)` | Depth tips, lithology descriptions, divider lines |
+| `drawConstructive(data, yScale)` | Bore hole, casings, screens, hole fill, cement pad, conflicts |
+| `zooming(e)` | Zoom/pan handler — rescales y-axis and repositions all elements |
+
+#### Dependencies
+
+| Dependency | What is used |
+|-----------|--------------|
+| `d3`, `d3-tip` | SVG rendering, scales, zoom, tooltips |
+| `defu` | Deep-merge for `classNames`, `units`, `renderConfig` |
+| `@welldot/core` | All domain type definitions (`Well`, `Lithology`, etc.) |
+| `@welldot/utils` | `checkIfProfileIsEmpty`, `getProfileDiamValues`, `getProfileLastItemsDepths` |
+| `configs/render.configs` | `INTERACTIVE_RENDER_CONFIG`, `DEFAULT_COMPONENTS_CLASS_NAMES`, `CSS_VAR_MAP` |
+| `configs/render.textures` | `createWellTextures` |
+| `types/render.types` | `CssVarsConfig`, `ComponentsClassNames`, `RendererRenderConfig`, `SvgInstance`, `TooltipKey`, `InstanceState` |
+| `utils/render.utils` | `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `getLithologyFill`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng`, `populateTooltips` |
+| `utils/format.utils` | `formatLength`, `formatDiameter` |
+
+---
+
+## Legend Renderer — `renderers/legend.renderer.ts`
+
+### `drawWellLegend(selector, profile, options?): void`
+
+```typescript
+drawWellLegend(
+  selector: string,
+  profile:  Well,
+  options?: {
+    config?:  Partial<LegendRenderConfig>;
+    cssVars?: Partial<CssVarsConfig>;
+  }
+): void
+```
+
+Inspects the profile to determine which legend items are relevant (fracture single/swarm/water, cave dry/wet), then renders a horizontal legend into the target SVG. Resolves `--wp-*` CSS variables from the DOM (with fallbacks). Clears existing SVG content before each render. Does nothing if no fractures or caves are present.
+
+**Used by:** Consumers that want a standalone legend panel alongside the main renderer.
+
+---
+
+## Render Config Preset — `configs/render.configs.ts`
+
+### `INTERACTIVE_RENDER_CONFIG: RendererRenderConfig`
+
+Complete default preset for `WellRenderer`. Key values:
+
+| Field | Value |
+|-------|-------|
+| `zoom` | `true` |
+| `pan` | `true` |
+| `animation.duration` | `600` |
+| `animation.ease` | `d3.easeCubic` |
+| `geologic.xLeft` | `6` |
+| `geologic.xRightInset` | `56` |
+| `layout.pocoWidthRatio` | `0.25` |
+| `layout.pocoCenterRatio` | `0.11` |
+| `caves.pathSteps` | `40` |
+| `caves.amplitude` | `{ ratio: 0.12, min: 1, max: 5.5 }` |
+| `labels` | `false` (disabled) |
+| `unitLabels.active` | `false` (disabled) |
+| `constructionLabels.active` | `false` (disabled) |
+| `legend.title` | `'LEGENDA'` |
+
+### `DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames`
+
+Default CSS class strings for every drawn element. Consumers pass overrides to the `WellRenderer` constructor; these are the fallback values.
+
+### `CSS_VAR_MAP: Record<keyof CssVarsConfig, string>`
+
+Maps each `CssVarsConfig` key to its `--wp-*` CSS variable name. Used internally to apply `cssVars` overrides as inline SVG styles.
+
+---
+
+## Well Textures — `configs/render.textures.ts`
+
+### `WellTextures`
+
+```typescript
+{
+  pad:         Texture;  // Cement pad — horizontal lines
+  conflict:    Texture;  // Overlap warning — red lines
+  cave_dry:    Texture;  // Dry cave — angled lines, dark gray
+  cave_wet:    Texture;  // Wet cave — angled lines, blue
+  seal:        Texture;  // Hole seal — thick lines
+  gravel_pack: Texture;  // Gravel pack — circles
+  well_screen: Texture;  // Well screen — short diagonal dashes
+}
+```
+
+### `createWellTextures(): WellTextures`
+
+Factory that returns fresh `textures` library instances for all well fill patterns. `WellRenderer` creates one set at module load; `WellRendererPDF` creates a fresh set per page.
+
+---
+
+## Drawing Utilities — `utils/render.utils.ts`
+
+### `responsivefy(svg): svg`
+Makes an SVG responsive to container resizes. Adds a `resize` listener to `window`.
+
+### `getLithologicalFillList(data: Lithology[]): { [key: string]: Texture }`
+Builds FGDC-based texture objects for lithology fill patterns. Key format: `"${fgdc_texture}.${from}"`.
+
+### `getConflictAreas(array1: any[], array2: any[]): Conflict[]`
+Finds depth-interval overlaps between two arrays (e.g. well_case vs well_screen). Pure computation.  
+**Used by:** `WellRenderer`, `WellRendererPDF`
+
+### `mergeConflicts(conflicts: Conflict[], buffer: number): Conflict[]`
+Merges adjacent conflict regions within a buffer distance. Pure computation.  
+**Used by:** `WellRenderer`, `WellRendererPDF`
+
+### `getYAxisFunctions(yScale: d3.ScaleLinear, clamp?: boolean): { getHeight, getYPos }`
+Returns accessor functions converting depth values to SVG y-coordinates. Optional `clamp` flag clamps outputs to the scale domain.  
+**Used by:** `WellRenderer`, `WellRendererPDF`
+
+### `getLithologyFill(geologyData: Lithology[], svg): (d: Lithology) => string`
+Higher-order function — registers textures with the SVG and returns a per-datum fill accessor.  
+**Depends on:** `getLithologicalFillList`
+
+### `wavyContact(xLeft, xRight, baseY, amp, steps, rng): [number, number][]`
+Generates a wavy geological contact line using a damped random walk. Deterministic via caller-supplied seeded PRNG.  
+**Used by:** `WellRenderer`, `WellRendererPDF` (cave rendering)
+
+### `ptsToSmoothPath(pts: [number, number][]): string`
+Converts a point array to an SVG path `d` string via Catmull-Rom cubic Bézier (tension 0.35).  
+**Used by:** `WellRenderer`, `WellRendererPDF`
+
+### `makeCavePrng(seed: number): () => number`
+Seeded LCG PRNG (Park-Miller). Ensures cave shapes are identical across zoom levels and redraws.  
+**Used by:** `WellRenderer`, `WellRendererPDF`
+
+### `populateTooltips(svg, customClasses, units, tooltipConfig?): TooltipMap`
+Registers `d3-tip` tooltips on all drawn elements. `tooltipConfig` controls which types are active; `false` disables all.  
+**Depends on:** `d3-tip`, `formatLength`, `formatDiameter`  
+**Used by:** `WellRenderer`
 
 ---
 
 ## Format Utilities — `utils/format.utils.ts`
 
-Unit-aware formatters for depth and diameter values. Used by `render.utils.ts` (tooltips) and `WellRendererPDF.ts`.
+### `formatLength(m: number, units: LengthUnits): string`
+Converts a metre value to the target unit and returns a formatted string (× 3.28084 for `'ft'`).
 
-### Functions
+### `formatDiameter(mm: number, units: DiameterUnits): string`
+Converts a millimetre diameter to the target unit (× 0.0393701 for `'inches'`).
 
-#### `formatLength(m: number, units: LengthUnits): string`
-Converts a metre value to the target unit and returns a formatted string.
+### `getLengthUnit(units: LengthUnits): string`
+Returns `'m'` or `'ft'`.
 
-#### `formatDiameter(mm: number, units: DiameterUnits): string`
-Converts a millimetre diameter value to the target unit and returns a formatted string.
+### `getDiameterUnit(units: DiameterUnits): string`
+Returns `'mm'` or `'"'` (inch symbol).
 
-#### `getLengthUnit(units: LengthUnits): string`
-Returns the unit label string (e.g. `"m"`, `"ft"`) for the given length unit.
+---
 
-#### `getDiameterUnit(units: DiameterUnits): string`
-Returns the unit label string (e.g. `"mm"`, `"in"`) for the given diameter unit.
+## FGDC Textures — `utils/fgdcTextures.ts`
 
-**Dependencies:** `LengthUnits, DiameterUnits` from `@types/units.types`
+### `FGDC_TEXTURES_LIST: number[]`
+Array of valid FGDC texture codes (120, 123, 132, 601–733).
+
+### `FGDC_TEXTURES_OPTIONS: Array<{ value: number; label: string }>`
+Key-value pairs for UI texture-code dropdowns.
 
 ---
 
 ## Styles — `styles/main.css`
 
-Defines all `--wp-*` CSS custom properties on `:root` and applies them via element selectors scoped to `.well-group`. This is the single source of truth for default visual appearance — stroke colors, fill colors, opacities, and stroke widths.
+Defines all `--wp-*` CSS custom properties on `:root` and applies them to SVG elements scoped to `.well-group`. Single source of truth for default visual appearance — stroke colors, fill colors, opacities, stroke widths.
 
 ### CSS Custom Properties
 
@@ -159,442 +471,93 @@ Defines all `--wp-*` CSS custom properties on `:root` and applies them via eleme
 | `--wp-well-case-stroke-width` | `2px` | well case rect stroke-width |
 | `--wp-well-screen-stroke-width` | `2px` | well screen rect stroke-width |
 | `--wp-conflict-stroke-width` | `4px` | conflict rect stroke-width |
-| `--wp-unit-geo-fill`         | `#f0f0f0` | geologic_unit strip fill |
-| `--wp-unit-aq-fill`          | `#dff0ff` | aquifer_unit strip fill |
-| `--wp-unit-label-stroke`     | `#303030` | unit strip stroke and text color |
+| `--wp-unit-geo-fill` | `#f0f0f0` | geologic_unit strip fill |
+| `--wp-unit-aq-fill` | `#dff0ff` | aquifer_unit strip fill |
+| `--wp-unit-label-stroke` | `#303030` | unit strip stroke and text color |
 
-All of these can be overridden at runtime via `RendererRenderConfig.cssVars` (see below).
-
----
-
-## Well Textures — `renderers/render.textures.ts`
-
-### `createWellTextures(): WellTextures`
-
-Factory that returns fresh `textures` library instances for all well-drawing fill patterns. Both drawers call this — `WellRenderer` once at module level, `WellRendererPDF` once per `drawLog` call (fresh instances per SVG).
-
-| Key | Description |
-|-----|-------------|
-| `pad` | Cement pad — horizontal lines, heavy/thin |
-| `conflict` | Casing/screen overlap warning — red lines |
-| `cave_dry` | Dry cave band — diagonal lines, dark gray |
-| `cave_wet` | Wet cave band — diagonal lines, blue |
-| `seal` | Hole seal fill — thick lines |
-| `gravel_pack` | Gravel pack fill — circles complement |
-| `well_screen` | Well screen fill — short horizontal dashes |
-
-**Used by:** `WellRenderer.ts`, `WellRendererPDF.ts`
+All of these can be overridden at runtime via `RendererRenderConfig.cssVars`.
 
 ---
 
-## Drawing Utilities — `renderers/render.utils.ts`
-
-### Functions
-
-#### `responsivefy(svg): svg`
-Makes an SVG element responsive to container resizes. Adds a `resize` listener to `window`.  
-**Used by:** `WellRenderer.draw`
-
-#### `getLithologicalFillList(data: Lithology[]): { [key: string]: Texture }`
-Builds FGDC-based texture objects for lithology fill patterns.  
-Key format: `"${fgdc_texture}.${from}"`.  
-**Depends on:** `textures` library, `fgdcTextures` lookup table
-
-#### `getConflictAreas(array1: any[], array2: any[]): { from, to, diameter }[]`
-Finds depth-interval overlaps between two arrays (e.g. well_case vs well_screen).  
-Pure computation — no external dependencies.  
-**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
-
-#### `mergeConflicts(conflicts: { from, to, diameter }[], buffer: number): { from, to, diameter }[]`
-Merges adjacent conflict regions, accounting for a buffer distance.  
-Pure computation.  
-**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
-
-#### `getYAxisFunctions(yScale: d3.ScaleLinear, clamp?: boolean): { getHeight, getYPos }`
-Returns accessor functions that convert depth values to SVG y-coordinates. Optional `clamp` flag clamps outputs to the scale domain.  
-**Depends on:** D3 scale object  
-**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
-
-#### `getLithologyFill(geologyData: Lithology[], svg): (d: Lithology) => string`
-Higher-order function — registers textures with the SVG and returns a fill accessor.  
-**Depends on:** `getLithologicalFillList`  
-**Used by:** `WellRenderer` (geology rendering)
-
-#### `wavyContact(xLeft, xRight, baseY, amp, steps, rng): [number, number][]`
-Generates a wavy geological contact line using a damped random walk.  
-**Depends on:** caller-supplied seeded PRNG (`rng`)  
-**Used by:** `WellRenderer` and `WellRendererPDF` (cave rendering)
-
-#### `ptsToSmoothPath(pts: [number, number][]): string`
-Converts a point array to an SVG path `d` string via Catmull-Rom cubic Bézier.  
-**Used by:** `WellRenderer` and `WellRendererPDF` (cave/contact rendering)
-
-#### `makeCavePrng(seed: number): () => number`
-Creates a seeded LCG PRNG. Ensures cave shapes are identical across zoom levels and redraws.  
-**Used by:** `WellRenderer.draw`, `WellRendererPDF.buildSvgProfiles`
-
-#### `populateTooltips(svg, customClasses: ComponentsClassNames, units: Units, tooltipConfig?: TooltipKey[] | false): tooltip map`
-Registers `d3-tip` tooltips on all drawn elements. `tooltipConfig` controls which tooltip types are active; `false` disables all tooltips.  
-**Depends on:** `d3-tip`, `formatLength`, `formatDiameter` from `format.utils`  
-**Used by:** `WellRenderer.draw`
-
----
-
-## Render Config Preset — `renderers/render.configs.ts`
-
-### `INTERACTIVE_RENDER_CONFIG: RendererRenderConfig`
-
-Complete `RendererRenderConfig` preset used as the default configuration for `WellRenderer`. Includes all geometry, animation, label, and interaction settings pre-tuned for the interactive SVG viewer.
-
-Key values:
-
-| Field | Value |
-|-------|-------|
-| `zoom` | `true` |
-| `pan` | `true` |
-| `animation.duration` | `600` |
-| `animation.ease` | `d3.easeCubic` |
-| `geologic.xLeft` | `6` |
-| `geologic.xRightInset` | `56` |
-| `layout.pocoWidthRatio` | `0.25` |
-| `layout.pocoCenterRatio` | `0.11` |
-| `caves.pathSteps` | `40` |
-| `caves.amplitude` | `{ ratio: 0.12, min: 1, max: 5.5 }` |
-
-Fracture, construction, and label sub-objects are also fully populated.
-
-**Used by:** `WellRenderer.ts` (as the merged base config)
-
----
-
-## Shared Types — `@types/render.types.ts`
-
-### `TooltipKey`
-
-Union type controlling which tooltip categories are active:
-
-```
-'geology' | 'hole' | 'surfaceCase' | 'holeFill' | 'wellCase' | 'wellScreen' | 'conflict' | 'fracture' | 'cementPad' | 'cave'
-```
-
-### `CssVarsConfig`
-
-All-optional map of CSS custom property overrides. Each key corresponds to a `--wp-*` variable. When passed as `renderConfig.cssVars`, `WellRenderer` applies them inline on the SVG element via `CSS_VAR_MAP`, overriding the `:root` defaults from `main.css`.
-
-```
-// Strokes & fills
-lithologyStroke, caveDryStroke, caveWetStroke
-fractureDryStroke, fractureWetStroke
-cementPadStroke, boreHoleFill, boreHoleStroke
-surfaceCaseFill, holeFillStroke
-wellCaseFill, wellCaseStroke, wellScreenStroke, conflictStroke
-
-// Widths & opacities
-lithologyStrokeWidth, caveFillOpacity, caveContactStrokeWidth
-cementPadStrokeWidth, boreHoleOpacity, boreHoleStrokeWidth
-surfaceCaseStrokeWidth, holeFillStrokeWidth
-wellCaseStrokeWidth, wellScreenStrokeWidth, conflictStrokeWidth
-```
-
-### `ComponentsClassNames`
-
-Nested semantic class-name map. Every drawn element has a named slot. Passed to `WellRenderer` constructor and to `populateTooltips`.
-
-```
-tooltip       → { root, title, primaryInfo, secondaryInfo }
-yAxis         → string
-wellGroup     → string
-geologicGroup → string
-lithology     → { group, rect }
-fractures     → { group, item, hitArea, line, polyline }
-caves         → { group, item, fill, contact }
-constructionGroup → string
-cementPad     → { group, item }
-boreHole      → { group, rect }
-surfaceCase   → { group, rect }
-holeFill      → { group, rect }
-wellCase      → { group, rect }
-wellScreen    → { group, rect }
-conflict      → { group, rect }
-labels        → { lithology: { group, depth, label, divider } }
-```
-
-| Sub-key | Element |
-|---------|---------|
-| `unitLabels.group`   | `<g>` container for geologic/aquifer unit strips |
-| `unitLabels.geoRect` | `<rect>` elements for the geologic_unit strip |
-| `unitLabels.aqRect`  | `<rect>` elements for the aquifer_unit strip |
-| `unitLabels.text`    | Rotated `<text>` unit name labels inside strips |
-| `*.group` | `<g>` container appended during `prepareSvg` |
-| `*.item` | Per-datum `<g>` appended per fracture / cave |
-| `*.rect` | `<rect>` data elements |
-| `fractures.hitArea` | Transparent hit buffer rect inside each fracture group |
-| `fractures.line` | `<line>` crack and bridge elements |
-| `fractures.polyline` | `<polyline>` wavy stroke paths |
-| `caves.fill` | Closed textured fill `<path>` |
-| `caves.contact` | Top and bottom contact stroke `<path>` elements |
-| `labels.lithology.*` | Text label elements for depth ticks and description text |
-
-### `RendererRenderConfig`
-
-Controls interaction, layout, animation, labels, and geometry parameters. Visual styling (colors, stroke widths, opacities) is handled by CSS via `main.css` and can be overridden per-instance via `cssVars`.
-
-```
-zoom:         boolean
-pan:          boolean
-animation:    { duration: number, ease: EaseFn }
-geologic:     { xLeft: number, xRightInset: number }
-layout:       { pocoWidthRatio: number, pocoCenterRatio: number }
-caves:        { pathSteps: number, amplitude: { ratio, min, max } }
-fractures:    {
-                widthMultiplier, hitBuffer: { single, swarm },
-                swarm: { lineCountBase, lineCountVariance, spread,
-                         centralStrokeWidth, sideStrokeWidthBase, sideStrokeWidthVariance },
-                single: { mainStrokeWidth, crackStrokeWidth }
-              }
-construction: {
-                cementPad:   { widthMultiplier, thicknessMultiplier },
-                surfaceCase: { diameterPaddingRatio }
-              }
-unitLabels:   {
-                active: boolean,
-                stripWidth, fontSize, minHeightForText,
-                innerDividerWidth, outerEdgeWidth
-              }
-labels:       {
-                active: boolean | ('lithology' | 'fractures' | 'caves')[],
-                lithology?: boolean | ('depth' | 'description' | 'dividers')[],
-                typeLabels?: { fracture?: string, cave?: string },
-                style: {
-                  fontSize, depthTipHeight, depthTipPadX,
-                  descriptionXOffset, descriptionMaxWidth,
-                  stackingLineHeight, stackingGap,
-                  fractureLabelLeaderGap?, fractureLabelFontSize?,
-                  fractureLabelPadX?, fractureLabelPadY?,
-                  caveLabelFontSize?, caveLabelHeight?, caveLabelPadX?
-                }
-              }
-tooltips?:    TooltipKey[] | false
-cssVars?:     CssVarsConfig
-```
-
-### `SvgInstance`
-
-Shape passed per SVG panel: `{ selector, height, width, margins }`.
-
----
-
-## Generic Types — `@types/generic.types.ts`
-
-### `DeepPartial<T>`
-
-Recursively makes all properties optional. Used by `classNames` and `renderConfig` constructor options.
-
----
-
-## Interactive Visualizer — `renderers/WellRenderer.ts`
-
-### Module-level internals
-
-The following are **private** module-level constants (not exported):
-
-| Constant | Description |
-|----------|-------------|
-| `DEFAULT_COMPONENTS_CLASS_NAMES` | Default CSS class names for all SVG elements |
-| `CSS_VAR_MAP` | Maps each `CssVarsConfig` key to its `--wp-*` CSS variable name |
-| `DEFAULTS_TEXTURES` | Shared `WellTextures` instance created once at module load |
-
-The default render config is imported as `INTERACTIVE_RENDER_CONFIG` from `render.configs.ts`.
-
-### `class WellRenderer`
-
-```typescript
-constructor(
-  svgs: SvgInstance[],
-  options?: {
-    classNames?:   DeepPartial<ComponentsClassNames>;
-    units?:        Units;
-    renderConfig?: DeepPartial<RendererRenderConfig>;
-  }
-)
-```
-
-All options are deep-merged with their defaults via `defu`. `renderConfig.cssVars`, when provided, is applied as inline SVG styles during `prepareSvg`, overriding the `:root` CSS defaults.
-
-**Export:** default export as `{ WellRenderer }`.
-
-#### Public Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `classes` | `ComponentsClassNames` | Resolved class-name map (defaults merged with overrides) |
-
-#### Public Methods
-
-| Method | Description |
-|--------|-------------|
-| `prepareSvg(): Promise<void>` | Initializes SVG groups, clip paths, and D3 structure; applies `cssVars` overrides |
-| `draw(profile: Well, options?: { units?: Units }): void` | **Main entry point** — renders the full well profile |
-
-#### Internal Rendering Closures (within `drawLogToInstance`)
-
-| Function | Renders |
-|----------|---------|
-| `drawLithology(data, yScale)` | Lithology `rect` elements with fills and tooltips |
-| `drawCaves(data, yScale)` | Wavy-edged cave bands: fill path + two contact paths |
-| `drawFractures(data, yScale)` | Fracture groups: hit area, lines, polylines, swarms |
-| `drawUnitLabels(data, yScale)` | Geologic and aquifer unit strips with rotated text labels |
-| `drawWellConstructive(data, yScale)` | Bore hole, casings, screens, hole fill, cement pad, conflicts |
-| `drawProfile()` | Orchestrates all `draw*` calls for the initial render |
-| `zooming(e)` | Zoom handler — rescales y-axis, repositions rects and fracture groups, redraws caves |
-
-#### Dependencies
-
-| Dependency | What is used |
-|-----------|--------------|
-| `d3`, `d3-tip` | SVG rendering, scales, zoom, tooltips |
-| `defu` | Deep-merge for `classNames`, `units`, `renderConfig` options |
-| `drawer.types` | `CssVarsConfig`, `ComponentsClassNames`, `RendererRenderConfig`, `SvgInstance`, `TooltipKey` |
-| `generic.types` | `DeepPartial<T>` |
-| `well.types` | All domain type definitions |
-| `well.utils` | `checkIfProfileIsEmpty`, `getProfileDiamValues`, `getProfileLastItemsDepths` |
-| `render.configs` | `INTERACTIVE_RENDER_CONFIG` |
-| `render.utils` | `responsivefy`, `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `getLithologyFill`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng`, `populateTooltips` |
-| `render.textures` | `createWellTextures` |
-
----
-
-## PDF Visualizer — `renderers/WellRendererPDF.ts`
+## PDF Visualizer — `renderers/WellRendererPDF.ts` _(not exported)_
 
 ### `A4_SVG_HEIGHT: number`
-`480 * 1.33` ≈ 638.4 px — height of a single A4 page SVG.
+`480 * 1.33` ≈ 638.4 px — height of a single A4 page SVG panel.
 
 ### `buildSvgProfiles(props): SvgInfo[]`
 
 ```typescript
 buildSvgProfiles(props: {
-  profile: Well;
-  lengthUnits: LengthUnits;
-  diameterUnits: DiameterUnits;
-  breakPages?: boolean;
-  zoomLevel?: number;
+  profile:                  Well;
+  lengthUnits:              LengthUnits;
+  diameterUnits:            DiameterUnits;
+  breakPages?:              boolean;
+  zoomLevel?:               number;
   firstPageAvailableHeight?: number;
-}): SvgInfo[]   // SvgInfo = { id: string, height: number }
+}): SvgInfo[]   // SvgInfo = { id: string; height: number }
 ```
 
-Creates one or more `<svg>` elements inside `#svgDraftContainer`, each representing a vertical page slice of the profile.
-
-#### Internal Rendering Closures
-
-| Function | Renders |
-|----------|---------|
-| `drawLog(svgInfo)` | Single SVG page (depth-sliced) |
-| `updateGeology(data, yScale)` | Lithology rectangles |
-| `updateCaves(data, yScale)` | Wavy cave bands |
-| `updateLithologyLabels(data, yScale)` | Depth/description labels |
-| `drawUnitLabels(data, yScale)` | Geologic and aquifer unit labels |
-| `updateFractures(data, yScale)` | Fracture symbols |
-| `updatePoco(data, yScale)` | Constructive elements |
-
-#### Canvas Constants
-
-| Constant | Value | Meaning |
-|----------|-------|---------|
-| `WIDTH` | `485.28 pt` | A4 width minus margins |
-| `POCO_CENTER` | `350` | X center for construction drawing |
-| `GEOLOGY_X_POS` | `35` | Left edge of geology column |
-| `GEOLOGY_WIDTH` | `220` | Width of geology column |
-
-#### Dependencies
-
-| Dependency | What is used |
-|-----------|--------------|
-| `d3`, `textures` | SVG rendering and fill patterns |
-| `well.types` | All type definitions |
-| `well.utils` | `getProfileLastItemsDepths`, `getProfileDiamValues` |
-| `format.utils` | `formatLength`, `formatDiameter` |
-| `render.utils` | `getYAxisFunctions`, `getConflictAreas`, `mergeConflicts`, `wavyContact`, `ptsToSmoothPath`, `makeCavePrng` |
-| `render.textures` | `createWellTextures` |
-| `src_old/utils/wrap` | SVG text wrapping |
-| `src_old/utils/fgdcTextures` | Geological texture patterns |
-| `src_old/utils/profileD3.utils` | Legacy D3 utilities |
-| `ui.store` | `LengthUnits`, `DiameterUnits` |
+Creates one or more `<svg>` elements inside `#svgDraftContainer`, each representing a vertical page slice of the profile. Not exported — still depends on `src_old` legacy utilities (`wrap`, `fgdcTextures`, `profileD3.utils`) pending removal.
 
 ---
 
 ## Dependency Graph
 
 ```
-WellRenderer.ts
-  ├── d3, d3-tip, defu
-  ├── @types/well.types
-  ├── @types/drawer.types  (CssVarsConfig, ComponentsClassNames, RendererRenderConfig, SvgInstance, TooltipKey)
-  ├── @types/generic.types (DeepPartial)
-  ├── @types/units.types
-  ├── utils/well.utils
-  │     └── @types/well.types
-  │     └── data/profile.data (getEmptyProfile)
-  ├── renderers/render.configs  (INTERACTIVE_RENDER_CONFIG)
-  ├── renderers/render.utils
-  │     ├── d3, textures
-  │     ├── @types/well.types
-  │     ├── utils/format.utils
-  │     └── src_old/utils/fgdcTextures
-  └── renderers/render.textures  (createWellTextures)
+@welldot/render (index.ts)
+  ├── Renderer.ts (WellRenderer)
+  │     ├── d3, d3-tip, defu
+  │     ├── @welldot/core          (Well, Lithology, Fracture, etc.)
+  │     ├── @welldot/utils         (getProfileLastItemsDepths, getProfileDiamValues, checkIfProfileIsEmpty)
+  │     ├── configs/render.configs (INTERACTIVE_RENDER_CONFIG, DEFAULT_COMPONENTS_CLASS_NAMES, CSS_VAR_MAP)
+  │     ├── configs/render.textures (createWellTextures)
+  │     ├── types/render.types
+  │     ├── utils/render.utils
+  │     └── utils/format.utils
+  ├── renderers/legend.renderer.ts (drawWellLegend)
+  │     ├── d3
+  │     ├── @welldot/core
+  │     ├── configs/render.configs (INTERACTIVE_RENDER_CONFIG)
+  │     ├── configs/render.textures (createWellTextures)
+  │     └── types/render.types
+  ├── configs/render.configs.ts
+  │     └── types/render.types
+  └── utils/format.utils.ts
 
-WellRendererPDF.ts
+renderers/WellRendererPDF.ts  [not exported]
   ├── d3, textures
-  ├── @types/well.types
-  ├── utils/well.utils
+  ├── @welldot/core
+  ├── @welldot/utils
   ├── utils/format.utils
-  ├── renderers/render.utils
-  ├── renderers/render.textures  (createWellTextures)
-  ├── src_old/utils/wrap
-  ├── src_old/utils/fgdcTextures
-  ├── src_old/utils/profileD3.utils
-  └── store/ui.store
-
-views/PDFExport/pdfGenerate.tsx
-  ├── pdfmake, date-fns
-  ├── @types/well.types
-  ├── utils/well.utils  (calculateHoleFillVolume, numberFormater)
-  ├── renderers/WellRendererPDF  (buildSvgProfiles, A4_SVG_HEIGHT)
-  ├── utils/coords.utils  (formatCoord)
-  └── store/ui.store
-
-views/PDFExport/profile2Export.component.ts
-  ├── @types/well.types
-  ├── utils/well.utils  (checkIfProfileIsEmpty, getProfileLastItemsDepths, getProfileDiamValues)
-  ├── views/PDFExport/pdfGenerate  (innerRenderPdf, printPdf, downloadPdf)
-  └── store/ui.store
+  ├── utils/render.utils
+  ├── configs/render.textures
+  ├── src_old/utils/wrap          (legacy)
+  ├── src_old/utils/fgdcTextures  (legacy)
+  └── src_old/utils/profileD3.utils (legacy)
 ```
 
 ---
 
 ## Quick Reference
 
-| Function | Module | Signature | Returns |
-|----------|--------|-----------|---------|
-| `getProfileLastItemsDepths` | well.utils | `(profile: Well)` | `number[]` |
-| `getProfileDiamValues` | well.utils | `(constructionData: Constructive)` | `number[]` |
-| `checkIfProfileIsEmpty` | well.utils | `(profile: any)` | `boolean` |
-| `calculateCilindricVolume` | well.utils | `(diameter: number, height: number)` | `number` (m³) |
-| `calculateHoleFillVolume` | well.utils | `(type: string, profile: Well)` | `number` (m³) |
-| `convertProfileFromJSON` | well.utils | `(jsonString: string)` | `Well \| null` |
-| `profileToWell` | well.utils | `(profile: Well)` | `string` |
-| `formatLength` | format.utils | `(m: number, units: LengthUnits)` | `string` |
-| `formatDiameter` | format.utils | `(mm: number, units: DiameterUnits)` | `string` |
-| `getLengthUnit` | format.utils | `(units: LengthUnits)` | `string` |
-| `getDiameterUnit` | format.utils | `(units: DiameterUnits)` | `string` |
-| `responsivefy` | render.utils | `(svg)` | `svg` |
-| `getLithologicalFillList` | render.utils | `(data: Lithology[])` | `{ [key]: Texture }` |
-| `getConflictAreas` | render.utils | `(array1, array2)` | `Conflict[]` |
-| `mergeConflicts` | render.utils | `(conflicts, buffer)` | `Conflict[]` |
-| `getYAxisFunctions` | render.utils | `(yScale, clamp?)` | `{ getHeight, getYPos }` |
-| `getLithologyFill` | render.utils | `(geologyData, svg)` | `(d: Lithology) => string` |
-| `wavyContact` | render.utils | `(xL, xR, y, amp, steps, rng)` | `[number, number][]` |
-| `ptsToSmoothPath` | render.utils | `(pts: [number, number][])` | `string` (SVG path `d`) |
-| `makeCavePrng` | render.utils | `(seed: number)` | `() => number` |
-| `populateTooltips` | render.utils | `(svg, classes, units, tooltipConfig?)` | tooltip map |
-| `WellRenderer.draw` | WellRenderer | `(profile, options?: { units? })` | `void` |
-| `buildSvgProfiles` | WellRendererPDF | `(props)` | `SvgInfo[]` |
+| Symbol | Module | Signature | Returns |
+|--------|--------|-----------|---------|
+| `WellRenderer` | `Renderer.ts` | `new WellRenderer(svgs, options?)` | instance |
+| `WellRenderer.prepareSvg` | `Renderer.ts` | `()` | `Promise<void>` |
+| `WellRenderer.draw` | `Renderer.ts` | `(profile, options?)` | `void` |
+| `drawWellLegend` | `renderers/legend.renderer.ts` | `(selector, profile, options?)` | `void` |
+| `INTERACTIVE_RENDER_CONFIG` | `configs/render.configs.ts` | — | `RendererRenderConfig` |
+| `createWellTextures` | `configs/render.textures.ts` | `()` | `WellTextures` |
+| `getConflictAreas` | `utils/render.utils.ts` | `(array1, array2)` | `Conflict[]` |
+| `mergeConflicts` | `utils/render.utils.ts` | `(conflicts, buffer)` | `Conflict[]` |
+| `getYAxisFunctions` | `utils/render.utils.ts` | `(yScale, clamp?)` | `{ getHeight, getYPos }` |
+| `getLithologyFill` | `utils/render.utils.ts` | `(geologyData, svg)` | `(d: Lithology) => string` |
+| `wavyContact` | `utils/render.utils.ts` | `(xL, xR, y, amp, steps, rng)` | `[number, number][]` |
+| `ptsToSmoothPath` | `utils/render.utils.ts` | `(pts)` | `string` (SVG path `d`) |
+| `makeCavePrng` | `utils/render.utils.ts` | `(seed)` | `() => number` |
+| `populateTooltips` | `utils/render.utils.ts` | `(svg, classes, units, tooltipConfig?)` | tooltip map |
+| `formatLength` | `utils/format.utils.ts` | `(m, units)` | `string` |
+| `formatDiameter` | `utils/format.utils.ts` | `(mm, units)` | `string` |
+| `getLengthUnit` | `utils/format.utils.ts` | `(units)` | `string` |
+| `getDiameterUnit` | `utils/format.utils.ts` | `(units)` | `string` |
+| `buildSvgProfiles` | `renderers/WellRendererPDF.ts` | `(props)` | `SvgInfo[]` |

@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@welldot/core": "workspace:*",
+    "@welldot/utils": "workspace:*",
     "defu": "^6.1.4"
   },
   "peerDependencies": {
