@@ -51,3 +51,7 @@ jobs:
       - name: Dry run (pack only)
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' }}
         run: pnpm --filter=@welldot/core exec npm pack --dry-run
+
+      - name: Print npm debug log on failure
+        if: failure()
+        run: cat /home/runner/.npm/_logs/*.log 2>/dev/null || echo "No npm logs found"
