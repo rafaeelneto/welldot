@@ -242,6 +242,35 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
           </div>
 
           <div className={styles.editorSection}>
+            <h4 className={styles.editorSectionTitle}>Construction Labels</h4>
+            <div className={styles.editorRow}>
+              <label className={styles.editorLabel}>Active</label>
+              <input
+                type="checkbox"
+                checked={!!config.constructionLabels?.active}
+                onChange={e => setConfig(prev => ({
+                  ...prev,
+                  constructionLabels: { ...prev.constructionLabels, active: e.target.checked },
+                }))}
+              />
+            </div>
+            {numInput('Font Size', ['constructionLabels', 'fontSize'], 0.5)}
+            {numInput('X Offset',  ['constructionLabels', 'xOffset'],  1)}
+            <h5 className={styles.editorSubTitle}>Label Text</h5>
+            {(['wellCasePrefix', 'wellScreenPrefix', 'wellScreenSlotPrefix'] as const).map(key => (
+              <div className={styles.editorRow} key={key}>
+                <label className={styles.editorLabel}>{key}</label>
+                <input
+                  className={styles.editorInput}
+                  type="text"
+                  value={(config.constructionLabels?.labels as any)?.[key] ?? ''}
+                  onChange={e => setStr(['constructionLabels', 'labels', key], e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.editorSection}>
             <h4 className={styles.editorSectionTitle}>Labels</h4>
 
             <h5 className={styles.editorSubTitle}>Active</h5>

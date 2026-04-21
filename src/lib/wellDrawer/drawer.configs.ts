@@ -48,6 +48,16 @@ export const INTERACTIVE_RENDER_CONFIG: DrawerRenderConfig = {
     innerDividerWidth: 1.5,
     outerEdgeWidth:    0.6,
   },
+  constructionLabels: {
+    active: false,
+    fontSize: 7.5,
+    xOffset: 10,
+    labels: {
+      wellCasePrefix:      'Revest.',
+      wellScreenPrefix:    'Filtro',
+      wellScreenSlotPrefix: 'Ranhura:',
+    },
+  },
   legend: {
     title:     'LEGENDA',
     fontSize:  7,

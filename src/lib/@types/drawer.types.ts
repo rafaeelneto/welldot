@@ -68,6 +68,9 @@ export type ComponentsClassNames = {
     contact: string;
   };
   constructionGroup: string;
+  constructionLabels: {
+    group: string;
+  };
   cementPad: {
     group: string;
     item: string;
@@ -167,6 +170,16 @@ export type DrawerRenderConfig = {
     };
     surfaceCase: {
       diameterPaddingRatio: number;
+    };
+  };
+  constructionLabels: {
+    active: boolean;
+    fontSize: number;
+    xOffset: number;
+    labels: {
+      wellCasePrefix: string;
+      wellScreenPrefix: string;
+      wellScreenSlotPrefix: string;
     };
   };
   labels: {

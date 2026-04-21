@@ -32,7 +32,7 @@ import {
   populateTooltips,
 } from '@/src/lib/wellDrawer/drawer.utils';
 import { Units } from '@/src/lib/@types/units.types';
-import { getLengthUnit } from '@/src/lib/utils/format.utils';
+import { getLengthUnit, formatDiameter, getDiameterUnit } from '@/src/lib/utils/format.utils';
 import { SvgInstance, ComponentsClassNames, DrawerRenderConfig, CssVarsConfig } from '@/src/lib/@types/drawer.types';
 import { INTERACTIVE_RENDER_CONFIG } from './drawer.configs';
 import { DeepPartial } from '../@types/generic.types';
@@ -81,6 +81,9 @@ const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     contact: 'cave-contact',
   },
   constructionGroup: 'construction-group',
+  constructionLabels: {
+    group: 'construction-labels-group',
+  },
   cementPad: {
     group: 'cement-pad',
     item: 'cement-pad-rect',
@@ -253,6 +256,7 @@ export class WellDrawer {
       .attr('transform', `translate(${margins.left}, ${margins.top})`)
       .attr('clip-path', `url(#${clipId})`);
 
+    construction.append('g').attr('class', this.classes.constructionLabels.group);
     construction.append('g').attr('class', this.classes.cementPad.group);
     construction.append('g').attr('class', this.classes.boreHole.group);
     construction.append('g').attr('class', this.classes.surfaceCase.group);
@@ -316,7 +320,8 @@ export class WellDrawer {
     const holeFillGroup     = svg.select(`.${this.classes.holeFill.group}`);
     const wellCaseGroup     = svg.select(`.${this.classes.wellCase.group}`);
     const wellScreenGroup   = svg.select(`.${this.classes.wellScreen.group}`);
-    const conflictGroup     = svg.select(`.${this.classes.conflict.group}`);
+    const conflictGroup            = svg.select(`.${this.classes.conflict.group}`);
+    const constructionLabelsGroup  = svg.select(`.${this.classes.constructionLabels.group}`);
 
     const svgWidth  = this.svgWidth;
     const svgHeight = this.svgHeight;
@@ -677,6 +682,78 @@ export class WellDrawer {
           }
         }
       });
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // drawConstructionLabels
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const drawConstructionLabels = (
+      data: { well_case: WellCase[]; well_screen: WellScreen[] },
+      fullData: Constructive,
+      yScale: d3module.ScaleLinear<number, number>,
+    ) => {
+      constructionLabelsGroup.selectAll('*').remove();
+
+      const clc = this.renderConfig.constructionLabels;
+      const fmtD  = (mm: number) => formatDiameter(mm, this.units.diameter);
+      const dUnit = getDiameterUnit(this.units.diameter);
+
+      const maxXValues = getProfileDiamValues(fullData);
+      const xScale = d3.scaleLinear()
+        .domain([0, d3.max(maxXValues) || 0])
+        .range([0, POCO_WIDTH]);
+
+      const occupied: { top: number; bot: number }[] = [];
+
+      const placeLabel = (d: WellCase | WellScreen, text: string) => {
+        const clampedFrom = Math.max(d.from, depthFrom);
+        const clampedTo   = Math.min(d.to,   depthTo);
+        if (clampedFrom >= clampedTo) return;
+
+        const midY       = yScale((clampedFrom + clampedTo) / 2);
+        const leftEdgeX  = (POCO_CENTER - xScale(d.diameter)) / 2;
+        const labelRightX = leftEdgeX - clc.xOffset;
+        const estW       = text.length * (clc.fontSize * 0.52) + 8;
+        const labelH     = clc.fontSize + 8;
+        let   labelY     = midY - labelH / 2;
+
+        for (const pos of occupied) {
+          if (labelY < pos.bot && labelY + labelH > pos.top) labelY = pos.bot + 2;
+        }
+        occupied.push({ top: labelY, bot: labelY + labelH });
+
+        constructionLabelsGroup.append('rect')
+          .attr('x', labelRightX - estW)
+          .attr('y', labelY)
+          .attr('width', estW)
+          .attr('height', labelH)
+          .attr('rx', 2)
+          .attr('fill', 'white')
+          .attr('stroke', '#303030')
+          .attr('stroke-width', 0.5);
+
+        constructionLabelsGroup.append('text')
+          .attr('x', labelRightX - 2)
+          .attr('y', labelY + labelH / 2)
+          .attr('dy', '.35em')
+          .attr('font-size', clc.fontSize)
+          .attr('text-anchor', 'end')
+          .attr('fill', '#303030')
+          .text(text);
+      };
+
+      let lastDiam = 0;
+      data.well_case
+        .filter(item => { if (item.diameter !== lastDiam) { lastDiam = item.diameter; return true; } return false; })
+        .forEach(d => placeLabel(d, `${clc.labels.wellCasePrefix} ${fmtD(d.diameter)}${dUnit} ${d.type}`));
+
+      lastDiam = 0;
+      data.well_screen
+        .filter(item => { if (item.diameter !== lastDiam) { lastDiam = item.diameter; return true; } return false; })
+        .forEach((d: WellScreen) =>
+          placeLabel(d, `${clc.labels.wellScreenPrefix} ${fmtD(d.diameter)}${dUnit} ${d.type} ${clc.labels.wellScreenSlotPrefix} ${fmtD((d as WellScreen).screen_slot_mm)}${dUnit}`),
+        );
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1133,6 +1210,16 @@ export class WellDrawer {
           transform.rescaleY(yScaleLocal),
         );
       }
+      if (this.renderConfig.constructionLabels.active && constructionData) {
+        drawConstructionLabels(
+          {
+            well_case:   constructionData.well_case.filter(filterByDepth),
+            well_screen: constructionData.well_screen.filter(filterByDepth),
+          },
+          constructionData,
+          transform.rescaleY(yScaleLocal),
+        );
+      }
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1165,7 +1252,7 @@ export class WellDrawer {
         );
       }
       if (constructionData) {
-        drawConstructive({
+        const filteredConstruction = {
           ...constructionData,
           bore_hole:    constructionData.bore_hole.filter(filterByDepth),
           hole_fill:    constructionData.hole_fill.filter(filterByDepth),
@@ -1173,7 +1260,11 @@ export class WellDrawer {
           well_case:    constructionData.well_case.filter(filterByDepth),
           well_screen:  constructionData.well_screen.filter(filterByDepth),
           reduction:    constructionData.reduction?.filter(filterByDepth) ?? [],
-        }, yScaleLocal, constructionData);
+        };
+        drawConstructive(filteredConstruction, yScaleLocal, constructionData);
+        if (this.renderConfig.constructionLabels.active) {
+          drawConstructionLabels(filteredConstruction, constructionData, yScaleLocal);
+        }
       }
 
       svg.select(`#${state.clipRectId}`)
