@@ -1,6 +1,6 @@
-import js from '@eslint/js'
-import importX from 'eslint-plugin-import-x'
-import prettier from 'eslint-plugin-prettier/recommended'
+import js from '@eslint/js';
+import importX from 'eslint-plugin-import-x';
+import prettier from 'eslint-plugin-prettier/recommended';
 
 // eslint.config.js
 // @ts-check
@@ -15,14 +15,15 @@ export default [
     rules: {
       // style
       'linebreak-style': ['error', 'unix'],
-      'camelcase': ['error'],
+      camelcase: ['error'],
       'prefer-template': ['error'],
       'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
-      'radix': ['error', 'as-needed'],
+      radix: ['error', 'as-needed'],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 
       // safety
       'no-use-before-define': 'off', // handled by TS version
-      'no-undef': 'off',             // TypeScript handles this
+      'no-undef': 'off', // TypeScript handles this
       'no-return-assign': ['error', 'always'],
       'prefer-promise-reject-errors': ['warn'],
 
@@ -37,4 +38,4 @@ export default [
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
-]
+];

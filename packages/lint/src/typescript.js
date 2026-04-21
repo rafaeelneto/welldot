@@ -1,5 +1,5 @@
-import tseslint from 'typescript-eslint'
-import base from './base.js'
+import tseslint from 'typescript-eslint';
+import base from './base.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -9,12 +9,14 @@ export default [
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
-        { argsIgnorePattern: '^_' },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-use-before-define': ['error'],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
       'no-unused-vars': 'off', // use TS version instead
+      camelcase: 'off', // allow snake_case for things like CSS properties
     },
   },
-]
+];

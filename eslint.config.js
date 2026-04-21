@@ -1,4 +1,4 @@
-import typescript from '@well/lint/typescript'
+import typescript from '@welldot/lint/typescript'
 
 export default [
   ...typescript,
