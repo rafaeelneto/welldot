@@ -1,0 +1,19 @@
+# Source files (compiled artifacts in dist/ are published instead)
+src/
+
+# Build config
+tsup.config.ts
+tsconfig.json
+
+# Linting config
+eslint.config.js
+
+# Test infrastructure
+vitest.config.ts
+**/*.test.ts
+**/*.spec.ts
+__tests__/
+
+# Monorepo internals
+.turbo/
+node_modules/

@@ -4,7 +4,7 @@ Most software for documenting and visualizing water well profiles is proprietary
 
 Well Profiler is an open-source web application built with React that lets geologists and engineers create, visualize, and export water well profiles. More importantly, it is the **reference implementation** of the **`.well` open file format** — a compact, structured standard for representing water well data that any application can read and write.
 
-You can try the app at [wellprofiler.com](https://wellprofiler.com).
+You can try the app at [wellprofiler.com](https://wellprofiler.com). The source lives at [github.com/rafaeelneto/welldot](https://github.com/rafaeelneto/welldot).
 
 ---
 
@@ -123,7 +123,7 @@ Contributions and bug reports are welcome in the meantime.
 
 ## Licensing
 
-This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives (CC BY-NC-ND) license. See [LICENSE.md](LICENSE.md) for details.
+This project is licensed under the [Apache 2.0](./LICENSE) license.
 
 ---
 
