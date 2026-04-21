@@ -1,5 +1,5 @@
 {
-  "name": "@well/drawer",
+  "name": "@welldot/drawer",
   "version": "0.1.0",
   "private": true,
   "main": "./dist/index.js",
@@ -30,7 +30,7 @@
     "textures": "^1.2.3"
   },
   "devDependencies": {
-    "@well/lint": "workspace:*",
+    "@welldot/lint": "workspace:*",
     "tsup": "^8.3.0",
     "typescript": "^5.3.3",
     "@types/d3": "^7.4.3",

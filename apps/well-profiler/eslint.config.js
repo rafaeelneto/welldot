@@ -1,4 +1,4 @@
-import react from '@well/eslint-config/react'
+import react from '@welldot/eslint-config/react'
 
 export default [
   ...react,

@@ -6,4 +6,4 @@ export {
   calculateCilindricVolume,
   calculateHoleFillVolume,
   numberFormater,
-} from '@well/drawer';
+} from '@welldot/drawer';
