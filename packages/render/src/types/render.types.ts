@@ -131,6 +131,7 @@ export type ComponentsClassNames = {
     label: string;
     fracturePoly: string;
     caveFill: string;
+    constructionRect: string;
   };
 };
 
@@ -258,12 +259,21 @@ export type LegendRenderConfig = {
   itemWidth: number;
   height: number;
   padding: number;
+  maxWidth?: number;
   labels: {
     fractureSingle: string;
     fractureSwarm: string;
     fractureWater: string;
     caveDry: string;
     caveWet: string;
+    boreHole: string;
+    surfaceCase: string;
+    holeFillGravel: string;
+    holeFillSeal: string;
+    wellCase: string;
+    wellScreen: string;
+    cementPad: string;
+    conflict: string;
   };
 };
 

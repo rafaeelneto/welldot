@@ -70,12 +70,21 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
     itemWidth: 110,
     height: 44,
     padding: 4,
+    maxWidth: 700,
     labels: {
       fractureSingle: 'Fratura simples',
       fractureSwarm: 'Enxame de fraturas',
       fractureWater: "Entrada d'água",
       caveDry: 'Caverna seca',
       caveWet: 'Caverna c/ água',
+      boreHole: 'Perfuração',
+      surfaceCase: 'Tubo guia',
+      holeFillGravel: 'Pré-filtro',
+      holeFillSeal: 'Vedação',
+      wellCase: 'Revestimento',
+      wellScreen: 'Filtro',
+      cementPad: 'Laje de cimento',
+      conflict: 'Conflito',
     },
   },
 };
@@ -160,6 +169,7 @@ export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     label: 'wp-legend-label',
     fracturePoly: 'fracture-poly',
     caveFill: 'cave-fill',
+    constructionRect: 'construction-rect',
   },
 };
 
