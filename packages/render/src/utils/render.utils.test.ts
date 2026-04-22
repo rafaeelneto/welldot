@@ -28,7 +28,13 @@ vi.mock('d3', () => ({
   })),
 }));
 
-vi.mock('d3-tip', () => ({}));
+vi.mock('d3-tip', () => ({
+  default: vi.fn(() => ({
+    attr: vi.fn().mockReturnThis(),
+    direction: vi.fn().mockReturnThis(),
+    html: vi.fn().mockReturnThis(),
+  })),
+}));
 
 vi.mock('textures', () => ({
   default: { paths: vi.fn(() => mockTexturePaths) },

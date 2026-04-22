@@ -379,6 +379,9 @@ importers:
       '@welldot/core':
         specifier: workspace:*
         version: link:../core
+      '@welldot/utils':
+        specifier: workspace:*
+        version: link:../utils
       d3:
         specifier: ^7.0.0
         version: 7.9.0
