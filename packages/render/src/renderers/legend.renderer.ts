@@ -2,21 +2,21 @@ import * as d3module from 'd3';
 import { defu } from 'defu';
 
 import { Well } from '@welldot/core';
-import { CssVarsConfig, LegendRenderConfig } from '~/types/render.types';
-import { INTERACTIVE_RENDER_CONFIG } from '../configs/render.configs';
+import {
+  ComponentsClassNames,
+  CssVarsConfig,
+  LegendRenderConfig,
+} from '~/types/render.types';
+import {
+  CSS_VAR_MAP,
+  DEFAULT_COMPONENTS_CLASS_NAMES,
+  INTERACTIVE_RENDER_CONFIG,
+} from '../configs/render.configs';
 import { createWellTextures } from '../configs/render.textures';
 
 const d3 = { ...d3module };
 
 const DEFAULTS_TEXTURES = createWellTextures();
-
-// CSS variable names mirror those in Renderer.ts
-const CSS_VAR_MAP = {
-  fractureDryStroke: '--wp-fracture-dry-stroke',
-  fractureWetStroke: '--wp-fracture-wet-stroke',
-  caveDryStroke: '--wp-cave-dry-stroke',
-  caveWetStroke: '--wp-cave-wet-stroke',
-} as const;
 
 const CSS_VAR_FALLBACKS = {
   fractureDryStroke: '#000000',
@@ -44,9 +44,9 @@ type LegendItem =
  * Only legend entries that have matching data in the profile are rendered.
  * The target element (selector) should be an existing <svg> element.
  *
- * @param selector - CSS selector for the target <svg> element
- * @param profile  - Well profile data (only .fractures and .caves are read)
- * @param options  - Optional render config override and CSS variable overrides
+ * @param selector   - CSS selector for the target <svg> element
+ * @param profile    - Well profile data (only .fractures and .caves are read)
+ * @param options    - Optional render config, CSS variable overrides, and class name overrides
  */
 export function drawWellLegend(
   selector: string,
@@ -54,6 +54,7 @@ export function drawWellLegend(
   options: {
     config?: Partial<LegendRenderConfig>;
     cssVars?: Partial<CssVarsConfig>;
+    classNames?: ComponentsClassNames['legend'];
   } = {},
 ): void {
   const fractures = profile.fractures ?? [];
@@ -69,6 +70,10 @@ export function drawWellLegend(
     options.config ?? {},
     INTERACTIVE_RENDER_CONFIG.legend,
   ) as LegendRenderConfig;
+
+  const cls: ComponentsClassNames['legend'] = options.classNames
+    ? { ...DEFAULT_COMPONENTS_CLASS_NAMES.legend, ...options.classNames }
+    : DEFAULT_COMPONENTS_CLASS_NAMES.legend;
 
   const items: LegendItem[] = [];
   if (hasSimple)
@@ -113,7 +118,7 @@ export function drawWellLegend(
   // resolveCssVar picks them up via getComputedStyle (same pattern as WellDrawer).
   if (options.cssVars) {
     for (const key of Object.keys(options.cssVars) as (keyof CssVarsConfig)[]) {
-      const cssVar = CSS_VAR_MAP[key as keyof typeof CSS_VAR_MAP];
+      const cssVar = CSS_VAR_MAP[key];
       if (cssVar && options.cssVars[key] != null)
         svgEl.style(cssVar, options.cssVars[key] as string);
     }
@@ -157,7 +162,7 @@ export function drawWellLegend(
   const g = svgEl.append('g').attr('transform', `translate(${cfg.padding}, 2)`);
 
   g.append('rect')
-    .attr('class', 'wp-legend-border')
+    .attr('class', cls.border)
     .attr('x', 0)
     .attr('y', 0)
     .attr('width', totalWidth - cfg.padding)
@@ -166,7 +171,7 @@ export function drawWellLegend(
     .attr('rx', 3);
 
   g.append('text')
-    .attr('class', 'wp-legend-title')
+    .attr('class', cls.title)
     .attr('x', 4)
     .attr('y', 11)
     .attr('font-size', cfg.fontSize)
@@ -175,7 +180,7 @@ export function drawWellLegend(
 
   items.forEach((item, i) => {
     const cx = 10 + i * cfg.itemWidth;
-    const symG = g.append('g').attr('class', 'wp-legend-item');
+    const symG = g.append('g').attr('class', cls.item);
 
     if (item.kind === 'fracture') {
       const color = item.water_intake ? fractureWetColor : fractureDryColor;
@@ -184,7 +189,7 @@ export function drawWellLegend(
         ([-4, 0, 4] as number[]).forEach(offset => {
           symG
             .append('polyline')
-            .attr('class', 'fracture-poly')
+            .attr('class', cls.fracturePoly)
             .attr('data-wet', String(item.water_intake))
             .attr(
               'points',
@@ -199,7 +204,7 @@ export function drawWellLegend(
       } else {
         symG
           .append('polyline')
-          .attr('class', 'fracture-poly')
+          .attr('class', cls.fracturePoly)
           .attr('data-wet', String(item.water_intake))
           .attr(
             'points',
@@ -221,7 +226,7 @@ export function drawWellLegend(
 
       symG
         .append('rect')
-        .attr('class', 'cave-fill')
+        .attr('class', cls.caveFill)
         .attr('data-wet', String(item.water_intake))
         .attr('x', cx)
         .attr('y', symY - rh / 2)
@@ -233,7 +238,7 @@ export function drawWellLegend(
     }
 
     g.append('text')
-      .attr('class', 'wp-legend-label')
+      .attr('class', cls.label)
       .attr('x', cx + 28)
       .attr('y', symY + 3)
       .attr('font-size', cfg.fontSize)

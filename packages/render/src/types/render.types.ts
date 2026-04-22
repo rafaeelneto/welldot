@@ -124,6 +124,14 @@ export type ComponentsClassNames = {
     aqRect: string;
     text: string;
   };
+  legend: {
+    border: string;
+    title: string;
+    item: string;
+    label: string;
+    fracturePoly: string;
+    caveFill: string;
+  };
 };
 
 export type TooltipKey =
@@ -241,7 +249,7 @@ export type RenderConfig = {
     outerEdgeWidth: number;
   };
   cssVars?: CssVarsConfig;
-  legend?: LegendRenderConfig;
+  legend: LegendRenderConfig;
 };
 
 export type LegendRenderConfig = {

@@ -153,6 +153,14 @@ export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
       divider: 'lithology-label-divider',
     },
   },
+  legend: {
+    border: 'wp-legend-border',
+    title: 'wp-legend-title',
+    item: 'wp-legend-item',
+    label: 'wp-legend-label',
+    fracturePoly: 'fracture-poly',
+    caveFill: 'cave-fill',
+  },
 };
 
 export const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {

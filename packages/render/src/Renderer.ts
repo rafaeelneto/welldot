@@ -47,6 +47,7 @@ import {
   DEFAULT_COMPONENTS_CLASS_NAMES,
   INTERACTIVE_RENDER_CONFIG,
 } from './configs/render.configs';
+import { drawWellLegend } from './renderers/legend.renderer';
 import {
   getConflictAreas,
   getLithologyFill,
@@ -178,6 +179,14 @@ export class WellRenderer {
     Object.values(DEFAULTS_TEXTURES).forEach(texture => svg.call(texture));
 
     return { svg, height, width, margins, clipId, clipRectId };
+  }
+
+  public renderLegend(selector: string, profile: Well): void {
+    drawWellLegend(selector, profile, {
+      config: this.renderConfig.legend,
+      cssVars: this.renderConfig.cssVars,
+      classNames: this.classes.legend,
+    });
   }
 
   public async prepareSvg() {
