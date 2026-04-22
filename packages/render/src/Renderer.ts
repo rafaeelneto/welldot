@@ -4,7 +4,10 @@ import * as d3module from 'd3';
 import d3tip from 'd3-tip';
 
 import { defu } from 'defu';
-import { createWellTextures } from './configs/render.textures';
+import {
+  createWellTextures,
+  type WellTextures,
+} from './configs/render.textures';
 
 const d3 = Object.assign(d3module, { tip: d3tip });
 
@@ -59,10 +62,10 @@ import {
   wavyContact,
 } from './utils/render.utils';
 
-const DEFAULTS_TEXTURES = createWellTextures();
 export class WellRenderer {
   private svgInstances: SvgInstance[] = [];
   private instanceStates: InstanceState[] = [];
+  private textures: WellTextures = createWellTextures();
 
   classes = DEFAULT_COMPONENTS_CLASS_NAMES;
   private renderConfig: RenderConfig = INTERACTIVE_RENDER_CONFIG;
@@ -100,6 +103,8 @@ export class WellRenderer {
         INTERACTIVE_RENDER_CONFIG,
       ) as RenderConfig;
     }
+
+    this.textures = createWellTextures(this.renderConfig.textures);
 
     return this;
   }
@@ -176,7 +181,7 @@ export class WellRenderer {
     construction.append('g').attr('class', this.classes.wellScreen.group);
     construction.append('g').attr('class', this.classes.conflict.group);
 
-    Object.values(DEFAULTS_TEXTURES).forEach(texture => svg.call(texture));
+    Object.values(this.textures).forEach(texture => svg.call(texture));
 
     return { svg, height, width, margins, clipId, clipRectId };
   }
@@ -186,6 +191,7 @@ export class WellRenderer {
       config: this.renderConfig.legend,
       cssVars: this.renderConfig.cssVars,
       classNames: this.classes.legend,
+      textures: this.renderConfig.textures,
     });
   }
 
@@ -438,7 +444,7 @@ export class WellRenderer {
      *      This gives a wavy-edged filled band exactly like a lithology layer.
      *   4. Stroke the top and bottom contact lines separately so they appear as
      *      distinct, crisp geological contacts on top of the fill.
-     *   5. Fill with the cave_dry / cave_wet texture from DEFAULTS_TEXTURES,
+     *   5. Fill with the cave_dry / cave_wet texture from this.textures,
      *      registered via svg.call() exactly as every other texture in this file.
      */
     const drawCaves = (data: Cave[], yScale) => {
@@ -496,8 +502,8 @@ export class WellRenderer {
         } L ${geoXLeft.toFixed(1)},${topPts[0][1].toFixed(1)} Z`;
 
         const caveTexture = cave.water_intake
-          ? DEFAULTS_TEXTURES.cave_wet
-          : DEFAULTS_TEXTURES.cave_dry;
+          ? this.textures.cave_wet
+          : this.textures.cave_dry;
 
         const g = cavesGroup
           .append('g')
@@ -1042,7 +1048,7 @@ export class WellRenderer {
           .attr('height', (d: CementPad) => {
             return yScale(d.thickness * rcc.cementPad.thicknessMultiplier);
           })
-          .style('fill', () => DEFAULTS_TEXTURES.pad.url());
+          .style('fill', () => this.textures.pad.url());
 
         newCementPad
           .on('mouseover', tooltips.cementPad.show)
@@ -1072,45 +1078,65 @@ export class WellRenderer {
         .attr('y', getYPos)
         .attr('height', getHeight);
 
-      const surfaceCase = surfaceCaseGroup
-        .selectAll(`.${this.classes.surfaceCase.rect}`)
+      const surfaceCaseGs = surfaceCaseGroup
+        .selectAll(`g.${this.classes.surfaceCase.rect}`)
         .data(data.surface_case);
 
-      surfaceCase
-        .exit()
-        // @ts-ignore
-        .transition(transition)
-        .attr('height', 0)
-        .remove();
+      surfaceCaseGs.exit().transition(transition).style('opacity', 0).remove();
 
-      const newSurfaceCase = surfaceCase
+      const newSC = surfaceCaseGs
         .enter()
-        .append('rect')
+        .append('g')
         .attr('class', this.classes.surfaceCase.rect)
         .on('mouseover', tooltips.surfaceCase.show)
         .on('mouseout', tooltips.surfaceCase.hide);
 
-      newSurfaceCase
-        // @ts-ignore
-        .merge(surfaceCase)
-        .attr(
-          'x',
-          (d: SurfaceCase) =>
-            (POCO_CENTER -
-              xScale(
-                d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-              )) /
-            2,
-        )
-        .attr('width', (d: SurfaceCase) =>
-          xScale(
-            d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-          ),
-        )
+      newSC.append('rect').attr('class', 'surface-case-fill');
+      newSC.append('line').attr('class', 'surface-case-side');
+      newSC.append('line').attr('class', 'surface-case-side');
+
+      // @ts-ignore
+      const mergedSC = newSC.merge(surfaceCaseGs);
+
+      mergedSC.each((d: SurfaceCase, i, nodes) => {
+        const x =
+          (POCO_CENTER -
+            xScale(
+              d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
+            )) /
+          2;
+        const w = xScale(
+          d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
+        );
+        const g = d3.select(nodes[i] as Element);
+        g.select('.surface-case-fill')
+          .attr('x', x)
+          .attr('width', w)
+          .attr('fill', this.textures.surface_case.url());
+        const sideNodes = g.selectAll('.surface-case-side').nodes();
+        d3.select(sideNodes[0] as Element)
+          .attr('x1', x)
+          .attr('x2', x);
+        d3.select(sideNodes[1] as Element)
+          .attr('x1', x + w)
+          .attr('x2', x + w);
+      });
+
+      mergedSC
+        .select('.surface-case-fill')
         // @ts-ignore
         .transition(transition)
-        .attr('y', getYPos)
-        .attr('height', getHeight);
+        .attr('y', (d: SurfaceCase) => getYPos(d))
+        .attr('height', (d: SurfaceCase) => getHeight(d));
+
+      mergedSC
+        .selectAll('.surface-case-side')
+        .attr('y1', (d: unknown) => getYPos(d as SurfaceCase))
+        .attr(
+          'y2',
+          (d: unknown) =>
+            getYPos(d as SurfaceCase) + getHeight(d as SurfaceCase),
+        );
 
       const holeFill = holeFillGroup
         .selectAll(`.${this.classes.holeFill.rect}`)
@@ -1134,7 +1160,7 @@ export class WellRenderer {
         .transition(transition)
         .attr('y', getYPos)
         .attr('height', getHeight)
-        .style('fill', (d: HoleFill) => DEFAULTS_TEXTURES[d.type].url());
+        .style('fill', (d: HoleFill) => this.textures[d.type].url());
 
       const wellCase = wellCaseGroup
         .selectAll(`.${this.classes.wellCase.rect}`)
@@ -1169,7 +1195,7 @@ export class WellRenderer {
         .enter()
         .append('rect')
         .attr('class', this.classes.wellScreen.rect)
-        .style('fill', () => DEFAULTS_TEXTURES.well_screen.url())
+        .style('fill', () => this.textures.well_screen.url())
         .on('mouseover', tooltips.wellScreen.show)
         .on('mouseout', tooltips.wellScreen.hide);
 
@@ -1199,7 +1225,7 @@ export class WellRenderer {
         .enter()
         .append('rect')
         .attr('class', this.classes.conflict.rect)
-        .style('fill', () => DEFAULTS_TEXTURES.conflict.url())
+        .style('fill', () => this.textures.conflict.url())
         .on('mouseover', tooltips.conflict.show)
         .on('mouseout', tooltips.conflict.hide);
 
@@ -1288,6 +1314,21 @@ export class WellRenderer {
         .attr('height', d => {
           if (!d) return null;
           return transform.k * spanH(d);
+        });
+
+      // Surface case: update fill rect y/height and side line y1/y2
+      surfaceCaseGroup
+        .selectAll(`g.${this.classes.surfaceCase.rect}`)
+        .each((d: unknown, i, nodes) => {
+          if (!d) return;
+          const sc = d as SurfaceCase;
+          const g = d3.select(nodes[i] as Element);
+          const y = transform.applyY(spanY(sc));
+          const h = transform.k * spanH(sc);
+          g.select('.surface-case-fill').attr('y', y).attr('height', h);
+          g.selectAll('.surface-case-side')
+            .attr('y1', y)
+            .attr('y2', y + h);
         });
 
       // Fractures: recompute transform so rotation pivot tracks the scaled depth

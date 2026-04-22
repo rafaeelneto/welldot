@@ -12,12 +12,10 @@ import {
   DEFAULT_COMPONENTS_CLASS_NAMES,
   INTERACTIVE_RENDER_CONFIG,
 } from '../configs/render.configs';
-import { createWellTextures } from '../configs/render.textures';
+import { TexturesConfig, createWellTextures } from '../configs/render.textures';
 import { getConflictAreas, mergeConflicts } from '../utils/render.utils';
 
 const d3 = { ...d3module };
-
-const DEFAULTS_TEXTURES = createWellTextures();
 
 function resolveCssVar(node: Element | null, varName: string): string {
   if (!node) return '';
@@ -57,6 +55,7 @@ export function drawWellLegend(
     config?: Partial<LegendRenderConfig>;
     cssVars?: Partial<CssVarsConfig>;
     classNames?: ComponentsClassNames['legend'];
+    textures?: TexturesConfig;
   } = {},
 ): void {
   const fractures = profile.fractures ?? [];
@@ -193,7 +192,8 @@ export function drawWellLegend(
     }
   }
 
-  Object.values(DEFAULTS_TEXTURES).forEach(t => svgEl.call(t));
+  const legendTextures = createWellTextures(options.textures);
+  Object.values(legendTextures).forEach(t => svgEl.call(t));
 
   const itemsPerRow = cfg.maxWidth
     ? Math.max(1, Math.floor((cfg.maxWidth - cfg.padding * 2) / cfg.itemWidth))
@@ -213,7 +213,10 @@ export function drawWellLegend(
   const caveWetColor = resolveCssVar(node, CSS_VAR_MAP.caveWetStroke);
   const boreHoleFillColor = resolveCssVar(node, CSS_VAR_MAP.boreHoleFill);
   const boreHoleStrokeColor = resolveCssVar(node, CSS_VAR_MAP.boreHoleStroke);
-  const surfaceCaseFillColor = resolveCssVar(node, CSS_VAR_MAP.surfaceCaseFill);
+  const surfaceCaseStrokeColor = resolveCssVar(
+    node,
+    CSS_VAR_MAP.surfaceCaseStroke,
+  );
   const holeFillStrokeColor = resolveCssVar(node, CSS_VAR_MAP.holeFillStroke);
   const wellCaseFillColor = resolveCssVar(node, CSS_VAR_MAP.wellCaseFill);
   const wellCaseStrokeColor = resolveCssVar(node, CSS_VAR_MAP.wellCaseStroke);
@@ -223,6 +226,10 @@ export function drawWellLegend(
   );
   const conflictStrokeColor = resolveCssVar(node, CSS_VAR_MAP.conflictStroke);
   const cementPadStrokeColor = resolveCssVar(node, CSS_VAR_MAP.cementPadStroke);
+  const boreHoleStrokeDasharray = resolveCssVar(
+    node,
+    CSS_VAR_MAP.boreHoleStrokeDasharray,
+  );
 
   const RC = 'round' as const;
 
@@ -292,8 +299,8 @@ export function drawWellLegend(
     } else if (item.kind === 'cave') {
       const color = item.water_intake ? caveWetColor : caveDryColor;
       const texture = item.water_intake
-        ? DEFAULTS_TEXTURES.cave_wet
-        : DEFAULTS_TEXTURES.cave_dry;
+        ? legendTextures.cave_wet
+        : legendTextures.cave_dry;
 
       symG
         .append('rect')
@@ -305,38 +312,69 @@ export function drawWellLegend(
         .attr('height', rh)
         .attr('fill', texture.url())
         .attr('stroke', color);
+    } else if (item.subKind === 'surfaceCase') {
+      symG
+        .append('rect')
+        .attr('class', cls.constructionRect)
+        .attr('x', cx)
+        .attr('y', rowSymY - rh / 2)
+        .attr('width', rw)
+        .attr('height', rh)
+        .attr('fill', legendTextures.surface_case.url())
+        .attr('stroke', 'none');
+      symG
+        .append('line')
+        .attr('class', cls.constructionRect)
+        .attr('x1', cx)
+        .attr('x2', cx)
+        .attr('y1', rowSymY - rh / 2)
+        .attr('y2', rowSymY + rh / 2)
+        .attr('stroke', surfaceCaseStrokeColor)
+        .style('stroke-width', '2px');
+      symG
+        .append('line')
+        .attr('class', cls.constructionRect)
+        .attr('x1', cx + rw)
+        .attr('x2', cx + rw)
+        .attr('y1', rowSymY - rh / 2)
+        .attr('y2', rowSymY + rh / 2)
+        .attr('stroke', surfaceCaseStrokeColor)
+        .style('stroke-width', '2px');
     } else {
-      const symMap: Record<string, { fill: string; stroke: string }> = {
-        boreHole: { fill: boreHoleFillColor, stroke: boreHoleStrokeColor },
-        surfaceCase: {
-          fill: surfaceCaseFillColor,
-          stroke: surfaceCaseFillColor,
+      const symMap: Record<
+        string,
+        { fill: string; stroke: string; dasharray?: string }
+      > = {
+        boreHole: {
+          fill: boreHoleFillColor,
+          stroke: boreHoleStrokeColor,
+          dasharray: boreHoleStrokeDasharray,
         },
         holeFillGravel: {
-          fill: DEFAULTS_TEXTURES.gravel_pack.url(),
+          fill: legendTextures.gravel_pack.url(),
           stroke: holeFillStrokeColor,
         },
         holeFillSeal: {
-          fill: DEFAULTS_TEXTURES.seal.url(),
+          fill: legendTextures.seal.url(),
           stroke: holeFillStrokeColor,
         },
         wellCase: { fill: wellCaseFillColor, stroke: wellCaseStrokeColor },
         wellScreen: {
-          fill: DEFAULTS_TEXTURES.well_screen.url(),
+          fill: legendTextures.well_screen.url(),
           stroke: wellScreenStrokeColor,
         },
         cementPad: {
-          fill: DEFAULTS_TEXTURES.pad.url(),
+          fill: legendTextures.pad.url(),
           stroke: cementPadStrokeColor,
         },
         conflict: {
-          fill: DEFAULTS_TEXTURES.conflict.url(),
+          fill: legendTextures.conflict.url(),
           stroke: conflictStrokeColor,
         },
       };
       const sym = symMap[item.subKind];
 
-      symG
+      const symRect = symG
         .append('rect')
         .attr('class', cls.constructionRect)
         .attr('x', cx)
@@ -345,6 +383,7 @@ export function drawWellLegend(
         .attr('height', rh)
         .attr('fill', sym.fill)
         .attr('stroke', sym.stroke);
+      if (sym.dasharray) symRect.attr('stroke-dasharray', sym.dasharray);
     }
 
     g.append('text')

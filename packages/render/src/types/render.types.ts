@@ -1,4 +1,5 @@
 import { type BaseType, type Selection } from 'd3';
+import type { TexturesConfig } from '~/configs/render.textures';
 
 export type DeepPartial<T> = T extends object
   ? { [K in keyof T]?: DeepPartial<T[K]> }
@@ -27,7 +28,9 @@ export type CssVarsConfig = {
   cementPadStroke?: string;
   boreHoleFill?: string;
   boreHoleStroke?: string;
+  boreHoleStrokeDasharray?: string;
   surfaceCaseFill?: string;
+  surfaceCaseStroke?: string;
   holeFillStroke?: string;
   wellCaseFill?: string;
   wellCaseStroke?: string;
@@ -205,6 +208,7 @@ export type RenderConfig = {
       diameterPaddingRatio: number;
     };
   };
+  textures?: TexturesConfig;
   constructionLabels: {
     active: boolean;
     fontSize: number;
