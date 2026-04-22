@@ -2,17 +2,19 @@ import React from 'react';
 
 import '@/app/global.css';
 import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
 import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
 
+import '@welldot/render/styles/main.css';
+
+import Header from '@/src_old/components/header/header.component';
 import {
   ColorSchemeScript,
-  MantineProvider,
   createTheme,
   MantineColorsTuple,
+  MantineProvider,
 } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import Header from '@/src_old/components/header/header.component';
 
 const myColor: MantineColorsTuple = [
   '#ebf8ff',

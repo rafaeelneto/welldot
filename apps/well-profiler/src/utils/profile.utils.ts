@@ -1,9 +1,12 @@
-export { profileToWell, convertProfileFromJSON, checkIfProfileIsEmpty } from '@welldot/core';
 export {
-  getProfileLastItemsDepths,
-  getProfileDiamValues,
-  getConstructivePropertySummary,
+  checkIfProfileIsEmpty,
+  convertProfileFromJSON,
+  profileToWell,
+} from '@welldot/core';
+export {
   calculateCilindricVolume,
   calculateHoleFillVolume,
-  numberFormater,
+  getConstructivePropertySummary,
+  getProfileDiamValues,
+  getProfileLastItemsDepths,
 } from '@welldot/render';
