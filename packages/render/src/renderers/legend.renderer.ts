@@ -235,7 +235,7 @@ export function drawWellLegend(
     .attr('width', totalWidth - cfg.padding)
     .attr('height', totalHeight - 4)
     .attr('fill', 'white')
-    .attr('rx', 3);
+    .attr('rx', cfg.borderRadius);
 
   g.append('text')
     .attr('class', cls.title)
@@ -265,12 +265,12 @@ export function drawWellLegend(
             .append('polyline')
             .attr('class', cls.fracturePoly)
             .attr('data-wet', String(item.water_intake))
+            .attr('data-side', String(offset !== 0))
             .attr(
               'points',
               `${cx},${rowSymY + offset} ${cx + 6},${rowSymY + offset - 1} ${cx + 12},${rowSymY + offset + 1} ${cx + 18},${rowSymY + offset - 0.5} ${cx + 24},${rowSymY + offset}`,
             )
             .attr('stroke', color)
-            .attr('stroke-width', offset === 0 ? 1.5 : 0.8)
             .attr('fill', 'none')
             .attr('stroke-linecap', RC)
             .attr('stroke-linejoin', RC);
@@ -285,7 +285,6 @@ export function drawWellLegend(
             `${cx},${rowSymY} ${cx + 5},${rowSymY - 1.5} ${cx + 11},${rowSymY + 1} ${cx + 17},${rowSymY - 0.5} ${cx + 24},${rowSymY}`,
           )
           .attr('stroke', color)
-          .attr('stroke-width', 1.5)
           .attr('fill', 'none')
           .attr('stroke-linecap', RC)
           .attr('stroke-linejoin', RC);
@@ -305,8 +304,7 @@ export function drawWellLegend(
         .attr('width', rw)
         .attr('height', rh)
         .attr('fill', texture.url())
-        .attr('stroke', color)
-        .attr('stroke-width', 0.8);
+        .attr('stroke', color);
     } else {
       const symMap: Record<string, { fill: string; stroke: string }> = {
         boreHole: { fill: boreHoleFillColor, stroke: boreHoleStrokeColor },
@@ -346,8 +344,7 @@ export function drawWellLegend(
         .attr('width', rw)
         .attr('height', rh)
         .attr('fill', sym.fill)
-        .attr('stroke', sym.stroke)
-        .attr('stroke-width', 0.8);
+        .attr('stroke', sym.stroke);
     }
 
     g.append('text')

@@ -33,6 +33,13 @@
   --wp-label-divider-stroke:           #888888;
   --wp-label-divider-stroke-width:     0.5px;
   --wp-label-divider-stroke-dasharray: 2,2;
+
+  --wp-depth-tip-border-radius: 2px;
+
+  --wp-legend-border-stroke-width:        0.8px;
+  --wp-legend-fracture-stroke-width:      1.5px;
+  --wp-legend-fracture-side-stroke-width: 0.8px;
+  --wp-legend-item-stroke-width:          0.8px;
 }
 
 .well-group .lithology-rect    { stroke: var(--wp-lithology-stroke); stroke-width: var(--wp-lithology-stroke-width); }
@@ -73,7 +80,7 @@
 .wp-lithology-depth-tip {
   background:    white;
   border:        0.5px solid var(--wp-lithology-stroke, #303030);
-  border-radius: 2px;
+  border-radius: var(--wp-depth-tip-border-radius, 2px);
   font-size:     7.5px;
   font-family:   sans-serif;
   color:         #303030;
@@ -116,3 +123,11 @@
   font-weight: 400;
   color:       var(--wp-label-body-color, #555);
 }
+
+/* ── Legend symbols ──────────────────────────────────────────────────────── */
+.wp-legend-border { stroke-width: var(--wp-legend-border-stroke-width, 0.8px); }
+
+.wp-legend-item .fracture-poly                    { stroke-width: var(--wp-legend-fracture-stroke-width, 1.5px); }
+.wp-legend-item .fracture-poly[data-side="true"]  { stroke-width: var(--wp-legend-fracture-side-stroke-width, 0.8px); }
+.wp-legend-item .cave-fill                        { stroke-width: var(--wp-legend-item-stroke-width, 0.8px); }
+.wp-legend-item .construction-rect                { stroke-width: var(--wp-legend-item-stroke-width, 0.8px); }

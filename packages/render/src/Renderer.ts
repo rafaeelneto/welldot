@@ -757,7 +757,7 @@ export class WellRenderer {
           .attr('y', labelY)
           .attr('width', estW)
           .attr('height', labelH)
-          .attr('rx', 2)
+          .attr('rx', clc.labelRadius)
           .attr('fill', 'white')
           .attr('stroke', '#303030')
           .attr('stroke-width', 0.5);

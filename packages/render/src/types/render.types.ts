@@ -49,6 +49,11 @@ export type CssVarsConfig = {
   unitLabelGeologicFill?: string;
   unitLabelAquiferFill?: string;
   unitLabelStroke?: string;
+  // Legend symbol stroke-widths
+  legendBorderStrokeWidth?: string;
+  legendFractureStrokeWidth?: string;
+  legendFractureSideStrokeWidth?: string;
+  legendItemStrokeWidth?: string;
 };
 
 export type ComponentsClassNames = {
@@ -204,6 +209,7 @@ export type RenderConfig = {
     active: boolean;
     fontSize: number;
     xOffset: number;
+    labelRadius: number;
     labels: {
       wellCasePrefix: string;
       wellScreenPrefix: string;
@@ -260,6 +266,7 @@ export type LegendRenderConfig = {
   height: number;
   padding: number;
   maxWidth?: number;
+  borderRadius: number;
   labels: {
     fractureSingle: string;
     fractureSwarm: string;

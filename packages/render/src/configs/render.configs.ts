@@ -58,6 +58,7 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
     active: false,
     fontSize: 7.5,
     xOffset: 10,
+    labelRadius: 2,
     labels: {
       wellCasePrefix: 'Revest.',
       wellScreenPrefix: 'Filtro',
@@ -71,6 +72,7 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
     height: 44,
     padding: 4,
     maxWidth: 700,
+    borderRadius: 3,
     labels: {
       fractureSingle: 'Fratura simples',
       fractureSwarm: 'Enxame de fraturas',
@@ -202,4 +204,8 @@ export const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {
   unitLabelGeologicFill: '--wp-unit-geo-fill',
   unitLabelAquiferFill: '--wp-unit-aq-fill',
   unitLabelStroke: '--wp-unit-label-stroke',
+  legendBorderStrokeWidth: '--wp-legend-border-stroke-width',
+  legendFractureStrokeWidth: '--wp-legend-fracture-stroke-width',
+  legendFractureSideStrokeWidth: '--wp-legend-fracture-side-stroke-width',
+  legendItemStrokeWidth: '--wp-legend-item-stroke-width',
 };
