@@ -28,6 +28,7 @@ export type SealTextureConfig = {
 };
 
 export type GravelPackTextureConfig = {
+  size: number;
   background: string;
 };
 
@@ -102,6 +103,7 @@ export function createWellTextures(cfg?: TexturesConfig): WellTextures {
   };
 
   const gravel_pack: GravelPackTextureConfig = {
+    size: 16,
     background: '#ffffff',
     ...cfg?.gravel_pack,
   };
@@ -150,6 +152,7 @@ export function createWellTextures(cfg?: TexturesConfig): WellTextures {
     seal: textures.lines().thicker().background(seal.background),
     gravel_pack: textures
       .circles()
+      .size(gravel_pack.size)
       .complement()
       .background(gravel_pack.background),
     well_screen: textures
