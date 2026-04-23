@@ -158,6 +158,8 @@ export type TooltipKey =
 export type RenderConfig = {
   zoom: boolean;
   pan: boolean;
+  /** Initial zoom scale applied on first render (1 = fit all, 2 = start 2× zoomed in). */
+  zoomLevel?: number;
   /** undefined = show all; false or [] = show none; array = show only listed keys */
   tooltips?: TooltipKey[] | false;
   animation: {

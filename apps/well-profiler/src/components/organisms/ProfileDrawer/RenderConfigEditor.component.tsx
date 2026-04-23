@@ -283,6 +283,7 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
                 />
               </div>
             ))}
+            {numInput('Zoom Level', ['zoomLevel'], 0.5)}
           </div>
 
           <div className={styles.editorSection}>

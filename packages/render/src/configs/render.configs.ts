@@ -8,6 +8,7 @@ import {
 export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
   zoom: true,
   pan: true,
+  zoomLevel: 1,
   animation: { duration: 600, ease: easeCubic },
   geologic: { xLeft: 6, xRightInset: 56 },
   layout: { pocoWidthRatio: 0.25, pocoCenterRatio: 0.11 },

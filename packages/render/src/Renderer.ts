@@ -1451,6 +1451,12 @@ export class WellRenderer {
         );
       // @ts-ignore
       svg.call(zoomNode).node();
+
+      const initialZoom = this.renderConfig.zoomLevel ?? 1;
+      if (initialZoom !== 1) {
+        // @ts-ignore
+        svg.call(zoomNode.transform, d3.zoomIdentity.scale(initialZoom));
+      }
     }
   }
 }
