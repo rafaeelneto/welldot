@@ -36,8 +36,17 @@ interface D3Tip {
   hide(...args: unknown[]): void;
 }
 
+export type LithologyTextureOptions = {
+  size: number;
+  strokeWidth: number;
+  stroke: string;
+};
+
 /** Returns a map from "texture.from" keys to textures.js fill objects for each lithology entry. */
-export const getLithologicalFillList = (data: Lithology[]) => {
+export const getLithologicalFillList = (
+  data: Lithology[],
+  opts: LithologyTextureOptions,
+) => {
   const uniqueTextureCodes = [...new Set(data.map(d => d.fgdc_texture))];
   const texturesLoaded = Object.fromEntries(
     uniqueTextureCodes
@@ -51,9 +60,9 @@ export const getLithologicalFillList = (data: Lithology[]) => {
       textures
         .paths()
         .d(() => texturesLoaded[d.fgdc_texture])
-        .size(150)
-        .strokeWidth(0.8)
-        .stroke('#303030')
+        .size(opts.size)
+        .strokeWidth(opts.strokeWidth)
+        .stroke(opts.stroke)
         .background(d.color),
     ]),
   );
@@ -115,8 +124,9 @@ export const getYAxisFunctions = (
 export const getLithologyFill = (
   geologyData: Lithology[],
   svg: SvgSelection,
+  opts: LithologyTextureOptions,
 ) => {
-  const lithologicalFill = getLithologicalFillList(geologyData);
+  const lithologicalFill = getLithologicalFillList(geologyData, opts);
   return (d: Lithology) => {
     const fill = lithologicalFill[`${d.fgdc_texture}.${d.from}`];
     if (!fill.url) return fill;

@@ -18,45 +18,34 @@ export type InstanceState = {
   clipRectId: string;
 };
 
-export type CssVarsConfig = {
-  // Strokes & fills
-  lithologyStroke?: string;
-  caveDryStroke?: string;
-  caveWetStroke?: string;
-  fractureDryStroke?: string;
-  fractureWetStroke?: string;
-  cementPadStroke?: string;
-  boreHoleFill?: string;
-  boreHoleStroke?: string;
-  boreHoleStrokeDasharray?: string;
-  surfaceCaseFill?: string;
-  surfaceCaseStroke?: string;
-  holeFillStroke?: string;
-  wellCaseFill?: string;
-  wellCaseStroke?: string;
-  wellScreenStroke?: string;
-  conflictStroke?: string;
-  // Widths & opacities
-  lithologyStrokeWidth?: string;
-  caveFillOpacity?: string;
-  caveContactStrokeWidth?: string;
-  cementPadStrokeWidth?: string;
-  boreHoleOpacity?: string;
-  boreHoleStrokeWidth?: string;
-  surfaceCaseStrokeWidth?: string;
-  holeFillStrokeWidth?: string;
-  wellCaseStrokeWidth?: string;
-  wellScreenStrokeWidth?: string;
-  conflictStrokeWidth?: string;
-  // Unit label strips
-  unitLabelGeologicFill?: string;
-  unitLabelAquiferFill?: string;
-  unitLabelStroke?: string;
-  // Legend symbol stroke-widths
-  legendBorderStrokeWidth?: string;
-  legendFractureStrokeWidth?: string;
-  legendFractureSideStrokeWidth?: string;
-  legendItemStrokeWidth?: string;
+export type WellTheme = {
+  lithology: { stroke: string; strokeWidth: number };
+  lithologyTexture: { size: number; strokeWidth: number; stroke: string };
+  cave: { dryStroke: string; wetStroke: string; fillOpacity: number; contactStrokeWidth: number };
+  fracture: { dryStroke: string; wetStroke: string };
+  cementPad: { stroke: string; strokeWidth: number };
+  boreHole: { fill: string; stroke: string; strokeDasharray: string; opacity: number; strokeWidth: number };
+  surfaceCase: { stroke: string; strokeWidth: number };
+  holeFill: { stroke: string; strokeWidth: number };
+  wellCase: { fill: string; stroke: string; strokeWidth: number };
+  wellScreen: { stroke: string; strokeWidth: number };
+  conflict: { stroke: string; strokeWidth: number };
+  unitLabels: { geologicFill: string; aquiferFill: string; stroke: string; strokeWidth: number };
+  labels: {
+    dividerStroke: string;
+    dividerStrokeWidth: number;
+    dividerStrokeDasharray: string;
+    fontSize: number;
+    color: string;
+    headerFont: string;
+    bodyColor: string;
+  };
+  legend: {
+    borderStrokeWidth: number;
+    fractureStrokeWidth: number;
+    fractureSideStrokeWidth: number;
+    itemStrokeWidth: number;
+  };
 };
 
 export type ComponentsClassNames = {
@@ -261,7 +250,6 @@ export type RenderConfig = {
     /** Stroke width of the top/bottom boundary (and page-clip edges in multi-SVG rendering) */
     outerEdgeWidth: number;
   };
-  cssVars?: CssVarsConfig;
   legend: LegendRenderConfig;
 };
 

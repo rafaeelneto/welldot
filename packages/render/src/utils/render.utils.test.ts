@@ -49,6 +49,7 @@ import {
   getLithologicalFillList,
   getLithologyFill,
   getYAxisFunctions,
+  LithologyTextureOptions,
   makeCavePrng,
   mergeConflicts,
   populateTooltips,
@@ -98,6 +99,12 @@ const makeClasses = (): ComponentsClassNames => ({
 });
 
 const makeSvg = () => ({ call: vi.fn() }) as unknown as SvgSelection;
+
+const DEFAULT_TEXTURE_OPTS: LithologyTextureOptions = {
+  size: 150,
+  strokeWidth: 0.8,
+  stroke: '#303030',
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -413,13 +420,16 @@ describe('mergeConflicts', () => {
 
 describe('getLithologicalFillList', () => {
   it('empty array → empty object', () => {
-    expect(Object.keys(getLithologicalFillList([]))).toHaveLength(0);
+    expect(
+      Object.keys(getLithologicalFillList([], DEFAULT_TEXTURE_OPTS)),
+    ).toHaveLength(0);
   });
 
   it('single lithology creates entry keyed by "texture.from"', () => {
-    const result = getLithologicalFillList([
-      makeLithology({ fgdc_texture: '120', from: 5 }),
-    ]);
+    const result = getLithologicalFillList(
+      [makeLithology({ fgdc_texture: '120', from: 5 })],
+      DEFAULT_TEXTURE_OPTS,
+    );
     expect(result).toHaveProperty('120.5');
   });
 
@@ -428,7 +438,7 @@ describe('getLithologicalFillList', () => {
       makeLithology({ fgdc_texture: '120', from: 0 }),
       makeLithology({ fgdc_texture: '120', from: 10 }),
     ];
-    const result = getLithologicalFillList(lits);
+    const result = getLithologicalFillList(lits, DEFAULT_TEXTURE_OPTS);
     expect(Object.keys(result)).toHaveLength(2);
     expect(result).toHaveProperty('120.0');
     expect(result).toHaveProperty('120.10');
@@ -439,13 +449,43 @@ describe('getLithologicalFillList', () => {
       makeLithology({ fgdc_texture: '120', from: 0 }),
       makeLithology({ fgdc_texture: '601', from: 10 }),
     ];
-    expect(Object.keys(getLithologicalFillList(lits))).toHaveLength(2);
+    expect(
+      Object.keys(getLithologicalFillList(lits, DEFAULT_TEXTURE_OPTS)),
+    ).toHaveLength(2);
   });
 
   it('texture code absent from fgdcTextures → entry created without throwing', () => {
     const lit = makeLithology({ fgdc_texture: '999', from: 0 });
-    expect(() => getLithologicalFillList([lit])).not.toThrow();
-    expect(getLithologicalFillList([lit])).toHaveProperty('999.0');
+    expect(() =>
+      getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS),
+    ).not.toThrow();
+    expect(
+      getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS),
+    ).toHaveProperty('999.0');
+  });
+
+  it('forwards size to textures.paths().size()', () => {
+    getLithologicalFillList(
+      [makeLithology({ fgdc_texture: '120', from: 0 })],
+      { size: 42, strokeWidth: 1, stroke: '#ff0000' },
+    );
+    expect(mockTexturePaths.size).toHaveBeenCalledWith(42);
+  });
+
+  it('forwards strokeWidth to textures.paths().strokeWidth()', () => {
+    getLithologicalFillList(
+      [makeLithology({ fgdc_texture: '120', from: 0 })],
+      { size: 150, strokeWidth: 2.5, stroke: '#ff0000' },
+    );
+    expect(mockTexturePaths.strokeWidth).toHaveBeenCalledWith(2.5);
+  });
+
+  it('forwards stroke to textures.paths().stroke()', () => {
+    getLithologicalFillList(
+      [makeLithology({ fgdc_texture: '120', from: 0 })],
+      { size: 150, strokeWidth: 1, stroke: '#aabbcc' },
+    );
+    expect(mockTexturePaths.stroke).toHaveBeenCalledWith('#aabbcc');
   });
 });
 
@@ -453,20 +493,20 @@ describe('getLithologicalFillList', () => {
 
 describe('getLithologyFill', () => {
   it('returns a function', () => {
-    const fill = getLithologyFill([makeLithology()], makeSvg());
+    const fill = getLithologyFill([makeLithology()], makeSvg(), DEFAULT_TEXTURE_OPTS);
     expect(typeof fill).toBe('function');
   });
 
   it('calling the returned function returns the texture url string', () => {
     const lit = makeLithology({ fgdc_texture: '120', from: 0 });
-    const fill = getLithologyFill([lit], makeSvg());
+    const fill = getLithologyFill([lit], makeSvg(), DEFAULT_TEXTURE_OPTS);
     expect(fill(lit)).toBe('url(#mock-texture)');
   });
 
   it('svg.call is invoked once per fill call', () => {
     const svg = makeSvg();
     const lit = makeLithology({ fgdc_texture: '120', from: 0 });
-    const fill = getLithologyFill([lit], svg);
+    const fill = getLithologyFill([lit], svg, DEFAULT_TEXTURE_OPTS);
     fill(lit);
     expect(svg.call).toHaveBeenCalledTimes(1);
   });
@@ -474,9 +514,22 @@ describe('getLithologyFill', () => {
   it('svg.call is invoked with the texture object', () => {
     const svg = makeSvg();
     const lit = makeLithology({ fgdc_texture: '120', from: 0 });
-    const fill = getLithologyFill([lit], svg);
+    const fill = getLithologyFill([lit], svg, DEFAULT_TEXTURE_OPTS);
     fill(lit);
     expect(svg.call).toHaveBeenCalledWith(mockTexturePaths);
+  });
+
+  it('forwards texture opts through to getLithologicalFillList', () => {
+    const lit = makeLithology({ fgdc_texture: '120', from: 0 });
+    const fill = getLithologyFill(
+      [lit],
+      makeSvg(),
+      { size: 99, strokeWidth: 3, stroke: '#112233' },
+    );
+    fill(lit);
+    expect(mockTexturePaths.size).toHaveBeenCalledWith(99);
+    expect(mockTexturePaths.strokeWidth).toHaveBeenCalledWith(3);
+    expect(mockTexturePaths.stroke).toHaveBeenCalledWith('#112233');
   });
 });
 

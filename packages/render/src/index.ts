@@ -6,17 +6,20 @@ export {
   getProfileDiamValues,
   getProfileLastItemsDepths,
 } from '@welldot/utils';
-export { INTERACTIVE_RENDER_CONFIG } from './configs/render.configs';
+export {
+  DEFAULT_WELL_THEME,
+  INTERACTIVE_RENDER_CONFIG,
+} from './configs/render.configs';
 export { WellRenderer } from './Renderer';
 export { drawWellLegend } from './renderers/legend.renderer';
 export type {
   ComponentsClassNames,
-  CssVarsConfig,
   DeepPartial,
   LegendRenderConfig,
   RenderConfig,
   SvgInstance,
   TooltipKey,
+  WellTheme,
 } from './types/render.types';
 export {
   formatDiameter,

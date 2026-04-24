@@ -1,9 +1,51 @@
 import { easeCubic } from 'd3';
-import {
-  ComponentsClassNames,
-  CssVarsConfig,
-  RenderConfig,
-} from '~/types/render.types';
+import { RenderConfig, WellTheme } from '~/types/render.types';
+
+export const DEFAULT_WELL_THEME: WellTheme = {
+  lithology: { stroke: '#101010', strokeWidth: 1 },
+  lithologyTexture: { size: 150, strokeWidth: 0.8, stroke: '#303030' },
+  cave: {
+    dryStroke: '#333333',
+    wetStroke: '#1a6fa8',
+    fillOpacity: 0.6,
+    contactStrokeWidth: 1.2,
+  },
+  fracture: { dryStroke: '#000000', wetStroke: '#1a6fa8' },
+  cementPad: { stroke: '#303030', strokeWidth: 2 },
+  boreHole: {
+    fill: '#ffffff86',
+    stroke: '#191919',
+    strokeDasharray: '4, 3',
+    opacity: 1,
+    strokeWidth: 1.2,
+  },
+  surfaceCase: { stroke: '#000000', strokeWidth: 4 },
+  holeFill: { stroke: '#303030', strokeWidth: 2 },
+  wellCase: { fill: '#ffffff', stroke: '#303030', strokeWidth: 2 },
+  wellScreen: { stroke: '#303030', strokeWidth: 2 },
+  conflict: { stroke: '#e52117', strokeWidth: 4 },
+  unitLabels: {
+    geologicFill: '#f0f0f0',
+    aquiferFill: '#dff0ff',
+    stroke: '#303030',
+    strokeWidth: 0.4,
+  },
+  labels: {
+    dividerStroke: '#888888',
+    dividerStrokeWidth: 0.5,
+    dividerStrokeDasharray: '2, 2',
+    fontSize: 7.5,
+    color: '#333',
+    headerFont: 'monospace',
+    bodyColor: '#555',
+  },
+  legend: {
+    borderStrokeWidth: 0.8,
+    fractureStrokeWidth: 1.5,
+    fractureSideStrokeWidth: 0.8,
+    itemStrokeWidth: 0.8,
+  },
+};
 
 export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
   zoom: true,
@@ -107,125 +149,4 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
       conflict: 'Conflito',
     },
   },
-};
-
-export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
-  tooltip: {
-    root: 'tooltip',
-    title: 'title',
-    primaryInfo: 'primaryInfo',
-    secondaryInfo: 'secondaryInfo',
-  },
-  yAxis: 'yAxis',
-  wellGroup: 'well-group',
-  geologicGroup: 'geologic-group',
-  lithology: {
-    group: 'lithology-group',
-    rect: 'lithology-rect',
-  },
-  fractures: {
-    group: 'fractures-group',
-    item: 'fracture-group',
-    hitArea: 'fracture-hit',
-    line: 'fracture-line',
-    polyline: 'fracture-poly',
-  },
-  caves: {
-    group: 'caves-group',
-    item: 'cave-group',
-    fill: 'cave-fill',
-    contact: 'cave-contact',
-  },
-  constructionGroup: 'construction-group',
-  constructionLabels: {
-    group: 'construction-labels-group',
-  },
-  cementPad: {
-    group: 'cement-pad',
-    item: 'cement-pad-rect',
-  },
-  boreHole: {
-    group: 'hole',
-    rect: 'bore-hole-rect',
-  },
-  surfaceCase: {
-    group: 'surface-case',
-    rect: 'surface-case-rect',
-  },
-  holeFill: {
-    group: 'hole-fill',
-    rect: 'hole-fill-rect',
-  },
-  wellCase: {
-    group: 'well-case',
-    rect: 'well-case-rect',
-  },
-  wellScreen: {
-    group: 'well-screen',
-    rect: 'well-screen-rect',
-  },
-  conflict: {
-    group: 'conflict',
-    rect: 'conflict-rect',
-  },
-  unitLabels: {
-    group: 'unit-labels-group',
-    geoRect: 'unit-geo-rect',
-    aqRect: 'unit-aq-rect',
-    text: 'unit-label-text',
-  },
-  labels: {
-    lithology: {
-      group: 'lithology-labels-group',
-      depth: 'lithology-depth-tip',
-      label: 'lithology-label',
-      divider: 'lithology-label-divider',
-    },
-  },
-  legend: {
-    border: 'wp-legend-border',
-    title: 'wp-legend-title',
-    item: 'wp-legend-item',
-    label: 'wp-legend-label',
-    fracturePoly: 'fracture-poly',
-    caveFill: 'cave-fill',
-    constructionRect: 'construction-rect',
-  },
-};
-
-export const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {
-  lithologyStroke: '--wp-lithology-stroke',
-  caveDryStroke: '--wp-cave-dry-stroke',
-  caveWetStroke: '--wp-cave-wet-stroke',
-  fractureDryStroke: '--wp-fracture-dry-stroke',
-  fractureWetStroke: '--wp-fracture-wet-stroke',
-  cementPadStroke: '--wp-cement-pad-stroke',
-  boreHoleFill: '--wp-bore-hole-fill',
-  boreHoleStroke: '--wp-bore-hole-stroke',
-  boreHoleStrokeDasharray: '--wp-bore-hole-stroke-dasharray',
-  surfaceCaseFill: '--wp-surface-case-fill',
-  surfaceCaseStroke: '--wp-surface-case-stroke',
-  holeFillStroke: '--wp-hole-fill-stroke',
-  wellCaseFill: '--wp-well-case-fill',
-  wellCaseStroke: '--wp-well-case-stroke',
-  wellScreenStroke: '--wp-well-screen-stroke',
-  conflictStroke: '--wp-conflict-stroke',
-  lithologyStrokeWidth: '--wp-lithology-stroke-width',
-  caveFillOpacity: '--wp-cave-fill-opacity',
-  caveContactStrokeWidth: '--wp-cave-contact-stroke-width',
-  cementPadStrokeWidth: '--wp-cement-pad-stroke-width',
-  boreHoleOpacity: '--wp-bore-hole-opacity',
-  boreHoleStrokeWidth: '--wp-bore-hole-stroke-width',
-  surfaceCaseStrokeWidth: '--wp-surface-case-stroke-width',
-  holeFillStrokeWidth: '--wp-hole-fill-stroke-width',
-  wellCaseStrokeWidth: '--wp-well-case-stroke-width',
-  wellScreenStrokeWidth: '--wp-well-screen-stroke-width',
-  conflictStrokeWidth: '--wp-conflict-stroke-width',
-  unitLabelGeologicFill: '--wp-unit-geo-fill',
-  unitLabelAquiferFill: '--wp-unit-aq-fill',
-  unitLabelStroke: '--wp-unit-label-stroke',
-  legendBorderStrokeWidth: '--wp-legend-border-stroke-width',
-  legendFractureStrokeWidth: '--wp-legend-fracture-stroke-width',
-  legendFractureSideStrokeWidth: '--wp-legend-fracture-side-stroke-width',
-  legendItemStrokeWidth: '--wp-legend-item-stroke-width',
 };
