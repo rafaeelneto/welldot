@@ -195,7 +195,7 @@ export class WellRenderer {
     });
   }
 
-  public async prepareSvg() {
+  public prepareSvg() {
     this.instanceStates = this.svgInstances.map((inst, i) =>
       this.initInstanceSvg(inst, i),
     );

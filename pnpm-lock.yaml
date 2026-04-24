@@ -107,6 +107,9 @@ importers:
       '@welldot/render':
         specifier: workspace:*
         version: link:../../packages/render
+      '@welldot/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       arraybuffer-loader:
         specifier: ^1.0.8
         version: 1.0.8
