@@ -20,7 +20,7 @@ import {
 } from '@/src/types/profile.types';
 
 
-const profile2Export = (
+const profile2Export = async (
   header: string,
   headingInfo: infoType[],
   endInfo: infoType[],
@@ -37,10 +37,10 @@ const profile2Export = (
 
   if (iframeId) {
     console.log('Rendering PDF in iframe with id:', iframeId);
-    innerRenderPdf(
+    await innerRenderPdf(
       profile,
       headingInfo,
-      endInfo, 
+      endInfo,
       breakPages,
       zoomLevel,
       iframeId,
@@ -50,9 +50,9 @@ const profile2Export = (
       metadataPosition,
     );
   } else if (print) {
-    printPdf(profile, headingInfo, endInfo, breakPages, zoomLevel, header, lengthUnits, diameterUnits, metadataPosition);
+    await printPdf(profile, headingInfo, endInfo, breakPages, zoomLevel, header, lengthUnits, diameterUnits, metadataPosition);
   } else {
-    downloadPdf(profile, headingInfo, endInfo,breakPages, zoomLevel, header, lengthUnits, diameterUnits, metadataPosition);
+    await downloadPdf(profile, headingInfo, endInfo, breakPages, zoomLevel, header, lengthUnits, diameterUnits, metadataPosition);
   }
 };
 
