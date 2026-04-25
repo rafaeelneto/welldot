@@ -13,10 +13,10 @@ export const DEFAULT_WELL_THEME: WellTheme = {
   fracture: { dryStroke: '#000000', wetStroke: '#1a6fa8' },
   cementPad: { stroke: '#303030', strokeWidth: 2 },
   boreHole: {
-    fill: '#ffffff86',
+    fill: '#ffffff',
     stroke: '#191919',
     strokeDasharray: '4, 3',
-    opacity: 1,
+    opacity: 0.7,
     strokeWidth: 1.2,
   },
   surfaceCase: { stroke: '#000000', strokeWidth: 4 },
