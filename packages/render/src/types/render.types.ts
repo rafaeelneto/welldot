@@ -39,6 +39,7 @@ export type WellTheme = {
     color: string;
     headerFont: string;
     bodyColor: string;
+    bodyFont?: string;
   };
   legend: {
     borderStrokeWidth: number;
@@ -208,6 +209,8 @@ export type RenderConfig = {
     labelMaxWidth?: number;
     labelFill?: string;
     labelColor?: string;
+    fontFamily?: string;
+    fontWeight?: string | number;
     labels: {
       wellCasePrefix: string;
       wellScreenPrefix: string;
@@ -261,6 +264,8 @@ export type RenderConfig = {
     innerDividerWidth: number;
     /** Stroke width of the top/bottom boundary (and page-clip edges in multi-SVG rendering) */
     outerEdgeWidth: number;
+    fontFamily?: string;
+    fontWeight?: string | number;
   };
   legend: LegendRenderConfig;
 };
@@ -273,6 +278,9 @@ export type LegendRenderConfig = {
   padding: number;
   maxWidth?: number;
   borderRadius: number;
+  fontFamily?: string;
+  titleFontWeight?: string | number;
+  labelFontWeight?: string | number;
   labels: {
     fractureSingle: string;
     fractureSwarm: string;

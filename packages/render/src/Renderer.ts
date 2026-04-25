@@ -424,6 +424,8 @@ export class WellRenderer {
               .attr('text-anchor', 'middle')
               .attr('dominant-baseline', 'middle')
               .attr('font-size', ru.fontSize)
+              .attr('font-family', ru.fontFamily ?? 'sans-serif')
+              .attr('font-weight', ru.fontWeight ?? 400)
               .attr('fill', this.theme.unitLabels.stroke)
               .text(label);
           }
@@ -823,6 +825,8 @@ export class WellRenderer {
           .attr('x', labelRightX - 4)
           .attr('y', labelY + lineH * 0.85)
           .attr('font-size', clc.fontSize)
+          .attr('font-family', clc.fontFamily ?? 'sans-serif')
+          .attr('font-weight', clc.fontWeight ?? 400)
           .attr('text-anchor', 'end')
           .attr('fill', clc.labelColor ?? '#303030');
 

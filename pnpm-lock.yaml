@@ -209,6 +209,9 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
+      uqr:
+        specifier: ^0.1.3
+        version: 0.1.3
       vite:
         specifier: ^5.0.6
         version: 5.4.21(@types/node@20.19.37)(lightningcss@1.32.0)(sass@1.97.3)(sugarss@5.0.1(postcss@8.5.8))(terser@5.46.0)
@@ -6213,6 +6216,9 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
+
+  uqr@0.1.3:
+    resolution: {integrity: sha512-0rjE8iEJe4YmT9TOhwsZtqCMRLc5DXZUI2UEYUUg63ikBkqqE5EYWaI0etFe/5KUcmcYwLih2RND1kq+hrUJXA==}
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -13103,6 +13109,8 @@ snapshots:
       browserslist: 4.28.1
       escalade: 3.2.0
       picocolors: 1.1.1
+
+  uqr@0.1.3: {}
 
   uri-js@4.4.1:
     dependencies:

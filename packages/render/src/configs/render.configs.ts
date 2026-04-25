@@ -38,6 +38,7 @@ export const DEFAULT_WELL_THEME: WellTheme = {
     color: '#333',
     headerFont: 'monospace',
     bodyColor: '#555',
+    bodyFont: 'sans-serif',
   },
   legend: {
     borderStrokeWidth: 0.8,
@@ -103,6 +104,8 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
     minHeightForText: 8,
     innerDividerWidth: 1.5,
     outerEdgeWidth: 0.6,
+    fontFamily: 'sans-serif',
+    fontWeight: 400,
   },
   constructionLabels: {
     active: true,
@@ -112,6 +115,8 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
     labelMaxWidth: 90,
     labelFill: '#ffffff',
     labelColor: '#303030',
+    fontFamily: 'sans-serif',
+    fontWeight: 400,
     labels: {
       wellCasePrefix: 'Revest.',
       wellScreenPrefix: 'Filtro',
@@ -143,6 +148,9 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
     padding: 4,
     maxWidth: 700,
     borderRadius: 3,
+    fontFamily: 'sans-serif',
+    titleFontWeight: 'bold',
+    labelFontWeight: 400,
     labels: {
       fractureSingle: 'Fratura simples',
       fractureSwarm: 'Enxame de fraturas',
@@ -210,12 +218,16 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
     minHeightForText: 8,
     innerDividerWidth: 1.5,
     outerEdgeWidth: 0.6,
+    fontFamily: 'sans-serif',
+    fontWeight: 400,
   },
   constructionLabels: {
     active: false,
     fontSize: 7.5,
     xOffset: 10,
     labelRadius: 2,
+    fontFamily: 'sans-serif',
+    fontWeight: 400,
     labels: {
       wellCasePrefix: 'Revest.',
       wellScreenPrefix: 'Filtro',
@@ -247,6 +259,9 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
     padding: 4,
     maxWidth: 700,
     borderRadius: 3,
+    fontFamily: 'sans-serif',
+    titleFontWeight: 'bold',
+    labelFontWeight: 400,
     labels: {
       fractureSingle: 'Fratura simples',
       fractureSwarm: 'Enxame de fraturas',
