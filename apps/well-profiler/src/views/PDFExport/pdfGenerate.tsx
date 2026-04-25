@@ -335,10 +335,20 @@ export const exportPdfProfile = async (
       selector: `#${svgInfo.id}`,
       height: svgInfo.height - PDF_MARGINS.top - PDF_MARGINS.bottom,
       width: PDF_CONTENT_WIDTH,
-      margins: { ...PDF_MARGINS },
+      margins: {
+        top: PDF_MARGINS.top,
+        right: PDF_MARGINS.right,
+        bottom: PDF_MARGINS.bottom,
+        left: PDF_MARGINS.left + 10,
+      },
     })),
     {
-      renderConfig: { ...renderConfig, zoom: false, pan: false, animation: { duration: 0 } },
+      renderConfig: {
+        ...renderConfig,
+        zoom: false,
+        pan: false,
+        animation: { duration: 0 },
+      },
       units: { length: lengthUnits, diameter: diameterUnits },
     },
   );

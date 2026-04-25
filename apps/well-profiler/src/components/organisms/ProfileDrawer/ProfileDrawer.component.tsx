@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useUIStore } from '@/src/store/ui.store';
 import { isWellEmpty, type Well } from '@welldot/core';
-import { DeepPartial, RenderConfig, WellRenderer } from '@welldot/render';
-
-import { RENDER_EDITOR_DEFAULTS } from './RenderConfigEditor.component';
+import {
+  DeepPartial,
+  INTERACTIVE_RENDER_CONFIG,
+  RenderConfig,
+  WellRenderer,
+} from '@welldot/render';
 import styles from './profileDrawer.module.scss';
 
 interface ProfileDrawerProps {
@@ -17,7 +20,7 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
   const profileDrawer = useRef<WellRenderer | null>(null);
   const { length_units, diameter_units } = useUIStore();
   const [config, setConfig] = useState<DeepPartial<RenderConfig>>(
-    RENDER_EDITOR_DEFAULTS,
+    INTERACTIVE_RENDER_CONFIG,
   );
   const [containerWidth, setContainerWidth] = useState(0);
 

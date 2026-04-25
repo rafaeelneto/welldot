@@ -38,10 +38,8 @@ import styles from './pdfExport.module.scss';
 
 import { DEFAULT_PDF_HEADER, useUIStore } from '@/src/store/ui.store';
 import profile2Export from './profile2Export.component';
-import RenderConfigEditor, {
-  RENDER_EDITOR_DEFAULTS,
-} from '../../../src/components/organisms/ProfileDrawer/RenderConfigEditor.component';
-import { DeepPartial, RenderConfig } from '@welldot/render';
+import RenderConfigEditor from '../../../src/components/organisms/ProfileDrawer/RenderConfigEditor.component';
+import { DeepPartial, RenderConfig, STATIC_RENDER_CONFIG } from '@welldot/render';
 
 type InfoItem = infoType & { profileField?: keyof Profile };
 
@@ -271,7 +269,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     setPdfMetadataPosition: setMetadataPosition,
   } = useUIStore();
 
-  const [renderConfig, setRenderConfig] = useState<DeepPartial<RenderConfig>>(RENDER_EDITOR_DEFAULTS);
+  const [renderConfig, setRenderConfig] = useState<DeepPartial<RenderConfig>>(STATIC_RENDER_CONFIG);
 
   const headingInfo = profile.info?.headingInfo || [];
   const endInfo = profile.info?.endInfo || [];

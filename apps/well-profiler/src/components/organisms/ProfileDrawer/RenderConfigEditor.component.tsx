@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 
 import {
   DeepPartial,
-  INTERACTIVE_RENDER_CONFIG,
   RenderConfig,
   TooltipKey,
 } from '@welldot/render';
@@ -60,8 +59,119 @@ const LITHOLOGY_LABEL_NAMES: Record<LithologyLabelItem, string> = {
   dividers: 'Dividers',
 };
 
-export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> =
-  INTERACTIVE_RENDER_CONFIG;
+export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> = {
+  zoom: true,
+  pan: true,
+  zoomLevel: 1,
+  animation: { duration: 600 },
+  geologic: { xLeft: 6, xRightInset: 300 },
+  layout: { pocoWidthRatio: 0.21, pocoCenterRatio: -0.39 },
+  caves: {
+    pathSteps: 40,
+    amplitude: { ratio: 0.12, min: 1, max: 5.5 },
+  },
+  fractures: {
+    widthMultiplier: 1.2,
+    hitBuffer: { single: 8, swarm: 15 },
+    swarm: {
+      lineCountBase: 3,
+      lineCountVariance: 11,
+      spread: 18,
+      centralStrokeWidth: 1.2,
+      sideStrokeWidthBase: 0.6,
+      sideStrokeWidthVariance: 0.6,
+    },
+    single: { mainStrokeWidth: 1.8, crackStrokeWidth: 0.7 },
+  },
+  construction: {
+    cementPad: { widthMultiplier: 0.9, thicknessMultiplier: 1.3 },
+    surfaceCase: { diameterPaddingRatio: 0.1 },
+  },
+  labels: {
+    active: true,
+    typeLabels: { fracture: 'fratura', cave: 'caverna' },
+    style: {
+      fontSize: 7,
+      depthTipHeight: 11,
+      depthTipPadX: 2,
+      depthTipFill: '#ffffff',
+      depthTipRadius: 2,
+      descriptionXOffset: 20,
+      descriptionMaxWidth: 260,
+      stackingLineHeight: 10,
+      stackingGap: 0,
+      fractureLabelLeaderGap: 5,
+      annotationBg: '#ffffff',
+      annotationBgOpacity: 0.85,
+      annotationRadius: 2,
+    },
+    lithology: true,
+  },
+  unitLabels: {
+    active: true,
+    xOffset: 0,
+    stripWidth: 8,
+    fontSize: 5.5,
+    minHeightForText: 8,
+    innerDividerWidth: 1.5,
+    outerEdgeWidth: 0.6,
+  },
+  constructionLabels: {
+    active: true,
+    fontSize: 7.5,
+    xOffset: 10,
+    labelRadius: 2,
+    labelMaxWidth: 100,
+    labelFill: '#ffffff',
+    labelColor: '#303030',
+    labels: {
+      wellCasePrefix: 'Revest.',
+      wellScreenPrefix: 'Filtro',
+      wellScreenSlotPrefix: 'Ranhura:',
+    },
+  },
+  textures: {
+    pad: { background: '#ffffff', stroke: '#303030' },
+    conflict: { stroke: '#E52117' },
+    cave_dry: { size: 8, stroke: '#333333', background: '#ffffff' },
+    cave_wet: { size: 8, stroke: '#1a6fa8', background: '#ffffff' },
+    seal: { background: '#ffffff' },
+    gravel_pack: { background: '#ffffff' },
+    well_screen: { size: 40, strokeWidth: 2, background: '#ffffff' },
+    surface_case: {
+      orientation: ['vertical', 'horizontal'],
+      size: 4,
+      strokeWidth: 1,
+      shapeRendering: 'crispEdges',
+      stroke: '#303030',
+      background: '#fff',
+    },
+  },
+  legend: {
+    title: 'LEGENDA',
+    fontSize: 7,
+    itemWidth: 110,
+    height: 44,
+    padding: 4,
+    maxWidth: 700,
+    borderRadius: 3,
+    labels: {
+      fractureSingle: 'Fratura simples',
+      fractureSwarm: 'Enxame de fraturas',
+      fractureWater: "Entrada d'água",
+      caveDry: 'Caverna seca',
+      caveWet: 'Caverna c/ água',
+      boreHole: 'Perfuração',
+      surfaceCase: 'Tubo guia',
+      holeFillGravel: 'Pré-filtro',
+      holeFillSeal: 'Vedação',
+      wellCase: 'Revestimento',
+      wellScreen: 'Filtro',
+      cementPad: 'Laje de cimento',
+      conflict: 'Conflito',
+    },
+  },
+};
 
 interface Props {
   config: DeepPartial<RenderConfig>;
@@ -530,6 +640,9 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
             </div>
             {numInput('Font Size', ['constructionLabels', 'fontSize'], 0.5)}
             {numInput('X Offset', ['constructionLabels', 'xOffset'], 1)}
+            {numInput('Max Width', ['constructionLabels', 'labelMaxWidth'], 1)}
+            {colorInput('Label Fill', ['constructionLabels', 'labelFill'])}
+            {colorInput('Label Color', ['constructionLabels', 'labelColor'])}
             <h5 className={styles.editorSubTitle}>Label Text</h5>
             {(
               [
@@ -652,6 +765,31 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
               'Leader Gap',
               ['labels', 'style', 'fractureLabelLeaderGap'],
               1,
+            )}
+            <h5 className={styles.editorSubTitle}>Depth Tips</h5>
+            {colorInput('Fill', ['labels', 'style', 'depthTipFill'])}
+            {numInput('Radius', ['labels', 'style', 'depthTipRadius'], 0.5)}
+            <h5 className={styles.editorSubTitle}>Annotation Labels</h5>
+            {colorInput('Background', ['labels', 'style', 'annotationBg'])}
+            {numInput(
+              'Bg Opacity',
+              ['labels', 'style', 'annotationBgOpacity'],
+              0.05,
+            )}
+            {colorInput(
+              'Border Color',
+              ['labels', 'style', 'annotationBorderColor'],
+            )}
+            {numInput('Radius', ['labels', 'style', 'annotationRadius'], 0.5)}
+            {numInput(
+              'Header Font Weight',
+              ['labels', 'style', 'headerFontWeight'],
+              100,
+            )}
+            {numInput(
+              'Body Font Weight',
+              ['labels', 'style', 'bodyFontWeight'],
+              100,
             )}
           </div>
 

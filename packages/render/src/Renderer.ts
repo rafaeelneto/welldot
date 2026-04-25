@@ -63,6 +63,23 @@ import {
   wavyContact,
 } from './utils/render.utils';
 
+function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let line = '';
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length > maxChars && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = candidate;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [''];
+}
+
 export class WellRenderer {
   private svgInstances: SvgInstance[] = [];
   private instanceStates: InstanceState[] = [];
@@ -763,8 +780,25 @@ export class WellRenderer {
         const midY = yScale((clampedFrom + clampedTo) / 2);
         const leftEdgeX = (POCO_CENTER - xScale(d.diameter)) / 2;
         const labelRightX = leftEdgeX - clc.xOffset;
-        const estW = text.length * (clc.fontSize * 0.52) + 8;
-        const labelH = clc.fontSize + 8;
+        const charW = clc.fontSize * 0.52;
+        const lineH = clc.fontSize * 1.35;
+        const vertPad = 6;
+
+        let lines: string[];
+        let boxW: number;
+        if (clc.labelMaxWidth !== undefined) {
+          const maxChars = Math.max(
+            1,
+            Math.floor((clc.labelMaxWidth - 8) / charW),
+          );
+          lines = wrapText(text, maxChars);
+          boxW = clc.labelMaxWidth;
+        } else {
+          lines = [text];
+          boxW = text.length * charW + 8;
+        }
+
+        const labelH = lines.length * lineH + vertPad;
         let labelY = midY - labelH / 2;
 
         for (const pos of occupied) {
@@ -775,24 +809,30 @@ export class WellRenderer {
 
         constructionLabelsGroup
           .append('rect')
-          .attr('x', labelRightX - estW)
+          .attr('x', labelRightX - boxW)
           .attr('y', labelY)
-          .attr('width', estW)
+          .attr('width', boxW)
           .attr('height', labelH)
           .attr('rx', clc.labelRadius)
-          .attr('fill', 'white')
-          .attr('stroke', '#303030')
+          .attr('fill', clc.labelFill ?? 'white')
+          .attr('stroke', clc.labelColor ?? '#303030')
           .attr('stroke-width', 0.5);
 
-        constructionLabelsGroup
+        const textEl = constructionLabelsGroup
           .append('text')
-          .attr('x', labelRightX - 2)
-          .attr('y', labelY + labelH / 2)
-          .attr('dy', '.35em')
+          .attr('x', labelRightX - 4)
+          .attr('y', labelY + lineH * 0.85)
           .attr('font-size', clc.fontSize)
           .attr('text-anchor', 'end')
-          .attr('fill', '#303030')
-          .text(text);
+          .attr('fill', clc.labelColor ?? '#303030');
+
+        lines.forEach((line, i) => {
+          textEl
+            .append('tspan')
+            .attr('x', labelRightX - 4)
+            .attr('dy', i === 0 ? 0 : lineH)
+            .text(line);
+        });
       };
 
       let lastDiam = 0;
@@ -880,15 +920,30 @@ export class WellRenderer {
               text.length * (s.fontSize * 0.52) + s.depthTipPadX * 2;
             const y = yScale(d.to) - s.depthTipHeight / 2;
 
-            lithologyLabelsGroup
-              .append('foreignObject')
-              .attr('class', this.classes.labels.lithology.depth)
+            const tipG = lithologyLabelsGroup
+              .append('g')
+              .attr('class', this.classes.labels.lithology.depth);
+
+            tipG
+              .append('rect')
               .attr('x', geoXLeft + 1)
               .attr('y', y)
               .attr('width', approxW)
               .attr('height', s.depthTipHeight)
-              .append('xhtml:div')
-              .attr('class', 'wp-lithology-depth-tip')
+              .attr('rx', s.depthTipRadius ?? 2)
+              .attr('fill', s.depthTipFill ?? 'white')
+              .attr('stroke', this.theme.lithology.stroke)
+              .attr('stroke-width', 0.5);
+
+            tipG
+              .append('text')
+              .attr('class', 'wp-depth-tip-text')
+              .attr('fill', this.theme.labels.color)
+              .attr('font-family', s.fontFamily ?? 'sans-serif')
+              .attr('x', geoXLeft + 1 + s.depthTipPadX)
+              .attr('y', y + s.depthTipHeight / 2)
+              .attr('dominant-baseline', 'middle')
+              .attr('font-size', s.fontSize)
               .text(text);
           });
       }
@@ -986,27 +1041,55 @@ export class WellRenderer {
 
       // ── Labels ────────────────────────────────────────────────────────────
       if (show.has('description')) {
-        labelPositions.forEach(({ item, yLabel, estH }) => {
-          const fo = lithologyLabelsGroup
-            .append('foreignObject')
-            .attr('class', this.classes.labels.lithology.label)
-            .attr('x', labelX)
-            .attr('y', yLabel)
-            .attr('width', s.descriptionMaxWidth)
-            .attr('height', estH);
+        const lineH = s.stackingLineHeight;
+        const bgFill = s.annotationBg ?? 'white';
 
-          const wrapper = fo
-            .append('xhtml:div')
-            .attr('class', 'wp-annotation-label');
-          wrapper
-            .append('xhtml:div')
+        labelPositions.forEach(({ item, yLabel, estH }) => {
+          const labelG = lithologyLabelsGroup
+            .append('g')
+            .attr('class', this.classes.labels.lithology.label)
+            .attr('transform', `translate(${labelX},${yLabel})`);
+
+          labelG
+            .append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', s.descriptionMaxWidth)
+            .attr('height', estH)
+            .attr('rx', s.annotationRadius ?? 2)
+            .attr('fill', bgFill)
+            .attr('fill-opacity', s.annotationBgOpacity ?? 0.85)
+            .attr('stroke', s.annotationBorderColor ?? 'none');
+
+          labelG
+            .append('text')
             .attr('class', 'wp-annotation-header')
+            .attr('fill', this.theme.labels.color)
+            .attr('font-weight', s.headerFontWeight ?? 600)
+            .attr('font-family', this.theme.labels.headerFont)
+            .attr('x', 0)
+            .attr('y', lineH * 0.85)
+            .attr('font-size', s.fontSize)
             .text(item.header);
+
           if (item.description) {
-            wrapper
-              .append('xhtml:div')
+            const lines = wrapText(item.description, charsPerLine);
+            const bodyEl = labelG
+              .append('text')
               .attr('class', 'wp-annotation-body')
-              .text(item.description);
+              .attr('fill', this.theme.labels.bodyColor)
+              .attr('font-weight', s.bodyFontWeight ?? 400)
+              .attr('font-family', s.fontFamily ?? 'sans-serif')
+              .attr('x', 0)
+              .attr('y', lineH * 0.85 + lineH)
+              .attr('font-size', s.fontSize);
+            lines.forEach((line, i) => {
+              bodyEl
+                .append('tspan')
+                .attr('x', 0)
+                .attr('dy', i === 0 ? 0 : lineH)
+                .text(line);
+            });
           }
         });
       }
@@ -1324,6 +1407,15 @@ export class WellRenderer {
       .select(`.${this.classes.yAxis}`)
       // @ts-ignore
       .call(yAxis);
+
+    gY.select('.domain')
+      .attr('stroke', this.theme.labels.color)
+      .attr('fill', 'none');
+    gY.selectAll('.tick line').attr('stroke', this.theme.labels.color);
+    gY.selectAll('.tick text')
+      .attr('fill', this.theme.labels.color)
+      .attr('stroke', 'none')
+      .attr('font-size', this.theme.labels.fontSize);
 
     const spanY = d => {
       if (d.thickness) return yScaleLocal(0) - yScaleLocal(d.thickness);

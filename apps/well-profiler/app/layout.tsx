@@ -47,8 +47,8 @@ export default function RootLayout({
       </head>
       <body style={{ height: '100%' }}>
         <div
-          // style={{ overflow: 'hidden', height: 0, width: 0 }}
-          style={{ position: 'absolute', zIndex: 10000 }}
+          style={{ overflow: 'hidden', height: 0, width: 0 }}
+          // style={{ position: 'absolute', zIndex: 10000 }}
           id="svgDraftContainer"
         />
 

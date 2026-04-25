@@ -205,6 +205,9 @@ export type RenderConfig = {
     fontSize: number;
     xOffset: number;
     labelRadius: number;
+    labelMaxWidth?: number;
+    labelFill?: string;
+    labelColor?: string;
     labels: {
       wellCasePrefix: string;
       wellScreenPrefix: string;
@@ -235,6 +238,15 @@ export type RenderConfig = {
       caveLabelFontSize?: number;
       caveLabelHeight?: number;
       caveLabelPadX?: number;
+      depthTipFill?: string;
+      depthTipRadius?: number;
+      annotationBg?: string;
+      annotationBgOpacity?: number;
+      annotationBorderColor?: string;
+      annotationRadius?: number;
+      fontFamily?: string;
+      headerFontWeight?: string | number;
+      bodyFontWeight?: string | number;
     };
   };
   unitLabels: {

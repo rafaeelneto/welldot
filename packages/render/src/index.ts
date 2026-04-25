@@ -9,6 +9,7 @@ export {
 export {
   DEFAULT_WELL_THEME,
   INTERACTIVE_RENDER_CONFIG,
+  STATIC_RENDER_CONFIG,
 } from './configs/render.configs';
 export { WellRenderer } from './Renderer';
 export { drawWellLegend } from './renderers/legend.renderer';
