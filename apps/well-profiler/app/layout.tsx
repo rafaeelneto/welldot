@@ -5,8 +5,6 @@ import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 
-import '@welldot/render/styles/main.css';
-
 import Header from '@/src_old/components/header/header.component';
 import {
   ColorSchemeScript,
@@ -49,7 +47,8 @@ export default function RootLayout({
       </head>
       <body style={{ height: '100%' }}>
         <div
-          style={{ overflow: 'hidden', height: 0, width: 0 }}
+          // style={{ overflow: 'hidden', height: 0, width: 0 }}
+          style={{ position: 'absolute', zIndex: 10000 }}
           id="svgDraftContainer"
         />
 

@@ -1,26 +1,14 @@
-
-
-
 // eslint-disable-next-line import/namespace
-import { innerRenderPdf, printPdf, downloadPdf } from './pdfGenerate';
+import { downloadPdf, innerRenderPdf, printPdf } from './pdfGenerate';
 
-
-import {
-  getProfileLastItemsDepths,
-  getProfileDiamValues,
-  checkIfProfileIsEmpty,
-} from '../../utils/profile.utils';
-import { DiameterUnits, LengthUnits, CoordFormat } from '@/src/store/ui.store';
+import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
+import { checkIfProfileIsEmpty } from '../../utils/profile.utils';
 
 import { infoType } from '../../../src_old/types/profile2Export.types';
 
+import { Profile } from '@/src/types/profile.types';
 
-import {
-  Profile,
-} from '@/src/types/profile.types';
-
-
-const profile2Export = async (
+const profile2Export = (
   header: string,
   headingInfo: infoType[],
   endInfo: infoType[],
@@ -37,7 +25,7 @@ const profile2Export = async (
 
   if (iframeId) {
     console.log('Rendering PDF in iframe with id:', iframeId);
-    await innerRenderPdf(
+    innerRenderPdf(
       profile,
       headingInfo,
       endInfo,
@@ -50,9 +38,29 @@ const profile2Export = async (
       metadataPosition,
     );
   } else if (print) {
-    await printPdf(profile, headingInfo, endInfo, breakPages, zoomLevel, header, lengthUnits, diameterUnits, metadataPosition);
+    printPdf(
+      profile,
+      headingInfo,
+      endInfo,
+      breakPages,
+      zoomLevel,
+      header,
+      lengthUnits,
+      diameterUnits,
+      metadataPosition,
+    );
   } else {
-    await downloadPdf(profile, headingInfo, endInfo, breakPages, zoomLevel, header, lengthUnits, diameterUnits, metadataPosition);
+    downloadPdf(
+      profile,
+      headingInfo,
+      endInfo,
+      breakPages,
+      zoomLevel,
+      header,
+      lengthUnits,
+      diameterUnits,
+      metadataPosition,
+    );
   }
 };
 
