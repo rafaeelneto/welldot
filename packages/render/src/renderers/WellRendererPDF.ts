@@ -5,7 +5,7 @@ import d3tip from 'd3-tip';
 // @ts-ignore
 import textures from 'textures';
 
-import { createWellTextures } from '../configs/drawer.textures';
+import { createWellTextures } from '../configs/render.textures';
 
 // TODO: remove (src_old ref) // import wrap from '../../../src_old/utils/wrap';
 
@@ -22,7 +22,7 @@ import {
 import {
   getProfileDiamValues,
   getProfileLastItemsDepths,
-} from '~/utils/well.utils';
+} from '@welldot/utils';
 
 // TODO: remove (src_old ref) // import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 

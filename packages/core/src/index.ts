@@ -42,7 +42,10 @@ export {
 export {
   checkIfProfileIsEmpty,
   convertProfileFromJSON,
+  deserializeWell,
+  isWellEmpty,
   profileToWell,
+  serializeWell,
 } from './utils/well.utils';
 
 // Backward-compat alias for app migration

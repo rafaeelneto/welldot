@@ -1,7 +1,6 @@
 {
-  "name": "@welldot/drawer",
+  "name": "@welldot/utils",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -11,30 +10,30 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    },
-    "./styles": "./src/styles/main.css"
+    }
   },
-  "files": ["dist", "src/styles"],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@welldot/core": "workspace:*",
-    "defu": "^6.1.4"
-  },
-  "peerDependencies": {
-    "d3": "^7.0.0",
-    "d3-tip": "^0.9.1",
-    "textures": "^1.2.3"
+    "@welldot/core": "workspace:*"
   },
   "devDependencies": {
     "@welldot/lint": "workspace:*",
     "tsup": "^8.3.0",
     "typescript": "^5.3.3",
-    "@types/d3": "^7.4.3",
-    "@types/d3-tip": "^3.5.8"
-  }
+    "vitest": "^4.1.5"
+  },
+  "files": ["dist"]
 }

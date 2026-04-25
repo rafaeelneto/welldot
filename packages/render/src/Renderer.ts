@@ -1,40 +1,57 @@
+// TODO use only the need parts of d3 instead of importing the whole library, which will reduce bundle size and improve performance
 import * as d3module from 'd3';
-import 'd3-tip';
+// eslint-disable-next-line import-x/default
+import d3tip from 'd3-tip';
+
 import { defu } from 'defu';
-import { createWellTextures } from './configs/drawer.textures';
+import {
+  createWellTextures,
+  type WellTextures,
+} from './configs/render.textures';
+
+const d3 = Object.assign(d3module, { tip: d3tip });
 
 import {
-  BoreHole,
-  Cave,
-  CementPad,
-  Constructive,
-  Fracture,
-  HoleFill,
-  Lithology,
-  SurfaceCase,
-  Units,
-  Well,
-  WellCase,
-  WellScreen,
+  isWellEmpty,
+  type BoreHole,
+  type Cave,
+  type CementPad,
+  type Constructive,
+  type Fracture,
+  type HoleFill,
+  type Lithology,
+  type SurfaceCase,
+  type Units,
+  type Well,
+  type WellCase,
+  type WellScreen,
 } from '@welldot/core';
 import {
+  getProfileDiamValues,
+  getProfileLastItemsDepths,
+} from '@welldot/utils';
+import {
   ComponentsClassNames,
-  CssVarsConfig,
+  Conflict,
   DeepPartial,
-  DrawerRenderConfig,
+  InstanceState,
+  RenderConfig,
   SvgInstance,
-} from '~/types/drawer.types';
+  SvgSelection,
+  WellTheme,
+} from '~/types/render.types';
 import {
   formatDiameter,
   getDiameterUnit,
   getLengthUnit,
 } from '~/utils/format.utils';
+import { DEFAULT_COMPONENTS_CLASS_NAMES } from './configs/render.classnames';
 import {
-  checkIfProfileIsEmpty,
-  getProfileDiamValues,
-  getProfileLastItemsDepths,
-} from '~/utils/well.utils';
-import { INTERACTIVE_RENDER_CONFIG } from './configs/drawer.configs';
+  DEFAULT_WELL_THEME,
+  INTERACTIVE_RENDER_CONFIG,
+} from './configs/render.configs';
+import { drawWellLegend } from './renderers/legend.renderer';
+import { buildSvgStyleBlock } from './utils/render.styles';
 import {
   getConflictAreas,
   getLithologyFill,
@@ -44,159 +61,48 @@ import {
   populateTooltips,
   ptsToSmoothPath,
   wavyContact,
-} from './utils/drawer.utils';
+} from './utils/render.utils';
 
-const d3 = {
-  ...d3module,
-};
+function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let line = '';
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length > maxChars && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = candidate;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [''];
+}
 
-type Conflict = { from: number; to: number; diameter: number };
-
-type InstanceState = {
-  svg: d3module.Selection<d3module.BaseType, unknown, HTMLElement, any>;
-  height: number;
-  width: number;
-  margins: { left: number; right: number; top: number; bottom: number };
-  clipId: string;
-  clipRectId: string;
-};
-
-const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
-  tooltip: {
-    root: 'tooltip',
-    title: 'title',
-    primaryInfo: 'primaryInfo',
-    secondaryInfo: 'secondaryInfo',
-  },
-  yAxis: 'yAxis',
-  wellGroup: 'well-group',
-  geologicGroup: 'geologic-group',
-  lithology: {
-    group: 'lithology-group',
-    rect: 'lithology-rect',
-  },
-  fractures: {
-    group: 'fractures-group',
-    item: 'fracture-group',
-    hitArea: 'fracture-hit',
-    line: 'fracture-line',
-    polyline: 'fracture-poly',
-  },
-  caves: {
-    group: 'caves-group',
-    item: 'cave-group',
-    fill: 'cave-fill',
-    contact: 'cave-contact',
-  },
-  constructionGroup: 'construction-group',
-  constructionLabels: {
-    group: 'construction-labels-group',
-  },
-  cementPad: {
-    group: 'cement-pad',
-    item: 'cement-pad-rect',
-  },
-  boreHole: {
-    group: 'hole',
-    rect: 'bore-hole-rect',
-  },
-  surfaceCase: {
-    group: 'surface-case',
-    rect: 'surface-case-rect',
-  },
-  holeFill: {
-    group: 'hole-fill',
-    rect: 'hole-fill-rect',
-  },
-  wellCase: {
-    group: 'well-case',
-    rect: 'well-case-rect',
-  },
-  wellScreen: {
-    group: 'well-screen',
-    rect: 'well-screen-rect',
-  },
-  conflict: {
-    group: 'conflict',
-    rect: 'conflict-rect',
-  },
-  unitLabels: {
-    group: 'unit-labels-group',
-    geoRect: 'unit-geo-rect',
-    aqRect: 'unit-aq-rect',
-    text: 'unit-label-text',
-  },
-  labels: {
-    lithology: {
-      group: 'lithology-labels-group',
-      depth: 'lithology-depth-tip',
-      label: 'lithology-label',
-      divider: 'lithology-label-divider',
-    },
-  },
-};
-
-const CSS_VAR_MAP: Record<keyof CssVarsConfig, string> = {
-  lithologyStroke: '--wp-lithology-stroke',
-  caveDryStroke: '--wp-cave-dry-stroke',
-  caveWetStroke: '--wp-cave-wet-stroke',
-  fractureDryStroke: '--wp-fracture-dry-stroke',
-  fractureWetStroke: '--wp-fracture-wet-stroke',
-  cementPadStroke: '--wp-cement-pad-stroke',
-  boreHoleFill: '--wp-bore-hole-fill',
-  boreHoleStroke: '--wp-bore-hole-stroke',
-  surfaceCaseFill: '--wp-surface-case-fill',
-  holeFillStroke: '--wp-hole-fill-stroke',
-  wellCaseFill: '--wp-well-case-fill',
-  wellCaseStroke: '--wp-well-case-stroke',
-  wellScreenStroke: '--wp-well-screen-stroke',
-  conflictStroke: '--wp-conflict-stroke',
-  lithologyStrokeWidth: '--wp-lithology-stroke-width',
-  caveFillOpacity: '--wp-cave-fill-opacity',
-  caveContactStrokeWidth: '--wp-cave-contact-stroke-width',
-  cementPadStrokeWidth: '--wp-cement-pad-stroke-width',
-  boreHoleOpacity: '--wp-bore-hole-opacity',
-  boreHoleStrokeWidth: '--wp-bore-hole-stroke-width',
-  surfaceCaseStrokeWidth: '--wp-surface-case-stroke-width',
-  holeFillStrokeWidth: '--wp-hole-fill-stroke-width',
-  wellCaseStrokeWidth: '--wp-well-case-stroke-width',
-  wellScreenStrokeWidth: '--wp-well-screen-stroke-width',
-  conflictStrokeWidth: '--wp-conflict-stroke-width',
-  unitLabelGeologicFill: '--wp-unit-geo-fill',
-  unitLabelAquiferFill: '--wp-unit-aq-fill',
-  unitLabelStroke: '--wp-unit-label-stroke',
-};
-
-const DEFAULTS_TEXTURES = createWellTextures();
-export class WellDrawer {
+export class WellRenderer {
   private svgInstances: SvgInstance[] = [];
   private instanceStates: InstanceState[] = [];
-  private svgWidth!: number;
-  private svgHeight!: number;
-  private pocoWidth!: number;
-  private pocoCenter!: number;
+  private textures: WellTextures = createWellTextures();
 
   classes = DEFAULT_COMPONENTS_CLASS_NAMES;
-  private renderConfig: DrawerRenderConfig = INTERACTIVE_RENDER_CONFIG;
+  private renderConfig: RenderConfig = INTERACTIVE_RENDER_CONFIG;
+  private theme: WellTheme = DEFAULT_WELL_THEME;
   private units: Units = {
     length: 'm',
     diameter: 'mm',
   };
-
-  get WIDTH(): number {
-    return this.instanceStates[0]?.width ?? 0;
-  }
 
   constructor(
     svgs: SvgInstance[],
     options: {
       classNames?: DeepPartial<ComponentsClassNames>;
       units?: Units;
-      renderConfig?: DeepPartial<DrawerRenderConfig>;
+      renderConfig?: DeepPartial<RenderConfig>;
+      theme?: DeepPartial<WellTheme>;
     } = {},
   ) {
     if (svgs.length === 0) return;
-    console.log('Initializing WellDrawer with SVG instances:', svgs);
     this.svgInstances = svgs;
 
     if (options.classNames) {
@@ -214,8 +120,12 @@ export class WellDrawer {
       this.renderConfig = defu(
         options.renderConfig,
         INTERACTIVE_RENDER_CONFIG,
-      ) as DrawerRenderConfig;
+      ) as RenderConfig;
     }
+
+    this.theme = defu(options.theme ?? {}, DEFAULT_WELL_THEME) as WellTheme;
+
+    this.textures = createWellTextures(this.renderConfig.textures);
 
     return this;
   }
@@ -227,25 +137,13 @@ export class WellDrawer {
     const svgWidth = width + margins.left + margins.right;
     const svgHeight = height + margins.top + margins.bottom;
 
-    const svg = d3.select(selector) as d3module.Selection<
-      d3module.BaseType,
-      unknown,
-      HTMLElement,
-      any
-    >;
+    const svg = d3.select(selector) as SvgSelection;
     svg.selectAll('*').remove();
 
     svg.attr('height', svgHeight).attr('width', svgWidth);
 
-    if (this.renderConfig.cssVars) {
-      const vars = this.renderConfig.cssVars;
-      for (const key of Object.keys(vars) as (keyof CssVarsConfig)[]) {
-        const val = vars[key];
-        if (val !== undefined) svg.style(CSS_VAR_MAP[key], val);
-      }
-    }
-
     const defs = svg.append('defs');
+    defs.append('style').text(buildSvgStyleBlock(this.theme));
     defs
       .append('clipPath')
       .attr('id', clipId)
@@ -297,25 +195,28 @@ export class WellDrawer {
     construction.append('g').attr('class', this.classes.wellScreen.group);
     construction.append('g').attr('class', this.classes.conflict.group);
 
-    Object.values(DEFAULTS_TEXTURES).forEach(texture => svg.call(texture));
+    Object.values(this.textures).forEach(texture => svg.call(texture));
 
     return { svg, height, width, margins, clipId, clipRectId };
   }
 
-  public async prepareSvg() {
+  public renderLegend(selector: string, profile: Well): void {
+    drawWellLegend(selector, profile, {
+      config: this.renderConfig.legend,
+      theme: this.theme,
+      classNames: this.classes.legend,
+      textures: this.renderConfig.textures,
+    });
+  }
+
+  public prepareSvg() {
     this.instanceStates = this.svgInstances.map((inst, i) =>
       this.initInstanceSvg(inst, i),
     );
-    const { height, width, margins } = this.instanceStates[0];
-    this.svgWidth = width + margins.left + margins.right;
-    this.svgHeight = height + margins.top + margins.bottom;
-    const { pocoWidthRatio, pocoCenterRatio } = this.renderConfig.layout;
-    this.pocoWidth = this.svgWidth * pocoWidthRatio;
-    this.pocoCenter = this.svgWidth * pocoCenterRatio;
   }
 
   draw(profile: Well, options: { units?: Units } = {}) {
-    if (checkIfProfileIsEmpty(profile)) return;
+    if (isWellEmpty(profile)) return;
     this.units = { ...this.units, ...options.units };
 
     const maxValues = getProfileLastItemsDepths(profile);
@@ -370,10 +271,11 @@ export class WellDrawer {
       `.${this.classes.constructionLabels.group}`,
     );
 
-    const svgWidth = this.svgWidth;
-    const svgHeight = this.svgHeight;
-    const POCO_WIDTH = this.pocoWidth;
-    const POCO_CENTER = this.pocoCenter;
+    const svgWidth = state.width + state.margins.left + state.margins.right;
+    const svgHeight = state.height + state.margins.top + state.margins.bottom;
+    const { pocoWidthRatio, pocoCenterRatio } = this.renderConfig.layout;
+    const POCO_WIDTH = svgWidth * pocoWidthRatio;
+    const POCO_CENTER = svgWidth * pocoCenterRatio;
 
     const { duration, ease } = this.renderConfig.animation;
     const transition = d3.transition().duration(duration).ease(ease);
@@ -392,7 +294,7 @@ export class WellDrawer {
     const { xLeft: geoXLeft, xRightInset: geoXRightInset } =
       this.renderConfig.geologic;
     const geoXRight = svgWidth - geoXRightInset;
-    const pocoCenterX = this.WIDTH / 2 + POCO_CENTER / 2;
+    const pocoCenterX = state.width / 2 + POCO_CENTER / 2;
 
     const drawLithology = async (data: Lithology[], yScale) => {
       const { getHeight, getYPos } = getYAxisFunctions(yScale, {
@@ -412,6 +314,8 @@ export class WellDrawer {
         .attr('class', this.classes.lithology.rect)
         .attr('x', geoXLeft)
         .attr('width', geoXRight - geoXLeft)
+        .attr('stroke', this.theme.lithology.stroke)
+        .attr('stroke-width', this.theme.lithology.strokeWidth)
         .on('mouseover', tooltips.geology.show)
         .on('mouseout', tooltips.geology.hide);
 
@@ -422,7 +326,7 @@ export class WellDrawer {
         // @ts-ignore
         .transition(transition)
         .attr('height', getHeight)
-        .style('fill', getLithologyFill(data, svg));
+        .attr('fill', getLithologyFill(data, svg, this.theme.lithologyTexture));
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -431,7 +335,7 @@ export class WellDrawer {
 
     const drawUnitLabels = (
       data: Lithology[],
-      yScale: d3module.ScaleLinear<number, number>,
+      yScale: d3.ScaleLinear<number, number>,
     ) => {
       const unitLabelsGroup = svg.select(`.${this.classes.unitLabels.group}`);
       unitLabelsGroup.selectAll('*').remove();
@@ -467,6 +371,7 @@ export class WellDrawer {
         groups: { unit: string; from: number; to: number }[],
         stripX: number,
         rectClass: string,
+        fillColor: string,
       ) => {
         groups.forEach((group, idx) => {
           const yTop = yScale(group.from);
@@ -483,7 +388,10 @@ export class WellDrawer {
             .attr('x', stripX)
             .attr('y', yTop)
             .attr('width', sw)
-            .attr('height', height);
+            .attr('height', height)
+            .attr('fill', fillColor)
+            .attr('stroke', this.theme.unitLabels.stroke)
+            .attr('stroke-width', this.theme.unitLabels.strokeWidth);
 
           const appendEdge = (y: number, strokeWidth: number) =>
             unitLabelsGroup
@@ -493,6 +401,7 @@ export class WellDrawer {
               .attr('x2', stripX + sw)
               .attr('y1', y)
               .attr('y2', y)
+              .attr('stroke', this.theme.unitLabels.stroke)
               .attr('stroke-width', strokeWidth);
 
           appendEdge(yTop, isFirst ? ru.outerEdgeWidth : ru.innerDividerWidth);
@@ -515,6 +424,9 @@ export class WellDrawer {
               .attr('text-anchor', 'middle')
               .attr('dominant-baseline', 'middle')
               .attr('font-size', ru.fontSize)
+              .attr('font-family', ru.fontFamily ?? 'sans-serif')
+              .attr('font-weight', ru.fontWeight ?? 400)
+              .attr('fill', this.theme.unitLabels.stroke)
               .text(label);
           }
         });
@@ -525,12 +437,14 @@ export class WellDrawer {
           groupByField('geologic_unit'),
           geoX,
           this.classes.unitLabels.geoRect,
+          this.theme.unitLabels.geologicFill,
         );
       if (hasAq)
         drawStrip(
           groupByField('aquifer_unit'),
           aqX,
           this.classes.unitLabels.aqRect,
+          this.theme.unitLabels.aquiferFill,
         );
     };
 
@@ -556,7 +470,7 @@ export class WellDrawer {
      *      This gives a wavy-edged filled band exactly like a lithology layer.
      *   4. Stroke the top and bottom contact lines separately so they appear as
      *      distinct, crisp geological contacts on top of the fill.
-     *   5. Fill with the cave_dry / cave_wet texture from DEFAULTS_TEXTURES,
+     *   5. Fill with the cave_dry / cave_wet texture from this.textures,
      *      registered via svg.call() exactly as every other texture in this file.
      */
     const drawCaves = (data: Cave[], yScale) => {
@@ -614,8 +528,8 @@ export class WellDrawer {
         } L ${geoXLeft.toFixed(1)},${topPts[0][1].toFixed(1)} Z`;
 
         const caveTexture = cave.water_intake
-          ? DEFAULTS_TEXTURES.cave_wet
-          : DEFAULTS_TEXTURES.cave_dry;
+          ? this.textures.cave_wet
+          : this.textures.cave_dry;
 
         const g = cavesGroup
           .append('g')
@@ -625,25 +539,32 @@ export class WellDrawer {
           .on('mouseover', tooltips.cave.show)
           .on('mouseout', tooltips.cave.hide);
 
+        const caveStroke = cave.water_intake
+          ? this.theme.cave.wetStroke
+          : this.theme.cave.dryStroke;
+
         g.append('path')
           .attr('class', this.classes.caves.fill)
           .attr('d', closedPath)
           .attr('fill', caveTexture.url())
+          .attr('fill-opacity', this.theme.cave.fillOpacity)
           .attr('stroke', 'none');
 
         g.append('path')
           .attr('class', this.classes.caves.contact)
-          .attr('data-wet', String(!!cave.water_intake))
           .attr('d', topPath)
           .attr('fill', 'none')
+          .attr('stroke', caveStroke)
+          .attr('stroke-width', this.theme.cave.contactStrokeWidth)
           .attr('stroke-linecap', 'round')
           .attr('stroke-linejoin', 'round');
 
         g.append('path')
           .attr('class', this.classes.caves.contact)
-          .attr('data-wet', String(!!cave.water_intake))
           .attr('d', botPath)
           .attr('fill', 'none')
+          .attr('stroke', caveStroke)
+          .attr('stroke-width', this.theme.cave.contactStrokeWidth)
           .attr('stroke-linecap', 'round')
           .attr('stroke-linejoin', 'round');
       });
@@ -718,7 +639,9 @@ export class WellDrawer {
           .attr('fill', 'transparent')
           .style('pointer-events', 'all');
 
-        const isWet = String(!!fracture.water_intake);
+        const fractureStroke = fracture.water_intake
+          ? this.theme.fracture.wetStroke
+          : this.theme.fracture.dryStroke;
 
         const appendLine = (
           x1: number,
@@ -730,11 +653,11 @@ export class WellDrawer {
           g
             .append('line')
             .attr('class', this.classes.fractures.line)
-            .attr('data-wet', isWet)
             .attr('x1', x1)
             .attr('y1', y1)
             .attr('x2', x2)
             .attr('y2', y2)
+            .attr('stroke', fractureStroke)
             .attr('stroke-width', sw)
             .attr('stroke-linecap', RC);
 
@@ -742,8 +665,8 @@ export class WellDrawer {
           g
             .append('polyline')
             .attr('class', this.classes.fractures.polyline)
-            .attr('data-wet', isWet)
             .attr('points', pts.map(([nx, dy]) => `${xAt(nx)},${dy}`).join(' '))
+            .attr('stroke', fractureStroke)
             .attr('stroke-width', sw)
             .attr('fill', 'none')
             .attr('stroke-linecap', RC)
@@ -835,7 +758,7 @@ export class WellDrawer {
     const drawConstructionLabels = (
       data: { well_case: WellCase[]; well_screen: WellScreen[] },
       fullData: Constructive,
-      yScale: d3module.ScaleLinear<number, number>,
+      yScale: d3.ScaleLinear<number, number>,
     ) => {
       constructionLabelsGroup.selectAll('*').remove();
 
@@ -859,8 +782,25 @@ export class WellDrawer {
         const midY = yScale((clampedFrom + clampedTo) / 2);
         const leftEdgeX = (POCO_CENTER - xScale(d.diameter)) / 2;
         const labelRightX = leftEdgeX - clc.xOffset;
-        const estW = text.length * (clc.fontSize * 0.52) + 8;
-        const labelH = clc.fontSize + 8;
+        const charW = clc.fontSize * 0.52;
+        const lineH = clc.fontSize * 1.35;
+        const vertPad = 6;
+
+        let lines: string[];
+        let boxW: number;
+        if (clc.labelMaxWidth !== undefined) {
+          const maxChars = Math.max(
+            1,
+            Math.floor((clc.labelMaxWidth - 8) / charW),
+          );
+          lines = wrapText(text, maxChars);
+          boxW = clc.labelMaxWidth;
+        } else {
+          lines = [text];
+          boxW = text.length * charW + 8;
+        }
+
+        const labelH = lines.length * lineH + vertPad;
         let labelY = midY - labelH / 2;
 
         for (const pos of occupied) {
@@ -871,24 +811,32 @@ export class WellDrawer {
 
         constructionLabelsGroup
           .append('rect')
-          .attr('x', labelRightX - estW)
+          .attr('x', labelRightX - boxW)
           .attr('y', labelY)
-          .attr('width', estW)
+          .attr('width', boxW)
           .attr('height', labelH)
-          .attr('rx', 2)
-          .attr('fill', 'white')
-          .attr('stroke', '#303030')
+          .attr('rx', clc.labelRadius)
+          .attr('fill', clc.labelFill ?? 'white')
+          .attr('stroke', clc.labelColor ?? '#303030')
           .attr('stroke-width', 0.5);
 
-        constructionLabelsGroup
+        const textEl = constructionLabelsGroup
           .append('text')
-          .attr('x', labelRightX - 2)
-          .attr('y', labelY + labelH / 2)
-          .attr('dy', '.35em')
+          .attr('x', labelRightX - 4)
+          .attr('y', labelY + lineH * 0.85)
           .attr('font-size', clc.fontSize)
+          .attr('font-family', clc.fontFamily ?? 'sans-serif')
+          .attr('font-weight', clc.fontWeight ?? 400)
           .attr('text-anchor', 'end')
-          .attr('fill', '#303030')
-          .text(text);
+          .attr('fill', clc.labelColor ?? '#303030');
+
+        lines.forEach((line, i) => {
+          textEl
+            .append('tspan')
+            .attr('x', labelRightX - 4)
+            .attr('dy', i === 0 ? 0 : lineH)
+            .text(line);
+        });
       };
 
       let lastDiam = 0;
@@ -958,7 +906,7 @@ export class WellDrawer {
       lithologyData: Lithology[],
       fractureData: Fracture[],
       caveData: Cave[],
-      yScale: d3module.ScaleLinear<number, number>,
+      yScale: d3.ScaleLinear<number, number>,
     ) => {
       const active = activeLabelsSet(this.renderConfig.labels.active);
       const show = lithologySubSet(this.renderConfig.labels.lithology);
@@ -976,15 +924,30 @@ export class WellDrawer {
               text.length * (s.fontSize * 0.52) + s.depthTipPadX * 2;
             const y = yScale(d.to) - s.depthTipHeight / 2;
 
-            lithologyLabelsGroup
-              .append('foreignObject')
-              .attr('class', this.classes.labels.lithology.depth)
+            const tipG = lithologyLabelsGroup
+              .append('g')
+              .attr('class', this.classes.labels.lithology.depth);
+
+            tipG
+              .append('rect')
               .attr('x', geoXLeft + 1)
               .attr('y', y)
               .attr('width', approxW)
               .attr('height', s.depthTipHeight)
-              .append('xhtml:div')
-              .attr('class', 'wp-lithology-depth-tip')
+              .attr('rx', s.depthTipRadius ?? 2)
+              .attr('fill', s.depthTipFill ?? 'white')
+              .attr('stroke', this.theme.lithology.stroke)
+              .attr('stroke-width', 0.5);
+
+            tipG
+              .append('text')
+              .attr('class', 'wp-depth-tip-text')
+              .attr('fill', this.theme.labels.color)
+              .attr('font-family', s.fontFamily ?? 'sans-serif')
+              .attr('x', geoXLeft + 1 + s.depthTipPadX)
+              .attr('y', y + s.depthTipHeight / 2)
+              .attr('dominant-baseline', 'middle')
+              .attr('font-size', s.fontSize)
               .text(text);
           });
       }
@@ -1069,40 +1032,68 @@ export class WellDrawer {
           lithologyLabelsGroup
             .append('path')
             .attr('class', this.classes.labels.lithology.divider)
+            .attr('fill', 'none')
+            .attr('stroke', this.theme.labels.dividerStroke)
+            .attr('stroke-width', this.theme.labels.dividerStrokeWidth)
+            .attr('stroke-dasharray', this.theme.labels.dividerStrokeDasharray)
             .attr(
               'd',
               `M ${item.originX},${item.originY} L ${geoXRight + 3},${item.originY} L ${labelX},${yLabel}`,
-            )
-            .attr('fill', 'none')
-            .attr('stroke', '#888888')
-            .attr('stroke-width', 0.5)
-            .attr('stroke-dasharray', '2,2');
+            );
         });
       }
 
       // ── Labels ────────────────────────────────────────────────────────────
       if (show.has('description')) {
-        labelPositions.forEach(({ item, yLabel, estH }) => {
-          const fo = lithologyLabelsGroup
-            .append('foreignObject')
-            .attr('class', this.classes.labels.lithology.label)
-            .attr('x', labelX)
-            .attr('y', yLabel)
-            .attr('width', s.descriptionMaxWidth)
-            .attr('height', estH);
+        const lineH = s.stackingLineHeight;
+        const bgFill = s.annotationBg ?? 'white';
 
-          const wrapper = fo
-            .append('xhtml:div')
-            .attr('class', 'wp-annotation-label');
-          wrapper
-            .append('xhtml:div')
+        labelPositions.forEach(({ item, yLabel, estH }) => {
+          const labelG = lithologyLabelsGroup
+            .append('g')
+            .attr('class', this.classes.labels.lithology.label)
+            .attr('transform', `translate(${labelX},${yLabel})`);
+
+          labelG
+            .append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', s.descriptionMaxWidth)
+            .attr('height', estH)
+            .attr('rx', s.annotationRadius ?? 2)
+            .attr('fill', bgFill)
+            .attr('fill-opacity', s.annotationBgOpacity ?? 0.85)
+            .attr('stroke', s.annotationBorderColor ?? 'none');
+
+          labelG
+            .append('text')
             .attr('class', 'wp-annotation-header')
+            .attr('fill', this.theme.labels.color)
+            .attr('font-weight', s.headerFontWeight ?? 600)
+            .attr('font-family', this.theme.labels.headerFont)
+            .attr('x', 0)
+            .attr('y', lineH * 0.85)
+            .attr('font-size', s.fontSize)
             .text(item.header);
+
           if (item.description) {
-            wrapper
-              .append('xhtml:div')
+            const lines = wrapText(item.description, charsPerLine);
+            const bodyEl = labelG
+              .append('text')
               .attr('class', 'wp-annotation-body')
-              .text(item.description);
+              .attr('fill', this.theme.labels.bodyColor)
+              .attr('font-weight', s.bodyFontWeight ?? 400)
+              .attr('font-family', s.fontFamily ?? 'sans-serif')
+              .attr('x', 0)
+              .attr('y', lineH * 0.85 + lineH)
+              .attr('font-size', s.fontSize);
+            lines.forEach((line, i) => {
+              bodyEl
+                .append('tspan')
+                .attr('x', 0)
+                .attr('dy', i === 0 ? 0 : lineH)
+                .text(line);
+            });
           }
         });
       }
@@ -1164,7 +1155,9 @@ export class WellDrawer {
           .attr('height', (d: CementPad) => {
             return yScale(d.thickness * rcc.cementPad.thicknessMultiplier);
           })
-          .style('fill', () => DEFAULTS_TEXTURES.pad.url());
+          .attr('fill', this.textures.pad.url())
+          .attr('stroke', this.theme.cementPad.stroke)
+          .attr('stroke-width', this.theme.cementPad.strokeWidth);
 
         newCementPad
           .on('mouseover', tooltips.cementPad.show)
@@ -1181,6 +1174,11 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.boreHole.rect)
+        .attr('fill', this.theme.boreHole.fill)
+        .attr('stroke', this.theme.boreHole.stroke)
+        .attr('opacity', this.theme.boreHole.opacity)
+        .attr('stroke-width', this.theme.boreHole.strokeWidth)
+        .attr('stroke-dasharray', this.theme.boreHole.strokeDasharray)
         .on('mouseover', tooltips.hole.show)
         .on('mouseout', tooltips.hole.hide);
 
@@ -1194,45 +1192,76 @@ export class WellDrawer {
         .attr('y', getYPos)
         .attr('height', getHeight);
 
-      const surfaceCase = surfaceCaseGroup
-        .selectAll(`.${this.classes.surfaceCase.rect}`)
+      const surfaceCaseGs = surfaceCaseGroup
+        .selectAll(`g.${this.classes.surfaceCase.rect}`)
         .data(data.surface_case);
 
-      surfaceCase
-        .exit()
-        // @ts-ignore
-        .transition(transition)
-        .attr('height', 0)
-        .remove();
+      surfaceCaseGs.exit().transition(transition).style('opacity', 0).remove();
 
-      const newSurfaceCase = surfaceCase
+      const newSC = surfaceCaseGs
         .enter()
-        .append('rect')
+        .append('g')
         .attr('class', this.classes.surfaceCase.rect)
         .on('mouseover', tooltips.surfaceCase.show)
         .on('mouseout', tooltips.surfaceCase.hide);
 
-      newSurfaceCase
-        // @ts-ignore
-        .merge(surfaceCase)
-        .attr(
-          'x',
-          (d: SurfaceCase) =>
-            (POCO_CENTER -
-              xScale(
-                d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-              )) /
-            2,
-        )
-        .attr('width', (d: SurfaceCase) =>
-          xScale(
-            d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-          ),
-        )
+      newSC
+        .append('rect')
+        .attr('class', 'surface-case-fill')
+        .attr('stroke', 'none');
+      newSC
+        .append('line')
+        .attr('class', 'surface-case-side')
+        .attr('stroke', this.theme.surfaceCase.stroke)
+        .attr('stroke-width', this.theme.surfaceCase.strokeWidth);
+      newSC
+        .append('line')
+        .attr('class', 'surface-case-side')
+        .attr('stroke', this.theme.surfaceCase.stroke)
+        .attr('stroke-width', this.theme.surfaceCase.strokeWidth);
+
+      // @ts-ignore
+      const mergedSC = newSC.merge(surfaceCaseGs);
+
+      mergedSC.each((d: SurfaceCase, i, nodes) => {
+        const x =
+          (POCO_CENTER -
+            xScale(
+              d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
+            )) /
+          2;
+        const w = xScale(
+          d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
+        );
+        const g = d3.select(nodes[i] as Element);
+        g.select('.surface-case-fill')
+          .attr('x', x)
+          .attr('width', w)
+          .attr('fill', this.textures.surface_case.url());
+        const sideNodes = g.selectAll('.surface-case-side').nodes();
+        d3.select(sideNodes[0] as Element)
+          .attr('x1', x)
+          .attr('x2', x);
+        d3.select(sideNodes[1] as Element)
+          .attr('x1', x + w)
+          .attr('x2', x + w);
+      });
+
+      mergedSC
+        .select('.surface-case-fill')
         // @ts-ignore
         .transition(transition)
-        .attr('y', getYPos)
-        .attr('height', getHeight);
+        .attr('y', (d: SurfaceCase) => getYPos(d))
+        .attr('height', (d: SurfaceCase) => getHeight(d));
+
+      mergedSC
+        .selectAll('.surface-case-side')
+        .attr('y1', (d: unknown) => getYPos(d as SurfaceCase))
+        .attr(
+          'y2',
+          (d: unknown) =>
+            getYPos(d as SurfaceCase) + getHeight(d as SurfaceCase),
+        );
 
       const holeFill = holeFillGroup
         .selectAll(`.${this.classes.holeFill.rect}`)
@@ -1244,6 +1273,8 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.holeFill.rect)
+        .attr('stroke', this.theme.holeFill.stroke)
+        .attr('stroke-width', this.theme.holeFill.strokeWidth)
         .on('mouseover', tooltips.holeFill.show)
         .on('mouseout', tooltips.holeFill.hide);
 
@@ -1256,7 +1287,7 @@ export class WellDrawer {
         .transition(transition)
         .attr('y', getYPos)
         .attr('height', getHeight)
-        .style('fill', (d: HoleFill) => DEFAULTS_TEXTURES[d.type].url());
+        .attr('fill', (d: HoleFill) => this.textures[d.type].url());
 
       const wellCase = wellCaseGroup
         .selectAll(`.${this.classes.wellCase.rect}`)
@@ -1268,6 +1299,9 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.wellCase.rect)
+        .attr('fill', this.theme.wellCase.fill)
+        .attr('stroke', this.theme.wellCase.stroke)
+        .attr('stroke-width', this.theme.wellCase.strokeWidth)
         .on('mouseover', tooltips.wellCase.show)
         .on('mouseout', tooltips.wellCase.hide);
 
@@ -1291,7 +1325,9 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.wellScreen.rect)
-        .style('fill', () => DEFAULTS_TEXTURES.well_screen.url())
+        .attr('fill', this.textures.well_screen.url())
+        .attr('stroke', this.theme.wellScreen.stroke)
+        .attr('stroke-width', this.theme.wellScreen.strokeWidth)
         .on('mouseover', tooltips.wellScreen.show)
         .on('mouseout', tooltips.wellScreen.hide);
 
@@ -1321,7 +1357,9 @@ export class WellDrawer {
         .enter()
         .append('rect')
         .attr('class', this.classes.conflict.rect)
-        .style('fill', () => DEFAULTS_TEXTURES.conflict.url())
+        .attr('fill', this.textures.conflict.url())
+        .attr('stroke', this.theme.conflict.stroke)
+        .attr('stroke-width', this.theme.conflict.strokeWidth)
         .on('mouseover', tooltips.conflict.show)
         .on('mouseout', tooltips.conflict.hide);
 
@@ -1374,6 +1412,15 @@ export class WellDrawer {
       // @ts-ignore
       .call(yAxis);
 
+    gY.select('.domain')
+      .attr('stroke', this.theme.labels.color)
+      .attr('fill', 'none');
+    gY.selectAll('.tick line').attr('stroke', this.theme.labels.color);
+    gY.selectAll('.tick text')
+      .attr('fill', this.theme.labels.color)
+      .attr('stroke', 'none')
+      .attr('font-size', this.theme.labels.fontSize);
+
     const spanY = d => {
       if (d.thickness) return yScaleLocal(0) - yScaleLocal(d.thickness);
       return yScaleLocal(Math.max(d.from, depthFrom));
@@ -1410,6 +1457,21 @@ export class WellDrawer {
         .attr('height', d => {
           if (!d) return null;
           return transform.k * spanH(d);
+        });
+
+      // Surface case: update fill rect y/height and side line y1/y2
+      surfaceCaseGroup
+        .selectAll(`g.${this.classes.surfaceCase.rect}`)
+        .each((d: unknown, i, nodes) => {
+          if (!d) return;
+          const sc = d as SurfaceCase;
+          const g = d3.select(nodes[i] as Element);
+          const y = transform.applyY(spanY(sc));
+          const h = transform.k * spanH(sc);
+          g.select('.surface-case-fill').attr('y', y).attr('height', h);
+          g.selectAll('.surface-case-side')
+            .attr('y1', y)
+            .attr('y2', y + h);
         });
 
       // Fractures: recompute transform so rotation pivot tracks the scaled depth
@@ -1532,10 +1594,16 @@ export class WellDrawer {
         );
       // @ts-ignore
       svg.call(zoomNode).node();
+
+      const initialZoom = this.renderConfig.zoomLevel ?? 1;
+      if (initialZoom !== 1) {
+        // @ts-ignore
+        svg.call(zoomNode.transform, d3.zoomIdentity.scale(initialZoom));
+      }
     }
   }
 }
 
 export default {
-  WellDrawer,
+  WellRenderer,
 };

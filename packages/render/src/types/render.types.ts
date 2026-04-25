@@ -1,39 +1,52 @@
+import { type BaseType, type Selection } from 'd3';
+import type { TexturesConfig } from '~/configs/render.textures';
+
 export type DeepPartial<T> = T extends object
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : T;
 
-export type CssVarsConfig = {
-  // Strokes & fills
-  lithologyStroke?: string;
-  caveDryStroke?: string;
-  caveWetStroke?: string;
-  fractureDryStroke?: string;
-  fractureWetStroke?: string;
-  cementPadStroke?: string;
-  boreHoleFill?: string;
-  boreHoleStroke?: string;
-  surfaceCaseFill?: string;
-  holeFillStroke?: string;
-  wellCaseFill?: string;
-  wellCaseStroke?: string;
-  wellScreenStroke?: string;
-  conflictStroke?: string;
-  // Widths & opacities
-  lithologyStrokeWidth?: string;
-  caveFillOpacity?: string;
-  caveContactStrokeWidth?: string;
-  cementPadStrokeWidth?: string;
-  boreHoleOpacity?: string;
-  boreHoleStrokeWidth?: string;
-  surfaceCaseStrokeWidth?: string;
-  holeFillStrokeWidth?: string;
-  wellCaseStrokeWidth?: string;
-  wellScreenStrokeWidth?: string;
-  conflictStrokeWidth?: string;
-  // Unit label strips
-  unitLabelGeologicFill?: string;
-  unitLabelAquiferFill?: string;
-  unitLabelStroke?: string;
+export type Conflict = { from: number; to: number; diameter: number };
+
+export type SvgSelection = Selection<BaseType, unknown, HTMLElement, unknown>;
+
+export type InstanceState = {
+  svg: SvgSelection;
+  height: number;
+  width: number;
+  margins: { left: number; right: number; top: number; bottom: number };
+  clipId: string;
+  clipRectId: string;
+};
+
+export type WellTheme = {
+  lithology: { stroke: string; strokeWidth: number };
+  lithologyTexture: { size: number; strokeWidth: number; stroke: string };
+  cave: { dryStroke: string; wetStroke: string; fillOpacity: number; contactStrokeWidth: number };
+  fracture: { dryStroke: string; wetStroke: string };
+  cementPad: { stroke: string; strokeWidth: number };
+  boreHole: { fill: string; stroke: string; strokeDasharray: string; opacity: number; strokeWidth: number };
+  surfaceCase: { stroke: string; strokeWidth: number };
+  holeFill: { stroke: string; strokeWidth: number };
+  wellCase: { fill: string; stroke: string; strokeWidth: number };
+  wellScreen: { stroke: string; strokeWidth: number };
+  conflict: { stroke: string; strokeWidth: number };
+  unitLabels: { geologicFill: string; aquiferFill: string; stroke: string; strokeWidth: number };
+  labels: {
+    dividerStroke: string;
+    dividerStrokeWidth: number;
+    dividerStrokeDasharray: string;
+    fontSize: number;
+    color: string;
+    headerFont: string;
+    bodyColor: string;
+    bodyFont?: string;
+  };
+  legend: {
+    borderStrokeWidth: number;
+    fractureStrokeWidth: number;
+    fractureSideStrokeWidth: number;
+    itemStrokeWidth: number;
+  };
 };
 
 export type ComponentsClassNames = {
@@ -109,6 +122,15 @@ export type ComponentsClassNames = {
     aqRect: string;
     text: string;
   };
+  legend: {
+    border: string;
+    title: string;
+    item: string;
+    label: string;
+    fracturePoly: string;
+    caveFill: string;
+    constructionRect: string;
+  };
 };
 
 export type TooltipKey =
@@ -123,9 +145,11 @@ export type TooltipKey =
   | 'cementPad'
   | 'cave';
 
-export type DrawerRenderConfig = {
+export type RenderConfig = {
   zoom: boolean;
   pan: boolean;
+  /** Initial zoom scale applied on first render (1 = fit all, 2 = start 2× zoomed in). */
+  zoomLevel?: number;
   /** undefined = show all; false or [] = show none; array = show only listed keys */
   tooltips?: TooltipKey[] | false;
   animation: {
@@ -176,10 +200,17 @@ export type DrawerRenderConfig = {
       diameterPaddingRatio: number;
     };
   };
+  textures?: TexturesConfig;
   constructionLabels: {
     active: boolean;
     fontSize: number;
     xOffset: number;
+    labelRadius: number;
+    labelMaxWidth?: number;
+    labelFill?: string;
+    labelColor?: string;
+    fontFamily?: string;
+    fontWeight?: string | number;
     labels: {
       wellCasePrefix: string;
       wellScreenPrefix: string;
@@ -210,6 +241,15 @@ export type DrawerRenderConfig = {
       caveLabelFontSize?: number;
       caveLabelHeight?: number;
       caveLabelPadX?: number;
+      depthTipFill?: string;
+      depthTipRadius?: number;
+      annotationBg?: string;
+      annotationBgOpacity?: number;
+      annotationBorderColor?: string;
+      annotationRadius?: number;
+      fontFamily?: string;
+      headerFontWeight?: string | number;
+      bodyFontWeight?: string | number;
     };
   };
   unitLabels: {
@@ -224,9 +264,10 @@ export type DrawerRenderConfig = {
     innerDividerWidth: number;
     /** Stroke width of the top/bottom boundary (and page-clip edges in multi-SVG rendering) */
     outerEdgeWidth: number;
+    fontFamily?: string;
+    fontWeight?: string | number;
   };
-  cssVars?: CssVarsConfig;
-  legend?: LegendRenderConfig;
+  legend: LegendRenderConfig;
 };
 
 export type LegendRenderConfig = {
@@ -235,12 +276,25 @@ export type LegendRenderConfig = {
   itemWidth: number;
   height: number;
   padding: number;
+  maxWidth?: number;
+  borderRadius: number;
+  fontFamily?: string;
+  titleFontWeight?: string | number;
+  labelFontWeight?: string | number;
   labels: {
     fractureSingle: string;
     fractureSwarm: string;
     fractureWater: string;
     caveDry: string;
     caveWet: string;
+    boreHole: string;
+    surfaceCase: string;
+    holeFillGravel: string;
+    holeFillSeal: string;
+    wellCase: string;
+    wellScreen: string;
+    cementPad: string;
+    conflict: string;
   };
 };
 
