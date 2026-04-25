@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
-import * as pdfMake from 'pdfmake';
+import * as pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
 import { SvgInfo, infoType } from '../../../src_old/types/profile2Export.types';
 
@@ -16,47 +17,26 @@ const numberFormater = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 2,
 });
 
-// // @ts-ignore
-// // eslint-disable-next-line no-import-assign
-// pdfMake.vfs = pdfFonts.default;
+// @ts-ignore
+// eslint-disable-next-line no-import-assign
+pdfMake.vfs = pdfFonts.default;
 
 // @ts-ignore
 // eslint-disable-next-line no-import-assign
 pdfMake.fonts = {
-  // JetBrains Mono — data/tables/coordinates
-  jetBrainsMono: {
-    normal:
-      'https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/ttf/JetBrainsMono-Regular.ttf',
-    bold: 'https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/ttf/JetBrainsMono-Bold.ttf',
-    italics:
-      'https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/ttf/JetBrainsMono-Italic.ttf',
-    bolditalics:
-      'https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/ttf/JetBrainsMono-BoldItalic.ttf',
-  },
-  // Space Grotesk — UI/sans
-  spaceGrotesk: {
-    normal:
-      'https://cdn.jsdelivr.net/gh/floriankarsten/space-grotesk@3.0.1/fonts/SpaceGrotesk-Regular.ttf',
-    bold: 'https://cdn.jsdelivr.net/gh/floriankarsten/space-grotesk@3.0.1/fonts/SpaceGrotesk-SemiBold.ttf',
-  },
-  // IBM Plex Serif — large titles
-  ibmPlexSerif: {
-    normal:
-      'https://cdn.jsdelivr.net/npm/@ibm/plex@6/IBM-Plex-Serif/fonts/complete/ttf/IBMPlexSerif-Regular.ttf',
-    bold: 'https://cdn.jsdelivr.net/npm/@ibm/plex@6/IBM-Plex-Serif/fonts/complete/ttf/IBMPlexSerif-Bold.ttf',
-    italics:
-      'https://cdn.jsdelivr.net/npm/@ibm/plex@6/IBM-Plex-Serif/fonts/complete/ttf/IBMPlexSerif-Italic.ttf',
-    bolditalics:
-      'https://cdn.jsdelivr.net/npm/@ibm/plex@6/IBM-Plex-Serif/fonts/complete/ttf/IBMPlexSerif-BoldItalic.ttf',
+  openSans: {
+    normal: 'OpenSans-Regular.ttf',
+    bold: 'OpenSans-Semibold.ttf',
+    italics: 'OpenSans-Italic.ttf',
+    bolditalics: 'OpenSans-SemiboldItalic.ttf',
   },
   Roboto: {
-    normal:
-      'https://unpkg.com/pdfmake@0.3/build/fonts/Roboto/Roboto-Regular.ttf',
-    bold: 'https://unpkg.com/pdfmake@0.3/build/fonts/Roboto/Roboto-Medium.ttf',
-    italics:
-      'https://unpkg.com/pdfmake@0.3/build/fonts/Roboto/Roboto-Italic.ttf',
-    bolditalics:
-      'https://unpkg.com/pdfmake@0.3/build/fonts/Roboto/Roboto-MediumItalic.ttf',
+    normal: 'Roboto-Regular.ttf',
+    bold: 'Roboto-Bold.ttf',
+  },
+  poppins: {
+    normal: 'Poppins-Regular.ttf',
+    bold: 'Poppins-SemiBold.ttf',
   },
 };
 
