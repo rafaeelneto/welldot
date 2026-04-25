@@ -7,6 +7,7 @@ import { checkIfProfileIsEmpty } from '../../utils/profile.utils';
 import { infoType } from '../../../src_old/types/profile2Export.types';
 
 import { Profile } from '@/src/types/profile.types';
+import { DeepPartial, RenderConfig } from '@welldot/render';
 
 const profile2Export = (
   header: string,
@@ -20,6 +21,7 @@ const profile2Export = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  renderConfig?: DeepPartial<RenderConfig>,
 ) => {
   if (checkIfProfileIsEmpty(profile)) return;
 
@@ -36,6 +38,7 @@ const profile2Export = (
       lengthUnits,
       diameterUnits,
       metadataPosition,
+      renderConfig,
     );
   } else if (print) {
     printPdf(
@@ -48,6 +51,7 @@ const profile2Export = (
       lengthUnits,
       diameterUnits,
       metadataPosition,
+      renderConfig,
     );
   } else {
     downloadPdf(
@@ -60,6 +64,7 @@ const profile2Export = (
       lengthUnits,
       diameterUnits,
       metadataPosition,
+      renderConfig,
     );
   }
 };

@@ -9,8 +9,14 @@ import { Profile } from '@/src/types/profile.types';
 
 import { DiameterUnits, LengthUnits, useUIStore } from '@/src/store/ui.store';
 import { formatCoord } from '@/src/utils/coords.utils';
+import { DeepPartial, RenderConfig, WellRenderer } from '@welldot/render';
 import { calculateHoleFillVolume } from '../../utils/profile.utils';
-import { A4_SVG_HEIGHT, buildSvgProfiles } from './buildSvgProfiles';
+import {
+  A4_SVG_HEIGHT,
+  PDF_CONTENT_WIDTH,
+  PDF_MARGINS,
+  buildSvgProfiles,
+} from './buildSvgProfiles';
 
 const numberFormater = new Intl.NumberFormat('pt-BR', {
   minimumFractionDigits: 2,
@@ -24,19 +30,11 @@ pdfMake.vfs = pdfFonts.default;
 // @ts-ignore
 // eslint-disable-next-line no-import-assign
 pdfMake.fonts = {
-  openSans: {
-    normal: 'OpenSans-Regular.ttf',
-    bold: 'OpenSans-Semibold.ttf',
-    italics: 'OpenSans-Italic.ttf',
-    bolditalics: 'OpenSans-SemiboldItalic.ttf',
-  },
-  Roboto: {
-    normal: 'Roboto-Regular.ttf',
-    bold: 'Roboto-Bold.ttf',
-  },
-  poppins: {
-    normal: 'Poppins-Regular.ttf',
-    bold: 'Poppins-SemiBold.ttf',
+  jetBrainsMono: {
+    normal: 'JetBrainsMono-Regular.ttf',
+    bold: 'JetBrainsMono-Bold.ttf',
+    italics: 'JetBrainsMono-Italic.ttf',
+    bolditalics: 'JetBrainsMono-BoldItalic.ttf',
   },
 };
 
@@ -113,7 +111,7 @@ const buildMetadataRows = (
   return rows;
 };
 
-export const exportPdfProfile = (
+export const exportPdfProfile = async (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
@@ -123,6 +121,7 @@ export const exportPdfProfile = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  renderConfig?: DeepPartial<RenderConfig>,
 ) => {
   const { coord_format: coordFormat } = useUIStore.getState();
   const fmtLen = (m: number) =>
@@ -216,7 +215,7 @@ export const exportPdfProfile = (
 
   const docDefinition: any = {
     defaultStyle: {
-      font: 'openSans',
+      font: 'jetBrainsMono',
       fontSize: 11,
       color: '#3d3d3d',
     },
@@ -242,7 +241,7 @@ export const exportPdfProfile = (
             },
             {
               text: `${header}`,
-              font: 'poppins',
+              font: 'jetBrainsMono',
               alignment: 'center',
               fontSize: 13,
               bold: true,
@@ -263,7 +262,7 @@ export const exportPdfProfile = (
       title: {
         bold: true,
         fontSize: 14,
-        font: 'poppins',
+        font: 'jetBrainsMono',
         color: '#001537',
       },
       column_right: {
@@ -326,40 +325,56 @@ export const exportPdfProfile = (
 
   const svgs: SvgInfo[] = buildSvgProfiles({
     profile,
-    lengthUnits: lenUnit,
-    diameterUnits: diamUnit === 'mm' ? 'mm' : 'inches',
     breakPages: breakPages,
     zoomLevel,
     firstPageAvailableHeight,
   });
 
-  svgs.forEach((svgInfo, key) => {
+  const renderer = new WellRenderer(
+    svgs.map(svgInfo => ({
+      selector: `#${svgInfo.id}`,
+      height: svgInfo.height - PDF_MARGINS.top - PDF_MARGINS.bottom,
+      width: PDF_CONTENT_WIDTH,
+      margins: { ...PDF_MARGINS },
+    })),
+    {
+      renderConfig: { ...renderConfig, zoom: false, pan: false, animation: { duration: 0 } },
+      units: { length: lengthUnits, diameter: diameterUnits },
+    },
+  );
+
+  renderer.prepareSvg();
+  renderer.draw(profile);
+
+  await new Promise(resolve => requestAnimationFrame(resolve));
+
+  svgs.forEach(svgInfo => {
     const svg = document.getElementById(svgInfo.id);
-    if (!svg!.getAttribute('height') || !svg!.getAttribute('width')) {
+    if (!svg?.getAttribute('height') || !svg?.getAttribute('width')) {
       return;
     }
-    const svgHeight = parseFloat(svg!.getAttribute('height') || '0');
-    const svgWidth = parseFloat(svg!.getAttribute('width') || '0');
+    const svgHeight = parseFloat(svg.getAttribute('height') || '0');
+    const svgWidth = parseFloat(svg.getAttribute('width') || '0');
 
     content.push({
-      svg: svg?.outerHTML,
+      svg: svg.outerHTML,
       width: svgWidth,
       height: svgHeight,
     });
   });
 
-  const legendSvg = document.getElementById('fractureLegendSvg');
-  if (
-    legendSvg &&
-    legendSvg.getAttribute('height') &&
-    legendSvg.getAttribute('width')
-  ) {
-    content.push({
-      svg: legendSvg.outerHTML,
-      width: parseFloat(legendSvg.getAttribute('width') || '0'),
-      height: parseFloat(legendSvg.getAttribute('height') || '0'),
-    });
-  }
+  // const legendSvg = document.getElementById('fractureLegendSvg');
+  // if (
+  //   legendSvg &&
+  //   legendSvg.getAttribute('height') &&
+  //   legendSvg.getAttribute('width')
+  // ) {
+  //   content.push({
+  //     svg: legendSvg.outerHTML,
+  //     width: parseFloat(legendSvg.getAttribute('width') || '0'),
+  //     height: parseFloat(legendSvg.getAttribute('height') || '0'),
+  //   });
+  // }
 
   if (endInfo.length > 0) {
     content.push({ text: ' ' });
@@ -688,11 +703,12 @@ export const exportPdfProfile = (
   }
 
   docDefinition.content = content;
+
   // @ts-ignore
   return docDefinition;
 };
 
-export const innerRenderPdf = (
+export const innerRenderPdf = async (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
@@ -703,8 +719,9 @@ export const innerRenderPdf = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  renderConfig?: DeepPartial<RenderConfig>,
 ) => {
-  const docDefinition = exportPdfProfile(
+  const docDefinition = await exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
@@ -714,24 +731,26 @@ export const innerRenderPdf = (
     lengthUnits,
     diameterUnits,
     metadataPosition,
+    renderConfig,
   );
   // @ts-ignore
   try {
     const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-    pdfDocGenerator.getDataUrl(dataUrl => {
-      const blobUrl = base64ToBlob(dataUrl, 'application/pdf');
-      if (iframeId) {
-        const iframe = document.getElementById(iframeId);
-        // @ts-ignore
-        iframe.src = blobUrl;
-      }
-    });
+    console.log('Generating PDF...', pdfDocGenerator);
+    const pdfDataUrl = await pdfDocGenerator.getDataUrl();
+    const blobUrl = base64ToBlob(pdfDataUrl, 'application/pdf');
+    console.log('PDF generated, setting iframe src...', blobUrl);
+    if (iframeId) {
+      const iframe = document.getElementById(iframeId);
+      // @ts-ignore
+      iframe.src = blobUrl;
+    }
   } catch (error) {
     console.error('Error generating PDF:', error);
   }
 };
 
-export const printPdf = (
+export const printPdf = async (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
@@ -741,8 +760,9 @@ export const printPdf = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  renderConfig?: DeepPartial<RenderConfig>,
 ) => {
-  const docDefinition = exportPdfProfile(
+  const docDefinition = await exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
@@ -752,13 +772,14 @@ export const printPdf = (
     lengthUnits,
     diameterUnits,
     metadataPosition,
+    renderConfig,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);
   pdfDocGenerator.print();
 };
 
-export const downloadPdf = (
+export const downloadPdf = async (
   profile: Profile,
   headingInfo: infoType[],
   endInfo: infoType[],
@@ -768,8 +789,9 @@ export const downloadPdf = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  renderConfig?: DeepPartial<RenderConfig>,
 ) => {
-  const docDefinition = exportPdfProfile(
+  const docDefinition = await exportPdfProfile(
     profile,
     headingInfo,
     endInfo,
@@ -779,6 +801,7 @@ export const downloadPdf = (
     lengthUnits,
     diameterUnits,
     metadataPosition,
+    renderConfig,
   );
   // @ts-ignore
   const pdfDocGenerator = pdfMake.createPdf(docDefinition);

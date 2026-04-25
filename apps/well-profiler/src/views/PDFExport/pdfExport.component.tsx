@@ -38,6 +38,10 @@ import styles from './pdfExport.module.scss';
 
 import { DEFAULT_PDF_HEADER, useUIStore } from '@/src/store/ui.store';
 import profile2Export from './profile2Export.component';
+import RenderConfigEditor, {
+  RENDER_EDITOR_DEFAULTS,
+} from '../../../src/components/organisms/ProfileDrawer/RenderConfigEditor.component';
+import { DeepPartial, RenderConfig } from '@welldot/render';
 
 type InfoItem = infoType & { profileField?: keyof Profile };
 
@@ -267,6 +271,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     setPdfMetadataPosition: setMetadataPosition,
   } = useUIStore();
 
+  const [renderConfig, setRenderConfig] = useState<DeepPartial<RenderConfig>>(RENDER_EDITOR_DEFAULTS);
+
   const headingInfo = profile.info?.headingInfo || [];
   const endInfo = profile.info?.endInfo || [];
 
@@ -291,6 +297,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           length_units,
           diameter_units,
           metadataPosition,
+          renderConfig,
         );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`, e);
@@ -308,6 +315,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     diameter_units,
     metadataPosition,
     coordFormat,
+    renderConfig,
   ]);
 
   const handleBreakChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -366,6 +374,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               length_units,
               diameter_units,
               metadataPosition,
+              renderConfig,
             );
             // @ts-ignore
             if (window.gtag) {
@@ -406,6 +415,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               length_units,
               diameter_units,
               metadataPosition,
+              renderConfig,
             );
           }}
           leftSection={<Printer className="h-4 w-4" />}
@@ -497,6 +507,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           onChangeValues={handleEndInfoValueChange}
           profile={profile}
         />
+        <Divider />
+        <RenderConfigEditor config={renderConfig} onChange={setRenderConfig} />
       </div>
       <div className={styles.pdfFrameContainer}>
         <iframe

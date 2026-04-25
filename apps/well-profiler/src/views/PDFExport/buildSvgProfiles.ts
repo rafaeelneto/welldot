@@ -1,6 +1,5 @@
 import { max as d3max, select as d3select } from 'd3';
 
-import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
 import { getProfileLastItemsDepths } from '../../utils/profile.utils';
 
 import { Profile } from '@/src/types/profile.types';
@@ -21,8 +20,6 @@ export const PDF_CONTENT_WIDTH =
 
 export function buildSvgProfiles(props: {
   profile: Profile;
-  lengthUnits: LengthUnits;
-  diameterUnits: DiameterUnits;
   breakPages?: boolean;
   zoomLevel?: number;
   firstPageAvailableHeight?: number;
