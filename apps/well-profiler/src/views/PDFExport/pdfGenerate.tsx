@@ -85,6 +85,15 @@ function qrSvg(text: string, sizePt: number): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sizePt} ${sizePt}"><rect width="${sizePt}" height="${sizePt}" fill="white"/><g fill="#222">${rects}</g></svg>`;
 }
 
+function resolvePdfFont(cssFont: string | undefined, fallback: string): string {
+  if (!cssFont) return fallback;
+  const f = cssFont.toLowerCase();
+  if (f.includes('jetbrains') || f.includes('mono')) return 'jetBrainsMono';
+  if (f.includes('grotesk') || f.includes('sans')) return 'spaceGrotesk';
+  if (f.includes('serif')) return 'ibmPlexSerif';
+  return fallback;
+}
+
 function base64ToBlob(base64String, contentType = '') {
   // Remove data URL prefix if it exists
   const base64Data = base64String.replace(/^data:([^;]+);base64,/, '');
@@ -173,6 +182,10 @@ export const exportPdfProfile = async (
   const lenUnit = lengthUnits === 'ft' ? 'ft' : 'm';
   const diamUnit = diameterUnits === 'inches' ? '"' : 'mm';
 
+  const titleFont = 'ibmPlexSerif';
+  const uiFont = resolvePdfFont(renderConfig?.labels?.style?.fontFamily, 'spaceGrotesk');
+  const dataFont = resolvePdfFont(renderConfig?.constructionLabels?.fontFamily, 'jetBrainsMono');
+
   const buildProfileMetadataTable = (profile: Profile) => {
     const metaFields: {
       key: keyof Profile | string;
@@ -243,7 +256,7 @@ export const exportPdfProfile = async (
 
   const docDefinition: any = {
     defaultStyle: {
-      font: 'jetBrainsMono',
+      font: dataFont,
       fontSize: 11,
       color: '#3d3d3d',
     },
@@ -291,7 +304,7 @@ export const exportPdfProfile = async (
                 },
                 {
                   text: `${header}`,
-                  font: 'jetBrainsMono',
+                  font: titleFont,
                   alignment: 'center',
                   fontSize: 12,
                   bold: true,
@@ -388,8 +401,8 @@ export const exportPdfProfile = async (
     styles: {
       title: {
         bold: true,
-        fontSize: 14,
-        font: 'jetBrainsMono',
+        fontSize: 13,
+        font: titleFont,
         color: '#001537',
       },
       column_right: {
@@ -398,14 +411,23 @@ export const exportPdfProfile = async (
       sum_row: {
         bold: true,
         fontSize: 12,
+        font: uiFont,
       },
       metadataLabel: {
         fontSize: 8,
+        font: uiFont,
         color: '#3d3d3d',
       },
       metadataValue: {
         fontSize: 10,
+        font: uiFont,
         color: '#3d3d3d',
+      },
+      tableHeader: {
+        font: uiFont,
+        bold: true,
+        fontSize: 9,
+        color: '#555555',
       },
     },
   };
@@ -546,11 +568,11 @@ export const exportPdfProfile = async (
     content.push({ text: ' ' });
     content.push({ text: 'Laje de proteção', style: 'title' });
 
-    const cementPadBody: string[][] = [
-      [`Espessura (${lenUnit})`, fmtLen(profile.cement_pad.thickness)],
-      [`Largura (${lenUnit})`, fmtLen(profile.cement_pad.width)],
-      [`Comprimento (${lenUnit})`, fmtLen(profile.cement_pad.length)],
-      [`Material`, profile.cement_pad.type],
+    const cementPadBody: any[][] = [
+      [{ text: `Espessura (${lenUnit})`, style: 'tableHeader' }, fmtLen(profile.cement_pad.thickness)],
+      [{ text: `Largura (${lenUnit})`, style: 'tableHeader' }, fmtLen(profile.cement_pad.width)],
+      [{ text: `Comprimento (${lenUnit})`, style: 'tableHeader' }, fmtLen(profile.cement_pad.length)],
+      [{ text: `Material`, style: 'tableHeader' }, profile.cement_pad.type],
     ];
 
     content.push({
@@ -577,9 +599,9 @@ export const exportPdfProfile = async (
 
     const endingInfoBody: any[][] = [
       [
-        { text: 'Diâmetro' },
-        { text: `De (${lenUnit})`, style: 'column_right' },
-        { text: `Até (${lenUnit})`, style: 'column_right' },
+        { text: `Diâmetro (${diamUnit})`, style: 'tableHeader' },
+        { text: `De (${lenUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `Até (${lenUnit})`, style: ['tableHeader', 'column_right'] },
       ],
     ];
 
@@ -612,9 +634,9 @@ export const exportPdfProfile = async (
 
     const endingInfoBody: any[][] = [
       [
-        { text: 'Diâmetro' },
-        { text: `De (${lenUnit})`, style: 'column_right' },
-        { text: `Até (${lenUnit})`, style: 'column_right' },
+        { text: `Diâmetro (${diamUnit})`, style: 'tableHeader' },
+        { text: `De (${lenUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `Até (${lenUnit})`, style: ['tableHeader', 'column_right'] },
       ],
     ];
 
@@ -647,10 +669,10 @@ export const exportPdfProfile = async (
 
     const endingInfoBody: any[][] = [
       [
-        { text: 'Descrição' },
-        { text: 'Diâmetro', style: 'column_right' },
-        { text: `De (${lenUnit})`, style: 'column_right' },
-        { text: `Até (${lenUnit})`, style: 'column_right' },
+        { text: 'Descrição', style: 'tableHeader' },
+        { text: `Diâmetro (${diamUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `De (${lenUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `Até (${lenUnit})`, style: ['tableHeader', 'column_right'] },
       ],
     ];
 
@@ -708,10 +730,10 @@ export const exportPdfProfile = async (
 
     const endingInfoBody: any[][] = [
       [
-        { text: 'Tipo' },
-        { text: 'Diâmetro', style: 'column_right' },
-        { text: `De (${lenUnit})`, style: 'column_right' },
-        { text: `Até (${lenUnit})`, style: 'column_right' },
+        { text: 'Tipo', style: 'tableHeader' },
+        { text: `Diâmetro (${diamUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `De (${lenUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `Até (${lenUnit})`, style: ['tableHeader', 'column_right'] },
       ],
     ];
 
@@ -773,11 +795,11 @@ export const exportPdfProfile = async (
 
     const endingInfoBody: any[][] = [
       [
-        { text: 'Tipo' },
-        { text: 'Diâmetro', style: 'column_right' },
-        { text: `Ranhura (${diamUnit})`, style: 'column_right' },
-        { text: `De (${lenUnit})`, style: 'column_right' },
-        { text: `Até (${lenUnit})`, style: 'column_right' },
+        { text: 'Tipo', style: 'tableHeader' },
+        { text: `Diâmetro (${diamUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `Ranhura (${diamUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `De (${lenUnit})`, style: ['tableHeader', 'column_right'] },
+        { text: `Até (${lenUnit})`, style: ['tableHeader', 'column_right'] },
       ],
     ];
 
