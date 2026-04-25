@@ -2,7 +2,7 @@ import { Table } from '@mantine/core';
 
 import { Profile } from '@/src/types/profile.types';
 
-import { calculateHoleFillVolume } from '@/src/utils/profile.utils';
+import { calculateHoleFillVolume } from '@welldot/utils';
 
 import { useUIStore } from '@/src/store/ui.store';
 

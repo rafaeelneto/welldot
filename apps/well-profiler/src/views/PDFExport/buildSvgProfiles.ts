@@ -1,6 +1,6 @@
 import { max as d3max, select as d3select } from 'd3';
 
-import { getProfileLastItemsDepths } from '../../utils/profile.utils';
+import { getProfileLastItemsDepths } from '@welldot/utils';
 
 import { Profile } from '@/src/types/profile.types';
 import { SvgInfo } from '../../../src_old/types/profile2Export.types';

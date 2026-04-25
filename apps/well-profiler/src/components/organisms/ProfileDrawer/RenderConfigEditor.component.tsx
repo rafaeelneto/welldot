@@ -115,6 +115,8 @@ export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> = {
     minHeightForText: 8,
     innerDividerWidth: 1.5,
     outerEdgeWidth: 0.6,
+    fontFamily: 'sans-serif',
+    fontWeight: 400,
   },
   constructionLabels: {
     active: true,
@@ -124,6 +126,8 @@ export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> = {
     labelMaxWidth: 100,
     labelFill: '#ffffff',
     labelColor: '#303030',
+    fontFamily: 'sans-serif',
+    fontWeight: 400,
     labels: {
       wellCasePrefix: 'Revest.',
       wellScreenPrefix: 'Filtro',
@@ -155,6 +159,9 @@ export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> = {
     padding: 4,
     maxWidth: 700,
     borderRadius: 3,
+    fontFamily: 'sans-serif',
+    titleFontWeight: 'bold',
+    labelFontWeight: 400,
     labels: {
       fractureSingle: 'Fratura simples',
       fractureSwarm: 'Enxame de fraturas',
@@ -344,6 +351,19 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
       <input
         type="color"
         value={getVal(path) ?? '#000000'}
+        onChange={e => setStr(path, e.target.value)}
+      />
+    </div>
+  );
+
+  const strInput = (label: string, path: string[], placeholder?: string) => (
+    <div className={styles.editorRow} key={path.join('.')}>
+      <label className={styles.editorLabel}>{label}</label>
+      <input
+        className={styles.editorInput}
+        type="text"
+        placeholder={placeholder}
+        value={getVal(path) ?? ''}
         onChange={e => setStr(path, e.target.value)}
       />
     </div>
@@ -639,6 +659,8 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
               />
             </div>
             {numInput('Font Size', ['constructionLabels', 'fontSize'], 0.5)}
+            {strInput('Font Family', ['constructionLabels', 'fontFamily'], 'sans-serif')}
+            {numInput('Font Weight', ['constructionLabels', 'fontWeight'], 100)}
             {numInput('X Offset', ['constructionLabels', 'xOffset'], 1)}
             {numInput('Max Width', ['constructionLabels', 'labelMaxWidth'], 1)}
             {colorInput('Label Fill', ['constructionLabels', 'labelFill'])}
@@ -791,6 +813,7 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
               ['labels', 'style', 'bodyFontWeight'],
               100,
             )}
+            {strInput('Font Family', ['labels', 'style', 'fontFamily'], 'sans-serif')}
           </div>
 
           <div className={styles.editorSection}>
@@ -814,6 +837,8 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
             {numInput('X Offset', ['unitLabels', 'xOffset'], 1)}
             {numInput('Strip Width', ['unitLabels', 'stripWidth'], 1)}
             {numInput('Font Size', ['unitLabels', 'fontSize'], 0.5)}
+            {strInput('Font Family', ['unitLabels', 'fontFamily'], 'sans-serif')}
+            {numInput('Font Weight', ['unitLabels', 'fontWeight'], 100)}
             {numInput(
               'Inner Divider Width',
               ['unitLabels', 'innerDividerWidth'],
@@ -838,6 +863,9 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
               />
             </div>
             {numInput('Font Size', ['legend', 'fontSize'], 0.5)}
+            {strInput('Font Family', ['legend', 'fontFamily'], 'sans-serif')}
+            {strInput('Title Font Weight', ['legend', 'titleFontWeight'], 'bold')}
+            {strInput('Label Font Weight', ['legend', 'labelFontWeight'], '400')}
             {numInput('Item Width', ['legend', 'itemWidth'], 1)}
             {numInput('Height', ['legend', 'height'], 1)}
             {numInput('Padding', ['legend', 'padding'], 1)}

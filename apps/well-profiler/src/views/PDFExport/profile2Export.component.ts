@@ -2,12 +2,12 @@
 import { downloadPdf, innerRenderPdf, printPdf } from './pdfGenerate';
 
 import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
-import { checkIfProfileIsEmpty } from '../../utils/profile.utils';
+import { isWellEmpty } from '@welldot/core';
 
 import { infoType } from '../../../src_old/types/profile2Export.types';
 
 import { Profile } from '@/src/types/profile.types';
-import { DeepPartial, RenderConfig } from '@welldot/render';
+import type { DeepPartial, RenderConfig } from '@welldot/render';
 
 const profile2Export = (
   header: string,
@@ -23,7 +23,7 @@ const profile2Export = (
   metadataPosition: 'before' | 'after' | null = null,
   renderConfig?: DeepPartial<RenderConfig>,
 ) => {
-  if (checkIfProfileIsEmpty(profile)) return;
+  if (isWellEmpty(profile)) return;
 
   if (iframeId) {
     console.log('Rendering PDF in iframe with id:', iframeId);

@@ -1,12 +1,4 @@
 export {
-  calculateCilindricVolume,
-  calculateHoleFillVolume,
-  checkIfProfileIsEmpty,
-  getConstructivePropertySummary,
-  getProfileDiamValues,
-  getProfileLastItemsDepths,
-} from '@welldot/utils';
-export {
   DEFAULT_WELL_THEME,
   INTERACTIVE_RENDER_CONFIG,
   STATIC_RENDER_CONFIG,
