@@ -27,7 +27,19 @@ export type WellTheme = {
     fillOpacity: number;
     contactStrokeWidth: number;
   };
-  fracture: { dryStroke: string; wetStroke: string };
+  fracture: {
+    dryStroke: string;
+    wetStroke: string;
+    swarm: {
+      centralStrokeWidth: number;
+      sideStrokeWidthBase: number;
+      sideStrokeWidthVariance: number;
+    };
+    single: {
+      mainStrokeWidth: number;
+      crackStrokeWidth: number;
+    };
+  };
   cementPad: { stroke: string; strokeWidth: number };
   boreHole: {
     fill: string;
@@ -46,23 +58,48 @@ export type WellTheme = {
     aquiferFill: string;
     stroke: string;
     strokeWidth: number;
+    fontSize: number;
+    fontFamily?: string;
+    fontWeight?: string | number;
+  };
+  constructionLabels: {
+    fontSize: number;
+    labelFill: string;
+    labelColor: string;
+    fontFamily?: string;
+    fontWeight?: string | number;
   };
   labels: {
     dividerStroke: string;
     dividerStrokeWidth: number;
     dividerStrokeDasharray: string;
     fontSize: number;
+    scaleFontSize?: number;
     color: string;
     headerFont: string;
     bodyColor: string;
     bodyFont?: string;
     scaleFont?: string;
+    depthTipFill?: string;
+    depthTipRadius?: number;
+    annotationBg?: string;
+    annotationBgOpacity?: number;
+    annotationBorderColor?: string;
+    annotationRadius?: number;
+    headerFontWeight?: string | number;
+    bodyFontWeight?: string | number;
+    fractureLabelFontSize?: number;
+    caveLabelFontSize?: number;
   };
   legend: {
     borderStrokeWidth: number;
     fractureStrokeWidth: number;
     fractureSideStrokeWidth: number;
     itemStrokeWidth: number;
+    fontSize: number;
+    fontFamily?: string;
+    titleFontWeight?: string | number;
+    labelFontWeight?: string | number;
   };
 };
 
@@ -199,13 +236,6 @@ export type RenderConfig = {
       lineCountBase: number;
       lineCountVariance: number;
       spread: number;
-      centralStrokeWidth: number;
-      sideStrokeWidthBase: number;
-      sideStrokeWidthVariance: number;
-    };
-    single: {
-      mainStrokeWidth: number;
-      crackStrokeWidth: number;
     };
   };
   construction: {
@@ -220,14 +250,9 @@ export type RenderConfig = {
   textures?: TexturesConfig;
   constructionLabels: {
     active: boolean;
-    fontSize: number;
     xOffset: number;
     labelRadius: number;
     labelMaxWidth?: number;
-    labelFill?: string;
-    labelColor?: string;
-    fontFamily?: string;
-    fontWeight?: string | number;
     labels: {
       wellCasePrefix: string;
       wellScreenPrefix: string;
@@ -243,31 +268,17 @@ export type RenderConfig = {
       fracture?: string;
       cave?: string;
     };
-    style: {
-      fontSize: number;
-      depthTipHeight: number;
-      depthTipPadX: number;
-      descriptionXOffset: number;
-      descriptionMaxWidth: number;
-      stackingLineHeight: number;
-      stackingGap: number;
-      fractureLabelLeaderGap?: number;
-      fractureLabelFontSize?: number;
-      fractureLabelPadX?: number;
-      fractureLabelPadY?: number;
-      caveLabelFontSize?: number;
-      caveLabelHeight?: number;
-      caveLabelPadX?: number;
-      depthTipFill?: string;
-      depthTipRadius?: number;
-      annotationBg?: string;
-      annotationBgOpacity?: number;
-      annotationBorderColor?: string;
-      annotationRadius?: number;
-      headerFontWeight?: string | number;
-      bodyFontWeight?: string | number;
-      scaleFontSize?: number;
-    };
+    depthTipHeight: number;
+    depthTipPadX: number;
+    descriptionXOffset: number;
+    descriptionMaxWidth: number;
+    stackingLineHeight: number;
+    stackingGap: number;
+    fractureLabelLeaderGap?: number;
+    fractureLabelPadX?: number;
+    fractureLabelPadY?: number;
+    caveLabelHeight?: number;
+    caveLabelPadX?: number;
   };
   unitLabels: {
     /** Show geologic_unit and aquifer_unit strips to the left of the lithology column */
@@ -275,29 +286,22 @@ export type RenderConfig = {
     /** X position of the first (leftmost) strip in geologic group coordinates */
     xOffset: number;
     stripWidth: number;
-    fontSize: number;
     minHeightForText: number;
     /** Stroke width of divider lines between adjacent segments of different units */
     innerDividerWidth: number;
     /** Stroke width of the top/bottom boundary (and page-clip edges in multi-SVG rendering) */
     outerEdgeWidth: number;
-    fontFamily?: string;
-    fontWeight?: string | number;
   };
   legend: LegendRenderConfig;
 };
 
 export type LegendRenderConfig = {
   title: string;
-  fontSize: number;
   itemWidth: number;
   height: number;
   padding: number;
   maxWidth?: number;
   borderRadius: number;
-  fontFamily?: string;
-  titleFontWeight?: string | number;
-  labelFontWeight?: string | number;
   labels: {
     fractureSingle: string;
     fractureSwarm: string;

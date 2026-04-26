@@ -203,9 +203,9 @@ export function drawWellLegend(
     .attr('class', cls.title)
     .attr('x', 4)
     .attr('y', 11)
-    .attr('font-size', cfg.fontSize)
-    .attr('font-family', cfg.fontFamily ?? 'sans-serif')
-    .attr('font-weight', cfg.titleFontWeight ?? 'bold')
+    .attr('font-size', theme.legend.fontSize)
+    .attr('font-family', theme.legend.fontFamily ?? 'sans-serif')
+    .attr('font-weight', theme.legend.titleFontWeight ?? 'bold')
     .text(`${cfg.title}:`);
 
   const rw = 24;
@@ -346,9 +346,9 @@ export function drawWellLegend(
       .attr('class', cls.label)
       .attr('x', cx + 28)
       .attr('y', rowSymY + 3)
-      .attr('font-size', cfg.fontSize)
-      .attr('font-family', cfg.fontFamily ?? 'sans-serif')
-      .attr('font-weight', cfg.labelFontWeight ?? 400)
+      .attr('font-size', theme.legend.fontSize)
+      .attr('font-family', theme.legend.fontFamily ?? 'sans-serif')
+      .attr('font-weight', theme.legend.labelFontWeight ?? 400)
       .text(item.label);
   });
 }
