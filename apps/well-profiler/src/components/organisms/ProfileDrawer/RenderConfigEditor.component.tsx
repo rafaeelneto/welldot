@@ -77,11 +77,7 @@ export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> = {
       lineCountBase: 3,
       lineCountVariance: 11,
       spread: 18,
-      centralStrokeWidth: 1.2,
-      sideStrokeWidthBase: 0.6,
-      sideStrokeWidthVariance: 0.6,
     },
-    single: { mainStrokeWidth: 1.8, crackStrokeWidth: 0.7 },
   },
   construction: {
     cementPad: { widthMultiplier: 0.9, thicknessMultiplier: 1.3 },
@@ -90,44 +86,28 @@ export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> = {
   labels: {
     active: true,
     typeLabels: { fracture: 'fratura', cave: 'caverna' },
-    style: {
-      fontSize: 7,
-      depthTipHeight: 11,
-      depthTipPadX: 2,
-      depthTipFill: '#ffffff',
-      depthTipRadius: 2,
-      descriptionXOffset: 20,
-      descriptionMaxWidth: 260,
-      stackingLineHeight: 10,
-      stackingGap: 0,
-      fractureLabelLeaderGap: 5,
-      annotationBg: '#ffffff',
-      annotationBgOpacity: 0.85,
-      annotationRadius: 2,
-    },
+    depthTipHeight: 11,
+    depthTipPadX: 2,
+    descriptionXOffset: 20,
+    descriptionMaxWidth: 260,
+    stackingLineHeight: 10,
+    stackingGap: 0,
+    fractureLabelLeaderGap: 5,
     lithology: true,
   },
   unitLabels: {
     active: true,
     xOffset: 0,
     stripWidth: 8,
-    fontSize: 5.5,
     minHeightForText: 8,
     innerDividerWidth: 1.5,
     outerEdgeWidth: 0.6,
-    fontFamily: 'sans-serif',
-    fontWeight: 400,
   },
   constructionLabels: {
     active: true,
-    fontSize: 7.5,
     xOffset: 10,
     labelRadius: 2,
     labelMaxWidth: 100,
-    labelFill: '#ffffff',
-    labelColor: '#303030',
-    fontFamily: 'sans-serif',
-    fontWeight: 400,
     labels: {
       wellCasePrefix: 'Revest.',
       wellScreenPrefix: 'Filtro',
@@ -153,15 +133,11 @@ export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> = {
   },
   legend: {
     title: 'LEGENDA',
-    fontSize: 7,
     itemWidth: 110,
     height: 44,
     padding: 4,
     maxWidth: 700,
     borderRadius: 3,
-    fontFamily: 'sans-serif',
-    titleFontWeight: 'bold',
-    labelFontWeight: 400,
     labels: {
       fractureSingle: 'Fratura simples',
       fractureSwarm: 'Enxame de fraturas',
@@ -356,19 +332,6 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
     </div>
   );
 
-  const strInput = (label: string, path: string[], placeholder?: string) => (
-    <div className={styles.editorRow} key={path.join('.')}>
-      <label className={styles.editorLabel}>{label}</label>
-      <input
-        className={styles.editorInput}
-        type="text"
-        placeholder={placeholder}
-        value={getVal(path) ?? ''}
-        onChange={e => setStr(path, e.target.value)}
-      />
-    </div>
-  );
-
   const activeLabels = config.labels?.active;
   const activeArr: ActiveLabelItem[] =
     activeLabels === true
@@ -480,80 +443,22 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
 
           <div className={styles.editorSection}>
             <h4 className={styles.editorSectionTitle}>Fractures</h4>
-            {numInput(
-              'Width Multiplier',
-              ['fractures', 'widthMultiplier'],
-              0.1,
-            )}
-            {numInput(
-              'Hit Buffer Single',
-              ['fractures', 'hitBuffer', 'single'],
-              1,
-            )}
-            {numInput(
-              'Hit Buffer Swarm',
-              ['fractures', 'hitBuffer', 'swarm'],
-              1,
-            )}
+            {numInput('Width Multiplier', ['fractures', 'widthMultiplier'], 0.1)}
+            {numInput('Hit Buffer Single', ['fractures', 'hitBuffer', 'single'], 1)}
+            {numInput('Hit Buffer Swarm', ['fractures', 'hitBuffer', 'swarm'], 1)}
             <h5 className={styles.editorSubTitle}>Swarm</h5>
-            {numInput(
-              'Line Count Base',
-              ['fractures', 'swarm', 'lineCountBase'],
-              1,
-            )}
-            {numInput(
-              'Line Count Variance',
-              ['fractures', 'swarm', 'lineCountVariance'],
-              1,
-            )}
+            {numInput('Line Count Base', ['fractures', 'swarm', 'lineCountBase'], 1)}
+            {numInput('Line Count Variance', ['fractures', 'swarm', 'lineCountVariance'], 1)}
             {numInput('Spread', ['fractures', 'swarm', 'spread'], 1)}
-            {numInput(
-              'Central Stroke',
-              ['fractures', 'swarm', 'centralStrokeWidth'],
-              0.1,
-            )}
-            {numInput(
-              'Side Stroke Base',
-              ['fractures', 'swarm', 'sideStrokeWidthBase'],
-              0.1,
-            )}
-            {numInput(
-              'Side Stroke Var',
-              ['fractures', 'swarm', 'sideStrokeWidthVariance'],
-              0.1,
-            )}
-            <h5 className={styles.editorSubTitle}>Single</h5>
-            {numInput(
-              'Main Stroke',
-              ['fractures', 'single', 'mainStrokeWidth'],
-              0.1,
-            )}
-            {numInput(
-              'Crack Stroke',
-              ['fractures', 'single', 'crackStrokeWidth'],
-              0.1,
-            )}
           </div>
 
           <div className={styles.editorSection}>
             <h4 className={styles.editorSectionTitle}>Construction</h4>
             <h5 className={styles.editorSubTitle}>Cement Pad</h5>
-            {numInput(
-              'Width Multiplier',
-              ['construction', 'cementPad', 'widthMultiplier'],
-              0.1,
-            )}
-            {numInput(
-              'Thickness Multiplier',
-              ['construction', 'cementPad', 'thicknessMultiplier'],
-              0.1,
-            )}
+            {numInput('Width Multiplier', ['construction', 'cementPad', 'widthMultiplier'], 0.1)}
+            {numInput('Thickness Multiplier', ['construction', 'cementPad', 'thicknessMultiplier'], 0.1)}
             <h5 className={styles.editorSubTitle}>Surface Case</h5>
-            {numInput(
-              'Diameter Padding',
-              ['construction', 'surfaceCase', 'diameterPaddingRatio'],
-              0.01,
-            )}
+            {numInput('Diameter Padding', ['construction', 'surfaceCase', 'diameterPaddingRatio'], 0.01)}
           </div>
 
           <div className={styles.editorSection}>
@@ -580,39 +485,19 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
             {colorInput('Background', ['textures', 'seal', 'background'])}
 
             <h5 className={styles.editorSubTitle}>Gravel Pack</h5>
-            {colorInput(
-              'Background',
-              ['textures', 'gravel_pack', 'background'],
-            )}
+            {colorInput('Background', ['textures', 'gravel_pack', 'background'])}
 
             <h5 className={styles.editorSubTitle}>Well Screen</h5>
             {numInput('Size', ['textures', 'well_screen', 'size'], 1)}
-            {numInput(
-              'Stroke Width',
-              ['textures', 'well_screen', 'strokeWidth'],
-              0.5,
-            )}
-            {colorInput(
-              'Background',
-              ['textures', 'well_screen', 'background'],
-            )}
+            {numInput('Stroke Width', ['textures', 'well_screen', 'strokeWidth'], 0.5)}
+            {colorInput('Background', ['textures', 'well_screen', 'background'])}
 
             <h5 className={styles.editorSubTitle}>Surface Case</h5>
             {numInput('Size', ['textures', 'surface_case', 'size'], 1)}
-            {numInput(
-              'Stroke Width',
-              ['textures', 'surface_case', 'strokeWidth'],
-              0.5,
-            )}
+            {numInput('Stroke Width', ['textures', 'surface_case', 'strokeWidth'], 0.5)}
             {colorInput('Stroke', ['textures', 'surface_case', 'stroke'])}
-            {colorInput(
-              'Background',
-              ['textures', 'surface_case', 'background'],
-            )}
-            <div
-              className={styles.editorRow}
-              key="textures.surface_case.orientation"
-            >
+            {colorInput('Background', ['textures', 'surface_case', 'background'])}
+            <div className={styles.editorRow} key="textures.surface_case.orientation">
               <label className={styles.editorLabel}>Orientation</label>
               <input
                 className={styles.editorInput}
@@ -658,13 +543,9 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
                 }
               />
             </div>
-            {numInput('Font Size', ['constructionLabels', 'fontSize'], 0.5)}
-            {strInput('Font Family', ['constructionLabels', 'fontFamily'], 'sans-serif')}
-            {numInput('Font Weight', ['constructionLabels', 'fontWeight'], 100)}
             {numInput('X Offset', ['constructionLabels', 'xOffset'], 1)}
+            {numInput('Label Radius', ['constructionLabels', 'labelRadius'], 0.5)}
             {numInput('Max Width', ['constructionLabels', 'labelMaxWidth'], 1)}
-            {colorInput('Label Fill', ['constructionLabels', 'labelFill'])}
-            {colorInput('Label Color', ['constructionLabels', 'labelColor'])}
             <h5 className={styles.editorSubTitle}>Label Text</h5>
             {(
               [
@@ -765,56 +646,15 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
               />
             </div>
 
-            <h5 className={styles.editorSubTitle}>Style</h5>
-            {numInput('Font Size', ['labels', 'style', 'fontSize'], 0.5)}
-            {numInput(
-              'Description X Offset',
-              ['labels', 'style', 'descriptionXOffset'],
-              1,
-            )}
-            {numInput(
-              'Description Max Width',
-              ['labels', 'style', 'descriptionMaxWidth'],
-              1,
-            )}
-            {numInput(
-              'Stacking Line Height',
-              ['labels', 'style', 'stackingLineHeight'],
-              1,
-            )}
-            {numInput('Stacking Gap', ['labels', 'style', 'stackingGap'], 1)}
-            {numInput(
-              'Leader Gap',
-              ['labels', 'style', 'fractureLabelLeaderGap'],
-              1,
-            )}
-            <h5 className={styles.editorSubTitle}>Depth Scale</h5>
-            {numInput('Font Size', ['labels', 'style', 'scaleFontSize'], 0.5)}
+            <h5 className={styles.editorSubTitle}>Layout</h5>
+            {numInput('Description X Offset', ['labels', 'descriptionXOffset'], 1)}
+            {numInput('Description Max Width', ['labels', 'descriptionMaxWidth'], 1)}
+            {numInput('Stacking Line Height', ['labels', 'stackingLineHeight'], 1)}
+            {numInput('Stacking Gap', ['labels', 'stackingGap'], 1)}
+            {numInput('Leader Gap', ['labels', 'fractureLabelLeaderGap'], 1)}
             <h5 className={styles.editorSubTitle}>Depth Tips</h5>
-            {colorInput('Fill', ['labels', 'style', 'depthTipFill'])}
-            {numInput('Radius', ['labels', 'style', 'depthTipRadius'], 0.5)}
-            <h5 className={styles.editorSubTitle}>Annotation Labels</h5>
-            {colorInput('Background', ['labels', 'style', 'annotationBg'])}
-            {numInput(
-              'Bg Opacity',
-              ['labels', 'style', 'annotationBgOpacity'],
-              0.05,
-            )}
-            {colorInput(
-              'Border Color',
-              ['labels', 'style', 'annotationBorderColor'],
-            )}
-            {numInput('Radius', ['labels', 'style', 'annotationRadius'], 0.5)}
-            {numInput(
-              'Header Font Weight',
-              ['labels', 'style', 'headerFontWeight'],
-              100,
-            )}
-            {numInput(
-              'Body Font Weight',
-              ['labels', 'style', 'bodyFontWeight'],
-              100,
-            )}
+            {numInput('Height', ['labels', 'depthTipHeight'], 1)}
+            {numInput('Pad X', ['labels', 'depthTipPadX'], 0.5)}
           </div>
 
           <div className={styles.editorSection}>
@@ -837,19 +677,9 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
             </div>
             {numInput('X Offset', ['unitLabels', 'xOffset'], 1)}
             {numInput('Strip Width', ['unitLabels', 'stripWidth'], 1)}
-            {numInput('Font Size', ['unitLabels', 'fontSize'], 0.5)}
-            {strInput('Font Family', ['unitLabels', 'fontFamily'], 'sans-serif')}
-            {numInput('Font Weight', ['unitLabels', 'fontWeight'], 100)}
-            {numInput(
-              'Inner Divider Width',
-              ['unitLabels', 'innerDividerWidth'],
-              0.1,
-            )}
-            {numInput(
-              'Outer Edge Width',
-              ['unitLabels', 'outerEdgeWidth'],
-              0.1,
-            )}
+            {numInput('Min Height For Text', ['unitLabels', 'minHeightForText'], 1)}
+            {numInput('Inner Divider Width', ['unitLabels', 'innerDividerWidth'], 0.1)}
+            {numInput('Outer Edge Width', ['unitLabels', 'outerEdgeWidth'], 0.1)}
           </div>
 
           <div className={styles.editorSection}>
@@ -863,13 +693,10 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
                 onChange={e => setStr(['legend', 'title'], e.target.value)}
               />
             </div>
-            {numInput('Font Size', ['legend', 'fontSize'], 0.5)}
-            {strInput('Font Family', ['legend', 'fontFamily'], 'sans-serif')}
-            {strInput('Title Font Weight', ['legend', 'titleFontWeight'], 'bold')}
-            {strInput('Label Font Weight', ['legend', 'labelFontWeight'], '400')}
             {numInput('Item Width', ['legend', 'itemWidth'], 1)}
             {numInput('Height', ['legend', 'height'], 1)}
             {numInput('Padding', ['legend', 'padding'], 1)}
+            {numInput('Border Radius', ['legend', 'borderRadius'], 0.5)}
             <h5 className={styles.editorSubTitle}>Labels</h5>
             {(
               [

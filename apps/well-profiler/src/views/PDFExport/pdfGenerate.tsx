@@ -85,15 +85,6 @@ function qrSvg(text: string, sizePt: number): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sizePt} ${sizePt}"><rect width="${sizePt}" height="${sizePt}" fill="white"/><g fill="#222">${rects}</g></svg>`;
 }
 
-function resolvePdfFont(cssFont: string | undefined, fallback: string): string {
-  if (!cssFont) return fallback;
-  const f = cssFont.toLowerCase();
-  if (f.includes('jetbrains') || f.includes('mono')) return 'jetBrainsMono';
-  if (f.includes('grotesk') || f.includes('sans')) return 'spaceGrotesk';
-  if (f.includes('serif')) return 'ibmPlexSerif';
-  return fallback;
-}
-
 function base64ToBlob(base64String, contentType = '') {
   // Remove data URL prefix if it exists
   const base64Data = base64String.replace(/^data:([^;]+);base64,/, '');
@@ -503,13 +494,9 @@ export const exportPdfProfile = async (
         animation: { duration: 0 },
         constructionLabels: {
           ...renderConfig?.constructionLabels,
-          fontFamily: 'jetBrainsMono',
         },
         labels: {
           ...renderConfig?.labels,
-          style: {
-            ...renderConfig?.labels?.style,
-          },
         },
         legend: {
           height: 30,
@@ -522,6 +509,9 @@ export const exportPdfProfile = async (
           headerFont: 'jetBrainsMono',
           bodyFont: 'jetBrainsMono',
           scaleFont: 'jetBrainsMono',
+        },
+        constructionLabels: {
+          fontFamily: 'spaceGrotesk',
         },
       },
       units: { length: lengthUnits, diameter: diameterUnits },
