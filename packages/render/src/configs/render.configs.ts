@@ -39,6 +39,7 @@ export const DEFAULT_WELL_THEME: WellTheme = {
     headerFont: 'monospace',
     bodyColor: '#555',
     bodyFont: 'sans-serif',
+    scaleFont: 'monospace',
   },
   legend: {
     borderStrokeWidth: 0.8,

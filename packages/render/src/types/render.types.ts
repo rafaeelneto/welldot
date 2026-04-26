@@ -21,16 +21,32 @@ export type InstanceState = {
 export type WellTheme = {
   lithology: { stroke: string; strokeWidth: number };
   lithologyTexture: { size: number; strokeWidth: number; stroke: string };
-  cave: { dryStroke: string; wetStroke: string; fillOpacity: number; contactStrokeWidth: number };
+  cave: {
+    dryStroke: string;
+    wetStroke: string;
+    fillOpacity: number;
+    contactStrokeWidth: number;
+  };
   fracture: { dryStroke: string; wetStroke: string };
   cementPad: { stroke: string; strokeWidth: number };
-  boreHole: { fill: string; stroke: string; strokeDasharray: string; opacity: number; strokeWidth: number };
+  boreHole: {
+    fill: string;
+    stroke: string;
+    strokeDasharray: string;
+    opacity: number;
+    strokeWidth: number;
+  };
   surfaceCase: { stroke: string; strokeWidth: number };
   holeFill: { stroke: string; strokeWidth: number };
   wellCase: { fill: string; stroke: string; strokeWidth: number };
   wellScreen: { stroke: string; strokeWidth: number };
   conflict: { stroke: string; strokeWidth: number };
-  unitLabels: { geologicFill: string; aquiferFill: string; stroke: string; strokeWidth: number };
+  unitLabels: {
+    geologicFill: string;
+    aquiferFill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
   labels: {
     dividerStroke: string;
     dividerStrokeWidth: number;
@@ -40,6 +56,7 @@ export type WellTheme = {
     headerFont: string;
     bodyColor: string;
     bodyFont?: string;
+    scaleFont?: string;
   };
   legend: {
     borderStrokeWidth: number;
@@ -247,9 +264,9 @@ export type RenderConfig = {
       annotationBgOpacity?: number;
       annotationBorderColor?: string;
       annotationRadius?: number;
-      fontFamily?: string;
       headerFontWeight?: string | number;
       bodyFontWeight?: string | number;
+      scaleFontSize?: number;
     };
   };
   unitLabels: {

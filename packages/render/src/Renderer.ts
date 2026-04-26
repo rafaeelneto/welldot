@@ -943,7 +943,7 @@ export class WellRenderer {
               .append('text')
               .attr('class', 'wp-depth-tip-text')
               .attr('fill', this.theme.labels.color)
-              .attr('font-family', s.fontFamily ?? 'sans-serif')
+              .attr('font-family', this.theme.labels.bodyFont ?? 'sans-serif')
               .attr('x', geoXLeft + 1 + s.depthTipPadX)
               .attr('y', y + s.depthTipHeight / 2)
               .attr('dominant-baseline', 'middle')
@@ -1083,7 +1083,7 @@ export class WellRenderer {
               .attr('class', 'wp-annotation-body')
               .attr('fill', this.theme.labels.bodyColor)
               .attr('font-weight', s.bodyFontWeight ?? 400)
-              .attr('font-family', s.fontFamily ?? 'sans-serif')
+              .attr('font-family', this.theme.labels.bodyFont ?? 'sans-serif')
               .attr('x', 0)
               .attr('y', lineH * 0.85 + lineH)
               .attr('font-size', s.fontSize);
@@ -1419,7 +1419,17 @@ export class WellRenderer {
     gY.selectAll('.tick text')
       .attr('fill', this.theme.labels.color)
       .attr('stroke', 'none')
-      .attr('font-size', this.theme.labels.fontSize);
+      .attr(
+        'font-size',
+        this.renderConfig.labels.style.scaleFontSize ??
+          this.theme.labels.fontSize,
+      )
+      .attr(
+        'font-family',
+        this.theme.labels.scaleFont ??
+          this.theme.labels.bodyFont ??
+          'sans-serif',
+      );
 
     const spanY = d => {
       if (d.thickness) return yScaleLocal(0) - yScaleLocal(d.thickness);

@@ -183,8 +183,8 @@ export const exportPdfProfile = async (
   const diamUnit = diameterUnits === 'inches' ? '"' : 'mm';
 
   const titleFont = 'ibmPlexSerif';
-  const uiFont = resolvePdfFont(renderConfig?.labels?.style?.fontFamily, 'spaceGrotesk');
-  const dataFont = resolvePdfFont(renderConfig?.constructionLabels?.fontFamily, 'jetBrainsMono');
+  const dataFont = 'jetBrainsMono';
+  const uiFont = 'spaceGrotesk';
 
   const buildProfileMetadataTable = (profile: Profile) => {
     const metaFields: {
@@ -462,13 +462,17 @@ export const exportPdfProfile = async (
   }
 
   const PT_TO_PX = 1.33;
-  let firstPageUsedHeight = 13 * PT_TO_PX; // spacer before SVG content
+  // Single-line text (spacer, title): ~15pt. Two-line cell (metadataLabel 8pt + metadataValue 10pt + padding): ~26pt.
+  const SINGLE_ROW_H = 15 * PT_TO_PX;
+  const CELL_ROW_H = 26 * PT_TO_PX;
+
+  let firstPageUsedHeight = SINGLE_ROW_H; // { text: ' ' } spacer before SVG
   if (headingInfo.length > 0) {
-    firstPageUsedHeight += Math.ceil(headingInfo.length / 4) * 13 * PT_TO_PX;
+    firstPageUsedHeight += Math.ceil(headingInfo.length / 4) * CELL_ROW_H;
   }
   if (metadataPosition === 'before') {
-    firstPageUsedHeight += 10 * PT_TO_PX; // 'Dados do Poço' title
-    firstPageUsedHeight += 3 * 13 * PT_TO_PX; // profile metadata table (max 3 rows × 3 cols)
+    firstPageUsedHeight += SINGLE_ROW_H; // 'Dados do Poço' title
+    firstPageUsedHeight += 3 * CELL_ROW_H; // metadata table (max 3 rows × 3 cols)
   }
   const firstPageAvailableHeight = A4_SVG_HEIGHT - firstPageUsedHeight;
 
@@ -497,21 +501,55 @@ export const exportPdfProfile = async (
         zoom: false,
         pan: false,
         animation: { duration: 0 },
+        constructionLabels: {
+          ...renderConfig?.constructionLabels,
+          fontFamily: 'jetBrainsMono',
+        },
+        labels: {
+          ...renderConfig?.labels,
+          style: {
+            ...renderConfig?.labels?.style,
+          },
+        },
+        legend: {
+          height: 30,
+          ...renderConfig?.legend,
+          maxWidth: 595.28 - MARGIN * 2,
+        },
+      },
+      theme: {
+        labels: {
+          headerFont: 'jetBrainsMono',
+          bodyFont: 'jetBrainsMono',
+          scaleFont: 'jetBrainsMono',
+        },
       },
       units: { length: lengthUnits, diameter: diameterUnits },
     },
   );
 
+  const legendId = 'svgLegendCanvas';
+  const svgDraftContainer = document.getElementById('svgDraftContainer');
+  document.getElementById(legendId)?.remove();
+  const legendSvgEl = document.createElementNS(
+    'http://www.w3.org/2000/svg',
+    'svg',
+  );
+  legendSvgEl.id = legendId;
+  (svgDraftContainer ?? document.body).appendChild(legendSvgEl);
+
   renderer.prepareSvg();
   renderer.draw(profile);
+  renderer.renderLegend(`#${legendId}`, profile);
 
   await new Promise(resolve => requestAnimationFrame(resolve));
 
-  svgs.forEach(svgInfo => {
+  svgs.forEach((svgInfo, index) => {
     const svg = document.getElementById(svgInfo.id);
     if (!svg?.getAttribute('height') || !svg?.getAttribute('width')) {
       return;
     }
+
     const svgHeight = parseFloat(svg.getAttribute('height') || '0');
     const svgWidth = parseFloat(svg.getAttribute('width') || '0');
 
@@ -519,21 +557,25 @@ export const exportPdfProfile = async (
       svg: svg.outerHTML,
       width: svgWidth,
       height: svgHeight,
+      ...(breakPages && index > 0 ? { pageBreak: 'before' } : {}),
     });
   });
 
-  // const legendSvg = document.getElementById('fractureLegendSvg');
-  // if (
-  //   legendSvg &&
-  //   legendSvg.getAttribute('height') &&
-  //   legendSvg.getAttribute('width')
-  // ) {
-  //   content.push({
-  //     svg: legendSvg.outerHTML,
-  //     width: parseFloat(legendSvg.getAttribute('width') || '0'),
-  //     height: parseFloat(legendSvg.getAttribute('height') || '0'),
-  //   });
-  // }
+  const legendSvg = document.getElementById(legendId);
+  if (legendSvg) {
+    const lw = parseFloat(legendSvg.getAttribute('width') || '0');
+    const lh = parseFloat(legendSvg.getAttribute('height') || '0');
+    if (lw > 0 && lh > 0) {
+      const pdfWidth = 595.28 - MARGIN * 2;
+      content.push({
+        svg: legendSvg.outerHTML,
+        width: pdfWidth,
+        height: lh * (pdfWidth / lw),
+        margin: [0, 8, 0, 0],
+      });
+    }
+    legendSvg.remove();
+  }
 
   if (endInfo.length > 0) {
     content.push({ text: ' ' });
@@ -569,9 +611,18 @@ export const exportPdfProfile = async (
     content.push({ text: 'Laje de proteção', style: 'title' });
 
     const cementPadBody: any[][] = [
-      [{ text: `Espessura (${lenUnit})`, style: 'tableHeader' }, fmtLen(profile.cement_pad.thickness)],
-      [{ text: `Largura (${lenUnit})`, style: 'tableHeader' }, fmtLen(profile.cement_pad.width)],
-      [{ text: `Comprimento (${lenUnit})`, style: 'tableHeader' }, fmtLen(profile.cement_pad.length)],
+      [
+        { text: `Espessura (${lenUnit})`, style: 'tableHeader' },
+        fmtLen(profile.cement_pad.thickness),
+      ],
+      [
+        { text: `Largura (${lenUnit})`, style: 'tableHeader' },
+        fmtLen(profile.cement_pad.width),
+      ],
+      [
+        { text: `Comprimento (${lenUnit})`, style: 'tableHeader' },
+        fmtLen(profile.cement_pad.length),
+      ],
       [{ text: `Material`, style: 'tableHeader' }, profile.cement_pad.type],
     ];
 
@@ -670,7 +721,10 @@ export const exportPdfProfile = async (
     const endingInfoBody: any[][] = [
       [
         { text: 'Descrição', style: 'tableHeader' },
-        { text: `Diâmetro (${diamUnit})`, style: ['tableHeader', 'column_right'] },
+        {
+          text: `Diâmetro (${diamUnit})`,
+          style: ['tableHeader', 'column_right'],
+        },
         { text: `De (${lenUnit})`, style: ['tableHeader', 'column_right'] },
         { text: `Até (${lenUnit})`, style: ['tableHeader', 'column_right'] },
       ],
@@ -731,7 +785,10 @@ export const exportPdfProfile = async (
     const endingInfoBody: any[][] = [
       [
         { text: 'Tipo', style: 'tableHeader' },
-        { text: `Diâmetro (${diamUnit})`, style: ['tableHeader', 'column_right'] },
+        {
+          text: `Diâmetro (${diamUnit})`,
+          style: ['tableHeader', 'column_right'],
+        },
         { text: `De (${lenUnit})`, style: ['tableHeader', 'column_right'] },
         { text: `Até (${lenUnit})`, style: ['tableHeader', 'column_right'] },
       ],
@@ -796,8 +853,14 @@ export const exportPdfProfile = async (
     const endingInfoBody: any[][] = [
       [
         { text: 'Tipo', style: 'tableHeader' },
-        { text: `Diâmetro (${diamUnit})`, style: ['tableHeader', 'column_right'] },
-        { text: `Ranhura (${diamUnit})`, style: ['tableHeader', 'column_right'] },
+        {
+          text: `Diâmetro (${diamUnit})`,
+          style: ['tableHeader', 'column_right'],
+        },
+        {
+          text: `Ranhura (${diamUnit})`,
+          style: ['tableHeader', 'column_right'],
+        },
         { text: `De (${lenUnit})`, style: ['tableHeader', 'column_right'] },
         { text: `Até (${lenUnit})`, style: ['tableHeader', 'column_right'] },
       ],

@@ -788,6 +788,8 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
               ['labels', 'style', 'fractureLabelLeaderGap'],
               1,
             )}
+            <h5 className={styles.editorSubTitle}>Depth Scale</h5>
+            {numInput('Font Size', ['labels', 'style', 'scaleFontSize'], 0.5)}
             <h5 className={styles.editorSubTitle}>Depth Tips</h5>
             {colorInput('Fill', ['labels', 'style', 'depthTipFill'])}
             {numInput('Radius', ['labels', 'style', 'depthTipRadius'], 0.5)}
@@ -813,7 +815,6 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
               ['labels', 'style', 'bodyFontWeight'],
               100,
             )}
-            {strInput('Font Family', ['labels', 'style', 'fontFamily'], 'sans-serif')}
           </div>
 
           <div className={styles.editorSection}>
