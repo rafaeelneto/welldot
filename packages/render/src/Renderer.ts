@@ -165,10 +165,7 @@ export class WellRenderer {
     geologic.append('g').attr('class', this.classes.yAxis);
     geologic.append('g').attr('class', this.classes.unitLabels.group);
     geologic.append('g').attr('class', this.classes.lithology.group);
-    geologic
-      .append('g')
-      .attr('class', this.classes.caves.group)
-      .attr('clip-path', `url(#${clipId})`);
+    geologic.append('g').attr('class', this.classes.caves.group);
     geologic.append('g').attr('class', this.classes.labels.lithology.group);
 
     const construction = poco
@@ -492,8 +489,8 @@ export class WellRenderer {
         const rngTop = makeCavePrng(seedTop);
         const rngBot = makeCavePrng(seedBot);
 
-        const yTop = yScale(cave.from);
-        const yBot = yScale(cave.to);
+        const yTop = yScale(Math.max(cave.from, depthFrom));
+        const yBot = yScale(Math.min(cave.to, depthTo));
         const span = yBot - yTop; // pixel height of the cave band
 
         const amp = Math.max(
@@ -501,38 +498,40 @@ export class WellRenderer {
           Math.min(span * rc.amplitude.ratio, rc.amplitude.max),
         );
 
-        const topPts = wavyContact(
-          geoXLeft,
-          geoXRight,
-          yTop,
-          amp,
-          rc.pathSteps,
-          rngTop,
-        );
-        const botPts = wavyContact(
-          geoXLeft,
-          geoXRight,
-          yBot,
-          amp,
-          rc.pathSteps,
-          rngBot,
-        );
+        const topCut = cave.from < depthFrom;
+        const botCut = cave.to > depthTo;
+
+        const topPts = topCut
+          ? ([
+              [geoXLeft, yTop],
+              [geoXRight, yTop],
+            ] as [number, number][])
+          : wavyContact(geoXLeft, geoXRight, yTop, amp, rc.pathSteps, rngTop);
+        const botPts = botCut
+          ? ([
+              [geoXLeft, yBot],
+              [geoXRight, yBot],
+            ] as [number, number][])
+          : wavyContact(geoXLeft, geoXRight, yBot, amp, rc.pathSteps, rngBot);
 
         // Smooth path strings for each contact
-        const topPath = ptsToSmoothPath(topPts);
-        const botPath = ptsToSmoothPath(botPts);
+        const topPath = topCut
+          ? `M ${geoXLeft.toFixed(1)},${yTop.toFixed(1)} L ${geoXRight.toFixed(1)},${yTop.toFixed(1)}`
+          : ptsToSmoothPath(topPts);
+        const botPath = botCut
+          ? `M ${geoXLeft.toFixed(1)},${yBot.toFixed(1)} L ${geoXRight.toFixed(1)},${yBot.toFixed(1)}`
+          : ptsToSmoothPath(botPts);
 
         // Closed filled region:
         //   top contact L→R  +  right vertical edge down
         //   +  bottom contact R→L (reversed)  +  left vertical edge up  +  Z
-        const botReversed = ptsToSmoothPath([...botPts].reverse());
-        const closedPath = `${
-          topPath
-        } L ${geoXRight.toFixed(1)},${botPts[botPts.length - 1][1].toFixed(1)}${
-          // Strip the leading 'M x,y' from the reversed bottom path so the
-          // concatenated path stays as one continuous sub-path.
-          botReversed.replace(/^M [\d.-]+ [\d.-]+/, '')
-        } L ${geoXLeft.toFixed(1)},${topPts[0][1].toFixed(1)} Z`;
+        const botReversed = botCut
+          ? `L ${geoXLeft.toFixed(1)},${yBot.toFixed(1)}`
+          : ptsToSmoothPath([...botPts].reverse()).replace(
+              /^M [\d.-]+ [\d.-]+/,
+              '',
+            );
+        const closedPath = `${topPath} L ${geoXRight.toFixed(1)},${yBot.toFixed(1)}${botReversed} L ${geoXLeft.toFixed(1)},${yTop.toFixed(1)} Z`;
 
         const caveTexture = cave.water_intake
           ? this.textures.cave_wet
