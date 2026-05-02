@@ -349,7 +349,7 @@ export const exportPdfProfile = async (
           {
             columns: [
               {
-                text: `.well v1`,
+                text: `.well v1 - ${format(new Date(), 'yyyy-MM-dd')}`,
                 font: 'jetBrainsMono',
                 fontSize: 7,
                 color: '#404040',
