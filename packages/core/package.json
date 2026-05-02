@@ -50,7 +50,8 @@
     "dist",
     "README.md",
     "LICENSE",
-    "well-specifications.md"
+    "well-specifications.md",
+    "fgdc-textures.md"
   ],
   "scripts": {
     "build": "tsup",

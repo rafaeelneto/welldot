@@ -86,6 +86,8 @@ All types are exported as TypeScript type-only exports (zero runtime cost).
 | `LengthUnits` | `'m' \| 'ft'` |
 | `DiameterUnits` | `'mm' \| 'inches'` |
 | `UnitsTypes` | `'metric' \| 'imperial'` |
+| `Texture` | `{ code: TextureCode; label: string }` — a single FGDC texture entry |
+| `TextureCode` | `number \| string` — numeric FGDC code or custom string code |
 
 ### Validators
 
@@ -129,6 +131,36 @@ Returns `null` if the parsed data is empty.
 #### `isWellEmpty(well: Well | null | undefined): boolean`
 
 Returns `true` when all constructive and geologic arrays are empty. Accepts `null` and `undefined` (both treated as empty).
+
+## FGDC Texture Patterns
+
+`FGDC_TEXTURES_OPTIONS` is a typed array of 284 texture pattern entries drawn from the **FGDC Digital Cartographic Standard for Geologic Map Symbolization (FGDC-STD-013-2006)**. Assign a `code` to the `texture` field of a `Lithology` record to attach a standardized fill pattern to a depth interval.
+
+```typescript
+import { FGDC_TEXTURES_OPTIONS } from '@welldot/core';
+import type { Texture, TextureCode } from '@welldot/core';
+
+// Lookup by code
+const sandstone = FGDC_TEXTURES_OPTIONS.find(t => t.code === 607);
+// { code: 607, label: 'Massive sand or sandstone' }
+
+// Build a select list for a UI
+const options = FGDC_TEXTURES_OPTIONS.map(t => ({ value: t.code, label: t.label }));
+```
+
+Codes are grouped by series:
+
+| Series | Category |
+|--------|----------|
+| 100 | Surficial deposits |
+| 200 | Sedimentary patterns |
+| 300 | Igneous patterns |
+| 400 | Miscellaneous / Metamorphic patterns |
+| 500 | Glacial / Periglacial patterns |
+| 600 | Sedimentary lithology *(most useful for well logging)* |
+| 700 | Metamorphic and igneous lithology |
+
+See [fgdc-textures.md](./fgdc-textures.md) for the complete annotated list of all 284 codes.
 
 ## `.well` Format Overview
 

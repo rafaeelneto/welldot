@@ -48,5 +48,8 @@ export {
   serializeWell,
 } from './utils/well.utils';
 
+export type { Texture, TextureCode } from './types/textures';
+export { FGDC_TEXTURES_OPTIONS } from './utils/fgdc.textures';
+
 // Backward-compat alias for app migration
 export type { Well as Profile } from './types/well.types';
