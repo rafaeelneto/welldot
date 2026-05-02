@@ -1,10 +1,38 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-import React, { useLayoutEffect, useRef, useCallback } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { CellProps } from 'react-datasheet-grid';
-import Select, { components, OptionProps, SingleValueProps } from 'react-select';
+import Select, {
+  components,
+  OptionProps,
+  SingleValue,
+  SingleValueProps,
+} from 'react-select';
 
+import { importFgdcTextures } from '@welldot/render';
+
+import { Texture } from '@welldot/core';
 import { SelectOptions } from '../../types/customColumns.types';
-import FGDC_PATHS from '../../utils/fgdcTextures'; // the default export map { [code]: pathData }
+
+// Load the JSON once; all TextureThumbnail instances share the same promise.
+let _fgdcCache: Record<string | number, string> | null = null;
+let _fgdcPromise: Promise<Record<string | number, string>> | null = null;
+
+function loadFgdcPaths(): Promise<Record<string | number, string>> {
+  if (_fgdcCache) return Promise.resolve(_fgdcCache);
+  if (!_fgdcPromise) {
+    _fgdcPromise = importFgdcTextures().then(paths => {
+      _fgdcCache = paths;
+      return paths;
+    });
+  }
+  return _fgdcPromise;
+}
 
 const FGDC_DESCRIPTIONS: Record<number, string> = {
   // Padrões superficiais (série 100)
@@ -144,20 +172,41 @@ const DOT_TEXTURE_CODES = new Set([607, 608, 609, 610, 611]);
 function parseDotCoords(pathData: string): Array<[number, number]> {
   const tokens = pathData.match(/[MmHhVvLlCcZz]|[-+]?[0-9]*\.?[0-9]+/g) ?? [];
   const coords: Array<[number, number]> = [];
-  let x = 0, y = 0, cmd = '';
+  let x = 0,
+    y = 0,
+    cmd = '';
   let i = 0;
   while (i < tokens.length) {
     const t = tokens[i];
-    if (/[MmHhVvLlCcZz]/.test(t)) { cmd = t; i++; continue; }
+    if (/[MmHhVvLlCcZz]/.test(t)) {
+      cmd = t;
+      i++;
+      continue;
+    }
     const n = parseFloat(t);
-    if (isNaN(n)) { i++; continue; }
+    if (isNaN(n)) {
+      i++;
+      continue;
+    }
     if (cmd === 'M') {
       const n2 = parseFloat(tokens[i + 1] ?? '');
-      if (!isNaN(n2)) { x = n; y = n2; coords.push([x, y]); i += 2; } else i++;
+      if (!isNaN(n2)) {
+        x = n;
+        y = n2;
+        coords.push([x, y]);
+        i += 2;
+      } else i++;
     } else if (cmd === 'm') {
       const n2 = parseFloat(tokens[i + 1] ?? '');
-      if (!isNaN(n2)) { x += n; y += n2; coords.push([x, y]); i += 2; } else i++;
-    } else { i++; }
+      if (!isNaN(n2)) {
+        x += n;
+        y += n2;
+        coords.push([x, y]);
+        i += 2;
+      } else i++;
+    } else {
+      i++;
+    }
   }
   return coords;
 }
@@ -170,14 +219,26 @@ const FALLBACK_SVG_CONTENT: Record<number, React.ReactElement> = {
     <>
       {/* Dashed horizontal lines (loess strata) */}
       {[20, 50, 80, 110, 140].map(y => (
-        <line key={y} x1="0" y1={y} x2="150" y2={y}
-          stroke="currentColor" strokeWidth={1.5} strokeDasharray="18 6" />
+        <line
+          key={y}
+          x1="0"
+          y1={y}
+          x2="150"
+          y2={y}
+          stroke="currentColor"
+          strokeWidth={1.5}
+          strokeDasharray="18 6"
+        />
       ))}
       {/* Subtle wavy curves between bands */}
       {[35, 65, 95, 125].map((y, i) => (
-        <path key={y}
+        <path
+          key={y}
           d={`M0,${y} C25,${y - 8 + i * 2} 50,${y + 8 - i * 2} 75,${y} S125,${y - 6} 150,${y}`}
-          stroke="currentColor" strokeWidth={0.7} fill="none" />
+          stroke="currentColor"
+          strokeWidth={0.7}
+          fill="none"
+        />
       ))}
     </>
   ),
@@ -185,24 +246,72 @@ const FALLBACK_SVG_CONTENT: Record<number, React.ReactElement> = {
     <>
       {/* Granite: scattered short line segments / crystal facets */}
       {[
-        [10,15,22,12],[35,8,45,18],[65,5,72,20],[90,12,100,8],[120,6,130,18],
-        [145,15,148,28],[5,40,18,35],[40,32,52,45],[70,38,80,28],[100,30,112,42],
-        [135,35,145,25],[15,60,25,50],[50,55,60,68],[80,58,90,48],[110,52,122,65],
-        [140,58,148,48],[8,80,20,72],[42,76,55,88],[72,78,85,68],[105,74,115,86],
-        [138,80,148,70],[18,100,30,92],[48,96,58,108],[80,100,92,90],[112,97,122,108],
-        [140,102,150,94],[10,118,22,110],[44,116,56,128],[76,120,88,112],[108,118,120,128],
-        [138,122,148,112],[14,138,26,130],[48,136,60,148],[80,140,90,130],[110,138,122,148],
-        [138,140,148,132],
-      ].map(([x1,y1,x2,y2], i) => (
-        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-          stroke="currentColor" strokeWidth={1} />
+        [10, 15, 22, 12],
+        [35, 8, 45, 18],
+        [65, 5, 72, 20],
+        [90, 12, 100, 8],
+        [120, 6, 130, 18],
+        [145, 15, 148, 28],
+        [5, 40, 18, 35],
+        [40, 32, 52, 45],
+        [70, 38, 80, 28],
+        [100, 30, 112, 42],
+        [135, 35, 145, 25],
+        [15, 60, 25, 50],
+        [50, 55, 60, 68],
+        [80, 58, 90, 48],
+        [110, 52, 122, 65],
+        [140, 58, 148, 48],
+        [8, 80, 20, 72],
+        [42, 76, 55, 88],
+        [72, 78, 85, 68],
+        [105, 74, 115, 86],
+        [138, 80, 148, 70],
+        [18, 100, 30, 92],
+        [48, 96, 58, 108],
+        [80, 100, 92, 90],
+        [112, 97, 122, 108],
+        [140, 102, 150, 94],
+        [10, 118, 22, 110],
+        [44, 116, 56, 128],
+        [76, 120, 88, 112],
+        [108, 118, 120, 128],
+        [138, 122, 148, 112],
+        [14, 138, 26, 130],
+        [48, 136, 60, 148],
+        [80, 140, 90, 130],
+        [110, 138, 122, 148],
+        [138, 140, 148, 132],
+      ].map(([x1, y1, x2, y2], i) => (
+        <line
+          key={i}
+          x1={x1}
+          y1={y1}
+          x2={x2}
+          y2={y2}
+          stroke="currentColor"
+          strokeWidth={1}
+        />
       ))}
       {/* Small dots at crystal centers */}
       {[
-        [16,13],[42,12],[68,12],[95,10],[125,12],[148,12],
-        [10,48],[52,40],[75,33],[106,36],[140,30],
-        [22,78],[58,78],[87,73],[115,78],[144,75],
-      ].map(([cx,cy], i) => (
+        [16, 13],
+        [42, 12],
+        [68, 12],
+        [95, 10],
+        [125, 12],
+        [148, 12],
+        [10, 48],
+        [52, 40],
+        [75, 33],
+        [106, 36],
+        [140, 30],
+        [22, 78],
+        [58, 78],
+        [87, 73],
+        [115, 78],
+        [144, 75],
+      ].map(([cx, cy], i) => (
         <circle key={i} cx={cx} cy={cy} r={1.8} fill="currentColor" />
       ))}
     </>
@@ -223,15 +332,23 @@ const TextureThumbnail: React.FC<{
   size?: number;
   strokeColor?: string;
 }> = ({ code, size = 48, strokeColor = 'currentColor' }) => {
-  const pathData = (FGDC_PATHS as Record<number, string>)[code];
+  const [pathData, setPathData] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    loadFgdcPaths().then(paths => setPathData(paths[code]));
+  }, [code]);
 
   // ── Fallback: hand-crafted SVG for codes with missing path data ──
   if (!pathData && FALLBACK_SVG_CONTENT[code]) {
     return (
-      <svg width={size} height={size} viewBox="0 0 150 150"
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 150 150"
         xmlns="http://www.w3.org/2000/svg"
         style={{ ...SVG_WRAPPER_STYLE, color: strokeColor }}
-        aria-hidden="true">
+        aria-hidden="true"
+      >
         {FALLBACK_SVG_CONTENT[code]}
       </svg>
     );
@@ -246,10 +363,14 @@ const TextureThumbnail: React.FC<{
     // At 48px rendered / 150 viewBox = 0.32 scale; r=2.2 gives ~0.7px screen dots.
     const r = 2.2;
     return (
-      <svg width={size} height={size} viewBox="0 0 150 150"
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 150 150"
         xmlns="http://www.w3.org/2000/svg"
         style={SVG_WRAPPER_STYLE}
-        aria-hidden="true">
+        aria-hidden="true"
+      >
         {dots.map(([cx, cy], i) => (
           <circle key={i} cx={cx} cy={cy} r={r} fill={strokeColor} />
         ))}
@@ -259,10 +380,14 @@ const TextureThumbnail: React.FC<{
 
   // ── Default: stroked path ──
   return (
-    <svg width={size} height={size} viewBox="0 0 150 150"
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 150 150"
       xmlns="http://www.w3.org/2000/svg"
       style={SVG_WRAPPER_STYLE}
-      aria-hidden="true">
+      aria-hidden="true"
+    >
       <path
         d={pathData}
         stroke={strokeColor}
@@ -274,17 +399,11 @@ const TextureThumbnail: React.FC<{
   );
 };
 
-// ─── Option label layout ──────────────────────────────────────────────────────
-interface FGDCOptionData {
-  value: number | string | null;
-  label: string;
-}
-
-const OptionLabel: React.FC<{ data: FGDCOptionData; isCompact?: boolean }> = ({
+const OptionLabel: React.FC<{ data: Texture; isCompact?: boolean }> = ({
   data,
   isCompact = false,
 }) => {
-  const code = typeof data.value === 'number' ? data.value : Number(data.label);
+  const code = typeof data.code === 'number' ? data.code : Number(data.code);
   const description = FGDC_DESCRIPTIONS[code];
 
   return (
@@ -331,13 +450,13 @@ const OptionLabel: React.FC<{ data: FGDCOptionData; isCompact?: boolean }> = ({
 };
 
 // ─── Custom react-select sub-components ──────────────────────────────────────
-const CustomOption = (props: OptionProps<FGDCOptionData>) => (
-  <components.Option {...props} key={props.data.value}>
+const CustomOption = (props: OptionProps<Texture>) => (
+  <components.Option {...props} key={props.data.code}>
     <OptionLabel data={props.data} />
   </components.Option>
 );
 
-const CustomSingleValue = (props: SingleValueProps<FGDCOptionData>) => (
+const CustomSingleValue = (props: SingleValueProps<Texture>) => (
   <components.SingleValue {...props}>
     <OptionLabel data={props.data} isCompact />
   </components.SingleValue>
@@ -363,9 +482,9 @@ function CustomSelect({
   }, [focus]);
 
   const handleChange = useCallback(
-    (option: FGDCOptionData | null) => {
+    (option: SingleValue<Texture>) => {
       if (!option) return;
-      setRowData(String(option.value));
+      setRowData(String(option.code));
       setTimeout(stopEditing, 0);
     },
     [setRowData, stopEditing],
@@ -412,7 +531,7 @@ function CustomSelect({
   };
 
   const selectedOption =
-    columnData.options.find(({ value }) => String(value) === String(rowData)) ??
+    columnData.options.find(({ code }) => String(code) === String(rowData)) ??
     null;
 
   const handleMenuOpen = () => {
@@ -426,19 +545,20 @@ function CustomSelect({
   };
 
   return (
-    <Select<FGDCOptionData>
+    <Select<Texture, false>
       ref={ref}
       menuShouldScrollIntoView
-      onMenuOpen={handleMenuOpen}  
+      onMenuOpen={handleMenuOpen}
       styles={customStyles}
       isDisabled={columnData.disabled}
-      value={selectedOption as FGDCOptionData | null}
+      value={selectedOption as Texture | null}
       menuPortalTarget={document.body}
       menuIsOpen={focus}
+      getOptionValue={option => String(option.code)}
       isSearchable={true}
       onChange={handleChange}
       onMenuClose={() => stopEditing({ nextRow: false })}
-      options={columnData.options as FGDCOptionData[]}
+      options={columnData.options as Texture[]}
       components={{
         Option: CustomOption,
         SingleValue: CustomSingleValue,
