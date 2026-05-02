@@ -72,7 +72,7 @@ export function useColumns() {
         ...keyColumn<Lithology, 'fgdc_texture'>(
           'fgdc_texture',
           customSelectTextureColumn({
-            options: FGDC_TEXTURES_OPTIONS,
+            options: FGDC_TEXTURES_OPTIONS.filter(tex => !tex.pending),
           }) as Partial<Column<string, any, string>>,
         ),
         title: TextureHelper(),

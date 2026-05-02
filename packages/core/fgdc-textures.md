@@ -10,55 +10,64 @@ import { FGDC_TEXTURES_OPTIONS } from '@welldot/core';
 // Find a texture by code
 const limestone = FGDC_TEXTURES_OPTIONS.find(t => t.code === 627);
 // { code: 627, label: 'Limestone' }
+
+// Filter to only textures with a rendered image
+const available = FGDC_TEXTURES_OPTIONS.filter(t => !t.pending);
 ```
+
+> **Texture availability:** Some entries carry `pending: true`, meaning the SVG pattern image has not been implemented yet. Textures without this flag are fully rendered and ready to use. The flag is transitional and will be removed once all patterns are complete.
+>
+> Currently **120 of 282 textures** are available: all of Series 600 (84) and Series 700 (33), plus codes 120, 123, and 132 from Series 100.
 
 ---
 
 ## Series 100 — Surficial Patterns
 
-| Code | Label |
-|------|-------|
-| 101 | Unconsolidated material |
-| 102 | Alluvium |
-| 103 | Terrace deposit |
-| 104 | Floodplain deposit |
-| 105 | Fan or pediment deposit |
-| 106 | Eolian sand |
-| 107 | Silt or loess |
-| 108 | Clay deposit |
-| 109 | Colluvium |
-| 110 | Gravel deposit |
-| 111 | Residual deposit |
-| 112 | Playa deposit |
-| 113 | Lacustrine deposit |
-| 114 | Marine deposit |
-| 115 | Beach or bar deposit |
-| 116 | Organic deposit or peat |
-| 117 | Swamp or marsh deposit |
-| 118 | Soil |
-| 119 | Fill or artificial deposit |
-| 120 | Surficial pattern 120 |
-| 121 | Surficial pattern 121 |
-| 122 | Surficial pattern 122 |
-| 123 | Surficial pattern 123 |
-| 124 | Surficial pattern 124 |
-| 125 | Surficial pattern 125 |
-| 126 | Surficial pattern 126 |
-| 127 | Surficial pattern 127 |
-| 128 | Surficial pattern 128 |
-| 129 | Surficial pattern 129 |
-| 130 | Surficial pattern 130 |
-| 131 | Surficial pattern 131 |
-| 132 | Surficial pattern 132 |
-| 133 | Surficial pattern 133 |
-| 134 | Surficial pattern 134 |
-| 135 | Surficial pattern 135 |
-| 136 | Surficial pattern 136 |
-| 137 | Surficial pattern 137 |
+| Code | Label | Status |
+|------|-------|--------|
+| 101 | Unconsolidated material | pending |
+| 102 | Alluvium | pending |
+| 103 | Terrace deposit | pending |
+| 104 | Floodplain deposit | pending |
+| 105 | Fan or pediment deposit | pending |
+| 106 | Eolian sand | pending |
+| 107 | Silt or loess | pending |
+| 108 | Clay deposit | pending |
+| 109 | Colluvium | pending |
+| 110 | Gravel deposit | pending |
+| 111 | Residual deposit | pending |
+| 112 | Playa deposit | pending |
+| 113 | Lacustrine deposit | pending |
+| 114 | Marine deposit | pending |
+| 115 | Beach or bar deposit | pending |
+| 116 | Organic deposit or peat | pending |
+| 117 | Swamp or marsh deposit | pending |
+| 118 | Soil | pending |
+| 119 | Fill or artificial deposit | pending |
+| 120 | Surficial pattern 120 | available |
+| 121 | Surficial pattern 121 | pending |
+| 122 | Surficial pattern 122 | pending |
+| 123 | Surficial pattern 123 | available |
+| 124 | Surficial pattern 124 | pending |
+| 125 | Surficial pattern 125 | pending |
+| 126 | Surficial pattern 126 | pending |
+| 127 | Surficial pattern 127 | pending |
+| 128 | Surficial pattern 128 | pending |
+| 129 | Surficial pattern 129 | pending |
+| 130 | Surficial pattern 130 | pending |
+| 131 | Surficial pattern 131 | pending |
+| 132 | Surficial pattern 132 | available |
+| 133 | Surficial pattern 133 | pending |
+| 134 | Surficial pattern 134 | pending |
+| 135 | Surficial pattern 135 | pending |
+| 136 | Surficial pattern 136 | pending |
+| 137 | Surficial pattern 137 | pending |
 
 ---
 
 ## Series 200 — Sedimentary Patterns
+
+> All entries in this series are **pending** (no SVG images implemented yet).
 
 | Code | Label |
 |------|-------|
@@ -100,6 +109,8 @@ const limestone = FGDC_TEXTURES_OPTIONS.find(t => t.code === 627);
 
 ## Series 300 — Igneous Patterns
 
+> All entries in this series are **pending** (no SVG images implemented yet).
+
 | Code | Label |
 |------|-------|
 | 301 | Igneous pattern 301 |
@@ -137,6 +148,8 @@ const limestone = FGDC_TEXTURES_OPTIONS.find(t => t.code === 627);
 ---
 
 ## Series 400 — Miscellaneous and Metamorphic Patterns
+
+> All entries in this series are **pending** (no SVG images implemented yet).
 
 | Code | Label |
 |------|-------|
@@ -180,6 +193,8 @@ const limestone = FGDC_TEXTURES_OPTIONS.find(t => t.code === 627);
 ---
 
 ## Series 500 — Glacial and Periglacial Patterns
+
+> All entries in this series are **pending** (no SVG images implemented yet).
 
 | Code | Label |
 |------|-------|
@@ -349,16 +364,16 @@ These are the most commonly used codes for well lithology logging. They represen
 
 ## Summary
 
-| Series | Category | Count |
-|--------|----------|-------|
-| 100 | Surficial | 37 |
-| 200 | Sedimentary | 33 |
-| 300 | Igneous | 31 |
-| 400 | Miscellaneous / Metamorphic | 36 |
-| 500 | Glacial / Periglacial | 28 |
-| 600 | Sedimentary Lithology | 86 |
-| 700 | Metamorphic / Igneous Lithology | 33 |
-| **Total** | | **284** |
+| Series | Category | Total | Available | Pending |
+|--------|----------|-------|-----------|---------|
+| 100 | Surficial | 37 | 3 | 34 |
+| 200 | Sedimentary | 33 | 0 | 33 |
+| 300 | Igneous | 31 | 0 | 31 |
+| 400 | Miscellaneous / Metamorphic | 36 | 0 | 36 |
+| 500 | Glacial / Periglacial | 28 | 0 | 28 |
+| 600 | Sedimentary Lithology | 84 | 84 | 0 |
+| 700 | Metamorphic / Igneous Lithology | 33 | 33 | 0 |
+| **Total** | | **282** | **120** | **162** |
 
 ---
 
