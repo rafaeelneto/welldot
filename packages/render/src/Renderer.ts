@@ -59,6 +59,7 @@ import {
   makeCavePrng,
   mergeConflicts,
   populateTooltips,
+  preloadFgdcTextures,
   ptsToSmoothPath,
   wavyContact,
 } from './utils/render.utils';
@@ -209,7 +210,8 @@ export class WellRenderer {
     });
   }
 
-  public prepareSvg() {
+  public async prepareSvg() {
+    await preloadFgdcTextures();
     this.instanceStates = this.svgInstances.map((inst, i) =>
       this.initInstanceSvg(inst, i),
     );
@@ -328,7 +330,8 @@ export class WellRenderer {
         .attr('height', getHeight)
         .attr(
           'fill',
-          await getLithologyFill(data, svg, this.theme.lithologyTexture),
+
+          getLithologyFill(data, svg, this.theme.lithologyTexture),
         );
     };
 

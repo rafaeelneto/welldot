@@ -38,37 +38,40 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
   }, []);
 
   useEffect(() => {
-    if (!svgContainer.current || WIDTH <= 0) return;
-    profileDrawer.current = new WellRenderer(
-      [
+    const drawProfile = async () => {
+      if (!svgContainer.current || WIDTH <= 0) return;
+      profileDrawer.current = new WellRenderer(
+        [
+          {
+            selector: `.${styles.svgContainer}`,
+            height: HEIGHT,
+            width: WIDTH,
+            margins: {
+              top: MARGINS.TOP,
+              right: MARGINS.RIGHT,
+              bottom: MARGINS.BOTTOM,
+              left: MARGINS.LEFT,
+            },
+          },
+        ],
         {
-          selector: `.${styles.svgContainer}`,
-          height: HEIGHT,
-          width: WIDTH,
-          margins: {
-            top: MARGINS.TOP,
-            right: MARGINS.RIGHT,
-            bottom: MARGINS.BOTTOM,
-            left: MARGINS.LEFT,
+          classNames: {
+            tooltip: {
+              root: styles.tooltip,
+              title: styles.title,
+              primaryInfo: styles.primaryInfo,
+              secondaryInfo: styles.secondaryInfo,
+            },
           },
+          renderConfig: config,
         },
-      ],
-      {
-        classNames: {
-          tooltip: {
-            root: styles.tooltip,
-            title: styles.title,
-            primaryInfo: styles.primaryInfo,
-            secondaryInfo: styles.secondaryInfo,
-          },
-        },
-        renderConfig: config,
-      },
-    );
-    profileDrawer.current.prepareSvg();
-    profileDrawer.current.draw(profile, {
-      units: { length: length_units, diameter: diameter_units },
-    });
+      );
+      await profileDrawer.current.prepareSvg();
+      profileDrawer.current.draw(profile, {
+        units: { length: length_units, diameter: diameter_units },
+      });
+    };
+    drawProfile();
     // profileDrawer.current.renderLegend('#svg_legend', profile);
   }, [svgContainer.current, config, containerWidth]);
 

@@ -528,7 +528,7 @@ export const exportPdfProfile = async (
   legendSvgEl.id = legendId;
   (svgDraftContainer ?? document.body).appendChild(legendSvgEl);
 
-  renderer.prepareSvg();
+  await renderer.prepareSvg();
   renderer.draw(profile);
   renderer.renderLegend(`#${legendId}`, profile);
 

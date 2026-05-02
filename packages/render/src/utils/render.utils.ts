@@ -6,6 +6,18 @@ import d3tip from 'd3-tip';
 import textures from 'textures';
 import { importFgdcTextures } from '~/utils/fgdcTextures';
 
+let _fgdcTextures: Record<string, string> = {};
+let _fgdcTexturesPromise: Promise<void> | null = null;
+
+export const preloadFgdcTextures = (): Promise<void> => {
+  if (!_fgdcTexturesPromise) {
+    _fgdcTexturesPromise = importFgdcTextures().then(t => {
+      _fgdcTextures = t;
+    });
+  }
+  return _fgdcTexturesPromise;
+};
+
 import {
   BoreHole,
   Cave,
@@ -43,16 +55,15 @@ export type LithologyTextureOptions = {
 };
 
 /** Returns a map from "texture.from" keys to textures.js fill objects for each lithology entry. */
-export const getLithologicalFillList = async (
+export const getLithologicalFillList = (
   data: Lithology[],
   opts: LithologyTextureOptions,
 ) => {
   const uniqueTextureCodes = [...new Set(data.map(d => d.fgdc_texture))];
-  const fdgcTextures = await importFgdcTextures();
   const texturesLoaded = Object.fromEntries(
     uniqueTextureCodes
-      .filter(code => fdgcTextures[code])
-      .map(code => [code, fdgcTextures[code]]),
+      .filter(code => _fgdcTextures[code])
+      .map(code => [code, _fgdcTextures[code]]),
   );
 
   return Object.fromEntries(
@@ -122,12 +133,12 @@ export const getYAxisFunctions = (
 };
 
 /** Returns a fill-value function for a lithology datum, registering texture patterns on the SVG as needed. */
-export const getLithologyFill = async (
+export const getLithologyFill = (
   geologyData: Lithology[],
   svg: SvgSelection,
   opts: LithologyTextureOptions,
 ) => {
-  const lithologicalFill = await getLithologicalFillList(geologyData, opts);
+  const lithologicalFill = getLithologicalFillList(geologyData, opts);
   return (d: Lithology) => {
     const fill = lithologicalFill[`${d.fgdc_texture}.${d.from}`];
     if (!fill.url) return fill;
