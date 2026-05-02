@@ -220,7 +220,9 @@ export function drawWellLegend(
     const symG = g.append('g').attr('class', cls.item);
 
     if (item.kind === 'fracture') {
-      const color = item.water_intake ? theme.fracture.wetStroke : theme.fracture.dryStroke;
+      const color = item.water_intake
+        ? theme.fracture.wetStroke
+        : theme.fracture.dryStroke;
 
       if (item.swarm) {
         ([-4, 0, 4] as number[]).forEach(offset => {
@@ -232,7 +234,12 @@ export function drawWellLegend(
               `${cx},${rowSymY + offset} ${cx + 6},${rowSymY + offset - 1} ${cx + 12},${rowSymY + offset + 1} ${cx + 18},${rowSymY + offset - 0.5} ${cx + 24},${rowSymY + offset}`,
             )
             .attr('stroke', color)
-            .attr('stroke-width', offset !== 0 ? theme.legend.fractureSideStrokeWidth : theme.legend.fractureStrokeWidth)
+            .attr(
+              'stroke-width',
+              offset !== 0
+                ? theme.legend.fractureSideStrokeWidth
+                : theme.legend.fractureStrokeWidth,
+            )
             .attr('fill', 'none')
             .attr('stroke-linecap', RC)
             .attr('stroke-linejoin', RC);
@@ -252,7 +259,9 @@ export function drawWellLegend(
           .attr('stroke-linejoin', RC);
       }
     } else if (item.kind === 'cave') {
-      const color = item.water_intake ? theme.cave.wetStroke : theme.cave.dryStroke;
+      const color = item.water_intake
+        ? theme.cave.wetStroke
+        : theme.cave.dryStroke;
       const texture = item.water_intake
         ? legendTextures.cave_wet
         : legendTextures.cave_dry;

@@ -4,7 +4,7 @@ import * as d3module from 'd3';
 import d3tip from 'd3-tip';
 
 import textures from 'textures';
-import fdgcTextures from '~/utils/fgdcTextures';
+import { importFgdcTextures } from '~/utils/fgdcTextures';
 
 import {
   BoreHole,
@@ -43,11 +43,12 @@ export type LithologyTextureOptions = {
 };
 
 /** Returns a map from "texture.from" keys to textures.js fill objects for each lithology entry. */
-export const getLithologicalFillList = (
+export const getLithologicalFillList = async (
   data: Lithology[],
   opts: LithologyTextureOptions,
 ) => {
   const uniqueTextureCodes = [...new Set(data.map(d => d.fgdc_texture))];
+  const fdgcTextures = await importFgdcTextures();
   const texturesLoaded = Object.fromEntries(
     uniqueTextureCodes
       .filter(code => fdgcTextures[code])
@@ -121,12 +122,12 @@ export const getYAxisFunctions = (
 };
 
 /** Returns a fill-value function for a lithology datum, registering texture patterns on the SVG as needed. */
-export const getLithologyFill = (
+export const getLithologyFill = async (
   geologyData: Lithology[],
   svg: SvgSelection,
   opts: LithologyTextureOptions,
 ) => {
-  const lithologicalFill = getLithologicalFillList(geologyData, opts);
+  const lithologicalFill = await getLithologicalFillList(geologyData, opts);
   return (d: Lithology) => {
     const fill = lithologicalFill[`${d.fgdc_texture}.${d.from}`];
     if (!fill.url) return fill;

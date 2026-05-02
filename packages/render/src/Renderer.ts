@@ -326,7 +326,10 @@ export class WellRenderer {
         // @ts-ignore
         .transition(transition)
         .attr('height', getHeight)
-        .attr('fill', getLithologyFill(data, svg, this.theme.lithologyTexture));
+        .attr(
+          'fill',
+          await getLithologyFill(data, svg, this.theme.lithologyTexture),
+        );
     };
 
     // ─────────────────────────────────────────────────────────────────────────

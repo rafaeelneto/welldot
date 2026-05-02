@@ -41,7 +41,7 @@ vi.mock('textures', () => ({
 }));
 
 vi.mock('~/utils/fgdcTextures', () => ({
-  default: { '120': 'M 0,0 L 10,10', '601': 'M 0,0 L 5,5' },
+  importFgdcTextures: vi.fn().mockResolvedValue({ '120': 'M 0,0 L 10,10', '601': 'M 0,0 L 5,5' }),
 }));
 
 import {
@@ -419,69 +419,69 @@ describe('mergeConflicts', () => {
 // ---------------------------------------------------------------------------
 
 describe('getLithologicalFillList', () => {
-  it('empty array → empty object', () => {
+  it('empty array → empty object', async () => {
     expect(
-      Object.keys(getLithologicalFillList([], DEFAULT_TEXTURE_OPTS)),
+      Object.keys(await getLithologicalFillList([], DEFAULT_TEXTURE_OPTS)),
     ).toHaveLength(0);
   });
 
-  it('single lithology creates entry keyed by "texture.from"', () => {
-    const result = getLithologicalFillList(
+  it('single lithology creates entry keyed by "texture.from"', async () => {
+    const result = await getLithologicalFillList(
       [makeLithology({ fgdc_texture: '120', from: 5 })],
       DEFAULT_TEXTURE_OPTS,
     );
     expect(result).toHaveProperty('120.5');
   });
 
-  it('two lithologies with same texture but different from → two entries (no key collision)', () => {
+  it('two lithologies with same texture but different from → two entries (no key collision)', async () => {
     const lits = [
       makeLithology({ fgdc_texture: '120', from: 0 }),
       makeLithology({ fgdc_texture: '120', from: 10 }),
     ];
-    const result = getLithologicalFillList(lits, DEFAULT_TEXTURE_OPTS);
+    const result = await getLithologicalFillList(lits, DEFAULT_TEXTURE_OPTS);
     expect(Object.keys(result)).toHaveLength(2);
     expect(result).toHaveProperty('120.0');
     expect(result).toHaveProperty('120.10');
   });
 
-  it('two lithologies with different texture codes → two entries', () => {
+  it('two lithologies with different texture codes → two entries', async () => {
     const lits = [
       makeLithology({ fgdc_texture: '120', from: 0 }),
       makeLithology({ fgdc_texture: '601', from: 10 }),
     ];
     expect(
-      Object.keys(getLithologicalFillList(lits, DEFAULT_TEXTURE_OPTS)),
+      Object.keys(await getLithologicalFillList(lits, DEFAULT_TEXTURE_OPTS)),
     ).toHaveLength(2);
   });
 
-  it('texture code absent from fgdcTextures → entry created without throwing', () => {
+  it('texture code absent from fgdcTextures → entry created without throwing', async () => {
     const lit = makeLithology({ fgdc_texture: '999', from: 0 });
-    expect(() =>
+    await expect(
       getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS),
-    ).not.toThrow();
+    ).resolves.not.toThrow();
     expect(
-      getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS),
+      await getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS),
     ).toHaveProperty('999.0');
   });
 
-  it('forwards size to textures.paths().size()', () => {
-    getLithologicalFillList(
+  it('forwards size to textures.paths().size()', async () => {
+    await getLithologicalFillList(
       [makeLithology({ fgdc_texture: '120', from: 0 })],
       { size: 42, strokeWidth: 1, stroke: '#ff0000' },
     );
     expect(mockTexturePaths.size).toHaveBeenCalledWith(42);
   });
 
-  it('forwards strokeWidth to textures.paths().strokeWidth()', () => {
-    getLithologicalFillList(
+  it('forwards strokeWidth to textures.paths().strokeWidth()', async () => {
+    await getLithologicalFillList(
       [makeLithology({ fgdc_texture: '120', from: 0 })],
       { size: 150, strokeWidth: 2.5, stroke: '#ff0000' },
     );
     expect(mockTexturePaths.strokeWidth).toHaveBeenCalledWith(2.5);
   });
 
-  it('forwards stroke to textures.paths().stroke()', () => {
-    getLithologicalFillList(
+  it('forwards stroke to textures.paths().stroke()', async () => {
+    await getLithologicalFillList(
       [makeLithology({ fgdc_texture: '120', from: 0 })],
       { size: 150, strokeWidth: 1, stroke: '#aabbcc' },
     );
@@ -492,36 +492,36 @@ describe('getLithologicalFillList', () => {
 // ---------------------------------------------------------------------------
 
 describe('getLithologyFill', () => {
-  it('returns a function', () => {
-    const fill = getLithologyFill([makeLithology()], makeSvg(), DEFAULT_TEXTURE_OPTS);
+  it('returns a function', async () => {
+    const fill = await getLithologyFill([makeLithology()], makeSvg(), DEFAULT_TEXTURE_OPTS);
     expect(typeof fill).toBe('function');
   });
 
-  it('calling the returned function returns the texture url string', () => {
+  it('calling the returned function returns the texture url string', async () => {
     const lit = makeLithology({ fgdc_texture: '120', from: 0 });
-    const fill = getLithologyFill([lit], makeSvg(), DEFAULT_TEXTURE_OPTS);
+    const fill = await getLithologyFill([lit], makeSvg(), DEFAULT_TEXTURE_OPTS);
     expect(fill(lit)).toBe('url(#mock-texture)');
   });
 
-  it('svg.call is invoked once per fill call', () => {
+  it('svg.call is invoked once per fill call', async () => {
     const svg = makeSvg();
     const lit = makeLithology({ fgdc_texture: '120', from: 0 });
-    const fill = getLithologyFill([lit], svg, DEFAULT_TEXTURE_OPTS);
+    const fill = await getLithologyFill([lit], svg, DEFAULT_TEXTURE_OPTS);
     fill(lit);
     expect(svg.call).toHaveBeenCalledTimes(1);
   });
 
-  it('svg.call is invoked with the texture object', () => {
+  it('svg.call is invoked with the texture object', async () => {
     const svg = makeSvg();
     const lit = makeLithology({ fgdc_texture: '120', from: 0 });
-    const fill = getLithologyFill([lit], svg, DEFAULT_TEXTURE_OPTS);
+    const fill = await getLithologyFill([lit], svg, DEFAULT_TEXTURE_OPTS);
     fill(lit);
     expect(svg.call).toHaveBeenCalledWith(mockTexturePaths);
   });
 
-  it('forwards texture opts through to getLithologicalFillList', () => {
+  it('forwards texture opts through to getLithologicalFillList', async () => {
     const lit = makeLithology({ fgdc_texture: '120', from: 0 });
-    const fill = getLithologyFill(
+    const fill = await getLithologyFill(
       [lit],
       makeSvg(),
       { size: 99, strokeWidth: 3, stroke: '#112233' },
@@ -549,7 +549,7 @@ describe('populateTooltips', () => {
     'cave',
   ];
 
-  it('tooltipConfig=undefined → all 9 keys present as real tips (no show/hide)', () => {
+  it('tooltipConfig=undefined → all 10 keys present as real tips (no show/hide)', () => {
     const tooltips = populateTooltips(makeSvg(), makeClasses(), makeUnits());
     ALL_KEYS.forEach(k => {
       expect(tooltips[k]).toBeDefined();
@@ -557,7 +557,7 @@ describe('populateTooltips', () => {
     });
   });
 
-  it('tooltipConfig=false → all 9 are noop objects with show/hide', () => {
+  it('tooltipConfig=false → all 10 are noop objects with show/hide', () => {
     const tooltips = populateTooltips(
       makeSvg(),
       makeClasses(),
