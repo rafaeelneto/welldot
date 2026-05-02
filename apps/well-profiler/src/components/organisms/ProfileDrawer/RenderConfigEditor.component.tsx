@@ -154,6 +154,18 @@ export const RENDER_EDITOR_DEFAULTS: DeepPartial<RenderConfig> = {
       conflict: 'Conflito',
     },
   },
+  highlights: {
+    stroke: '#e52117',
+    strokeWidth: 2,
+    fill: 'none',
+    fillOpacity: 0,
+    padding: 2,
+    labelFontSize: 7,
+    labelPadding: 3,
+    labelBackground: '#e52117',
+    labelColor: '#ffffff',
+    labelRadius: 2,
+  },
 };
 
 interface Props {
@@ -717,6 +729,34 @@ const RenderConfigEditor = ({ config, onChange: setConfig }: Props) => {
                 />
               </div>
             ))}
+          </div>
+
+          <div className={styles.editorSection}>
+            <h4 className={styles.editorSectionTitle}>Highlights</h4>
+            <h5 className={styles.editorSubTitle}>Rect Style</h5>
+            {colorInput('Stroke', ['highlights', 'stroke'])}
+            {numInput('Stroke Width', ['highlights', 'strokeWidth'], 0.5)}
+            {colorInput('Fill', ['highlights', 'fill'])}
+            {numInput('Fill Opacity', ['highlights', 'fillOpacity'], 0.05)}
+            {numInput('Padding', ['highlights', 'padding'], 1)}
+            <div className={styles.editorRow}>
+              <label className={styles.editorLabel}>Dash Array</label>
+              <input
+                className={styles.editorInput}
+                type="text"
+                placeholder="e.g. 4,2"
+                value={(getVal(['highlights', 'strokeDasharray']) as string) ?? ''}
+                onChange={e =>
+                  setStr(['highlights', 'strokeDasharray'], e.target.value)
+                }
+              />
+            </div>
+            <h5 className={styles.editorSubTitle}>Label Badge</h5>
+            {colorInput('Background', ['highlights', 'labelBackground'])}
+            {colorInput('Color', ['highlights', 'labelColor'])}
+            {numInput('Font Size', ['highlights', 'labelFontSize'], 0.5)}
+            {numInput('Padding', ['highlights', 'labelPadding'], 0.5)}
+            {numInput('Radius', ['highlights', 'labelRadius'], 0.5)}
           </div>
 
           <button

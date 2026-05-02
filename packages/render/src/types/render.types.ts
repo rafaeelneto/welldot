@@ -7,6 +7,26 @@ export type DeepPartial<T> = T extends object
 
 export type Conflict = { from: number; to: number; diameter: number };
 
+export type HighlightItem = {
+  label?: string;
+  from?: number;
+  to?: number;
+  depth?: number;
+  diameter?: number;
+};
+
+export type Highlights = {
+  lithology?: HighlightItem[];
+  caves?: HighlightItem[];
+  fractures?: HighlightItem[];
+  cement_pad?: HighlightItem;
+  bore_hole?: HighlightItem[];
+  surface_case?: HighlightItem[];
+  hole_fill?: HighlightItem[];
+  well_case?: HighlightItem[];
+  well_screen?: HighlightItem[];
+};
+
 export type SvgSelection = Selection<BaseType, unknown, HTMLElement, unknown>;
 
 export type InstanceState = {
@@ -185,6 +205,15 @@ export type ComponentsClassNames = {
     caveFill: string;
     constructionRect: string;
   };
+  highlights: {
+    geologicGroup: string;
+    constructionGroup: string;
+    fracturesGroup: string;
+    item: string;
+    rect: string;
+    label: string;
+    labelBg: string;
+  };
 };
 
 export type TooltipKey =
@@ -293,6 +322,19 @@ export type RenderConfig = {
     outerEdgeWidth: number;
   };
   legend: LegendRenderConfig;
+  highlights: {
+    stroke: string;
+    strokeWidth: number;
+    fill: string;
+    fillOpacity: number;
+    padding: number;
+    strokeDasharray?: string;
+    labelFontSize: number;
+    labelPadding: number;
+    labelBackground: string;
+    labelColor: string;
+    labelRadius: number;
+  };
 };
 
 export type LegendRenderConfig = {

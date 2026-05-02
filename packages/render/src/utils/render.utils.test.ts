@@ -96,6 +96,24 @@ const makeClasses = (): ComponentsClassNames => ({
   wellScreen: { group: '', rect: '' },
   conflict: { group: '', rect: '' },
   unitLabels: { group: '', geoRect: '', aqRect: '', text: '' },
+  legend: {
+    border: '',
+    title: '',
+    item: '',
+    label: '',
+    fracturePoly: '',
+    caveFill: '',
+    constructionRect: '',
+  },
+  highlights: {
+    geologicGroup: '',
+    constructionGroup: '',
+    fracturesGroup: '',
+    item: '',
+    rect: '',
+    label: '',
+    labelBg: '',
+  },
 });
 
 const makeSvg = () => ({ call: vi.fn() }) as unknown as SvgSelection;

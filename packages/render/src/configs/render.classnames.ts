@@ -82,4 +82,13 @@ export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     caveFill: 'cave-fill',
     constructionRect: 'construction-rect',
   },
+  highlights: {
+    geologicGroup: 'wp-highlights-geologic',
+    constructionGroup: 'wp-highlights-construction',
+    fracturesGroup: 'wp-highlights-fractures',
+    item: 'wp-highlight-item',
+    rect: 'wp-highlight-rect',
+    label: 'wp-highlight-label',
+    labelBg: 'wp-highlight-label-bg',
+  },
 };

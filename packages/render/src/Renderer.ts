@@ -34,6 +34,8 @@ import {
   ComponentsClassNames,
   Conflict,
   DeepPartial,
+  HighlightItem,
+  Highlights,
   InstanceState,
   RenderConfig,
   SvgInstance,
@@ -167,6 +169,7 @@ export class WellRenderer {
     geologic.append('g').attr('class', this.classes.lithology.group);
     geologic.append('g').attr('class', this.classes.caves.group);
     geologic.append('g').attr('class', this.classes.labels.lithology.group);
+    geologic.append('g').attr('class', this.classes.highlights.geologicGroup);
 
     const construction = poco
       .append('g')
@@ -176,11 +179,15 @@ export class WellRenderer {
         `translate(${margins.left + width / 2}, ${margins.top})`,
       );
 
-    poco
+    const fracturesGroup = poco
       .append('g')
       .attr('class', this.classes.fractures.group)
       .attr('transform', `translate(${margins.left}, ${margins.top})`)
       .attr('clip-path', `url(#${clipId})`);
+
+    fracturesGroup
+      .append('g')
+      .attr('class', this.classes.highlights.fracturesGroup);
 
     construction
       .append('g')
@@ -192,6 +199,9 @@ export class WellRenderer {
     construction.append('g').attr('class', this.classes.wellCase.group);
     construction.append('g').attr('class', this.classes.wellScreen.group);
     construction.append('g').attr('class', this.classes.conflict.group);
+    construction
+      .append('g')
+      .attr('class', this.classes.highlights.constructionGroup);
 
     Object.values(this.textures).forEach(texture => svg.call(texture));
 
@@ -214,15 +224,25 @@ export class WellRenderer {
     );
   }
 
-  draw(profile: Well, options: { units?: Units } = {}) {
+  draw(
+    profile: Well,
+    options: { units?: Units; highlights?: Highlights } = {},
+  ) {
     if (isWellEmpty(profile)) return;
     this.units = { ...this.units, ...options.units };
+    const highlights = options.highlights ?? {};
 
     const maxValues = getProfileLastItemsDepths(profile);
     const maxYValues = d3.max(maxValues) || 0;
 
     if (this.instanceStates.length === 1) {
-      this.drawLogToInstance(this.instanceStates[0], profile, 0, maxYValues);
+      this.drawLogToInstance(
+        this.instanceStates[0],
+        profile,
+        0,
+        maxYValues,
+        highlights,
+      );
       return;
     }
 
@@ -238,7 +258,13 @@ export class WellRenderer {
       const maxSvgDepth = yScaleGlobal.invert(
         yScaleGlobal(currentDepth) + state.height,
       );
-      this.drawLogToInstance(state, profile, currentDepth, maxSvgDepth);
+      this.drawLogToInstance(
+        state,
+        profile,
+        currentDepth,
+        maxSvgDepth,
+        highlights,
+      );
       currentDepth = maxSvgDepth;
     }
   }
@@ -248,6 +274,7 @@ export class WellRenderer {
     profile: Well,
     depthFrom: number,
     depthTo: number,
+    highlights: Highlights = {},
   ) {
     const svg = state.svg;
 
@@ -268,6 +295,15 @@ export class WellRenderer {
     const conflictGroup = svg.select(`.${this.classes.conflict.group}`);
     const constructionLabelsGroup = svg.select(
       `.${this.classes.constructionLabels.group}`,
+    );
+    const highlightsGeologicGroup = svg.select(
+      `.${this.classes.highlights.geologicGroup}`,
+    );
+    const highlightsConstructionGroup = svg.select(
+      `.${this.classes.highlights.constructionGroup}`,
+    );
+    const highlightsFracturesGroup = svg.select(
+      `.${this.classes.highlights.fracturesGroup}`,
     );
 
     const svgWidth = state.width + state.margins.left + state.margins.right;
@@ -1459,6 +1495,232 @@ export class WellRenderer {
     const filterByDepth = (l: { from: number; to: number }) =>
       !(l.to <= depthFrom || l.from >= depthTo);
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // drawHighlights
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const drawHighlights = (
+      hl: Highlights,
+      yScale: d3.ScaleLinear<number, number>,
+    ) => {
+      highlightsGeologicGroup.selectAll('*').remove();
+      highlightsConstructionGroup.selectAll('*').remove();
+      highlightsFracturesGroup.selectAll('*').remove();
+
+      const hc = this.renderConfig.highlights;
+      const pad = hc.padding;
+
+      const drawHighlightItem = (
+        group: SvgSelection,
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        label?: string,
+      ) => {
+        if (h <= 0 || w <= 0) return;
+
+        const g = group.append('g').attr('class', this.classes.highlights.item);
+
+        g.append('rect')
+          .attr('class', this.classes.highlights.rect)
+          .attr('x', x - pad)
+          .attr('y', y - pad)
+          .attr('width', w + pad * 2)
+          .attr('height', h + pad * 2)
+          .attr('fill', hc.fill)
+          .attr('fill-opacity', hc.fillOpacity)
+          .attr('stroke', hc.stroke)
+          .attr('stroke-width', hc.strokeWidth)
+          .attr('stroke-dasharray', hc.strokeDasharray ?? null)
+          .style('pointer-events', 'none');
+
+        if (label) {
+          const charW = hc.labelFontSize * 0.55;
+          const labelW = label.length * charW + hc.labelPadding * 2;
+          const labelH = hc.labelFontSize + hc.labelPadding * 2;
+          const lx = x - pad;
+          const ly = y - pad - labelH;
+
+          g.append('rect')
+            .attr('class', this.classes.highlights.labelBg)
+            .attr('x', lx)
+            .attr('y', ly)
+            .attr('width', labelW)
+            .attr('height', labelH)
+            .attr('rx', hc.labelRadius)
+            .attr('fill', hc.labelBackground)
+            .style('pointer-events', 'none');
+
+          g.append('text')
+            .attr('class', this.classes.highlights.label)
+            .attr('x', lx + hc.labelPadding)
+            .attr('y', ly + labelH - hc.labelPadding)
+            .attr('font-size', hc.labelFontSize)
+            .attr('fill', hc.labelColor)
+            .attr('font-family', 'sans-serif')
+            .style('pointer-events', 'none')
+            .text(label);
+        }
+      };
+
+      // Geologic highlights
+      const drawGeoHighlights = (items: HighlightItem[] | undefined) => {
+        items?.forEach(h => {
+          if (h.from === undefined || h.to === undefined) return;
+          const from = Math.max(h.from, depthFrom);
+          const to = Math.min(h.to, depthTo);
+          if (from >= to) return;
+          const y = yScale(from);
+          drawHighlightItem(
+            highlightsGeologicGroup as SvgSelection,
+            geoXLeft,
+            y,
+            geoXRight - geoXLeft,
+            yScale(to) - y,
+            h.label,
+          );
+        });
+      };
+
+      drawGeoHighlights(hl.lithology);
+      drawGeoHighlights(hl.caves);
+
+      // Fracture highlights
+      const rf = this.renderConfig.fractures;
+      const halfFractureWidth = (POCO_WIDTH * rf.widthMultiplier) / 2;
+      const fracXa = pocoCenterX - halfFractureWidth;
+      const fracW = halfFractureWidth * 2;
+
+      hl.fractures?.forEach(h => {
+        if (h.depth === undefined) return;
+        if (h.depth < depthFrom || h.depth > depthTo) return;
+        const cy = yScale(h.depth);
+        drawHighlightItem(
+          highlightsFracturesGroup as SvgSelection,
+          fracXa,
+          cy - rf.hitBuffer.single,
+          fracW,
+          rf.hitBuffer.single * 2,
+          h.label,
+        );
+      });
+
+      // Construction highlights
+      const maxXVals = getProfileDiamValues(constructionData);
+      const xScaleConstr = d3
+        .scaleLinear()
+        .domain([0, d3.max(maxXVals) || 0])
+        .range([0, POCO_WIDTH]);
+
+      const rcc = this.renderConfig.construction;
+
+      if (
+        hl.cement_pad &&
+        depthFrom === 0 &&
+        constructionData.cement_pad?.thickness
+      ) {
+        const cp = constructionData.cement_pad;
+        const cpX =
+          (POCO_CENTER -
+            xScaleConstr(
+              (cp.width * rcc.cementPad.widthMultiplier * 1000) / 2,
+            )) /
+          2;
+        const cpY =
+          yScale(0) - yScale(cp.thickness * rcc.cementPad.thicknessMultiplier);
+        const cpW = xScaleConstr(
+          (cp.width * rcc.cementPad.widthMultiplier * 1000) / 2,
+        );
+        const cpH = yScale(cp.thickness * rcc.cementPad.thicknessMultiplier);
+        drawHighlightItem(
+          highlightsConstructionGroup as SvgSelection,
+          cpX,
+          cpY,
+          cpW,
+          cpH,
+          hl.cement_pad.label,
+        );
+      }
+
+      const drawConstrHighlights = (
+        items: HighlightItem[] | undefined,
+        data: { from: number; to: number; diameter: number }[],
+        getX: (d: { diameter: number }) => number,
+        getW: (d: { diameter: number }) => number,
+      ) => {
+        items?.forEach(h => {
+          if (h.from === undefined || h.to === undefined) return;
+          data
+            .filter(
+              d =>
+                d.from < h.to! &&
+                d.to > h.from! &&
+                (h.diameter === undefined || d.diameter === h.diameter),
+            )
+            .forEach(d => {
+              const from = Math.max(h.from!, depthFrom);
+              const to = Math.min(h.to!, depthTo);
+              if (from >= to) return;
+              const y = yScale(from);
+              drawHighlightItem(
+                highlightsConstructionGroup as SvgSelection,
+                getX(d),
+                y,
+                getW(d),
+                yScale(to) - y,
+                h.label,
+              );
+            });
+        });
+      };
+
+      const stdX = (d: { diameter: number }) =>
+        (POCO_CENTER - xScaleConstr(d.diameter)) / 2;
+      const stdW = (d: { diameter: number }) => xScaleConstr(d.diameter);
+      const scX = (d: { diameter: number }) =>
+        (POCO_CENTER -
+          xScaleConstr(
+            d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
+          )) /
+        2;
+      const scW = (d: { diameter: number }) =>
+        xScaleConstr(
+          d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
+        );
+
+      drawConstrHighlights(
+        hl.bore_hole,
+        constructionData.bore_hole,
+        stdX,
+        stdW,
+      );
+      drawConstrHighlights(
+        hl.surface_case,
+        constructionData.surface_case,
+        scX,
+        scW,
+      );
+      drawConstrHighlights(
+        hl.hole_fill,
+        constructionData.hole_fill,
+        stdX,
+        stdW,
+      );
+      drawConstrHighlights(
+        hl.well_case,
+        constructionData.well_case,
+        stdX,
+        stdW,
+      );
+      drawConstrHighlights(
+        hl.well_screen,
+        constructionData.well_screen,
+        stdX,
+        stdW,
+      );
+    };
+
     const zooming = (e: any) => {
       const transform = e.transform;
 
@@ -1537,6 +1799,7 @@ export class WellRenderer {
           transform.rescaleY(yScaleLocal),
         );
       }
+      drawHighlights(highlights, transform.rescaleY(yScaleLocal));
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1595,6 +1858,7 @@ export class WellRenderer {
       }
 
       svg.select(`#${state.clipRectId}`).attr('y', 0).attr('height', svgHeight);
+      drawHighlights(highlights, yScaleLocal);
     };
 
     drawProfile();

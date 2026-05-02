@@ -82,6 +82,20 @@ export const DEFAULT_WELL_THEME: WellTheme = {
   },
 };
 
+const DEFAULT_HIGHLIGHT_CONFIG = {
+  stroke: '#e52117',
+  strokeWidth: 2,
+  fill: 'none',
+  fillOpacity: 0,
+  padding: 2,
+  strokeDasharray: undefined,
+  labelFontSize: 7,
+  labelPadding: 3,
+  labelBackground: '#e52117',
+  labelColor: '#ffffff',
+  labelRadius: 2,
+} as const;
+
 export const STATIC_RENDER_CONFIG: RenderConfig = {
   zoom: true,
   pan: true,
@@ -177,6 +191,7 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
       conflict: 'Conflito',
     },
   },
+  highlights: DEFAULT_HIGHLIGHT_CONFIG,
 };
 
 export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
@@ -271,4 +286,5 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
       conflict: 'Conflito',
     },
   },
+  highlights: DEFAULT_HIGHLIGHT_CONFIG,
 };

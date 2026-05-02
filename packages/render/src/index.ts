@@ -11,6 +11,8 @@ export { drawWellLegend } from './renderers/legend.renderer';
 export type {
   ComponentsClassNames,
   DeepPartial,
+  HighlightItem,
+  Highlights,
   LegendRenderConfig,
   RenderConfig,
   SvgInstance,
