@@ -13,28 +13,17 @@ const d3 = Object.assign(d3module, { tip: d3tip });
 
 import {
   isWellEmpty,
-  type BoreHole,
-  type Cave,
-  type CementPad,
   type Constructive,
-  type Fracture,
-  type HoleFill,
-  type Lithology,
   type SurfaceCase,
   type Units,
   type Well,
-  type WellCase,
-  type WellScreen,
 } from '@welldot/core';
-import {
-  getProfileDiamValues,
-  getProfileLastItemsDepths,
-} from '@welldot/utils';
+import { getProfileLastItemsDepths } from '@welldot/utils';
 import {
   ComponentsClassNames,
-  Conflict,
   DeepPartial,
-  HighlightItem,
+  DrawContext,
+  DrawGroups,
   Highlights,
   InstanceState,
   RenderConfig,
@@ -42,46 +31,27 @@ import {
   SvgSelection,
   WellTheme,
 } from '~/types/render.types';
-import {
-  formatDiameter,
-  getDiameterUnit,
-  getLengthUnit,
-} from '~/utils/format.utils';
+import { getLengthUnit } from '~/utils/format.utils';
 import { DEFAULT_COMPONENTS_CLASS_NAMES } from './configs/render.classnames';
 import {
   DEFAULT_WELL_THEME,
   INTERACTIVE_RENDER_CONFIG,
 } from './configs/render.configs';
+import { drawAnnotationLabels } from './renderers/annotation-labels.renderer';
+import { drawCaves } from './renderers/caves.renderer';
+import { drawConstructionLabels } from './renderers/construction-labels.renderer';
+import { drawConstructive } from './renderers/construction.renderer';
+import { drawFractures } from './renderers/fractures.renderer';
+import { drawHighlights } from './renderers/highlights.renderer';
 import { drawWellLegend } from './renderers/legend.renderer';
+import { drawLithology } from './renderers/lithology.renderer';
+import { drawUnitLabels } from './renderers/unit-labels.renderer';
 import { buildSvgStyleBlock } from './utils/render.styles';
 import {
-  getConflictAreas,
-  getLithologyFill,
-  getYAxisFunctions,
-  makeCavePrng,
-  mergeConflicts,
+  filterByDepth,
   populateTooltips,
   preloadFgdcTextures,
-  ptsToSmoothPath,
-  wavyContact,
 } from './utils/render.utils';
-
-function wrapText(text: string, maxChars: number): string[] {
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let line = '';
-  for (const word of words) {
-    const candidate = line ? `${line} ${word}` : word;
-    if (candidate.length > maxChars && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = candidate;
-    }
-  }
-  if (line) lines.push(line);
-  return lines.length ? lines : [''];
-}
 
 export class WellRenderer {
   private svgInstances: SvgInstance[] = [];
@@ -305,6 +275,7 @@ export class WellRenderer {
     const highlightsFracturesGroup = svg.select(
       `.${this.classes.highlights.fracturesGroup}`,
     );
+    const unitLabelsGroup = svg.select(`.${this.classes.unitLabels.group}`);
 
     const svgWidth = state.width + state.margins.left + state.margins.right;
     const svgHeight = state.height + state.margins.top + state.margins.bottom;
@@ -322,1101 +293,10 @@ export class WellRenderer {
       this.renderConfig.tooltips,
     );
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // updateGeology
-    // ─────────────────────────────────────────────────────────────────────────
-
     const { xLeft: geoXLeft, xRightInset: geoXRightInset } =
       this.renderConfig.geologic;
     const geoXRight = svgWidth - geoXRightInset;
     const pocoCenterX = state.width / 2 + POCO_CENTER / 2;
-
-    const drawLithology = async (data: Lithology[], yScale) => {
-      const { getHeight, getYPos } = getYAxisFunctions(yScale, {
-        from: depthFrom,
-        to: depthTo,
-      });
-
-      const rects = lithologyGroup
-        .selectAll(`.${this.classes.lithology.rect}`)
-        .data(data);
-
-      rects.exit().remove();
-
-      const newLayers = rects
-        .enter()
-        .append('rect')
-        .attr('class', this.classes.lithology.rect)
-        .attr('x', geoXLeft)
-        .attr('width', geoXRight - geoXLeft)
-        .attr('stroke', this.theme.lithology.stroke)
-        .attr('stroke-width', this.theme.lithology.strokeWidth)
-        .on('mouseover', tooltips.geology.show)
-        .on('mouseout', tooltips.geology.hide);
-
-      newLayers
-        // @ts-ignore
-        .merge(rects)
-        .attr('y', getYPos)
-        // @ts-ignore
-        .transition(transition)
-        .attr('height', getHeight)
-        .attr(
-          'fill',
-
-          getLithologyFill(data, svg, this.theme.lithologyTexture),
-        );
-    };
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // drawUnitLabels
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const drawUnitLabels = (
-      data: Lithology[],
-      yScale: d3.ScaleLinear<number, number>,
-    ) => {
-      const unitLabelsGroup = svg.select(`.${this.classes.unitLabels.group}`);
-      unitLabelsGroup.selectAll('*').remove();
-
-      const ru = this.renderConfig.unitLabels;
-      const rut = this.theme.unitLabels;
-      const sw = ru.stripWidth;
-
-      const groupByField = (field: 'geologic_unit' | 'aquifer_unit') => {
-        const groups: { unit: string; from: number; to: number }[] = [];
-        for (const layer of data) {
-          const unit = layer[field];
-          if (!unit) continue;
-          const from = Math.max(layer.from, depthFrom);
-          const to = Math.min(layer.to, depthTo);
-          if (from >= to) continue;
-          const last = groups[groups.length - 1];
-          if (last && last.unit === unit) {
-            last.to = to;
-          } else groups.push({ unit, from, to });
-        }
-        return groups;
-      };
-
-      const hasGeo = data.some(d => d.geologic_unit);
-      const hasAq = data.some(d => d.aquifer_unit);
-
-      // Strips start at ru.xOffset (geologic group coordinates).
-      // When both exist: geo at xOffset, aq at xOffset + stripWidth + 1.
-      const geoX = ru.xOffset;
-      const aqX = hasGeo && hasAq ? ru.xOffset + sw + 1 : ru.xOffset;
-
-      const drawStrip = (
-        groups: { unit: string; from: number; to: number }[],
-        stripX: number,
-        rectClass: string,
-        fillColor: string,
-      ) => {
-        groups.forEach((group, idx) => {
-          const yTop = yScale(group.from);
-          const yBot = yScale(group.to);
-          const height = yBot - yTop;
-          if (height < 1) return;
-
-          const isFirst = idx === 0;
-          const isLast = idx === groups.length - 1;
-
-          unitLabelsGroup
-            .append('rect')
-            .attr('class', rectClass)
-            .attr('x', stripX)
-            .attr('y', yTop)
-            .attr('width', sw)
-            .attr('height', height)
-            .attr('fill', fillColor)
-            .attr('stroke', this.theme.unitLabels.stroke)
-            .attr('stroke-width', this.theme.unitLabels.strokeWidth);
-
-          const appendEdge = (y: number, strokeWidth: number) =>
-            unitLabelsGroup
-              .append('line')
-              .attr('class', 'unit-divider-line')
-              .attr('x1', stripX)
-              .attr('x2', stripX + sw)
-              .attr('y1', y)
-              .attr('y2', y)
-              .attr('stroke', this.theme.unitLabels.stroke)
-              .attr('stroke-width', strokeWidth);
-
-          appendEdge(yTop, isFirst ? ru.outerEdgeWidth : ru.innerDividerWidth);
-          appendEdge(yBot, isLast ? ru.outerEdgeWidth : ru.innerDividerWidth);
-
-          if (height >= ru.minHeightForText) {
-            const maxChars = Math.floor(height / (rut.fontSize * 0.55));
-            const label =
-              group.unit.length > maxChars
-                ? `${group.unit.slice(0, maxChars - 1)}…`
-                : group.unit;
-
-            unitLabelsGroup
-              .append('text')
-              .attr('class', this.classes.unitLabels.text)
-              .attr(
-                'transform',
-                `translate(${(stripX + sw / 2).toFixed(1)},${((yTop + yBot) / 2).toFixed(1)}) rotate(-90)`,
-              )
-              .attr('text-anchor', 'middle')
-              .attr('dominant-baseline', 'middle')
-              .attr('font-size', rut.fontSize)
-              .attr('font-family', rut.fontFamily ?? 'sans-serif')
-              .attr('font-weight', rut.fontWeight ?? 400)
-              .attr('fill', this.theme.unitLabels.stroke)
-              .text(label);
-          }
-        });
-      };
-
-      if (hasGeo)
-        drawStrip(
-          groupByField('geologic_unit'),
-          geoX,
-          this.classes.unitLabels.geoRect,
-          this.theme.unitLabels.geologicFill,
-        );
-      if (hasAq)
-        drawStrip(
-          groupByField('aquifer_unit'),
-          aqX,
-          this.classes.unitLabels.aqRect,
-          this.theme.unitLabels.aquiferFill,
-        );
-    };
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // updateCaves
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Caves are rendered as full-width lithology-like bands whose top and bottom
-     * contacts are irregular and wavy rather than straight horizontal lines.
-     *
-     * Approach:
-     *   1. Use the same x-extents as the lithology rects (x=10 to x=svgWidth-100)
-     *      so the cave band visually replaces the lithology fill in that interval.
-     *   2. Generate a wavy top contact and a wavy bottom contact using independent
-     *      seeded PRNGs so the two edges are uncorrelated (they won't mirror each
-     *      other) and every redraw—including zoom—produces identical geometry.
-     *   3. Build a single closed SVG path from the two contacts:
-     *        top contact (left → right)
-     *        → vertical right edge connecting to the bottom contact
-     *        → bottom contact (right → left)
-     *        → vertical left edge back to start
-     *      This gives a wavy-edged filled band exactly like a lithology layer.
-     *   4. Stroke the top and bottom contact lines separately so they appear as
-     *      distinct, crisp geological contacts on top of the fill.
-     *   5. Fill with the cave_dry / cave_wet texture from this.textures,
-     *      registered via svg.call() exactly as every other texture in this file.
-     */
-    const drawCaves = (data: Cave[], yScale) => {
-      cavesGroup.selectAll(`g.${this.classes.caves.item}`).remove();
-
-      const rc = this.renderConfig.caves;
-
-      data.forEach(cave => {
-        // Two different seeds so top and bottom contacts are visually independent
-        const seedTop = cave.from * 100 + cave.to;
-        const seedBot = cave.to * 100 + cave.from + 999;
-        const rngTop = makeCavePrng(seedTop);
-        const rngBot = makeCavePrng(seedBot);
-
-        const yTop = yScale(Math.max(cave.from, depthFrom));
-        const yBot = yScale(Math.min(cave.to, depthTo));
-        const span = yBot - yTop; // pixel height of the cave band
-
-        const amp = Math.max(
-          rc.amplitude.min,
-          Math.min(span * rc.amplitude.ratio, rc.amplitude.max),
-        );
-
-        const topCut = cave.from < depthFrom;
-        const botCut = cave.to > depthTo;
-
-        const topPts = topCut
-          ? ([
-              [geoXLeft, yTop],
-              [geoXRight, yTop],
-            ] as [number, number][])
-          : wavyContact(geoXLeft, geoXRight, yTop, amp, rc.pathSteps, rngTop);
-        const botPts = botCut
-          ? ([
-              [geoXLeft, yBot],
-              [geoXRight, yBot],
-            ] as [number, number][])
-          : wavyContact(geoXLeft, geoXRight, yBot, amp, rc.pathSteps, rngBot);
-
-        // Smooth path strings for each contact
-        const topPath = topCut
-          ? `M ${geoXLeft.toFixed(1)},${yTop.toFixed(1)} L ${geoXRight.toFixed(1)},${yTop.toFixed(1)}`
-          : ptsToSmoothPath(topPts);
-        const botPath = botCut
-          ? `M ${geoXLeft.toFixed(1)},${yBot.toFixed(1)} L ${geoXRight.toFixed(1)},${yBot.toFixed(1)}`
-          : ptsToSmoothPath(botPts);
-
-        // Closed filled region:
-        //   top contact L→R  +  right vertical edge down
-        //   +  bottom contact R→L (reversed)  +  left vertical edge up  +  Z
-        const botReversed = botCut
-          ? `L ${geoXLeft.toFixed(1)},${yBot.toFixed(1)}`
-          : ptsToSmoothPath([...botPts].reverse()).replace(
-              /^M [\d.-]+ [\d.-]+/,
-              '',
-            );
-        const closedPath = `${topPath} L ${geoXRight.toFixed(1)},${yBot.toFixed(1)}${botReversed} L ${geoXLeft.toFixed(1)},${yTop.toFixed(1)} Z`;
-
-        const caveTexture = cave.water_intake
-          ? this.textures.cave_wet
-          : this.textures.cave_dry;
-
-        const g = cavesGroup
-          .append('g')
-          .attr('class', this.classes.caves.item)
-          .datum(cave)
-          .style('cursor', 'pointer')
-          .on('mouseover', tooltips.cave.show)
-          .on('mouseout', tooltips.cave.hide);
-
-        const caveStroke = cave.water_intake
-          ? this.theme.cave.wetStroke
-          : this.theme.cave.dryStroke;
-
-        g.append('path')
-          .attr('class', this.classes.caves.fill)
-          .attr('d', closedPath)
-          .attr('fill', caveTexture.url())
-          .attr('fill-opacity', this.theme.cave.fillOpacity)
-          .attr('stroke', 'none');
-
-        g.append('path')
-          .attr('class', this.classes.caves.contact)
-          .attr('d', topPath)
-          .attr('fill', 'none')
-          .attr('stroke', caveStroke)
-          .attr('stroke-width', this.theme.cave.contactStrokeWidth)
-          .attr('stroke-linecap', 'round')
-          .attr('stroke-linejoin', 'round');
-
-        g.append('path')
-          .attr('class', this.classes.caves.contact)
-          .attr('d', botPath)
-          .attr('fill', 'none')
-          .attr('stroke', caveStroke)
-          .attr('stroke-width', this.theme.cave.contactStrokeWidth)
-          .attr('stroke-linecap', 'round')
-          .attr('stroke-linejoin', 'round');
-      });
-    };
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // updateFractures
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const drawFractures = (data: Fracture[], yScale) => {
-      fracturesGroup.selectAll(`g.${this.classes.fractures.item}`).remove();
-
-      const rf = this.renderConfig.fractures;
-      const halfWidth = (POCO_WIDTH * rf.widthMultiplier) / 2;
-      const xa = pocoCenterX - halfWidth;
-      const w = halfWidth * 2;
-
-      const xAt = (nx: number) => xa + nx * w;
-      const RC = 'round' as const;
-
-      const makePrng = (seed: number) => {
-        let s = Math.abs(seed * 7919) | 1;
-        return () => {
-          s = (s * 16807) % 2147483647;
-          return (s - 1) / 2147483646;
-        };
-      };
-
-      const wavyLine = (
-        rng: () => number,
-        steps: number,
-        baseY: number,
-        jitter: number,
-        startInset: number,
-        endInset: number,
-      ): [number, number][] => {
-        const pts: [number, number][] = [];
-        for (let i = 0; i < steps; i++) {
-          const t = i / (steps - 1);
-          const nx = startInset + t * (1 - startInset - endInset);
-          const dy = baseY + (rng() * 2 - 1) * jitter;
-          pts.push([nx, dy]);
-        }
-        return pts;
-      };
-
-      data.forEach(fracture => {
-        const rng = makePrng(fracture.depth);
-        const cy = yScale(fracture.depth);
-
-        const g = fracturesGroup
-          .append('g')
-          .attr('class', this.classes.fractures.item)
-          .datum(fracture)
-          .attr(
-            'transform',
-            `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterX},0)`,
-          )
-          .on('mouseover', tooltips.fracture.show)
-          .on('mouseout', tooltips.fracture.hide)
-          .style('cursor', 'pointer');
-
-        const hitBuffer = fracture.swarm
-          ? rf.hitBuffer.swarm
-          : rf.hitBuffer.single;
-        g.append('rect')
-          .attr('class', this.classes.fractures.hitArea)
-          .attr('x', xa)
-          .attr('y', -hitBuffer)
-          .attr('width', w)
-          .attr('height', hitBuffer * 2)
-          .attr('fill', 'transparent')
-          .style('pointer-events', 'all');
-
-        const fractureStroke = fracture.water_intake
-          ? this.theme.fracture.wetStroke
-          : this.theme.fracture.dryStroke;
-
-        const appendLine = (
-          x1: number,
-          y1: number,
-          x2: number,
-          y2: number,
-          sw: number,
-        ) =>
-          g
-            .append('line')
-            .attr('class', this.classes.fractures.line)
-            .attr('x1', x1)
-            .attr('y1', y1)
-            .attr('x2', x2)
-            .attr('y2', y2)
-            .attr('stroke', fractureStroke)
-            .attr('stroke-width', sw)
-            .attr('stroke-linecap', RC);
-
-        const appendPolyline = (pts: [number, number][], sw: number) =>
-          g
-            .append('polyline')
-            .attr('class', this.classes.fractures.polyline)
-            .attr('points', pts.map(([nx, dy]) => `${xAt(nx)},${dy}`).join(' '))
-            .attr('stroke', fractureStroke)
-            .attr('stroke-width', sw)
-            .attr('fill', 'none')
-            .attr('stroke-linecap', RC)
-            .attr('stroke-linejoin', RC);
-
-        if (fracture.swarm) {
-          const lineCount =
-            rf.swarm.lineCountBase +
-            Math.round(rng() * rf.swarm.lineCountVariance);
-          const halfSpread = rf.swarm.spread / 2;
-
-          const bases = Array.from(
-            { length: lineCount },
-            () => (rng() * 2 - 1) * halfSpread,
-          ).sort((a, b) => a - b);
-
-          bases.forEach((base, idx) => {
-            const isCentral = idx === Math.floor(lineCount / 2);
-            const sw = isCentral
-              ? this.theme.fracture.swarm.centralStrokeWidth
-              : this.theme.fracture.swarm.sideStrokeWidthBase +
-                rng() * this.theme.fracture.swarm.sideStrokeWidthVariance;
-            const steps = 6 + Math.round(rng() * 3);
-            const jitter = 0.8 + rng() * 1.2;
-            const insetL = 0.04 + rng() * 0.12;
-            const insetR = 0.04 + rng() * 0.12;
-            appendPolyline(
-              wavyLine(rng, steps, base, jitter, insetL, insetR),
-              sw,
-            );
-          });
-
-          const bridgeCount = 2 + Math.round(rng() * 2);
-          for (let b = 0; b < bridgeCount; b++) {
-            const nx = 0.15 + rng() * 0.7;
-            const pairIdx = Math.floor(rng() * (bases.length - 1));
-            appendLine(
-              xAt(nx),
-              bases[pairIdx],
-              xAt(nx + (rng() - 0.5) * 0.06),
-              bases[pairIdx + 1],
-              0.6,
-            );
-          }
-
-          const primaryBase = bases[Math.floor(lineCount / 2)];
-          for (let wc = 0; wc < 2; wc++) {
-            const nx = 0.2 + rng() * 0.6;
-            const len = 3 + rng() * 3;
-            const dir = rng() > 0.5 ? -1 : 1;
-            appendLine(
-              xAt(nx),
-              primaryBase,
-              xAt(nx + (rng() - 0.5) * 0.04),
-              primaryBase + dir * len,
-              0.8,
-            );
-          }
-        } else {
-          const steps = 7 + Math.round(rng() * 3);
-          const insetL = 0.03 + rng() * 0.08;
-          const insetR = 0.03 + rng() * 0.08;
-          appendPolyline(
-            wavyLine(rng, steps, 0, 2, insetL, insetR),
-            this.theme.fracture.single.mainStrokeWidth,
-          );
-
-          const crackCount = 2 + Math.round(rng() * 2);
-          for (let c = 0; c < crackCount; c++) {
-            const nx = insetL + rng() * (1 - insetL - insetR);
-            const len = 3.5 + rng() * 3.5;
-            const dir = rng() > 0.5 ? 1 : -1;
-            appendLine(
-              xAt(nx),
-              (rng() * 2 - 1) * 1.5,
-              xAt(nx + (rng() - 0.5) * 0.03),
-              dir * len,
-              this.theme.fracture.single.crackStrokeWidth,
-            );
-          }
-        }
-      });
-    };
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // drawConstructionLabels
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const drawConstructionLabels = (
-      data: { well_case: WellCase[]; well_screen: WellScreen[] },
-      fullData: Constructive,
-      yScale: d3.ScaleLinear<number, number>,
-    ) => {
-      constructionLabelsGroup.selectAll('*').remove();
-
-      const clc = this.renderConfig.constructionLabels;
-      const clct = this.theme.constructionLabels;
-      const fmtD = (mm: number) => formatDiameter(mm, this.units.diameter);
-      const dUnit = getDiameterUnit(this.units.diameter);
-
-      const maxXValues = getProfileDiamValues(fullData);
-      const xScale = d3
-        .scaleLinear()
-        .domain([0, d3.max(maxXValues) || 0])
-        .range([0, POCO_WIDTH]);
-
-      const occupied: { top: number; bot: number }[] = [];
-
-      const placeLabel = (d: WellCase | WellScreen, text: string) => {
-        const clampedFrom = Math.max(d.from, depthFrom);
-        const clampedTo = Math.min(d.to, depthTo);
-        if (clampedFrom >= clampedTo) return;
-
-        const midY = yScale((clampedFrom + clampedTo) / 2);
-        const leftEdgeX = (POCO_CENTER - xScale(d.diameter)) / 2;
-        const labelRightX = leftEdgeX - clc.xOffset;
-        const charW = clct.fontSize * 0.52;
-        const lineH = clct.fontSize * 1.35;
-        const vertPad = 6;
-
-        let lines: string[];
-        let boxW: number;
-        if (clc.labelMaxWidth !== undefined) {
-          const maxChars = Math.max(
-            1,
-            Math.floor((clc.labelMaxWidth! - 8) / charW),
-          );
-          lines = wrapText(text, maxChars);
-          boxW = clc.labelMaxWidth;
-        } else {
-          lines = [text];
-          boxW = text.length * charW + 8;
-        }
-
-        const labelH = lines.length * lineH + vertPad;
-        let labelY = midY - labelH / 2;
-
-        for (const pos of occupied) {
-          if (labelY < pos.bot && labelY + labelH > pos.top)
-            labelY = pos.bot + 2;
-        }
-        occupied.push({ top: labelY, bot: labelY + labelH });
-
-        constructionLabelsGroup
-          .append('rect')
-          .attr('x', labelRightX - boxW)
-          .attr('y', labelY)
-          .attr('width', boxW)
-          .attr('height', labelH)
-          .attr('rx', clc.labelRadius)
-          .attr('fill', clct.labelFill ?? 'white')
-          .attr('stroke', clct.labelColor ?? '#303030')
-          .attr('stroke-width', 0.5);
-
-        const textEl = constructionLabelsGroup
-          .append('text')
-          .attr('x', labelRightX - 4)
-          .attr('y', labelY + lineH * 0.85)
-          .attr('font-size', clct.fontSize)
-          .attr('font-family', clct.fontFamily ?? 'sans-serif')
-          .attr('font-weight', clct.fontWeight ?? 400)
-          .attr('text-anchor', 'end')
-          .attr('fill', clct.labelColor ?? '#303030');
-
-        lines.forEach((line, i) => {
-          textEl
-            .append('tspan')
-            .attr('x', labelRightX - 4)
-            .attr('dy', i === 0 ? 0 : lineH)
-            .text(line);
-        });
-      };
-
-      let lastDiam = 0;
-      data.well_case
-        .filter(item => {
-          if (item.diameter !== lastDiam) {
-            lastDiam = item.diameter;
-            return true;
-          }
-          return false;
-        })
-        .forEach(d =>
-          placeLabel(
-            d,
-            `${clc.labels.wellCasePrefix} ${fmtD(d.diameter)}${dUnit} ${d.type}`,
-          ),
-        );
-
-      lastDiam = 0;
-      data.well_screen
-        .filter(item => {
-          if (item.diameter !== lastDiam) {
-            lastDiam = item.diameter;
-            return true;
-          }
-          return false;
-        })
-        .forEach((d: WellScreen) =>
-          placeLabel(
-            d,
-            `${clc.labels.wellScreenPrefix} ${fmtD(d.diameter)}${dUnit} ${d.type} ${clc.labels.wellScreenSlotPrefix} ${fmtD((d as WellScreen).screen_slot_mm)}${dUnit}`,
-          ),
-        );
-    };
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // drawAnnotationLabels
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const activeLabelsSet = (
-      cfg: boolean | ('lithology' | 'fractures' | 'caves')[],
-    ) => {
-      if (cfg === false) return new Set<string>();
-      if (cfg === true) return new Set(['lithology', 'fractures', 'caves']);
-      return new Set(cfg as string[]);
-    };
-
-    const lithologySubSet = (
-      cfg: boolean | ('depth' | 'description' | 'dividers')[] | undefined,
-    ) => {
-      if (cfg === false) return new Set<string>();
-      if (!cfg || cfg === true)
-        return new Set(['depth', 'description', 'dividers']);
-      return new Set(cfg as string[]);
-    };
-
-    type AnnotationItem = {
-      sortDepth: number;
-      baseY: number;
-      originX: number;
-      originY: number;
-      header: string;
-      description: string;
-    };
-
-    const drawAnnotationLabels = (
-      lithologyData: Lithology[],
-      fractureData: Fracture[],
-      caveData: Cave[],
-      yScale: d3.ScaleLinear<number, number>,
-    ) => {
-      const active = activeLabelsSet(this.renderConfig.labels.active);
-      const show = lithologySubSet(this.renderConfig.labels.lithology);
-      const s = this.renderConfig.labels;
-      const st = this.theme.labels;
-
-      lithologyLabelsGroup.selectAll('*').remove();
-
-      // ── Depth tips ────────────────────────────────────────────────────────
-      if (active.has('lithology') && show.has('depth')) {
-        lithologyData
-          .filter(d => d.to <= depthTo)
-          .forEach(d => {
-            const text = `${d.to}`;
-            const approxW =
-              text.length * (st.fontSize * 0.52) + s.depthTipPadX * 2;
-            const y = yScale(d.to) - s.depthTipHeight / 2;
-
-            const tipG = lithologyLabelsGroup
-              .append('g')
-              .attr('class', this.classes.labels.lithology.depth);
-
-            tipG
-              .append('rect')
-              .attr('x', geoXLeft + 1)
-              .attr('y', y)
-              .attr('width', approxW)
-              .attr('height', s.depthTipHeight)
-              .attr('rx', st.depthTipRadius ?? 2)
-              .attr('fill', st.depthTipFill ?? 'white')
-              .attr('stroke', this.theme.lithology.stroke)
-              .attr('stroke-width', 0.5);
-
-            tipG
-              .append('text')
-              .attr('class', 'wp-depth-tip-text')
-              .attr('fill', this.theme.labels.color)
-              .attr('font-family', this.theme.labels.bodyFont ?? 'sans-serif')
-              .attr('x', geoXLeft + 1 + s.depthTipPadX)
-              .attr('y', y + s.depthTipHeight / 2)
-              .attr('dominant-baseline', 'middle')
-              .attr('font-size', st.fontSize)
-              .text(text);
-          });
-      }
-
-      // ── Build unified annotation items ────────────────────────────────────
-      const items: AnnotationItem[] = [];
-
-      if (active.has('lithology')) {
-        lithologyData
-          .filter(d => d.from < depthTo)
-          .forEach(d => {
-            items.push({
-              sortDepth: d.from,
-              baseY: yScale(Math.max(d.from, depthFrom)),
-              originX: geoXRight,
-              originY: yScale(Math.max(d.from, depthFrom)),
-              header: `${d.from}–${d.to} m`,
-              description: d.description || '',
-            });
-          });
-      }
-
-      if (active.has('fractures')) {
-        fractureData
-          .filter(d => d.depth >= depthFrom && d.depth < depthTo)
-          .forEach(d => {
-            const typeLabel = d.water_intake ? 'fratura aberta' : 'fratura';
-            items.push({
-              sortDepth: d.depth,
-              baseY: yScale(d.depth),
-              originX: pocoCenterX,
-              originY: yScale(d.depth),
-              header: `${d.depth} m · ${typeLabel}`,
-              description: d.description || '',
-            });
-          });
-      }
-
-      if (active.has('caves')) {
-        caveData
-          .filter(d => d.from < depthTo)
-          .forEach(d => {
-            const midDepth = (d.from + d.to) / 2;
-            const typeLabel = d.water_intake ? 'caverna úmida' : 'caverna';
-            items.push({
-              sortDepth: d.from,
-              baseY: yScale(Math.max(d.from, depthFrom)),
-              originX: geoXRight,
-              originY: yScale(Math.max(midDepth, depthFrom)),
-              header: `${d.from}–${d.to} m · ${typeLabel}`,
-              description: d.description || '',
-            });
-          });
-      }
-
-      items.sort((a, b) => a.sortDepth - b.sortDepth);
-
-      // ── Stacking pass ─────────────────────────────────────────────────────
-      type LabelPos = { item: AnnotationItem; yLabel: number; estH: number };
-      const labelPositions: LabelPos[] = [];
-      let currY = 0;
-      const charsPerLine = Math.max(
-        1,
-        Math.floor(s.descriptionMaxWidth / (st.fontSize * 0.6)),
-      );
-
-      items.forEach(item => {
-        const descLines = Math.ceil(
-          (item.description.length || 1) / charsPerLine,
-        );
-        const estH = (1 + descLines) * s.stackingLineHeight + 4;
-        const yLabel = Math.max(item.baseY, currY + s.stackingGap);
-        currY = yLabel + estH;
-        labelPositions.push({ item, yLabel, estH });
-      });
-
-      const labelX = geoXRight + s.descriptionXOffset;
-
-      // ── Dividers ──────────────────────────────────────────────────────────
-      if (show.has('dividers') && show.has('description')) {
-        labelPositions.forEach(({ item, yLabel }) => {
-          lithologyLabelsGroup
-            .append('path')
-            .attr('class', this.classes.labels.lithology.divider)
-            .attr('fill', 'none')
-            .attr('stroke', this.theme.labels.dividerStroke)
-            .attr('stroke-width', this.theme.labels.dividerStrokeWidth)
-            .attr('stroke-dasharray', this.theme.labels.dividerStrokeDasharray)
-            .attr(
-              'd',
-              `M ${item.originX},${item.originY} L ${geoXRight + 3},${item.originY} L ${labelX},${yLabel}`,
-            );
-        });
-      }
-
-      // ── Labels ────────────────────────────────────────────────────────────
-      if (show.has('description')) {
-        const lineH = s.stackingLineHeight;
-        const bgFill = st.annotationBg ?? 'white';
-
-        labelPositions.forEach(({ item, yLabel, estH }) => {
-          const labelG = lithologyLabelsGroup
-            .append('g')
-            .attr('class', this.classes.labels.lithology.label)
-            .attr('transform', `translate(${labelX},${yLabel})`);
-
-          labelG
-            .append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', s.descriptionMaxWidth)
-            .attr('height', estH)
-            .attr('rx', st.annotationRadius ?? 2)
-            .attr('fill', bgFill)
-            .attr('fill-opacity', st.annotationBgOpacity ?? 0.85)
-            .attr('stroke', st.annotationBorderColor ?? 'none');
-
-          labelG
-            .append('text')
-            .attr('class', 'wp-annotation-header')
-            .attr('fill', this.theme.labels.color)
-            .attr('font-weight', st.headerFontWeight ?? 600)
-            .attr('font-family', this.theme.labels.headerFont)
-            .attr('x', 0)
-            .attr('y', lineH * 0.85)
-            .attr('font-size', st.fontSize)
-            .text(item.header);
-
-          if (item.description) {
-            const lines = wrapText(item.description, charsPerLine);
-            const bodyEl = labelG
-              .append('text')
-              .attr('class', 'wp-annotation-body')
-              .attr('fill', this.theme.labels.bodyColor)
-              .attr('font-weight', st.bodyFontWeight ?? 400)
-              .attr('font-family', this.theme.labels.bodyFont ?? 'sans-serif')
-              .attr('x', 0)
-              .attr('y', lineH * 0.85 + lineH)
-              .attr('font-size', st.fontSize);
-            lines.forEach((line, i) => {
-              bodyEl
-                .append('tspan')
-                .attr('x', 0)
-                .attr('dy', i === 0 ? 0 : lineH)
-                .text(line);
-            });
-          }
-        });
-      }
-    };
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // updatePoco
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const drawConstructive = (
-      data: Constructive,
-      yScale,
-      fullData: Constructive,
-    ) => {
-      const { getHeight, getYPos } = getYAxisFunctions(yScale, {
-        from: depthFrom,
-        to: depthTo,
-      });
-
-      const maxXValues = getProfileDiamValues(fullData);
-      const maxXValueConstruction = d3.max(maxXValues) || 0;
-
-      const xScale = d3
-        .scaleLinear()
-        .domain([0, maxXValueConstruction])
-        .range([0, POCO_WIDTH]);
-
-      const rcc = this.renderConfig.construction;
-
-      constructionGroup.selectAll(`.${this.classes.cementPad.item}`).remove();
-
-      if (data.cement_pad && data.cement_pad.thickness && depthFrom === 0) {
-        const cementPad = cementPadGroup
-          .selectAll('rect')
-          .data([data.cement_pad]);
-
-        cementPad.exit().remove();
-
-        const newCementPad = cementPad
-          .enter()
-          .append('rect')
-          .attr('class', this.classes.cementPad.item)
-          .attr(
-            'x',
-            (d: CementPad) =>
-              (POCO_CENTER -
-                xScale((d.width * rcc.cementPad.widthMultiplier * 1000) / 2)) /
-              2,
-          )
-          .attr('y', (d: CementPad) => {
-            return (
-              yScale(0) -
-              yScale(d.thickness * rcc.cementPad.thicknessMultiplier)
-            );
-          })
-          .attr('width', (d: CementPad) =>
-            xScale((d.width * rcc.cementPad.widthMultiplier * 1000) / 2),
-          )
-          .attr('height', (d: CementPad) => {
-            return yScale(d.thickness * rcc.cementPad.thicknessMultiplier);
-          })
-          .attr('fill', this.textures.pad.url())
-          .attr('stroke', this.theme.cementPad.stroke)
-          .attr('stroke-width', this.theme.cementPad.strokeWidth);
-
-        newCementPad
-          .on('mouseover', tooltips.cementPad.show)
-          .on('mouseout', tooltips.cementPad.hide);
-      }
-
-      const hole = holeGroup
-        .selectAll(`.${this.classes.boreHole.rect}`)
-        .data(data.bore_hole);
-
-      hole.exit().remove();
-
-      const newHole = hole
-        .enter()
-        .append('rect')
-        .attr('class', this.classes.boreHole.rect)
-        .attr('fill', this.theme.boreHole.fill)
-        .attr('stroke', this.theme.boreHole.stroke)
-        .attr('opacity', this.theme.boreHole.opacity)
-        .attr('stroke-width', this.theme.boreHole.strokeWidth)
-        .attr('stroke-dasharray', this.theme.boreHole.strokeDasharray)
-        .on('mouseover', tooltips.hole.show)
-        .on('mouseout', tooltips.hole.hide);
-
-      newHole
-        // @ts-ignore
-        .merge(hole)
-        .attr('x', (d: BoreHole) => (POCO_CENTER - xScale(d.diameter)) / 2)
-        .attr('width', (d: BoreHole) => xScale(d.diameter))
-        // @ts-ignore
-        .transition(transition)
-        .attr('y', getYPos)
-        .attr('height', getHeight);
-
-      const surfaceCaseGs = surfaceCaseGroup
-        .selectAll(`g.${this.classes.surfaceCase.rect}`)
-        .data(data.surface_case);
-
-      surfaceCaseGs.exit().transition(transition).style('opacity', 0).remove();
-
-      const newSC = surfaceCaseGs
-        .enter()
-        .append('g')
-        .attr('class', this.classes.surfaceCase.rect)
-        .on('mouseover', tooltips.surfaceCase.show)
-        .on('mouseout', tooltips.surfaceCase.hide);
-
-      newSC
-        .append('rect')
-        .attr('class', 'surface-case-fill')
-        .attr('stroke', 'none');
-      newSC
-        .append('line')
-        .attr('class', 'surface-case-side')
-        .attr('stroke', this.theme.surfaceCase.stroke)
-        .attr('stroke-width', this.theme.surfaceCase.strokeWidth);
-      newSC
-        .append('line')
-        .attr('class', 'surface-case-side')
-        .attr('stroke', this.theme.surfaceCase.stroke)
-        .attr('stroke-width', this.theme.surfaceCase.strokeWidth);
-
-      // @ts-ignore
-      const mergedSC = newSC.merge(surfaceCaseGs);
-
-      mergedSC.each((d: SurfaceCase, i, nodes) => {
-        const x =
-          (POCO_CENTER -
-            xScale(
-              d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-            )) /
-          2;
-        const w = xScale(
-          d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-        );
-        const g = d3.select(nodes[i] as Element);
-        g.select('.surface-case-fill')
-          .attr('x', x)
-          .attr('width', w)
-          .attr('fill', this.textures.surface_case.url());
-        const sideNodes = g.selectAll('.surface-case-side').nodes();
-        d3.select(sideNodes[0] as Element)
-          .attr('x1', x)
-          .attr('x2', x);
-        d3.select(sideNodes[1] as Element)
-          .attr('x1', x + w)
-          .attr('x2', x + w);
-      });
-
-      mergedSC
-        .select('.surface-case-fill')
-        // @ts-ignore
-        .transition(transition)
-        .attr('y', (d: SurfaceCase) => getYPos(d))
-        .attr('height', (d: SurfaceCase) => getHeight(d));
-
-      mergedSC
-        .selectAll('.surface-case-side')
-        .attr('y1', (d: unknown) => getYPos(d as SurfaceCase))
-        .attr(
-          'y2',
-          (d: unknown) =>
-            getYPos(d as SurfaceCase) + getHeight(d as SurfaceCase),
-        );
-
-      const holeFill = holeFillGroup
-        .selectAll(`.${this.classes.holeFill.rect}`)
-        .data(data.hole_fill);
-
-      holeFill.exit().remove();
-
-      const newHoleFill = holeFill
-        .enter()
-        .append('rect')
-        .attr('class', this.classes.holeFill.rect)
-        .attr('stroke', this.theme.holeFill.stroke)
-        .attr('stroke-width', this.theme.holeFill.strokeWidth)
-        .on('mouseover', tooltips.holeFill.show)
-        .on('mouseout', tooltips.holeFill.hide);
-
-      newHoleFill
-        // @ts-ignore
-        .merge(holeFill)
-        .attr('x', (d: HoleFill) => (POCO_CENTER - xScale(d.diameter)) / 2)
-        .attr('width', (d: HoleFill) => xScale(d.diameter))
-        // @ts-ignore
-        .transition(transition)
-        .attr('y', getYPos)
-        .attr('height', getHeight)
-        .attr('fill', (d: HoleFill) => this.textures[d.type].url());
-
-      const wellCase = wellCaseGroup
-        .selectAll(`.${this.classes.wellCase.rect}`)
-        .data(data.well_case);
-
-      wellCase.exit().remove();
-
-      const newWellCase = wellCase
-        .enter()
-        .append('rect')
-        .attr('class', this.classes.wellCase.rect)
-        .attr('fill', this.theme.wellCase.fill)
-        .attr('stroke', this.theme.wellCase.stroke)
-        .attr('stroke-width', this.theme.wellCase.strokeWidth)
-        .on('mouseover', tooltips.wellCase.show)
-        .on('mouseout', tooltips.wellCase.hide);
-
-      newWellCase
-        // @ts-ignore
-        .merge(wellCase)
-        .attr('x', (d: WellCase) => (POCO_CENTER - xScale(d.diameter)) / 2)
-        .attr('width', (d: WellCase) => xScale(d.diameter))
-        // @ts-ignore
-        .transition(transition)
-        .attr('y', getYPos)
-        .attr('height', getHeight);
-
-      const wellScreen = wellScreenGroup
-        .selectAll(`.${this.classes.wellScreen.rect}`)
-        .data(data.well_screen);
-
-      wellScreen.exit().remove();
-
-      const newWellScreen = wellScreen
-        .enter()
-        .append('rect')
-        .attr('class', this.classes.wellScreen.rect)
-        .attr('fill', this.textures.well_screen.url())
-        .attr('stroke', this.theme.wellScreen.stroke)
-        .attr('stroke-width', this.theme.wellScreen.strokeWidth)
-        .on('mouseover', tooltips.wellScreen.show)
-        .on('mouseout', tooltips.wellScreen.hide);
-
-      newWellScreen
-        // @ts-ignore
-        .merge(wellScreen)
-        .attr('x', (d: WellScreen) => (POCO_CENTER - xScale(d.diameter)) / 2)
-        .attr('width', (d: WellScreen) => xScale(d.diameter))
-        // @ts-ignore
-        .transition(transition)
-        .attr('y', getYPos)
-        .attr('height', getHeight);
-
-      const conflictAreas: Conflict[] = [];
-      conflictAreas.push(...getConflictAreas(data.well_case, data.well_screen));
-      conflictAreas.push(...getConflictAreas(data.well_screen, data.well_case));
-
-      const mergedConflicts = mergeConflicts(conflictAreas, 1);
-
-      const conflict = conflictGroup
-        .selectAll(`.${this.classes.conflict.rect}`)
-        .data(mergedConflicts);
-
-      conflict.exit().remove();
-
-      const newConflict = conflict
-        .enter()
-        .append('rect')
-        .attr('class', this.classes.conflict.rect)
-        .attr('fill', this.textures.conflict.url())
-        .attr('stroke', this.theme.conflict.stroke)
-        .attr('stroke-width', this.theme.conflict.strokeWidth)
-        .on('mouseover', tooltips.conflict.show)
-        .on('mouseout', tooltips.conflict.hide);
-
-      newConflict
-        // @ts-ignore
-        .merge(conflict)
-        .attr('x', (d: Conflict) => (POCO_CENTER - xScale(d.diameter)) / 2)
-        .attr('width', (d: Conflict) => xScale(d.diameter))
-        // @ts-ignore
-        .transition(transition)
-        .attr('y', yScale(0))
-        .attr('height', getHeight);
-    };
 
     const geologicData = {
       lithology: profile.lithology,
@@ -1488,241 +368,67 @@ export class WellRenderer {
       );
     };
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Zoom handler
-    // ─────────────────────────────────────────────────────────────────────────
+    const groups: DrawGroups = {
+      lithologyGroup,
+      unitLabelsGroup,
+      cavesGroup,
+      fracturesGroup,
+      lithologyLabelsGroup,
+      constructionGroup,
+      constructionLabelsGroup,
+      cementPadGroup,
+      holeGroup,
+      surfaceCaseGroup,
+      holeFillGroup,
+      wellCaseGroup,
+      wellScreenGroup,
+      conflictGroup,
+      highlightsGeologicGroup,
+      highlightsConstructionGroup,
+      highlightsFracturesGroup,
+    };
 
-    const filterByDepth = (l: { from: number; to: number }) =>
-      !(l.to <= depthFrom || l.from >= depthTo);
+    const ctx: DrawContext = {
+      svg,
+      state,
+      svgWidth,
+      svgHeight,
+      POCO_WIDTH,
+      POCO_CENTER,
+      pocoCenterX,
+      geoXLeft,
+      geoXRight,
+      depthFrom,
+      depthTo,
+      yScale: yScaleLocal,
+      transition,
+      tooltips,
+      renderConfig: this.renderConfig,
+      theme: this.theme,
+      classes: this.classes,
+      textures: this.textures,
+      units: this.units,
+      constructionData,
+      groups,
+    };
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // drawHighlights
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const drawHighlights = (
-      hl: Highlights,
-      yScale: d3.ScaleLinear<number, number>,
-    ) => {
-      highlightsGeologicGroup.selectAll('*').remove();
-      highlightsConstructionGroup.selectAll('*').remove();
-      highlightsFracturesGroup.selectAll('*').remove();
-
-      const hc = this.renderConfig.highlights;
-      const pad = hc.padding;
-
-      const drawHighlightItem = (
-        group: SvgSelection,
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-        label?: string,
-      ) => {
-        if (h <= 0 || w <= 0) return;
-
-        const g = group.append('g').attr('class', this.classes.highlights.item);
-
-        g.append('rect')
-          .attr('class', this.classes.highlights.rect)
-          .attr('x', x - pad)
-          .attr('y', y - pad)
-          .attr('width', w + pad * 2)
-          .attr('height', h + pad * 2)
-          .attr('fill', hc.fill)
-          .attr('fill-opacity', hc.fillOpacity)
-          .attr('stroke', hc.stroke)
-          .attr('stroke-width', hc.strokeWidth)
-          .attr('stroke-dasharray', hc.strokeDasharray ?? null)
-          .style('pointer-events', 'none');
-
-        if (label) {
-          const charW = hc.labelFontSize * 0.55;
-          const labelW = label.length * charW + hc.labelPadding * 2;
-          const labelH = hc.labelFontSize + hc.labelPadding * 2;
-          const lx = x - pad;
-          const ly = y - pad - labelH;
-
-          g.append('rect')
-            .attr('class', this.classes.highlights.labelBg)
-            .attr('x', lx)
-            .attr('y', ly)
-            .attr('width', labelW)
-            .attr('height', labelH)
-            .attr('rx', hc.labelRadius)
-            .attr('fill', hc.labelBackground)
-            .style('pointer-events', 'none');
-
-          g.append('text')
-            .attr('class', this.classes.highlights.label)
-            .attr('x', lx + hc.labelPadding)
-            .attr('y', ly + labelH - hc.labelPadding)
-            .attr('font-size', hc.labelFontSize)
-            .attr('fill', hc.labelColor)
-            .attr('font-family', 'sans-serif')
-            .style('pointer-events', 'none')
-            .text(label);
-        }
-      };
-
-      // Geologic highlights
-      const drawGeoHighlights = (items: HighlightItem[] | undefined) => {
-        items?.forEach(h => {
-          if (h.from === undefined || h.to === undefined) return;
-          const from = Math.max(h.from, depthFrom);
-          const to = Math.min(h.to, depthTo);
-          if (from >= to) return;
-          const y = yScale(from);
-          drawHighlightItem(
-            highlightsGeologicGroup as SvgSelection,
-            geoXLeft,
-            y,
-            geoXRight - geoXLeft,
-            yScale(to) - y,
-            h.label,
-          );
-        });
-      };
-
-      drawGeoHighlights(hl.lithology);
-      drawGeoHighlights(hl.caves);
-
-      // Fracture highlights
-      const rf = this.renderConfig.fractures;
-      const halfFractureWidth = (POCO_WIDTH * rf.widthMultiplier) / 2;
-      const fracXa = pocoCenterX - halfFractureWidth;
-      const fracW = halfFractureWidth * 2;
-
-      hl.fractures?.forEach(h => {
-        if (h.depth === undefined) return;
-        if (h.depth < depthFrom || h.depth > depthTo) return;
-        const cy = yScale(h.depth);
-        drawHighlightItem(
-          highlightsFracturesGroup as SvgSelection,
-          fracXa,
-          cy - rf.hitBuffer.single,
-          fracW,
-          rf.hitBuffer.single * 2,
-          h.label,
-        );
-      });
-
-      // Construction highlights
-      const maxXVals = getProfileDiamValues(constructionData);
-      const xScaleConstr = d3
-        .scaleLinear()
-        .domain([0, d3.max(maxXVals) || 0])
-        .range([0, POCO_WIDTH]);
-
-      const rcc = this.renderConfig.construction;
-
-      if (
-        hl.cement_pad &&
-        depthFrom === 0 &&
-        constructionData.cement_pad?.thickness
-      ) {
-        const cp = constructionData.cement_pad;
-        const cpX =
-          (POCO_CENTER -
-            xScaleConstr(
-              (cp.width * rcc.cementPad.widthMultiplier * 1000) / 2,
-            )) /
-          2;
-        const cpY =
-          yScale(0) - yScale(cp.thickness * rcc.cementPad.thicknessMultiplier);
-        const cpW = xScaleConstr(
-          (cp.width * rcc.cementPad.widthMultiplier * 1000) / 2,
-        );
-        const cpH = yScale(cp.thickness * rcc.cementPad.thicknessMultiplier);
-        drawHighlightItem(
-          highlightsConstructionGroup as SvgSelection,
-          cpX,
-          cpY,
-          cpW,
-          cpH,
-          hl.cement_pad.label,
-        );
-      }
-
-      const drawConstrHighlights = (
-        items: HighlightItem[] | undefined,
-        data: { from: number; to: number; diameter: number }[],
-        getX: (d: { diameter: number }) => number,
-        getW: (d: { diameter: number }) => number,
-      ) => {
-        items?.forEach(h => {
-          if (h.from === undefined || h.to === undefined) return;
-          data
-            .filter(
-              d =>
-                d.from < h.to! &&
-                d.to > h.from! &&
-                (h.diameter === undefined || d.diameter === h.diameter),
-            )
-            .forEach(d => {
-              const from = Math.max(h.from!, depthFrom);
-              const to = Math.min(h.to!, depthTo);
-              if (from >= to) return;
-              const y = yScale(from);
-              drawHighlightItem(
-                highlightsConstructionGroup as SvgSelection,
-                getX(d),
-                y,
-                getW(d),
-                yScale(to) - y,
-                h.label,
-              );
-            });
-        });
-      };
-
-      const stdX = (d: { diameter: number }) =>
-        (POCO_CENTER - xScaleConstr(d.diameter)) / 2;
-      const stdW = (d: { diameter: number }) => xScaleConstr(d.diameter);
-      const scX = (d: { diameter: number }) =>
-        (POCO_CENTER -
-          xScaleConstr(
-            d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-          )) /
-        2;
-      const scW = (d: { diameter: number }) =>
-        xScaleConstr(
-          d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-        );
-
-      drawConstrHighlights(
-        hl.bore_hole,
-        constructionData.bore_hole,
-        stdX,
-        stdW,
-      );
-      drawConstrHighlights(
-        hl.surface_case,
-        constructionData.surface_case,
-        scX,
-        scW,
-      );
-      drawConstrHighlights(
-        hl.hole_fill,
-        constructionData.hole_fill,
-        stdX,
-        stdW,
-      );
-      drawConstrHighlights(
-        hl.well_case,
-        constructionData.well_case,
-        stdX,
-        stdW,
-      );
-      drawConstrHighlights(
-        hl.well_screen,
-        constructionData.well_screen,
-        stdX,
-        stdW,
-      );
+    const inDepth = filterByDepth(depthFrom, depthTo);
+    const filteredConstruction = {
+      ...constructionData,
+      bore_hole: constructionData.bore_hole.filter(inDepth),
+      hole_fill: constructionData.hole_fill.filter(inDepth),
+      surface_case: constructionData.surface_case.filter(inDepth),
+      well_case: constructionData.well_case.filter(inDepth),
+      well_screen: constructionData.well_screen.filter(inDepth),
+      reduction: constructionData.reduction?.filter(inDepth) ?? [],
     };
 
     const zooming = (e: any) => {
       const transform = e.transform;
+      const zoomedCtx: DrawContext = {
+        ...ctx,
+        yScale: transform.rescaleY(yScaleLocal),
+      };
 
       // @ts-ignore
       gY.call(yAxis.scale(transform.rescaleY(yScaleAxis)));
@@ -1763,102 +469,49 @@ export class WellRenderer {
           return `translate(0,${cy}) rotate(${d.dip},${cx},0)`;
         });
 
-      // Caves: full redraw with the rescaled yScale.
-      // Path geometry is cheap and this keeps the zoom handler simple.
-      if (geologicData.caves?.length) {
-        drawCaves(
-          geologicData.caves.filter(c => c.to > depthFrom && c.from < depthTo),
-          transform.rescaleY(yScaleLocal),
-        );
-      }
-
-      if (this.renderConfig.unitLabels.active && profile.lithology?.length) {
-        drawUnitLabels(
-          profile.lithology.filter(filterByDepth),
-          transform.rescaleY(yScaleLocal),
-        );
-      }
-      if (this.renderConfig.labels.active !== false) {
-        drawAnnotationLabels(
-          profile.lithology?.filter(filterByDepth) ?? [],
+      // Delegated redraws — unconditional, each renderer self-guards:
+      drawCaves(zoomedCtx, geologicData.caves?.filter(inDepth) ?? []);
+      drawUnitLabels(zoomedCtx, profile.lithology?.filter(inDepth) ?? []);
+      drawAnnotationLabels(zoomedCtx, {
+        lithology: profile.lithology?.filter(inDepth) ?? [],
+        fractures:
           profile.fractures?.filter(
             f => f.depth >= depthFrom && f.depth < depthTo,
           ) ?? [],
-          profile.caves?.filter(c => c.to > depthFrom && c.from < depthTo) ??
-            [],
-          transform.rescaleY(yScaleLocal),
-        );
-      }
-      if (this.renderConfig.constructionLabels.active && constructionData) {
-        drawConstructionLabels(
-          {
-            well_case: constructionData.well_case.filter(filterByDepth),
-            well_screen: constructionData.well_screen.filter(filterByDepth),
-          },
-          constructionData,
-          transform.rescaleY(yScaleLocal),
-        );
-      }
-      drawHighlights(highlights, transform.rescaleY(yScaleLocal));
+        caves: profile.caves?.filter(inDepth) ?? [],
+      });
+      drawConstructionLabels(zoomedCtx, {
+        well_case: constructionData.well_case.filter(inDepth),
+        well_screen: constructionData.well_screen.filter(inDepth),
+      });
+      drawHighlights(zoomedCtx, highlights);
     };
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Initial draw
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const drawProfile = () => {
-      if (profile.lithology)
-        drawLithology(profile.lithology.filter(filterByDepth), yScaleLocal);
-      if (this.renderConfig.unitLabels.active && profile.lithology?.length) {
-        drawUnitLabels(profile.lithology.filter(filterByDepth), yScaleLocal);
-      }
-      if (this.renderConfig.labels.active !== false) {
-        drawAnnotationLabels(
-          profile.lithology?.filter(filterByDepth) ?? [],
+    const drawProfile = async () => {
+      await drawLithology(ctx, profile.lithology?.filter(inDepth) ?? []);
+      drawUnitLabels(ctx, profile.lithology?.filter(inDepth) ?? []);
+      drawAnnotationLabels(ctx, {
+        lithology: profile.lithology?.filter(inDepth) ?? [],
+        fractures:
           profile.fractures?.filter(
             f => f.depth >= depthFrom && f.depth < depthTo,
           ) ?? [],
-          profile.caves?.filter(c => c.to > depthFrom && c.from < depthTo) ??
-            [],
-          yScaleLocal,
-        );
-      }
-      if (profile.caves?.length) {
-        drawCaves(
-          profile.caves.filter(c => c.to > depthFrom && c.from < depthTo),
-          yScaleLocal,
-        );
-      }
-      if (profile.fractures) {
-        drawFractures(
-          profile.fractures.filter(
-            f => f.depth >= depthFrom && f.depth <= depthTo,
-          ),
-          yScaleLocal,
-        );
-      }
-      if (constructionData) {
-        const filteredConstruction = {
-          ...constructionData,
-          bore_hole: constructionData.bore_hole.filter(filterByDepth),
-          hole_fill: constructionData.hole_fill.filter(filterByDepth),
-          surface_case: constructionData.surface_case.filter(filterByDepth),
-          well_case: constructionData.well_case.filter(filterByDepth),
-          well_screen: constructionData.well_screen.filter(filterByDepth),
-          reduction: constructionData.reduction?.filter(filterByDepth) ?? [],
-        };
-        drawConstructive(filteredConstruction, yScaleLocal, constructionData);
-        if (this.renderConfig.constructionLabels.active) {
-          drawConstructionLabels(
-            filteredConstruction,
-            constructionData,
-            yScaleLocal,
-          );
-        }
-      }
-
+        caves: profile.caves?.filter(inDepth) ?? [],
+      });
+      drawCaves(ctx, profile.caves?.filter(inDepth) ?? []);
+      drawFractures(
+        ctx,
+        profile.fractures?.filter(
+          f => f.depth >= depthFrom && f.depth <= depthTo,
+        ) ?? [],
+      );
+      drawConstructive(ctx, filteredConstruction);
+      drawConstructionLabels(ctx, {
+        well_case: filteredConstruction.well_case,
+        well_screen: filteredConstruction.well_screen,
+      });
       svg.select(`#${state.clipRectId}`).attr('y', 0).attr('height', svgHeight);
-      drawHighlights(highlights, yScaleLocal);
+      drawHighlights(ctx, highlights);
     };
 
     drawProfile();

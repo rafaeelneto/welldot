@@ -314,3 +314,32 @@ export const populateTooltips = (
 
   return tooltips;
 };
+
+/** Returns a predicate that tests whether an interval overlaps the window [depthFrom, depthTo]. */
+export function filterByDepth(
+  depthFrom: number,
+  depthTo: number,
+): (l: { from: number; to: number }) => boolean {
+  return l => !(l.to <= depthFrom || l.from >= depthTo);
+}
+
+/**
+ * Breaks `text` into lines of at most `maxChars` characters on word boundaries.
+ * Always returns at least one element.
+ */
+export function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let line = '';
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length > maxChars && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = candidate;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [''];
+}

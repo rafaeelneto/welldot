@@ -1,5 +1,6 @@
-import { type BaseType, type Selection } from 'd3';
-import type { TexturesConfig } from '~/configs/render.textures';
+import { type BaseType, type Selection, type ScaleLinear, type Transition } from 'd3';
+import type { TexturesConfig, WellTextures } from '~/configs/render.textures';
+import type { Constructive, Units, Lithology, Fracture, Cave } from '@welldot/core';
 
 export type DeepPartial<T> = T extends object
   ? { [K in keyof T]?: DeepPartial<T[K]> }
@@ -371,4 +372,73 @@ export type SvgInstance = {
     top: number;
     bottom: number;
   };
+};
+
+/** All SVG group selections created in initInstanceSvg. */
+export type DrawGroups = {
+  lithologyGroup: SvgSelection;
+  unitLabelsGroup: SvgSelection;
+  cavesGroup: SvgSelection;
+  fracturesGroup: SvgSelection;
+  lithologyLabelsGroup: SvgSelection;
+  constructionGroup: SvgSelection;
+  constructionLabelsGroup: SvgSelection;
+  cementPadGroup: SvgSelection;
+  holeGroup: SvgSelection;
+  surfaceCaseGroup: SvgSelection;
+  holeFillGroup: SvgSelection;
+  wellCaseGroup: SvgSelection;
+  wellScreenGroup: SvgSelection;
+  conflictGroup: SvgSelection;
+  highlightsGeologicGroup: SvgSelection;
+  highlightsConstructionGroup: SvgSelection;
+  highlightsFracturesGroup: SvgSelection;
+};
+
+/**
+ * Grouped geological data for the annotation-labels renderer.
+ * All arrays are pre-filtered to the active depth window by the caller.
+ */
+export type AnnotationData = {
+  lithology: Lithology[];
+  fractures: Fracture[];
+  caves: Cave[];
+};
+
+/**
+ * Shared context passed to every draw* renderer function.
+ *
+ * Replaces all closed-over variables from drawLogToInstance so renderers
+ * can live in separate files without prop-drilling or closure capture.
+ *
+ * - `yScale` changes on every zoom event — callers create a new context
+ *   (`{ ...ctx, yScale: rescaled }`) rather than mutating this object.
+ * - `constructionData` is the full (unfiltered) construction profile, used
+ *   for x-scale domain computation. The `data` argument to each renderer
+ *   carries only the depth-filtered subset for the current panel.
+ */
+export type DrawContext = {
+  svg: SvgSelection;
+  state: InstanceState;
+  svgWidth: number;
+  svgHeight: number;
+  POCO_WIDTH: number;
+  POCO_CENTER: number;
+  pocoCenterX: number;
+  geoXLeft: number;
+  geoXRight: number;
+  depthFrom: number;
+  depthTo: number;
+  /** Active depth→pixel scale; replaced (not mutated) on each zoom event. */
+  yScale: ScaleLinear<number, number>;
+  transition: Transition<BaseType, unknown, null, undefined>;
+  tooltips: Record<string, { show: (...a: unknown[]) => void; hide: (...a: unknown[]) => void }>;
+  renderConfig: RenderConfig;
+  theme: WellTheme;
+  classes: ComponentsClassNames;
+  textures: WellTextures;
+  units: Units;
+  /** Full (unfiltered) construction profile — for x-scale domain. */
+  constructionData: Constructive;
+  groups: DrawGroups;
 };
