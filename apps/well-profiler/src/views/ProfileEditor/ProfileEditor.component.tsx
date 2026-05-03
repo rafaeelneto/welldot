@@ -1,20 +1,20 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import LZString from 'lz-string';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 
 import {
-  Modal,
   Button,
-  ActionIcon as IconButton,
-  Tooltip,
   Divider,
-  Tabs,
+  ActionIcon as IconButton,
+  Modal,
   Popover,
   SegmentedControl,
-  Text,
   Stack,
+  Tabs,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { useClipboard } from '@mantine/hooks';
 
@@ -25,22 +25,22 @@ import { format } from 'date-fns';
 
 import {
   ArrowDownOnSquareIcon,
-  FolderOpenIcon,
-  DocumentTextIcon,
   Cog6ToothIcon,
+  DocumentTextIcon,
+  FolderOpenIcon,
   ShareIcon,
 } from '@heroicons/react/24/solid';
 
+import { checkIfProfileIsEmpty, profileToWell } from '@welldot/core';
 import download from 'downloadjs';
-import { profileToWell, checkIfProfileIsEmpty } from '@/src/utils/profile.utils';
 
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
 import Info from '@/src/components/organisms/Summary/Summary.component';
 import PDFExport from '@/src/views/PDFExport/pdfExport.component';
 
 import TabConstructive from '@/src/views/ProfileEditor/ProfileEditor.constructive';
-import TabGeologic from '@/src/views/ProfileEditor/ProfileEditor.geologic';
 import TabGeneral from '@/src/views/ProfileEditor/ProfileEditor.general';
+import TabGeologic from '@/src/views/ProfileEditor/ProfileEditor.geologic';
 
 import { useProfileStore } from '@/src/store/profile/profile.store';
 import { useUIStore } from '@/src/store/ui.store';
@@ -50,10 +50,10 @@ import ExampleWell from '@/public/assets/icons/example_well_icon.svg';
 
 import { getWindow } from '@/src/utils/window.utils';
 
-import styles from './profileEditor.module.scss';
-import { EMPTY_PROFILE, PROFILE_EXAMPLE } from '@/src/data/profile/profile.data';
+import { PROFILE_EXAMPLE } from '@/src/data/profile/profile.data';
 import { Profile } from '@/src/types/profile.types';
 import dynamic from 'next/dynamic';
+import styles from './profileEditor.module.scss';
 
 function ProfileEditor() {
   const inputFile = useRef(null);
@@ -66,7 +66,14 @@ function ProfileEditor() {
       ...state,
     }));
 
-  const { diameter_units, length_units, setDiameterUnits, setLengthUnits, coord_format, setCoordFormat } = useUIStore();
+  const {
+    diameter_units,
+    length_units,
+    setDiameterUnits,
+    setLengthUnits,
+    coord_format,
+    setCoordFormat,
+  } = useUIStore();
 
   const clipboard = useClipboard({ timeout: 2000 });
 
@@ -93,7 +100,9 @@ function ProfileEditor() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('p');
     const query = params.toString();
-    router.replace(query ? `?${query}` : window.location.pathname, { scroll: false });
+    router.replace(query ? `?${query}` : window.location.pathname, {
+      scroll: false,
+    });
   };
 
   // Detect ?p= param on mount and prompt user before overwriting
@@ -128,7 +137,6 @@ function ProfileEditor() {
       if (!e) return;
 
       updateProfileFromJSON(e.target?.result as string);
-
     };
 
     try {
@@ -195,7 +203,8 @@ function ProfileEditor() {
       >
         <Stack gap="md">
           <Text size="sm">
-            Um perfil foi detectado no link. Deseja substituir o perfil atual pelo perfil do link?
+            Um perfil foi detectado no link. Deseja substituir o perfil atual
+            pelo perfil do link?
           </Text>
           <Text size="sm" c="orange" fw={500}>
             Salve seu perfil atual antes de continuar para não perder os dados.
@@ -205,9 +214,17 @@ function ProfileEditor() {
             variant="light"
             onClick={() => {
               const wellData = profileToWell({ ...profile });
-              const blob = new Blob([wellData], { type: 'application/vnd.well+json' });
-              const safeName = (profile.name || '').replace(/ /g, '_').toLowerCase();
-              download(blob, `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`, 'application/vnd.well+json');
+              const blob = new Blob([wellData], {
+                type: 'application/vnd.well+json',
+              });
+              const safeName = (profile.name || '')
+                .replace(/ /g, '_')
+                .toLowerCase();
+              download(
+                blob,
+                `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`,
+                'application/vnd.well+json',
+              );
             }}
           >
             Salvar perfil atual
@@ -225,7 +242,8 @@ function ProfileEditor() {
             <Button
               color="red"
               onClick={() => {
-                if (pendingImportJson.current) updateProfileFromJSON(pendingImportJson.current);
+                if (pendingImportJson.current)
+                  updateProfileFromJSON(pendingImportJson.current);
                 setImportModalOpen(false);
                 removeParamFromUrl();
               }}
@@ -265,9 +283,7 @@ function ProfileEditor() {
         </Modal.Root>
       </div>
       <div className="h-full flex flex-col">
-        <div className="flex flex-col-reverse lg:flex-row lg:justify-between lg:max-h-15">
-          
-        </div>
+        <div className="flex flex-col-reverse lg:flex-row lg:justify-between lg:max-h-15"></div>
         <div className="h-full overflow-x-auto">
           <div className="flex relative h-full flex-row w-auto md:overflow-hidden">
             <div className={`${styles.perfilContainer}`} id="profileContainer">
@@ -275,87 +291,7 @@ function ProfileEditor() {
             </div>
             <div className="w-full h-full bg-white rounded-lg relative md:w-2/3">
               <div className="h-auto py-2 ml-2 flex flex-row justify-start items-center space-x-3 overflow-x-auto lg:overflow-x-hidden">
-              <Button
-                onClick={() => {
-                  // @ts-ignore
-                  if (getWindow()?.gtag) {
-                    // @ts-ignore
-                    getWindow()?.gtag(
-                      'event',
-                      'button clicked',
-                      'User Interaction',
-                      'download profile',
-                    );
-                  }
-                  const wellData = profileToWell({ ...profile });
-                  const blob = new Blob([wellData], { type: 'application/vnd.well+json' });
-                  const safeName = (profile.name || '').replace(/ /g, '_').toLowerCase();
-                  download(
-                    blob,
-                    `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`,
-                    'application/vnd.well+json',
-                  );
-                }}
-                leftSection={<ArrowDownOnSquareIcon className="h-4 w-4" />}
-              >
-                Salvar
-              </Button>
-              <Button
-              variant='light'
-                onClick={handleClickFile}
-                leftSection={<FolderOpenIcon className="h-4 w-4" />}
-              >
-                Abrir
-              </Button>
-              <Button
-              variant='subtle'
-                onClick={() => {
-                  // call pdf function
-                  // pdfGenerate()
-                  // @ts-ignore
-                  if (getWindow()?.gtag) {
-                    // @ts-ignore
-                    getWindow()?.gtag(
-                      'event',
-                      'button clicked',
-                      'User Interaction',
-                      'export pdf button',
-                    );
-                  }
-                  setOpenExport(true);
-                }}
-                leftSection={<DocumentTextIcon className="h-4 w-4" />}
-              >
-                Exportar PDF
-              </Button>
-              <Button
-                variant="subtle"
-                onClick={clear}
-                leftSection={<DeleteWell className="h-4 w-4" />}
-              >
-                Limpar Perfil
-              </Button>
-              <Tooltip label={clipboard.copied ? 'Link copiado!' : 'Compartilhar perfil'}>
                 <Button
-                  variant="subtle"
-                  color={clipboard.copied ? 'teal' : undefined}
-                  leftSection={<ShareIcon className="h-4 w-4" />}
-                  onClick={() => {
-                    const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(profile));
-                    const url = `${window.location.origin}${window.location.pathname}?p=${encoded}`;
-                    clipboard.copy(url);
-                  }}
-                >
-                  {clipboard.copied ? 'Copiado!' : 'Compartilhar'}
-                </Button>
-              </Tooltip>
-              <Divider orientation="vertical" />
-              <Tooltip label="Perfil Exemplo">
-                <IconButton
-                  variant="subtle"
-                  size="lg"
-                  aria-label="Settings"
-                  id="btn-example"
                   onClick={() => {
                     // @ts-ignore
                     if (getWindow()?.gtag) {
@@ -364,82 +300,191 @@ function ProfileEditor() {
                         'event',
                         'button clicked',
                         'User Interaction',
-                        'profile example',
+                        'download profile',
                       );
                     }
-
-                    // SET EXAMPLE PROFILE
-                    updateProfile({
-                      ...PROFILE_EXAMPLE,
+                    const wellData = profileToWell({ ...profile });
+                    const blob = new Blob([wellData], {
+                      type: 'application/vnd.well+json',
                     });
+                    const safeName = (profile.name || '')
+                      .replace(/ /g, '_')
+                      .toLowerCase();
+                    download(
+                      blob,
+                      `perfil_${safeName}_${format(new Date(), 'dd_MM_yyyy__hh_mm')}.well`,
+                      'application/vnd.well+json',
+                    );
                   }}
+                  leftSection={<ArrowDownOnSquareIcon className="h-4 w-4" />}
                 >
-                  <ExampleWell className="h-4 w-4" />
-                </IconButton>
-              </Tooltip>
-              <Divider orientation="vertical" />
-              <Popover width={240} position="bottom-end" withArrow shadow="md">
-                <Popover.Target>
-                  <Tooltip label="Preferências de Exibição">
-                    <IconButton variant="light" size="lg" aria-label="Preferências">
-                      <Cog6ToothIcon className="h-4 w-4" />
-                    </IconButton>
-                  </Tooltip>
-                </Popover.Target>
-                <Popover.Dropdown>
-                  <Stack gap="sm">
-                    <div>
-                      <Text size="xs" fw={600} mb={4} c="dimmed">UNIDADE DE DIÂMETRO</Text>
-                      <SegmentedControl
-                        fullWidth
-                        size="xs"
-                        value={diameter_units}
-                        onChange={v => setDiameterUnits(v as 'mm' | 'inches')}
-                        data={[
-                          { label: 'mm', value: 'mm' },
-                          { label: 'polegadas', value: 'inches' },
-                        ]}
-                      />
-                    </div>
-                    <div>
-                      <Text size="xs" fw={600} mb={4} c="dimmed">UNIDADE DE COMPRIMENTO</Text>
-                      <SegmentedControl
-                        fullWidth
-                        size="xs"
-                        value={length_units}
-                        onChange={v => setLengthUnits(v as 'm' | 'ft')}
-                        data={[
-                          { label: 'm', value: 'm' },
-                          { label: 'ft', value: 'ft' },
-                        ]}
-                      />
-                    </div>
-                    <div>
-                      <Text size="xs" fw={600} mb={4} c="dimmed">COORDENADAS</Text>
-                      <SegmentedControl
-                        fullWidth
-                        size="xs"
-                        value={coord_format}
-                        onChange={v => setCoordFormat(v as 'dd' | 'dms')}
-                        data={[
-                          { label: 'DD', value: 'dd' },
-                          { label: 'DMS', value: 'dms' },
-                        ]}
-                      />
-                    </div>
-                    <p className='text-xs text-gray-400'>O formato do arquivo permanecerá armazenado em medidas internacionais. Essas configurações alteram apenas a visualização dos valores.</p>
-                  </Stack>
-                </Popover.Dropdown>
-              </Popover>
+                  Salvar
+                </Button>
+                <Button
+                  variant="light"
+                  onClick={handleClickFile}
+                  leftSection={<FolderOpenIcon className="h-4 w-4" />}
+                >
+                  Abrir
+                </Button>
+                <Button
+                  variant="subtle"
+                  onClick={() => {
+                    // call pdf function
+                    // pdfGenerate()
+                    // @ts-ignore
+                    if (getWindow()?.gtag) {
+                      // @ts-ignore
+                      getWindow()?.gtag(
+                        'event',
+                        'button clicked',
+                        'User Interaction',
+                        'export pdf button',
+                      );
+                    }
+                    setOpenExport(true);
+                  }}
+                  leftSection={<DocumentTextIcon className="h-4 w-4" />}
+                >
+                  Exportar PDF
+                </Button>
+                <Button
+                  variant="subtle"
+                  onClick={clear}
+                  leftSection={<DeleteWell className="h-4 w-4" />}
+                >
+                  Limpar Perfil
+                </Button>
+                <Tooltip
+                  label={
+                    clipboard.copied ? 'Link copiado!' : 'Compartilhar perfil'
+                  }
+                >
+                  <Button
+                    variant="subtle"
+                    color={clipboard.copied ? 'teal' : undefined}
+                    leftSection={<ShareIcon className="h-4 w-4" />}
+                    onClick={() => {
+                      const encoded = LZString.compressToEncodedURIComponent(
+                        JSON.stringify(profile),
+                      );
+                      const url = `${window.location.origin}${window.location.pathname}?p=${encoded}`;
+                      clipboard.copy(url);
+                    }}
+                  >
+                    {clipboard.copied ? 'Copiado!' : 'Compartilhar'}
+                  </Button>
+                </Tooltip>
+                <Divider orientation="vertical" />
+                <Tooltip label="Perfil Exemplo">
+                  <IconButton
+                    variant="subtle"
+                    size="lg"
+                    aria-label="Settings"
+                    id="btn-example"
+                    onClick={() => {
+                      // @ts-ignore
+                      if (getWindow()?.gtag) {
+                        // @ts-ignore
+                        getWindow()?.gtag(
+                          'event',
+                          'button clicked',
+                          'User Interaction',
+                          'profile example',
+                        );
+                      }
 
-              <input
-                type="file"
-                ref={inputFile}
-                onChange={handleChangeInputFile}
-                accept="application/json,.json,.well"
-                style={{ display: 'none' }}
-              />
-            </div>
+                      // SET EXAMPLE PROFILE
+                      updateProfile({
+                        ...PROFILE_EXAMPLE,
+                      });
+                    }}
+                  >
+                    <ExampleWell className="h-4 w-4" />
+                  </IconButton>
+                </Tooltip>
+                <Divider orientation="vertical" />
+                <Popover
+                  width={240}
+                  position="bottom-end"
+                  withArrow
+                  shadow="md"
+                >
+                  <Popover.Target>
+                    <Tooltip label="Preferências de Exibição">
+                      <IconButton
+                        variant="light"
+                        size="lg"
+                        aria-label="Preferências"
+                      >
+                        <Cog6ToothIcon className="h-4 w-4" />
+                      </IconButton>
+                    </Tooltip>
+                  </Popover.Target>
+                  <Popover.Dropdown>
+                    <Stack gap="sm">
+                      <div>
+                        <Text size="xs" fw={600} mb={4} c="dimmed">
+                          UNIDADE DE DIÂMETRO
+                        </Text>
+                        <SegmentedControl
+                          fullWidth
+                          size="xs"
+                          value={diameter_units}
+                          onChange={v => setDiameterUnits(v as 'mm' | 'inches')}
+                          data={[
+                            { label: 'mm', value: 'mm' },
+                            { label: 'polegadas', value: 'inches' },
+                          ]}
+                        />
+                      </div>
+                      <div>
+                        <Text size="xs" fw={600} mb={4} c="dimmed">
+                          UNIDADE DE COMPRIMENTO
+                        </Text>
+                        <SegmentedControl
+                          fullWidth
+                          size="xs"
+                          value={length_units}
+                          onChange={v => setLengthUnits(v as 'm' | 'ft')}
+                          data={[
+                            { label: 'm', value: 'm' },
+                            { label: 'ft', value: 'ft' },
+                          ]}
+                        />
+                      </div>
+                      <div>
+                        <Text size="xs" fw={600} mb={4} c="dimmed">
+                          COORDENADAS
+                        </Text>
+                        <SegmentedControl
+                          fullWidth
+                          size="xs"
+                          value={coord_format}
+                          onChange={v => setCoordFormat(v as 'dd' | 'dms')}
+                          data={[
+                            { label: 'DD', value: 'dd' },
+                            { label: 'DMS', value: 'dms' },
+                          ]}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        O formato do arquivo permanecerá armazenado em medidas
+                        internacionais. Essas configurações alteram apenas a
+                        visualização dos valores.
+                      </p>
+                    </Stack>
+                  </Popover.Dropdown>
+                </Popover>
+
+                <input
+                  type="file"
+                  ref={inputFile}
+                  onChange={handleChangeInputFile}
+                  accept="application/json,.json,.well"
+                  style={{ display: 'none' }}
+                />
+              </div>
               <Tabs
                 className="h-full"
                 defaultValue="constructive"

@@ -1,17 +1,13 @@
 import {
-  GEOLOGIC_COMPONENT_TYPE,
-  INFO_TYPE,
-  CONSTRUCTIVE_COMPONENT_TYPE,
-  PROFILE_TYPE,
-  HOLE_FILL_COMPONENT_TYPE,
   BORE_HOLE_COMPONENT_TYPE,
-  CEMENT_PAD_COMPONENT_TYPE,
-  SURFACE_CASE_COMPONENT_TYPE,
+  CONSTRUCTIVE_COMPONENT_TYPE,
+  GEOLOGIC_COMPONENT_TYPE,
+  HOLE_FILL_COMPONENT_TYPE,
+  INFO_TYPE,
+  PROFILE_TYPE,
   WELL_CASE_COMPONENT_TYPE,
   WELL_SCREEN_COMPONENT_TYPE,
 } from '../types/profile.types';
-
-import { calculateVolume } from '../utils/profile.utils';
 
 export default class Profile {
   name?: string;
@@ -88,79 +84,21 @@ export default class Profile {
           // divide by 1 to convert text to number
           // eslint-disable-next-line implicit-arrow-linebreak
           // @ts-ignore
-          parseFloat(d.diam_pol)
+          parseFloat(d.diam_pol),
         // eslint-disable-next-line function-paren-newline
       ),
       ...this.constructive.hole_fill.map((d: HOLE_FILL_COMPONENT_TYPE) =>
         // @ts-ignore
-        parseFloat(d.diam_pol)
+        parseFloat(d.diam_pol),
       ),
       ...this.constructive.well_screen.map((d: WELL_SCREEN_COMPONENT_TYPE) =>
         // @ts-ignore
-        parseFloat(d.diam_pol)
+        parseFloat(d.diam_pol),
       ),
       ...this.constructive.well_case.map((d: WELL_CASE_COMPONENT_TYPE) =>
         // @ts-ignore
-        parseFloat(d.diam_pol)
+        parseFloat(d.diam_pol),
       ),
     ];
-  }
-
-  calculateHoleFillVolume(type: string): number {
-    let volume = 0;
-
-    const { well_case: wellCase, well_screen: wellScreen } = this.constructive;
-
-    const holeFillType = this.constructive.hole_fill.filter(
-      (el) => el.type === type
-    );
-
-    holeFillType.forEach((el) => {
-      // CALCULATE THE OUTER VOLUME
-      let outerVolume = calculateVolume(el.diam_pol, el.to - el.from);
-
-      // SUBTRACT THE OUTER VOLUME FROM THE VOLUME OF EACH WELL CASE SECTION
-      for (let i = 0; i < wellCase.length; i++) {
-        const wC = wellCase[i];
-
-        if (wC.from > el.to || wC.to < el.from) {
-          // eslint-disable-next-line no-continue
-          continue;
-        }
-
-        // eslint-disable-next-line prefer-destructuring
-        let { from, to } = el;
-        if (wC.from > el.from) from = wC.from;
-        if (wC.to < el.to) to = wC.to;
-
-        const wellSectionVolume = calculateVolume(wC.diam_pol, to - from);
-
-        outerVolume -= wellSectionVolume;
-      }
-
-      // SUBTRACT THE OUTER VOLUME FROM THE VOLUME OF EACH WELL SCREEN SECTION
-      for (let i = 0; i < wellScreen.length; i++) {
-        const wS = wellScreen[i];
-
-        if (wS.from > el.to || wS.to < el.from) {
-          // eslint-disable-next-line no-continue
-          continue;
-        }
-
-        // eslint-disable-next-line prefer-destructuring
-        let { from, to } = el;
-        if (wS.from > el.from) from = wS.from;
-        if (wS.to < el.to) to = wS.to;
-
-        const wellSectionVolume = calculateVolume(wS.diam_pol, to - from);
-
-        outerVolume -= wellSectionVolume;
-      }
-
-      // console.log(outerVolume);
-      volume += outerVolume;
-    });
-
-    return volume;
   }
 }

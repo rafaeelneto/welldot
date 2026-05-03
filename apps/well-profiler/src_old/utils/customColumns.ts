@@ -25,7 +25,7 @@ export const customSelectColumn = (
   deleteValue: () => null,
   // @ts-ignore
   copyValue: ({ rowData }) => {
-    return rowData ?? null
+    return rowData ?? null;
   },
   pasteValue: ({ value }) =>
     params.options.find(choice => choice.label === value)?.value ?? null,
@@ -42,10 +42,10 @@ export const customSelectTextureColumn = (
   deleteValue: () => null,
   // @ts-ignore
   copyValue: ({ rowData }) => {
-    return rowData ?? null
+    return rowData ?? null;
   },
   pasteValue: ({ value }) =>
-    params.options.find(choice => choice.label === value)?.value ?? null,
+    params.options.find(choice => choice.code === value)?.code ?? null,
 });
 
 export default {

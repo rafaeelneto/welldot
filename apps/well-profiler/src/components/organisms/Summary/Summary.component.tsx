@@ -1,16 +1,17 @@
-import React from 'react';
 import { Table } from '@mantine/core';
 
 import { Profile } from '@/src/types/profile.types';
 
-import {
-  numberFormater,
-  calculateHoleFillVolume,
-} from '@/src/utils/profile.utils';
+import { calculateHoleFillVolume } from '@welldot/utils';
 
 import { useUIStore } from '@/src/store/ui.store';
 
 import styles from './Summary.module.scss';
+
+const numberFormater = new Intl.NumberFormat('pt-BR', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 type InfoProps = {
   profile: Profile;

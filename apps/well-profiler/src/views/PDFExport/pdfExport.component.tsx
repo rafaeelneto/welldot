@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 
 import {
+  ActionIcon,
   Button,
-  Slider,
   Checkbox,
   Divider,
-  TextInput as TextField,
-  List,
   Input,
-  ActionIcon,
+  List,
   Popover,
-  Stack,
-  Tooltip,
   SegmentedControl,
+  Slider,
+  Stack,
   Text,
+  TextInput as TextField,
+  Tooltip,
 } from '@mantine/core';
 
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
@@ -24,12 +24,11 @@ import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import { CSS } from '@dnd-kit/utilities';
 
 import {
-  Trash,
+  Download,
+  FileText,
   PlusCircle,
   Printer,
-  Download,
   XCircle,
-  FileText,
 } from 'react-feather';
 
 import { Profile } from '@/src/types/profile.types';
@@ -37,8 +36,10 @@ import { infoType } from '../../../src_old/types/profile2Export.types';
 
 import styles from './pdfExport.module.scss';
 
+import { DEFAULT_PDF_HEADER, useUIStore } from '@/src/store/ui.store';
 import profile2Export from './profile2Export.component';
-import { useUIStore, DEFAULT_PDF_HEADER } from '@/src/store/ui.store';
+import RenderConfigEditor from '../../../src/components/organisms/ProfileDrawer/RenderConfigEditor.component';
+import { DeepPartial, RenderConfig, STATIC_RENDER_CONFIG } from '@welldot/render';
 
 type InfoItem = infoType & { profileField?: keyof Profile };
 
@@ -128,9 +129,9 @@ function SortableList({
   const [selectedMeta, setSelectedMeta] = useState<string[]>([]);
 
   const onAddMetadata = () => {
-    const newItems = WELL_METADATA_FIELDS.filter(f => selectedMeta.includes(f.key)).map(
-      f => ({ label: f.label, value: '', profileField: f.key }),
-    );
+    const newItems = WELL_METADATA_FIELDS.filter(f =>
+      selectedMeta.includes(f.key),
+    ).map(f => ({ label: f.label, value: '', profileField: f.key }));
     onChangeList([...items, ...newItems]);
     setSelectedMeta([]);
     setMetaPopoverOpen(false);
@@ -150,7 +151,10 @@ function SortableList({
                     style={{ width: '100%' }}
                     value={item.label}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      onChangeValues({ ...item, label: event.target.value }, index);
+                      onChangeValues(
+                        { ...item, label: event.target.value },
+                        index,
+                      );
                     }}
                   />
                   <Tooltip
@@ -168,7 +172,10 @@ function SortableList({
                           : item.value
                       }
                       onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                        onChangeValues({ ...item, value: event.target.value }, index);
+                        onChangeValues(
+                          { ...item, value: event.target.value },
+                          index,
+                        );
                       }}
                     />
                   </Tooltip>
@@ -216,20 +223,16 @@ function SortableList({
                   key={field.key}
                   label={field.label}
                   checked={selectedMeta.includes(field.key)}
-
-                  onChange={e =>
-                  {
+                  onChange={e => {
                     const isChecked = e.currentTarget?.checked;
                     setSelectedMeta(prev => {
-                      
                       if (isChecked) {
                         return [...prev, field.key];
                       } else {
                         return prev.filter(k => k !== field.key);
                       }
                     });
-                  }
-                  }
+                  }}
                 />
               ))}
               <Button
@@ -266,6 +269,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
     setPdfMetadataPosition: setMetadataPosition,
   } = useUIStore();
 
+  const [renderConfig, setRenderConfig] = useState<DeepPartial<RenderConfig>>(STATIC_RENDER_CONFIG);
+
   const headingInfo = profile.info?.headingInfo || [];
   const endInfo = profile.info?.endInfo || [];
 
@@ -290,6 +295,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           length_units,
           diameter_units,
           metadataPosition,
+          renderConfig,
         );
       } catch (e) {
         console.log(`There was a error while generating your PDF file`, e);
@@ -297,7 +303,18 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
 
       onChangeInfo({ ...profile, info: { headingInfo, endInfo } });
     }, 1000);
-  }, [headingInfo, header, endInfo, breakPages, zoomValue, length_units, diameter_units, metadataPosition, coordFormat]);
+  }, [
+    headingInfo,
+    header,
+    endInfo,
+    breakPages,
+    zoomValue,
+    length_units,
+    diameter_units,
+    metadataPosition,
+    coordFormat,
+    renderConfig,
+  ]);
 
   const handleBreakChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBreakPages(event.target.checked);
@@ -355,6 +372,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               length_units,
               diameter_units,
               metadataPosition,
+              renderConfig,
             );
             // @ts-ignore
             if (window.gtag) {
@@ -395,6 +413,7 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
               length_units,
               diameter_units,
               metadataPosition,
+              renderConfig,
             );
           }}
           leftSection={<Printer className="h-4 w-4" />}
@@ -419,10 +438,16 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           onChange={handleBreakChange}
         />
         <div className="mb-2">
-          <Text size="sm" mb={4}>Seção de metadados do poço</Text>
+          <Text size="sm" mb={4}>
+            Seção de metadados do poço
+          </Text>
           <SegmentedControl
             value={metadataPosition ?? 'none'}
-            onChange={v => setMetadataPosition(v === 'none' ? null : v as 'before' | 'after')}
+            onChange={v =>
+              setMetadataPosition(
+                v === 'none' ? null : (v as 'before' | 'after'),
+              )
+            }
             data={[
               { label: 'Antes', value: 'before' },
               { label: 'Depois', value: 'after' },
@@ -480,6 +505,8 @@ function PDFExport({ profile, onChangeInfo }: PDFEProps) {
           onChangeValues={handleEndInfoValueChange}
           profile={profile}
         />
+        <Divider />
+        <RenderConfigEditor config={renderConfig} onChange={setRenderConfig} />
       </div>
       <div className={styles.pdfFrameContainer}>
         <iframe

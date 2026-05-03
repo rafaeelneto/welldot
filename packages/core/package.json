@@ -1,6 +1,6 @@
 {
   "name": "@welldot/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "TypeScript types, Zod validators, and serialization utilities for the .well open format — a JSON standard for water well data.",
   "keywords": [
@@ -46,7 +46,13 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "README.md", "LICENSE", "well-specifications.md"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "well-specifications.md",
+    "fgdc-textures.md"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

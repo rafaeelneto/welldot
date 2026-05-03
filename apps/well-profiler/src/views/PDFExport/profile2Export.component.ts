@@ -1,24 +1,13 @@
-
-
-
 // eslint-disable-next-line import/namespace
-import { innerRenderPdf, printPdf, downloadPdf } from './pdfGenerate';
+import { downloadPdf, innerRenderPdf, printPdf } from './pdfGenerate';
 
-
-import {
-  getProfileLastItemsDepths,
-  getProfileDiamValues,
-  checkIfProfileIsEmpty,
-} from '../../utils/profile.utils';
-import { DiameterUnits, LengthUnits, CoordFormat } from '@/src/store/ui.store';
+import { DiameterUnits, LengthUnits } from '@/src/store/ui.store';
+import { isWellEmpty } from '@welldot/core';
 
 import { infoType } from '../../../src_old/types/profile2Export.types';
 
-
-import {
-  Profile,
-} from '@/src/types/profile.types';
-
+import { Profile } from '@/src/types/profile.types';
+import type { DeepPartial, RenderConfig } from '@welldot/render';
 
 const profile2Export = (
   header: string,
@@ -32,15 +21,16 @@ const profile2Export = (
   lengthUnits: LengthUnits = 'm',
   diameterUnits: DiameterUnits = 'mm',
   metadataPosition: 'before' | 'after' | null = null,
+  renderConfig?: DeepPartial<RenderConfig>,
 ) => {
-  if (checkIfProfileIsEmpty(profile)) return;
+  if (isWellEmpty(profile)) return;
 
   if (iframeId) {
     console.log('Rendering PDF in iframe with id:', iframeId);
     innerRenderPdf(
       profile,
       headingInfo,
-      endInfo, 
+      endInfo,
       breakPages,
       zoomLevel,
       iframeId,
@@ -48,11 +38,34 @@ const profile2Export = (
       lengthUnits,
       diameterUnits,
       metadataPosition,
+      renderConfig,
     );
   } else if (print) {
-    printPdf(profile, headingInfo, endInfo, breakPages, zoomLevel, header, lengthUnits, diameterUnits, metadataPosition);
+    printPdf(
+      profile,
+      headingInfo,
+      endInfo,
+      breakPages,
+      zoomLevel,
+      header,
+      lengthUnits,
+      diameterUnits,
+      metadataPosition,
+      renderConfig,
+    );
   } else {
-    downloadPdf(profile, headingInfo, endInfo,breakPages, zoomLevel, header, lengthUnits, diameterUnits, metadataPosition);
+    downloadPdf(
+      profile,
+      headingInfo,
+      endInfo,
+      breakPages,
+      zoomLevel,
+      header,
+      lengthUnits,
+      diameterUnits,
+      metadataPosition,
+      renderConfig,
+    );
   }
 };
 

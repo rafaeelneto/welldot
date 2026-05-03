@@ -1,0 +1,58 @@
+name: publish — @welldot/core
+
+on:
+  push:
+    tags:
+      - '@welldot/core@*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (build and pack without publishing)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build @welldot/core
+        run: pnpm turbo build --filter=@welldot/core
+
+      - name: Test @welldot/core
+        run: pnpm turbo test --filter=@welldot/core
+
+      - name: Publish to npm
+        if: ${{ github.event_name == 'push' || github.event.inputs.dry_run == 'false' }}
+        run: pnpm publish --filter=@welldot/core --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Dry run (pack only)
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' }}
+        run: pnpm --filter=@welldot/core exec npm pack --dry-run
+
+      - name: Print npm debug log on failure
+        if: failure()
+        run: cat /home/runner/.npm/_logs/*.log 2>/dev/null || echo "No npm logs found"
