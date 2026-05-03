@@ -1,7 +1,7 @@
 import { Cave } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
 import {
-  makeCavePrng,
+  makeSeededPrng,
   ptsToSmoothPath,
   wavyContact,
 } from '~/utils/render.utils';
@@ -37,11 +37,14 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
   const rc = renderConfig.caves;
 
   data.forEach(cave => {
-    // Two different seeds so top and bottom contacts are visually independent
+    // Two different seeds so top and bottom contacts are visually independent.
+    // Multiplying by 100 ensures uniqueness even for small integer coordinates
+    // (e.g. from=5, to=10 → seedTop=510; from=10, to=5 → seedTop=1005).
+    // The +999 offset on seedBot prevents seedTop == seedBot when from == to.
     const seedTop = cave.from * 100 + cave.to;
     const seedBot = cave.to * 100 + cave.from + 999;
-    const rngTop = makeCavePrng(seedTop);
-    const rngBot = makeCavePrng(seedBot);
+    const rngTop = makeSeededPrng(seedTop);
+    const rngBot = makeSeededPrng(seedBot);
 
     const yTop = yScale(Math.max(cave.from, depthFrom));
     const yBot = yScale(Math.min(cave.to, depthTo));
@@ -81,10 +84,7 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
     //   +  bottom contact R→L (reversed)  +  left vertical edge up  +  Z
     const botReversed = botCut
       ? `L ${geoXLeft.toFixed(1)},${yBot.toFixed(1)}`
-      : ptsToSmoothPath([...botPts].reverse()).replace(
-          /^M [\d.-]+ [\d.-]+/,
-          '',
-        );
+      : ptsToSmoothPath([...botPts].reverse(), { omitMoveTo: true });
     const closedPath = `${topPath} L ${geoXRight.toFixed(1)},${yBot.toFixed(1)}${botReversed} L ${geoXLeft.toFixed(1)},${yTop.toFixed(1)} Z`;
 
     const caveTexture = cave.water_intake

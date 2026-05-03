@@ -1,7 +1,23 @@
 {
   "name": "@welldot/render",
   "version": "0.1.0",
-  "private": true,
+  "description": "D3-based SVG visualization library for rendering geological well profiles",
+  "license": "Apache-2.0",
+  "keywords": [
+    "d3",
+    "svg",
+    "geology",
+    "well",
+    "visualization",
+    "lithology",
+    "well-profiler"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/welldot/well-profiler",
+    "directory": "packages/render"
+  },
+  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -13,7 +29,10 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "LICENCE.md"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -24,7 +43,8 @@
   "dependencies": {
     "@welldot/core": "workspace:*",
     "@welldot/utils": "workspace:*",
-    "defu": "^6.1.4"
+    "defu": "^6.1.4",
+    "sanitize-html": "^2.17.3"
   },
   "peerDependencies": {
     "d3": "^7.0.0",
@@ -32,11 +52,12 @@
     "textures": "^1.2.3"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/d3-tip": "^3.5.8",
+    "@types/sanitize-html": "^2.16.1",
     "@welldot/lint": "workspace:*",
     "tsup": "^8.3.0",
     "typescript": "^5.3.3",
-    "@types/d3": "^7.4.3",
-    "@types/d3-tip": "^3.5.8",
     "vite": "^8.0.9",
     "vitest": "^4.1.5"
   }

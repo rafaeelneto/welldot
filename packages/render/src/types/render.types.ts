@@ -13,12 +13,14 @@ import {
 } from 'd3';
 import type { TexturesConfig, WellTextures } from '~/configs/render.textures';
 
+/** Recursively makes all properties of T optional — used for deep-mergeable option objects. */
 export type DeepPartial<T> = T extends object
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : T;
 
 export type Conflict = { from: number; to: number; diameter: number };
 
+/** A single highlight overlay item. Use `from`+`to` for depth-range highlights, `depth` for point highlights. */
 export type HighlightItem = {
   label?: string;
   from?: number;
@@ -27,6 +29,7 @@ export type HighlightItem = {
   diameter?: number;
 };
 
+/** Highlight overlay configuration passed to `draw()`. Each key targets a specific well component. */
 export type Highlights = {
   lithology?: HighlightItem[];
   caves?: HighlightItem[];
@@ -50,28 +53,29 @@ export type InstanceState = {
   clipRectId: string;
 };
 
-export type WellTheme = {
-  lithology: { stroke: string; strokeWidth: number };
-  lithologyTexture: { size: number; strokeWidth: number; stroke: string };
-  cave: {
-    dryStroke: string;
-    wetStroke: string;
-    fillOpacity: number;
-    contactStrokeWidth: number;
+export type LithologyTheme = { stroke: string; strokeWidth: number };
+export type LithologyTextureTheme = {
+  size: number;
+  strokeWidth: number;
+  stroke: string;
+};
+export type CaveTheme = {
+  dryStroke: string;
+  wetStroke: string;
+  fillOpacity: number;
+  contactStrokeWidth: number;
+};
+export type FractureTheme = {
+  dryStroke: string;
+  wetStroke: string;
+  swarm: {
+    centralStrokeWidth: number;
+    sideStrokeWidthBase: number;
+    sideStrokeWidthVariance: number;
   };
-  fracture: {
-    dryStroke: string;
-    wetStroke: string;
-    swarm: {
-      centralStrokeWidth: number;
-      sideStrokeWidthBase: number;
-      sideStrokeWidthVariance: number;
-    };
-    single: {
-      mainStrokeWidth: number;
-      crackStrokeWidth: number;
-    };
-  };
+  single: { mainStrokeWidth: number; crackStrokeWidth: number };
+};
+export type ConstructionTheme = {
   cementPad: { stroke: string; strokeWidth: number };
   boreHole: {
     fill: string;
@@ -85,6 +89,8 @@ export type WellTheme = {
   wellCase: { fill: string; stroke: string; strokeWidth: number };
   wellScreen: { stroke: string; strokeWidth: number };
   conflict: { stroke: string; strokeWidth: number };
+};
+export type LabelsTheme = {
   unitLabels: {
     geologicFill: string;
     aquiferFill: string;
@@ -123,17 +129,28 @@ export type WellTheme = {
     fractureLabelFontSize?: number;
     caveLabelFontSize?: number;
   };
-  legend: {
-    borderStrokeWidth: number;
-    fractureStrokeWidth: number;
-    fractureSideStrokeWidth: number;
-    itemStrokeWidth: number;
-    fontSize: number;
-    fontFamily?: string;
-    titleFontWeight?: string | number;
-    labelFontWeight?: string | number;
-  };
 };
+export type LegendTheme = {
+  borderStrokeWidth: number;
+  fractureStrokeWidth: number;
+  fractureSideStrokeWidth: number;
+  itemStrokeWidth: number;
+  fontSize: number;
+  fontFamily?: string;
+  titleFontWeight?: string | number;
+  labelFontWeight?: string | number;
+};
+
+/** Visual styling theme for all well components. Use `DEFAULT_WELL_THEME` as a base and pass `DeepPartial<WellTheme>` overrides. */
+export type WellTheme = {
+  lithology: LithologyTheme;
+  lithologyTexture: LithologyTextureTheme;
+  cave: CaveTheme;
+  fracture: FractureTheme;
+} & ConstructionTheme &
+  LabelsTheme & {
+    legend: LegendTheme;
+  };
 
 export type ComponentsClassNames = {
   tooltip: {
@@ -228,6 +245,7 @@ export type ComponentsClassNames = {
   };
 };
 
+/** Keys identifying which tooltip types are active. Pass to `RenderConfig.tooltips` to control visibility. */
 export type TooltipKey =
   | 'geology'
   | 'hole'
@@ -240,6 +258,7 @@ export type TooltipKey =
   | 'cementPad'
   | 'cave';
 
+/** Full rendering behaviour configuration. Use `INTERACTIVE_RENDER_CONFIG` or `STATIC_RENDER_CONFIG` as a starting point. */
 export type RenderConfig = {
   zoom: boolean;
   pan: boolean;
@@ -373,6 +392,13 @@ export type LegendRenderConfig = {
   };
 };
 
+/**
+ * Descriptor for a single SVG panel managed by `WellRenderer`.
+ * @param selector - CSS selector for the `<svg>` element (e.g. `"#well-panel-1"`).
+ * @param height - Inner drawing height in pixels (excludes margins).
+ * @param width - Inner drawing width in pixels (excludes margins).
+ * @param margins - Space reserved around the drawing area for axes and labels.
+ */
 export type SvgInstance = {
   selector: string;
   height: number;

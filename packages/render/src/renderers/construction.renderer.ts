@@ -11,6 +11,7 @@ import type {
 } from '@welldot/core';
 import { getProfileDiamValues } from '@welldot/utils';
 import type { Conflict, DrawContext } from '~/types/render.types';
+import { mergeEnter, withTransition } from '~/utils/d3.utils';
 import {
   getConflictAreas,
   getYAxisFunctions,
@@ -100,13 +101,10 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .on('mouseover', ctx.tooltips.hole.show)
     .on('mouseout', ctx.tooltips.hole.hide);
 
-  newHole
-    // @ts-ignore
-    .merge(hole)
+  const mergedHole = mergeEnter(newHole, hole)
     .attr('x', (d: BoreHole) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
-    .attr('width', (d: BoreHole) => xScale(d.diameter))
-    // @ts-ignore
-    .transition(ctx.transition)
+    .attr('width', (d: BoreHole) => xScale(d.diameter));
+  withTransition(mergedHole, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight);
 
@@ -138,8 +136,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('stroke', ctx.theme.surfaceCase.stroke)
     .attr('stroke-width', ctx.theme.surfaceCase.strokeWidth);
 
-  // @ts-ignore
-  const mergedSC = newSC.merge(surfaceCaseGs);
+  const mergedSC = mergeEnter(newSC, surfaceCaseGs);
 
   mergedSC.each((d: SurfaceCase, i, nodes) => {
     const x =
@@ -165,10 +162,10 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
       .attr('x2', x + w);
   });
 
-  mergedSC
-    .select('.surface-case-fill')
-    // @ts-ignore
-    .transition(ctx.transition)
+  withTransition(
+    mergedSC.select<SVGRectElement>('.surface-case-fill'),
+    ctx.transition,
+  )
     .attr('y', (d: SurfaceCase) => getYPos(d))
     .attr('height', (d: SurfaceCase) => getHeight(d));
 
@@ -195,13 +192,10 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .on('mouseover', ctx.tooltips.holeFill.show)
     .on('mouseout', ctx.tooltips.holeFill.hide);
 
-  newHoleFill
-    // @ts-ignore
-    .merge(holeFill)
+  const mergedHoleFill = mergeEnter(newHoleFill, holeFill)
     .attr('x', (d: HoleFill) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
-    .attr('width', (d: HoleFill) => xScale(d.diameter))
-    // @ts-ignore
-    .transition(ctx.transition)
+    .attr('width', (d: HoleFill) => xScale(d.diameter));
+  withTransition(mergedHoleFill, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight)
     .attr('fill', (d: HoleFill) => ctx.textures[d.type].url());
@@ -222,13 +216,10 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .on('mouseover', ctx.tooltips.wellCase.show)
     .on('mouseout', ctx.tooltips.wellCase.hide);
 
-  newWellCase
-    // @ts-ignore
-    .merge(wellCase)
+  const mergedWellCase = mergeEnter(newWellCase, wellCase)
     .attr('x', (d: WellCase) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
-    .attr('width', (d: WellCase) => xScale(d.diameter))
-    // @ts-ignore
-    .transition(ctx.transition)
+    .attr('width', (d: WellCase) => xScale(d.diameter));
+  withTransition(mergedWellCase, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight);
 
@@ -248,13 +239,10 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .on('mouseover', ctx.tooltips.wellScreen.show)
     .on('mouseout', ctx.tooltips.wellScreen.hide);
 
-  newWellScreen
-    // @ts-ignore
-    .merge(wellScreen)
+  const mergedWellScreen = mergeEnter(newWellScreen, wellScreen)
     .attr('x', (d: WellScreen) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
-    .attr('width', (d: WellScreen) => xScale(d.diameter))
-    // @ts-ignore
-    .transition(ctx.transition)
+    .attr('width', (d: WellScreen) => xScale(d.diameter));
+  withTransition(mergedWellScreen, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight);
 
@@ -280,13 +268,10 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .on('mouseover', ctx.tooltips.conflict.show)
     .on('mouseout', ctx.tooltips.conflict.hide);
 
-  newConflict
-    // @ts-ignore
-    .merge(conflict)
+  const mergedConflict = mergeEnter(newConflict, conflict)
     .attr('x', (d: Conflict) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
-    .attr('width', (d: Conflict) => xScale(d.diameter))
-    // @ts-ignore
-    .transition(ctx.transition)
+    .attr('width', (d: Conflict) => xScale(d.diameter));
+  withTransition(mergedConflict, ctx.transition)
     .attr('y', ctx.yScale(0))
     .attr('height', getHeight);
 }

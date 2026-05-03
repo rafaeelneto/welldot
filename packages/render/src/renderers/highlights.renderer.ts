@@ -23,8 +23,8 @@ function drawHighlightItem(
 ): void {
   if (h <= 0 || w <= 0) return;
 
-  const hc = ctx.renderConfig.highlights;
-  const pad = hc.padding;
+  const hlConfig = ctx.renderConfig.highlights;
+  const pad = hlConfig.padding;
 
   const g = group.append('g').attr('class', ctx.classes.highlights.item);
 
@@ -34,17 +34,17 @@ function drawHighlightItem(
     .attr('y', y - pad)
     .attr('width', w + pad * 2)
     .attr('height', h + pad * 2)
-    .attr('fill', hc.fill)
-    .attr('fill-opacity', hc.fillOpacity)
-    .attr('stroke', hc.stroke)
-    .attr('stroke-width', hc.strokeWidth)
-    .attr('stroke-dasharray', hc.strokeDasharray ?? null)
+    .attr('fill', hlConfig.fill)
+    .attr('fill-opacity', hlConfig.fillOpacity)
+    .attr('stroke', hlConfig.stroke)
+    .attr('stroke-width', hlConfig.strokeWidth)
+    .attr('stroke-dasharray', hlConfig.strokeDasharray ?? null)
     .style('pointer-events', 'none');
 
   if (label) {
-    const charW = hc.labelFontSize * 0.55;
-    const labelW = label.length * charW + hc.labelPadding * 2;
-    const labelH = hc.labelFontSize + hc.labelPadding * 2;
+    const charW = hlConfig.labelFontSize * 0.55;
+    const labelW = label.length * charW + hlConfig.labelPadding * 2;
+    const labelH = hlConfig.labelFontSize + hlConfig.labelPadding * 2;
     const lx = x - pad;
     const ly = y - pad - labelH;
 
@@ -54,16 +54,16 @@ function drawHighlightItem(
       .attr('y', ly)
       .attr('width', labelW)
       .attr('height', labelH)
-      .attr('rx', hc.labelRadius)
-      .attr('fill', hc.labelBackground)
+      .attr('rx', hlConfig.labelRadius)
+      .attr('fill', hlConfig.labelBackground)
       .style('pointer-events', 'none');
 
     g.append('text')
       .attr('class', ctx.classes.highlights.label)
-      .attr('x', lx + hc.labelPadding)
-      .attr('y', ly + labelH - hc.labelPadding)
-      .attr('font-size', hc.labelFontSize)
-      .attr('fill', hc.labelColor)
+      .attr('x', lx + hlConfig.labelPadding)
+      .attr('y', ly + labelH - hlConfig.labelPadding)
+      .attr('font-size', hlConfig.labelFontSize)
+      .attr('fill', hlConfig.labelColor)
       .attr('font-family', 'sans-serif')
       .style('pointer-events', 'none')
       .text(label);
@@ -104,8 +104,9 @@ export function drawHighlights(ctx: DrawContext, hl: Highlights): void {
   drawGeoHighlights(hl.caves);
 
   // Fracture highlights
-  const rf = ctx.renderConfig.fractures;
-  const halfFractureWidth = (ctx.POCO_WIDTH * rf.widthMultiplier) / 2;
+  const fractureConfig = ctx.renderConfig.fractures;
+  const halfFractureWidth =
+    (ctx.POCO_WIDTH * fractureConfig.widthMultiplier) / 2;
   const fracXa = ctx.pocoCenterX - halfFractureWidth;
   const fracW = halfFractureWidth * 2;
 
@@ -117,9 +118,9 @@ export function drawHighlights(ctx: DrawContext, hl: Highlights): void {
       ctx,
       ctx.groups.highlightsFracturesGroup as SvgSelection,
       fracXa,
-      cy - rf.hitBuffer.single,
+      cy - fractureConfig.hitBuffer.single,
       fracW,
-      rf.hitBuffer.single * 2,
+      fractureConfig.hitBuffer.single * 2,
       h.label,
     );
   });
@@ -131,7 +132,7 @@ export function drawHighlights(ctx: DrawContext, hl: Highlights): void {
     .domain([0, d3.max(maxXVals) || 0])
     .range([0, ctx.POCO_WIDTH]);
 
-  const rcc = ctx.renderConfig.construction;
+  const constructionConfig = ctx.renderConfig.construction;
 
   if (
     hl.cement_pad &&
@@ -139,17 +140,18 @@ export function drawHighlights(ctx: DrawContext, hl: Highlights): void {
     ctx.constructionData.cement_pad?.thickness
   ) {
     const cp = ctx.constructionData.cement_pad;
-    const cpX =
-      (ctx.POCO_CENTER -
-        xScaleConstr((cp.width * rcc.cementPad.widthMultiplier * 1000) / 2)) /
-      2;
+    const cpPadWidth =
+      (cp.width * constructionConfig.cementPad.widthMultiplier * 1000) / 2;
+    const cpX = (ctx.POCO_CENTER - xScaleConstr(cpPadWidth)) / 2;
     const cpY =
       ctx.yScale(0) -
-      ctx.yScale(cp.thickness * rcc.cementPad.thicknessMultiplier);
-    const cpW = xScaleConstr(
-      (cp.width * rcc.cementPad.widthMultiplier * 1000) / 2,
+      ctx.yScale(
+        cp.thickness * constructionConfig.cementPad.thicknessMultiplier,
+      );
+    const cpW = xScaleConstr(cpPadWidth);
+    const cpH = ctx.yScale(
+      cp.thickness * constructionConfig.cementPad.thicknessMultiplier,
     );
-    const cpH = ctx.yScale(cp.thickness * rcc.cementPad.thicknessMultiplier);
     drawHighlightItem(
       ctx,
       ctx.groups.highlightsConstructionGroup as SvgSelection,
@@ -197,16 +199,12 @@ export function drawHighlights(ctx: DrawContext, hl: Highlights): void {
   const stdX = (d: { diameter: number }) =>
     (ctx.POCO_CENTER - xScaleConstr(d.diameter)) / 2;
   const stdW = (d: { diameter: number }) => xScaleConstr(d.diameter);
+  const scPaddingRatio = constructionConfig.surfaceCase.diameterPaddingRatio;
   const scX = (d: { diameter: number }) =>
-    (ctx.POCO_CENTER -
-      xScaleConstr(
-        d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-      )) /
+    (ctx.POCO_CENTER - xScaleConstr(d.diameter + d.diameter * scPaddingRatio)) /
     2;
   const scW = (d: { diameter: number }) =>
-    xScaleConstr(
-      d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
-    );
+    xScaleConstr(d.diameter + d.diameter * scPaddingRatio);
 
   drawConstrHighlights(
     hl.bore_hole,

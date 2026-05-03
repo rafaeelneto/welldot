@@ -9,11 +9,18 @@ export { importFgdcTextures } from './utils/fgdcTextures';
 export { WellRenderer } from './Renderer';
 export { drawWellLegend } from './renderers/legend.renderer';
 export type {
+  CaveTheme,
   ComponentsClassNames,
+  ConstructionTheme,
   DeepPartial,
+  FractureTheme,
   HighlightItem,
   Highlights,
+  LabelsTheme,
   LegendRenderConfig,
+  LegendTheme,
+  LithologyTextureTheme,
+  LithologyTheme,
   RenderConfig,
   SvgInstance,
   TooltipKey,

@@ -1,5 +1,6 @@
 import { Lithology } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
+import { mergeEnter, withTransition } from '~/utils/d3.utils';
 import { getLithologyFill, getYAxisFunctions } from '~/utils/render.utils';
 
 /**
@@ -10,10 +11,7 @@ import { getLithologyFill, getYAxisFunctions } from '~/utils/render.utils';
  * via `getLithologyFill` using the FGDC texture config. Returns early if
  * `data` is empty.
  */
-export async function drawLithology(
-  ctx: DrawContext,
-  data: Lithology[],
-): Promise<void> {
+export function drawLithology(ctx: DrawContext, data: Lithology[]): void {
   if (!data.length) return;
 
   const {
@@ -52,12 +50,8 @@ export async function drawLithology(
     .on('mouseover', tooltips.geology.show)
     .on('mouseout', tooltips.geology.hide);
 
-  newLayers
-    // @ts-ignore
-    .merge(rects)
-    .attr('y', getYPos)
-    // @ts-ignore
-    .transition(transition)
+  const merged = mergeEnter(newLayers, rects).attr('y', getYPos);
+  withTransition(merged, transition)
     .attr('height', getHeight)
     .attr('fill', getLithologyFill(data, svg, ctx.theme.lithologyTexture));
 }

@@ -102,10 +102,17 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
   zoomLevel: 1,
   animation: { duration: 600, ease: easeCubic },
   geologic: { xLeft: 20, xRightInset: 300 },
-  layout: { pocoWidthRatio: 0.21, pocoCenterRatio: -0.39 },
+  layout: {
+    pocoWidthRatio: 0.21, // construction column occupies 21% of total SVG width
+    pocoCenterRatio: -0.39, // construction center x-offset (negative = shift left of SVG centre)
+  },
   caves: {
     pathSteps: 40,
-    amplitude: { ratio: 0.12, min: 1, max: 5.5 },
+    amplitude: {
+      ratio: 0.12, // cave contact waviness: 12% of the cave band pixel height
+      min: 1,
+      max: 5.5,
+    },
   },
   fractures: {
     widthMultiplier: 1.2,
@@ -200,10 +207,17 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
   zoomLevel: 1,
   animation: { duration: 600, ease: easeCubic },
   geologic: { xLeft: 6, xRightInset: 56 },
-  layout: { pocoWidthRatio: 0.25, pocoCenterRatio: 0.11 },
+  layout: {
+    pocoWidthRatio: 0.25, // construction column occupies 25% of total SVG width
+    pocoCenterRatio: 0.11, // construction center x-offset (positive = shift right of SVG centre)
+  },
   caves: {
     pathSteps: 40,
-    amplitude: { ratio: 0.12, min: 1, max: 5.5 },
+    amplitude: {
+      ratio: 0.12, // cave contact waviness: 12% of the cave band pixel height
+      min: 1,
+      max: 5.5,
+    },
   },
   fractures: {
     widthMultiplier: 1.2,

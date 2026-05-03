@@ -1,13 +1,6 @@
 import { Fracture } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
-
-function makePrng(seed: number): () => number {
-  let s = Math.abs(seed * 7919) | 1;
-  return () => {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
-}
+import { makeSeededPrng } from '~/utils/render.utils';
 
 function wavyLine(
   rng: () => number,
@@ -20,9 +13,9 @@ function wavyLine(
   const pts: [number, number][] = [];
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1);
-    const nx = startInset + t * (1 - startInset - endInset);
-    const dy = baseY + (rng() * 2 - 1) * jitter;
-    pts.push([nx, dy]);
+    const normX = startInset + t * (1 - startInset - endInset);
+    const yOffset = baseY + (rng() * 2 - 1) * jitter;
+    pts.push([normX, yOffset]);
   }
   return pts;
 }
@@ -57,11 +50,10 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
   const xa = pocoCenterX - halfWidth;
   const w = halfWidth * 2;
 
-  const xAt = (nx: number) => xa + nx * w;
-  const RC = 'round' as const;
+  const normToAbsX = (normX: number) => xa + normX * w;
 
   data.forEach(fracture => {
-    const rng = makePrng(fracture.depth);
+    const rng = makeSeededPrng(fracture.depth, 7919);
     const cy = yScale(fracture.depth);
 
     const g = fracturesGroup
@@ -106,18 +98,21 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
         .attr('y2', y2)
         .attr('stroke', fractureStroke)
         .attr('stroke-width', sw)
-        .attr('stroke-linecap', RC);
+        .attr('stroke-linecap', 'round');
 
     const appendPolyline = (pts: [number, number][], sw: number) =>
       g
         .append('polyline')
         .attr('class', classes.fractures.polyline)
-        .attr('points', pts.map(([nx, dy]) => `${xAt(nx)},${dy}`).join(' '))
+        .attr(
+          'points',
+          pts.map(([nx, dy]) => `${normToAbsX(nx)},${dy}`).join(' '),
+        )
         .attr('stroke', fractureStroke)
         .attr('stroke-width', sw)
         .attr('fill', 'none')
-        .attr('stroke-linecap', RC)
-        .attr('stroke-linejoin', RC);
+        .attr('stroke-linecap', 'round')
+        .attr('stroke-linejoin', 'round');
 
     if (fracture.swarm) {
       const lineCount =
@@ -147,9 +142,9 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
         const nx = 0.15 + rng() * 0.7;
         const pairIdx = Math.floor(rng() * (bases.length - 1));
         appendLine(
-          xAt(nx),
+          normToAbsX(nx),
           bases[pairIdx],
-          xAt(nx + (rng() - 0.5) * 0.06),
+          normToAbsX(nx + (rng() - 0.5) * 0.06),
           bases[pairIdx + 1],
           0.6,
         );
@@ -161,9 +156,9 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
         const len = 3 + rng() * 3;
         const dir = rng() > 0.5 ? -1 : 1;
         appendLine(
-          xAt(nx),
+          normToAbsX(nx),
           primaryBase,
-          xAt(nx + (rng() - 0.5) * 0.04),
+          normToAbsX(nx + (rng() - 0.5) * 0.04),
           primaryBase + dir * len,
           0.8,
         );
@@ -183,9 +178,9 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
         const len = 3.5 + rng() * 3.5;
         const dir = rng() > 0.5 ? 1 : -1;
         appendLine(
-          xAt(nx),
+          normToAbsX(nx),
           (rng() * 2 - 1) * 1.5,
-          xAt(nx + (rng() - 0.5) * 0.03),
+          normToAbsX(nx + (rng() - 0.5) * 0.03),
           dir * len,
           theme.fracture.single.crackStrokeWidth,
         );

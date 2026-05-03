@@ -2,14 +2,14 @@ import { ComponentsClassNames } from '~/types/render.types';
 
 export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
   tooltip: {
-    root: 'tooltip',
-    title: 'title',
-    primaryInfo: 'primaryInfo',
-    secondaryInfo: 'secondaryInfo',
+    root: 'wp-tooltip',
+    title: 'wp-tooltip-title',
+    primaryInfo: 'wp-tooltip-primary',
+    secondaryInfo: 'wp-tooltip-secondary',
   },
-  yAxis: 'yAxis',
-  wellGroup: 'well-group',
-  geologicGroup: 'geologic-group',
+  yAxis: 'wp-y-axis',
+  wellGroup: 'wp-well-group',
+  geologicGroup: 'wp-geologic-group',
   lithology: {
     group: 'lithology-group',
     rect: 'lithology-rect',

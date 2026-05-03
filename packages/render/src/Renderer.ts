@@ -46,6 +46,7 @@ import { drawHighlights } from './renderers/highlights.renderer';
 import { drawWellLegend } from './renderers/legend.renderer';
 import { drawLithology } from './renderers/lithology.renderer';
 import { drawUnitLabels } from './renderers/unit-labels.renderer';
+import { asSvgElement } from './utils/d3.utils';
 import { buildSvgStyleBlock } from './utils/render.styles';
 import {
   filterByDepth,
@@ -53,10 +54,28 @@ import {
   preloadFgdcTextures,
 } from './utils/render.utils';
 
+/**
+ * SVG-based renderer for geological well profiles.
+ *
+ * One instance manages one or more SVG panels (multi-panel layouts for long wells).
+ * Call `prepareSvg()` once to initialise the DOM and preload textures, then call
+ * `draw(profile)` whenever the profile data changes.
+ *
+ * @example
+ * ```ts
+ * const renderer = new WellRenderer(
+ *   [{ selector: '#well-svg', height: 600, width: 300, margins: { top: 20, right: 10, bottom: 20, left: 40 } }],
+ *   { renderConfig: INTERACTIVE_RENDER_CONFIG },
+ * );
+ * await renderer.prepareSvg();
+ * renderer.draw(profile);
+ * ```
+ */
 export class WellRenderer {
   private svgInstances: SvgInstance[] = [];
   private instanceStates: InstanceState[] = [];
   private textures: WellTextures = createWellTextures();
+  private onError?: (err: Error) => void;
 
   classes = DEFAULT_COMPONENTS_CLASS_NAMES;
   private renderConfig: RenderConfig = INTERACTIVE_RENDER_CONFIG;
@@ -66,6 +85,14 @@ export class WellRenderer {
     diameter: 'mm',
   };
 
+  /**
+   * @param svgs - One entry per SVG panel; multi-entry for split-panel layouts.
+   * @param options.classNames - Override default BEM CSS class names.
+   * @param options.units - Active measurement units (`length` and `diameter`).
+   * @param options.renderConfig - Rendering behaviour (zoom, pan, animation, layout). Defaults to `INTERACTIVE_RENDER_CONFIG`.
+   * @param options.theme - Visual theme overrides. Merged on top of `DEFAULT_WELL_THEME`.
+   * @param options.onError - Called when a draw error occurs (e.g., a renderer throws). Falls back to `console.error` if omitted.
+   */
   constructor(
     svgs: SvgInstance[],
     options: {
@@ -73,10 +100,17 @@ export class WellRenderer {
       units?: Units;
       renderConfig?: DeepPartial<RenderConfig>;
       theme?: DeepPartial<WellTheme>;
+      onError?: (err: Error) => void;
     } = {},
   ) {
-    if (svgs.length === 0) return;
+    if (svgs.length === 0) {
+      console.warn(
+        '[WellRenderer] No SVG instances provided. The renderer will be a no-op.',
+      );
+      return;
+    }
     this.svgInstances = svgs;
+    if (options.onError) this.onError = options.onError;
 
     if (options.classNames) {
       this.classes = defu(
@@ -99,8 +133,6 @@ export class WellRenderer {
     this.theme = defu(options.theme ?? {}, DEFAULT_WELL_THEME) as WellTheme;
 
     this.textures = createWellTextures(this.renderConfig.textures);
-
-    return this;
   }
 
   private initInstanceSvg(inst: SvgInstance, index: number): InstanceState {
@@ -178,6 +210,7 @@ export class WellRenderer {
     return { svg, height, width, margins, clipId, clipRectId };
   }
 
+  /** Renders a standalone legend into the element matched by `selector`. */
   public renderLegend(selector: string, profile: Well): void {
     drawWellLegend(selector, profile, {
       config: this.renderConfig.legend,
@@ -187,6 +220,10 @@ export class WellRenderer {
     });
   }
 
+  /**
+   * Initialises the SVG DOM structure and preloads FGDC textures.
+   * Must be called once before the first `draw()`.
+   */
   public async prepareSvg() {
     await preloadFgdcTextures();
     this.instanceStates = this.svgInstances.map((inst, i) =>
@@ -194,6 +231,12 @@ export class WellRenderer {
     );
   }
 
+  /**
+   * Renders the well profile into all configured SVG panels.
+   * @param profile - The well data to render.
+   * @param options.units - Override the instance-level measurement units for this render.
+   * @param options.highlights - Highlight overlays to display on top of the profile.
+   */
   draw(
     profile: Well,
     options: { units?: Units; highlights?: Highlights } = {},
@@ -333,10 +376,7 @@ export class WellRenderer {
         (d: d3module.NumberValue) => `${d}${getLengthUnit(this.units.length)}`,
       );
 
-    const gY = svg
-      .select(`.${this.classes.yAxis}`)
-      // @ts-ignore
-      .call(yAxis);
+    const gY = svg.select<SVGGElement>(`.${this.classes.yAxis}`).call(yAxis);
 
     gY.select('.domain')
       .attr('stroke', this.theme.labels.color)
@@ -434,7 +474,6 @@ export class WellRenderer {
         yScale: transform.rescaleY(yScaleLocal),
       };
 
-      // @ts-ignore
       gY.call(yAxis.scale(transform.rescaleY(yScaleAxis)));
 
       pocoGroup
@@ -492,8 +531,8 @@ export class WellRenderer {
       drawHighlights(zoomedCtx, highlights);
     };
 
-    const drawProfile = async () => {
-      await drawLithology(ctx, profile.lithology?.filter(inDepth) ?? []);
+    const drawProfile = () => {
+      drawLithology(ctx, profile.lithology?.filter(inDepth) ?? []);
       drawUnitLabels(ctx, profile.lithology?.filter(inDepth) ?? []);
       drawAnnotationLabels(ctx, {
         lithology: profile.lithology?.filter(inDepth) ?? [],
@@ -507,7 +546,8 @@ export class WellRenderer {
       drawFractures(
         ctx,
         profile.fractures?.filter(
-          f => f.depth >= depthFrom && f.depth <= depthTo,
+          // exclusive upper bound: depthTo is the start of the next panel
+          f => f.depth >= depthFrom && f.depth < depthTo,
         ) ?? [],
       );
       drawConstructive(ctx, filteredConstruction);
@@ -519,23 +559,32 @@ export class WellRenderer {
       drawHighlights(ctx, highlights);
     };
 
-    drawProfile();
+    try {
+      drawProfile();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      if (this.onError) {
+        this.onError(error);
+      } else {
+        console.error('[WellRenderer] drawProfile failed:', error);
+      }
+    }
 
     const { zoom: zoomEnabled, pan: panEnabled } = this.renderConfig;
     if (zoomEnabled || panEnabled) {
-      // @ts-ignore
-      const zoomNode = d3.zoom();
+      const zoomNode = d3.zoom<SVGSVGElement, unknown>();
       if (zoomEnabled || panEnabled) zoomNode.on('zoom', zooming);
       if (!zoomEnabled) zoomNode.scaleExtent([1, 1]);
       if (!panEnabled)
         zoomNode.filter(e => e.type === 'wheel' || e.type === 'dblclick');
-      // @ts-ignore
-      svg.call(zoomNode).node();
+      asSvgElement<SVGSVGElement>(svg).call(zoomNode);
 
       const initialZoom = this.renderConfig.zoomLevel ?? 1;
       if (initialZoom !== 1) {
-        // @ts-ignore
-        svg.call(zoomNode.transform, d3.zoomIdentity.scale(initialZoom));
+        asSvgElement<SVGSVGElement>(svg).call(
+          zoomNode.transform,
+          d3.zoomIdentity.scale(initialZoom),
+        );
       }
     }
   }

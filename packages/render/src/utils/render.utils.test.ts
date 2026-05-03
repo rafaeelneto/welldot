@@ -50,7 +50,7 @@ import {
   getLithologyFill,
   getYAxisFunctions,
   LithologyTextureOptions,
-  makeCavePrng,
+  makeSeededPrng,
   mergeConflicts,
   populateTooltips,
   ptsToSmoothPath,
@@ -137,13 +137,13 @@ beforeEach(() => {
 
 // ---------------------------------------------------------------------------
 
-describe('makeCavePrng', () => {
+describe('makeSeededPrng', () => {
   it('returns a function', () => {
-    expect(typeof makeCavePrng(42)).toBe('function');
+    expect(typeof makeSeededPrng(42)).toBe('function');
   });
 
   it('all output values are in [0, 1]', () => {
-    const rng = makeCavePrng(12345);
+    const rng = makeSeededPrng(12345);
     for (let i = 0; i < 100; i++) {
       const v = rng();
       expect(v).toBeGreaterThanOrEqual(0);
@@ -152,16 +152,16 @@ describe('makeCavePrng', () => {
   });
 
   it('same seed produces identical sequence', () => {
-    const rng1 = makeCavePrng(99);
-    const rng2 = makeCavePrng(99);
+    const rng1 = makeSeededPrng(99);
+    const rng2 = makeSeededPrng(99);
     for (let i = 0; i < 20; i++) {
       expect(rng1()).toBe(rng2());
     }
   });
 
   it('different seeds produce different first values', () => {
-    const v1 = makeCavePrng(1)();
-    const v2 = makeCavePrng(2)();
+    const v1 = makeSeededPrng(1)();
+    const v2 = makeSeededPrng(2)();
     expect(v1).not.toBe(v2);
   });
 });
@@ -170,24 +170,24 @@ describe('makeCavePrng', () => {
 
 describe('wavyContact', () => {
   it('returns exactly `steps` points', () => {
-    const pts = wavyContact(0, 100, 50, 5, 20, makeCavePrng(1));
+    const pts = wavyContact(0, 100, 50, 5, 20, makeSeededPrng(1));
     expect(pts).toHaveLength(20);
   });
 
   it('first point x equals xLeft', () => {
-    const pts = wavyContact(10, 200, 50, 5, 10, makeCavePrng(1));
+    const pts = wavyContact(10, 200, 50, 5, 10, makeSeededPrng(1));
     expect(pts[0][0]).toBe(10);
   });
 
   it('last point x equals xRight', () => {
-    const pts = wavyContact(10, 200, 50, 5, 10, makeCavePrng(1));
+    const pts = wavyContact(10, 200, 50, 5, 10, makeSeededPrng(1));
     expect(pts[pts.length - 1][0]).toBe(200);
   });
 
   it('all y-values stay within baseY ± amp (damping ensures this)', () => {
     const baseY = 50;
     const amp = 8;
-    const pts = wavyContact(0, 100, baseY, amp, 50, makeCavePrng(99));
+    const pts = wavyContact(0, 100, baseY, amp, 50, makeSeededPrng(99));
     pts.forEach(([, y]) => {
       expect(y).toBeGreaterThanOrEqual(baseY - amp);
       expect(y).toBeLessThanOrEqual(baseY + amp);
@@ -195,14 +195,14 @@ describe('wavyContact', () => {
   });
 
   it('x-values are strictly increasing', () => {
-    const pts = wavyContact(0, 100, 50, 5, 15, makeCavePrng(1));
+    const pts = wavyContact(0, 100, 50, 5, 15, makeSeededPrng(1));
     for (let i = 1; i < pts.length; i++) {
       expect(pts[i][0]).toBeGreaterThan(pts[i - 1][0]);
     }
   });
 
   it('steps=2 produces two endpoints at xLeft and xRight', () => {
-    const pts = wavyContact(5, 95, 50, 5, 2, makeCavePrng(1));
+    const pts = wavyContact(5, 95, 50, 5, 2, makeSeededPrng(1));
     expect(pts).toHaveLength(2);
     expect(pts[0][0]).toBe(5);
     expect(pts[1][0]).toBe(95);
@@ -472,14 +472,14 @@ describe('getLithologicalFillList', () => {
     ).toHaveLength(2);
   });
 
-  it('texture code absent from fgdcTextures → entry created without throwing', async () => {
+  it('texture code absent from fgdcTextures → entry created without throwing', () => {
     const lit = makeLithology({ fgdc_texture: '999', from: 0 });
-    await expect(
+    expect(() =>
       getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS),
-    ).resolves.not.toThrow();
-    expect(
-      await getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS),
-    ).toHaveProperty('999.0');
+    ).not.toThrow();
+    expect(getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS)).toHaveProperty(
+      '999.0',
+    );
   });
 
   it('forwards size to textures.paths().size()', async () => {
