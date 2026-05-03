@@ -12,10 +12,18 @@
     "lithology",
     "well-profiler"
   ],
+  "author": {
+    "name": "Rafael Neto",
+    "email": "rafaelneto.g@gmail.com"
+  },
+  "homepage": "https://github.com/rafaeelneto/welldot#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/welldot/well-profiler",
+    "url": "git+https://github.com/rafaeelneto/welldot.git",
     "directory": "packages/render"
+  },
+  "bugs": {
+    "url": "https://github.com/rafaeelneto/welldot/issues"
   },
   "sideEffects": false,
   "type": "module",
@@ -43,12 +51,10 @@
   "dependencies": {
     "@welldot/core": "workspace:*",
     "@welldot/utils": "workspace:*",
-    "defu": "^6.1.4",
-    "sanitize-html": "^2.17.3"
-  },
-  "peerDependencies": {
     "d3": "^7.0.0",
     "d3-tip": "^0.9.1",
+    "defu": "^6.1.4",
+    "sanitize-html": "^2.17.3",
     "textures": "^1.2.3"
   },
   "devDependencies": {

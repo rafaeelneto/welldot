@@ -2,6 +2,19 @@
   "name": "@welldot/utils",
   "version": "0.1.0",
   "type": "module",
+  "author": {
+    "name": "Rafael Neto",
+    "email": "rafaelneto.g@gmail.com"
+  },
+  "homepage": "https://github.com/rafaeelneto/welldot#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafaeelneto/welldot.git",
+    "directory": "packages/utils"
+  },
+  "bugs": {
+    "url": "https://github.com/rafaeelneto/welldot/issues"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
