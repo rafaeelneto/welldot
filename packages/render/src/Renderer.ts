@@ -329,7 +329,9 @@ export class WellRenderer {
 
     const yAxis = d3
       .axisLeft(yScaleAxis)
-      .tickFormat((d: any) => `${d}${getLengthUnit(this.units.length)}`);
+      .tickFormat(
+        (d: d3module.NumberValue) => `${d}${getLengthUnit(this.units.length)}`,
+      );
 
     const gY = svg
       .select(`.${this.classes.yAxis}`)
@@ -354,17 +356,19 @@ export class WellRenderer {
           'sans-serif',
       );
 
-    const spanY = d => {
+    type SpanDatum = { from?: number; to?: number; thickness?: number };
+
+    const spanY = (d: SpanDatum): number => {
       if (d.thickness) return yScaleLocal(0) - yScaleLocal(d.thickness);
-      return yScaleLocal(Math.max(d.from, depthFrom));
+      return yScaleLocal(Math.max(d.from ?? 0, depthFrom));
     };
 
-    const spanH = d => {
+    const spanH = (d: SpanDatum): number => {
       if (d.thickness) return yScaleLocal(d.thickness) - yScaleLocal(0);
       return Math.max(
         0,
-        yScaleLocal(Math.min(d.to, depthTo)) -
-          yScaleLocal(Math.max(d.from, depthFrom)),
+        yScaleLocal(Math.min(d.to ?? 0, depthTo)) -
+          yScaleLocal(Math.max(d.from ?? 0, depthFrom)),
       );
     };
 
@@ -423,7 +427,7 @@ export class WellRenderer {
       reduction: constructionData.reduction?.filter(inDepth) ?? [],
     };
 
-    const zooming = (e: any) => {
+    const zooming = (e: { transform: d3module.ZoomTransform }): void => {
       const transform = e.transform;
       const zoomedCtx: DrawContext = {
         ...ctx,
@@ -435,13 +439,13 @@ export class WellRenderer {
 
       pocoGroup
         .selectAll('rect')
-        .attr('y', d => {
+        .attr('y', (d: unknown) => {
           if (!d) return null;
-          return transform.applyY(spanY(d));
+          return transform.applyY(spanY(d as SpanDatum));
         })
-        .attr('height', d => {
+        .attr('height', (d: unknown) => {
           if (!d) return null;
-          return transform.k * spanH(d);
+          return transform.k * spanH(d as SpanDatum);
         });
 
       // Surface case: update fill rect y/height and side line y1/y2
@@ -462,11 +466,12 @@ export class WellRenderer {
       // Fractures: recompute transform so rotation pivot tracks the scaled depth
       fracturesGroup
         .selectAll(`g.${this.classes.fractures.item}`)
-        .attr('transform', (d: any) => {
+        .attr('transform', (d: unknown) => {
           if (!d) return null;
+          const f = d as { depth: number; dip: number };
           const cx = pocoCenterX;
-          const cy = transform.applyY(yScaleLocal(d.depth));
-          return `translate(0,${cy}) rotate(${d.dip},${cx},0)`;
+          const cy = transform.applyY(yScaleLocal(f.depth));
+          return `translate(0,${cy}) rotate(${f.dip},${cx},0)`;
         });
 
       // Delegated redraws — unconditional, each renderer self-guards:
@@ -523,9 +528,7 @@ export class WellRenderer {
       if (zoomEnabled || panEnabled) zoomNode.on('zoom', zooming);
       if (!zoomEnabled) zoomNode.scaleExtent([1, 1]);
       if (!panEnabled)
-        zoomNode.filter(
-          (e: any) => e.type === 'wheel' || e.type === 'dblclick',
-        );
+        zoomNode.filter(e => e.type === 'wheel' || e.type === 'dblclick');
       // @ts-ignore
       svg.call(zoomNode).node();
 

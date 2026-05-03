@@ -1,8 +1,12 @@
 import * as d3 from 'd3';
 
-import type { Constructive } from '@welldot/core';
 import { getProfileDiamValues } from '@welldot/utils';
-import type { DrawContext, HighlightItem, Highlights, SvgSelection } from '~/types/render.types';
+import type {
+  DrawContext,
+  HighlightItem,
+  Highlights,
+  SvgSelection,
+} from '~/types/render.types';
 
 /**
  * Renders a single highlight overlay rectangle (and optional label) into the
@@ -137,12 +141,11 @@ export function drawHighlights(ctx: DrawContext, hl: Highlights): void {
     const cp = ctx.constructionData.cement_pad;
     const cpX =
       (ctx.POCO_CENTER -
-        xScaleConstr(
-          (cp.width * rcc.cementPad.widthMultiplier * 1000) / 2,
-        )) /
+        xScaleConstr((cp.width * rcc.cementPad.widthMultiplier * 1000) / 2)) /
       2;
     const cpY =
-      ctx.yScale(0) - ctx.yScale(cp.thickness * rcc.cementPad.thicknessMultiplier);
+      ctx.yScale(0) -
+      ctx.yScale(cp.thickness * rcc.cementPad.thicknessMultiplier);
     const cpW = xScaleConstr(
       (cp.width * rcc.cementPad.widthMultiplier * 1000) / 2,
     );

@@ -1,6 +1,10 @@
 import { Cave } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
-import { makeCavePrng, ptsToSmoothPath, wavyContact } from '~/utils/render.utils';
+import {
+  makeCavePrng,
+  ptsToSmoothPath,
+  wavyContact,
+} from '~/utils/render.utils';
 
 /**
  * Renders cave bands as wavy closed SVG paths with texture fill.

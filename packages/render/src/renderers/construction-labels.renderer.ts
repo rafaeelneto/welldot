@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-import type { Constructive, WellCase, WellScreen } from '@welldot/core';
+import type { WellCase, WellScreen } from '@welldot/core';
 import { getProfileDiamValues } from '@welldot/utils';
 import type { DrawContext } from '~/types/render.types';
 import { formatDiameter, getDiameterUnit } from '~/utils/format.utils';
@@ -62,8 +62,7 @@ export function drawConstructionLabels(
     let labelY = midY - labelH / 2;
 
     for (const pos of occupied) {
-      if (labelY < pos.bot && labelY + labelH > pos.top)
-        labelY = pos.bot + 2;
+      if (labelY < pos.bot && labelY + labelH > pos.top) labelY = pos.bot + 2;
     }
     occupied.push({ top: labelY, bot: labelY + labelH });
 

@@ -1,6 +1,17 @@
-import { type BaseType, type Selection, type ScaleLinear, type Transition } from 'd3';
+import type {
+  Cave,
+  Constructive,
+  Fracture,
+  Lithology,
+  Units,
+} from '@welldot/core';
+import {
+  type BaseType,
+  type ScaleLinear,
+  type Selection,
+  type Transition,
+} from 'd3';
 import type { TexturesConfig, WellTextures } from '~/configs/render.textures';
-import type { Constructive, Units, Lithology, Fracture, Cave } from '@welldot/core';
 
 export type DeepPartial<T> = T extends object
   ? { [K in keyof T]?: DeepPartial<T[K]> }
@@ -432,7 +443,10 @@ export type DrawContext = {
   /** Active depth→pixel scale; replaced (not mutated) on each zoom event. */
   yScale: ScaleLinear<number, number>;
   transition: Transition<BaseType, unknown, null, undefined>;
-  tooltips: Record<string, { show: (...a: unknown[]) => void; hide: (...a: unknown[]) => void }>;
+  tooltips: Record<
+    string,
+    { show: (...a: unknown[]) => void; hide: (...a: unknown[]) => void }
+  >;
   renderConfig: RenderConfig;
   theme: WellTheme;
   classes: ComponentsClassNames;

@@ -1,6 +1,3 @@
-import * as d3 from 'd3';
-
-import type { Cave, Fracture, Lithology } from '@welldot/core';
 import type { AnnotationData, DrawContext } from '~/types/render.types';
 import { wrapText } from '~/utils/render.utils';
 
@@ -35,7 +32,10 @@ function lithologySubSet(
  * Items are sorted by depth with overlap-prevention.
  * Returns early if labels are disabled.
  */
-export function drawAnnotationLabels(ctx: DrawContext, data: AnnotationData): void {
+export function drawAnnotationLabels(
+  ctx: DrawContext,
+  data: AnnotationData,
+): void {
   if (ctx.renderConfig.labels.active === false) return;
 
   const active = activeLabelsSet(ctx.renderConfig.labels.active);
@@ -51,8 +51,7 @@ export function drawAnnotationLabels(ctx: DrawContext, data: AnnotationData): vo
       .filter(d => d.to <= ctx.depthTo)
       .forEach(d => {
         const text = `${d.to}`;
-        const approxW =
-          text.length * (st.fontSize * 0.52) + s.depthTipPadX * 2;
+        const approxW = text.length * (st.fontSize * 0.52) + s.depthTipPadX * 2;
         const y = ctx.yScale(d.to) - s.depthTipHeight / 2;
 
         const tipG = ctx.groups.lithologyLabelsGroup
@@ -146,9 +145,7 @@ export function drawAnnotationLabels(ctx: DrawContext, data: AnnotationData): vo
   );
 
   items.forEach(item => {
-    const descLines = Math.ceil(
-      (item.description.length || 1) / charsPerLine,
-    );
+    const descLines = Math.ceil((item.description.length || 1) / charsPerLine);
     const estH = (1 + descLines) * s.stackingLineHeight + 4;
     const yLabel = Math.max(item.baseY, currY + s.stackingGap);
     currY = yLabel + estH;

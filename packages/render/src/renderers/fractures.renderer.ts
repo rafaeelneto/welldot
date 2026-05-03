@@ -76,9 +76,7 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
       .on('mouseout', tooltips.fracture.hide)
       .style('cursor', 'pointer');
 
-    const hitBuffer = fracture.swarm
-      ? rf.hitBuffer.swarm
-      : rf.hitBuffer.single;
+    const hitBuffer = fracture.swarm ? rf.hitBuffer.swarm : rf.hitBuffer.single;
     g.append('rect')
       .attr('class', classes.fractures.hitArea)
       .attr('x', xa)
@@ -123,8 +121,7 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
 
     if (fracture.swarm) {
       const lineCount =
-        rf.swarm.lineCountBase +
-        Math.round(rng() * rf.swarm.lineCountVariance);
+        rf.swarm.lineCountBase + Math.round(rng() * rf.swarm.lineCountVariance);
       const halfSpread = rf.swarm.spread / 2;
 
       const bases = Array.from(
@@ -142,10 +139,7 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
         const jitter = 0.8 + rng() * 1.2;
         const insetL = 0.04 + rng() * 0.12;
         const insetR = 0.04 + rng() * 0.12;
-        appendPolyline(
-          wavyLine(rng, steps, base, jitter, insetL, insetR),
-          sw,
-        );
+        appendPolyline(wavyLine(rng, steps, base, jitter, insetL, insetR), sw);
       });
 
       const bridgeCount = 2 + Math.round(rng() * 2);

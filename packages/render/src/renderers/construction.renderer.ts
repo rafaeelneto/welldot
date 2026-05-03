@@ -1,9 +1,21 @@
 import * as d3 from 'd3';
 
-import type { BoreHole, CementPad, Constructive, HoleFill, SurfaceCase, WellCase, WellScreen } from '@welldot/core';
+import type {
+  BoreHole,
+  CementPad,
+  Constructive,
+  HoleFill,
+  SurfaceCase,
+  WellCase,
+  WellScreen,
+} from '@welldot/core';
 import { getProfileDiamValues } from '@welldot/utils';
 import type { Conflict, DrawContext } from '~/types/render.types';
-import { getConflictAreas, getYAxisFunctions, mergeConflicts } from '~/utils/render.utils';
+import {
+  getConflictAreas,
+  getYAxisFunctions,
+  mergeConflicts,
+} from '~/utils/render.utils';
 
 /**
  * Renders all well construction components in order: cement pad, bore holes,
@@ -27,7 +39,9 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
   const rcc = ctx.renderConfig.construction;
 
-  ctx.groups.constructionGroup.selectAll(`.${ctx.classes.cementPad.item}`).remove();
+  ctx.groups.constructionGroup
+    .selectAll(`.${ctx.classes.cementPad.item}`)
+    .remove();
 
   if (data.cement_pad && data.cement_pad.thickness && ctx.depthFrom === 0) {
     const cementPad = ctx.groups.cementPadGroup
@@ -163,8 +177,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('y1', (d: unknown) => getYPos(d as SurfaceCase))
     .attr(
       'y2',
-      (d: unknown) =>
-        getYPos(d as SurfaceCase) + getHeight(d as SurfaceCase),
+      (d: unknown) => getYPos(d as SurfaceCase) + getHeight(d as SurfaceCase),
     );
 
   const holeFill = ctx.groups.holeFillGroup
