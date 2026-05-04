@@ -2,6 +2,13 @@ name: publish — @welldot/render
 
 on:
   push:
+    branches:
+      - preview
+    paths:
+      - 'packages/render/**'
+      - 'packages/core/**'
+      - 'packages/utils/**'
+      - 'pnpm-lock.yaml'
     tags:
       - '@welldot/render@*'
   workflow_dispatch:
@@ -37,20 +44,35 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Set pre-release version (preview branch)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          DATE=$(date +%Y%m%d)
+          CURRENT_VERSION=$(node -p "require('./packages/render/package.json').version")
+          NEW_VERSION="${CURRENT_VERSION}-next.${DATE}.${SHORT_SHA}"
+          cd packages/render && npm version "$NEW_VERSION" --no-git-tag-version
+
       - name: Build @welldot/render (and its dependencies)
         run: pnpm turbo build --filter=@welldot/render
 
       - name: Test @welldot/render
         run: pnpm turbo test --filter=@welldot/render
 
-      - name: Publish to npm
-        if: ${{ github.event_name == 'push' || github.event.inputs.dry_run == 'false' }}
+      - name: Publish stable to npm (tag)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         run: pnpm publish --filter=@welldot/render --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish next to npm (preview branch)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        run: pnpm publish --filter=@welldot/render --no-git-checks --access public --tag next
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Dry run (pack only)
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' }}
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true'
         run: pnpm --filter=@welldot/render exec npm pack --dry-run
 
       - name: Print npm debug log on failure
