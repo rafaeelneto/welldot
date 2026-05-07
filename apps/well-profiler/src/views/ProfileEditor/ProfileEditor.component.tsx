@@ -486,40 +486,31 @@ function ProfileEditor() {
                 />
               </div>
               <Tabs
-                className="h-full"
                 defaultValue="constructive"
+                classNames={{
+                  root: '!flex !flex-col flex-1 overflow-hidden',
+                  panel: 'overflow-y-auto',
+                }}
                 value={tabValue}
                 onChange={changeTab}
                 aria-label="basic tabs example"
               >
-                <Tabs.List className="pt-2 pb-0 pl-2 pr-2">
+                <Tabs.List className="pt-2 pb-0 pl-2 pr-2 h-auto min-h-11">
                   <Tabs.Tab value="general">Geral</Tabs.Tab>
                   <Tabs.Tab value="constructive">Construtivo</Tabs.Tab>
                   <Tabs.Tab value="geology">Geológico</Tabs.Tab>
                   <Tabs.Tab value="summary">Sumário</Tabs.Tab>
                 </Tabs.List>
-                <Tabs.Panel
-                  value="general"
-                  className="h-[calc(100%-50px)] overflow-y-auto"
-                >
+                <Tabs.Panel value="general">
                   <TabGeneral />
                 </Tabs.Panel>
-                <Tabs.Panel
-                  value="constructive"
-                  className="h-[calc(100%-50px)] overflow-y-auto"
-                >
+                <Tabs.Panel value="constructive">
                   <TabConstructive />
                 </Tabs.Panel>
-                <Tabs.Panel
-                  value="geology"
-                  className="h-[calc(100%-50px)] overflow-y-auto"
-                >
+                <Tabs.Panel value="geology">
                   <TabGeologic />
                 </Tabs.Panel>
-                <Tabs.Panel
-                  value="summary"
-                  className="h-[calc(100%-50px)] overflow-y-auto"
-                >
+                <Tabs.Panel value="summary">
                   <Info profile={profile} />
                 </Tabs.Panel>
               </Tabs>
