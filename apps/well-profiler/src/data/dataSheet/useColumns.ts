@@ -1,19 +1,19 @@
 import { useMemo } from 'react';
 import {
-  textColumn,
-  floatColumn,
-  keyColumn,
   checkboxColumn,
   Column,
+  floatColumn,
+  keyColumn,
+  textColumn,
 } from 'react-datasheet-grid';
 
+import TextureHelper from '@/src_old/components/textureHelperColumn/textureHelper.component';
 import {
   colorPickerColumn,
   customSelectColumn,
   customSelectTextureColumn,
 } from '@/src_old/utils/customColumns';
-import { FGDC_TEXTURES_OPTIONS } from '@/src_old/utils/fgdcTextures';
-import TextureHelper from '@/src_old/components/textureHelperColumn/textureHelper.component';
+import { FGDC_TEXTURES_OPTIONS } from '@welldot/core';
 
 import {
   BoreHole,
@@ -27,7 +27,7 @@ import {
 } from '@/src/types/profile.types';
 
 import { useUIStore } from '@/src/store/ui.store';
-import { inchesColumn, ftColumn } from './unitColumn';
+import { ftColumn, inchesColumn } from './unitColumn';
 
 const typedFloatColumn = floatColumn as Partial<Column<number, any, string>>;
 const typedTextColumn = textColumn as Partial<Column<string, any, string>>;
@@ -71,21 +71,27 @@ export function useColumns() {
       {
         ...keyColumn<Lithology, 'fgdc_texture'>(
           'fgdc_texture',
-          customSelectTextureColumn({ options: FGDC_TEXTURES_OPTIONS }) as Partial<
-            Column<string, any, string>
-          >,
+          customSelectTextureColumn({
+            options: FGDC_TEXTURES_OPTIONS.filter(tex => !tex.pending),
+          }) as Partial<Column<string, any, string>>,
         ),
         title: TextureHelper(),
         minWidth: 70,
       },
       {
-        ...keyColumn<Lithology, 'geologic_unit'>('geologic_unit', typedTextColumn),
+        ...keyColumn<Lithology, 'geologic_unit'>(
+          'geologic_unit',
+          typedTextColumn,
+        ),
         title: 'Unid. Geológica',
         grow: 1,
         minWidth: 100,
       },
       {
-        ...keyColumn<Lithology, 'aquifer_unit'>('aquifer_unit', typedTextColumn),
+        ...keyColumn<Lithology, 'aquifer_unit'>(
+          'aquifer_unit',
+          typedTextColumn,
+        ),
         title: 'Unid. Aquífera',
         grow: 1,
         minWidth: 100,
@@ -245,7 +251,7 @@ export function useColumns() {
       {
         ...keyColumn<HoleFill, 'description'>('description', typedTextColumn),
         title: 'Descrição',
-      //   // grow: 2,
+        //   // grow: 2,
         minWidth: 100,
       },
     ],
@@ -335,7 +341,10 @@ export function useColumns() {
         maxWidth: 80,
       },
       {
-        ...keyColumn<WellScreen, 'screen_slot_mm'>('screen_slot_mm', typedFloatColumn),
+        ...keyColumn<WellScreen, 'screen_slot_mm'>(
+          'screen_slot_mm',
+          typedFloatColumn,
+        ),
         title: 'Ranhura (mm)',
         minWidth: 60,
         maxWidth: 80,

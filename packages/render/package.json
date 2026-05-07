@@ -1,0 +1,74 @@
+{
+  "name": "@welldot/render",
+  "version": "0.1.0",
+  "description": "D3-based SVG visualization library for rendering geological well profiles",
+  "license": "Apache-2.0",
+  "keywords": [
+    "d3",
+    "svg",
+    "geology",
+    "well",
+    "visualization",
+    "lithology",
+    "well-profiler"
+  ],
+  "author": {
+    "name": "Rafael Neto",
+    "email": "rafaelneto.g@gmail.com"
+  },
+  "homepage": "https://github.com/rafaeelneto/welldot#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafaeelneto/welldot.git",
+    "directory": "packages/render"
+  },
+  "bugs": {
+    "url": "https://github.com/rafaeelneto/welldot/issues"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENCE.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm run build && pnpm run test"
+  },
+  "dependencies": {
+    "@welldot/core": "workspace:*",
+    "@welldot/utils": "workspace:*",
+    "d3": "^7.0.0",
+    "d3-tip": "^0.9.1",
+    "defu": "^6.1.4",
+    "sanitize-html": "^2.17.3",
+    "textures": "^1.2.3"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/d3-tip": "^3.5.8",
+    "@types/sanitize-html": "^2.16.1",
+    "@welldot/lint": "workspace:*",
+    "tsup": "^8.3.0",
+    "typescript": "^5.3.3",
+    "vite": "^8.0.9",
+    "vitest": "^4.1.5"
+  }
+}
