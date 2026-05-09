@@ -7,6 +7,7 @@ on:
       - preview
     paths:
       - 'apps/well-profiler/**'
+      - 'packages/**'
       - 'pnpm-workspace.yaml'
       - 'turbo.json'
       - 'package.json'
