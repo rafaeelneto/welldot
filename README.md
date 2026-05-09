@@ -1,4 +1,4 @@
-# Well Profiler
+# Welldot (fka Well Profiler)
 
 Most software for documenting and visualizing water well profiles is proprietary, expensive, and not interoperable. Well Profiler exists to change that.
 
