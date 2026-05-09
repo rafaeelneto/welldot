@@ -37,7 +37,12 @@ interface D3Tip {
 const esc = (v: unknown): string =>
   sanitizeHtml(String(v ?? ''), { allowedTags: [], allowedAttributes: {} });
 
-/** Initialises d3-tip tooltip instances for each well component, respecting the `tooltipConfig` allow-list. Skips re-initialisation if the SVG was already set up. */
+const _tooltipCache = new WeakMap<
+  Element,
+  Record<string, D3Tip | { show: () => void; hide: () => void }>
+>();
+
+/** Initialises d3-tip tooltip instances for each well component, respecting the `tooltipConfig` allow-list. Caches instances per SVG element to prevent duplicate DOM nodes on re-render. */
 export const populateTooltips = (
   svg: SvgSelection,
   customClasses: ComponentsClassNames,
@@ -49,11 +54,8 @@ export const populateTooltips = (
     typeof (svg as WithNode).node === 'function'
       ? (svg as { node: () => Element | null }).node()
       : null;
-  if (svgEl?.getAttribute('data-tooltips-init') === 'true') {
-    return {} as Record<
-      string,
-      { show: (...a: unknown[]) => void; hide: (...a: unknown[]) => void }
-    >;
+  if (svgEl && _tooltipCache.has(svgEl)) {
+    return _tooltipCache.get(svgEl)!;
   }
 
   const tipsText = {
@@ -162,6 +164,7 @@ export const populateTooltips = (
   });
 
   svgEl?.setAttribute('data-tooltips-init', 'true');
+  if (svgEl) _tooltipCache.set(svgEl, tooltips);
 
   return tooltips;
 };
