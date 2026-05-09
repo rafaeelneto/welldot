@@ -949,7 +949,12 @@ export const innerRenderPdf = async (
   try {
     const pdfDocGenerator = pdfMake.createPdf(docDefinition);
     console.log('Generating PDF...', pdfDocGenerator);
-    const pdfDataUrl = await pdfDocGenerator.getDataUrl();
+    const pdfDataUrl = await new Promise<string>((resolve, reject) => {
+      pdfDocGenerator.getDataUrl((dataUrl: string) => {
+        if (dataUrl) resolve(dataUrl);
+        else reject(new Error('getDataUrl returned empty result'));
+      });
+    });
     const blobUrl = base64ToBlob(pdfDataUrl, 'application/pdf');
     console.log('PDF generated, setting iframe src...', blobUrl);
     if (iframeId) {
