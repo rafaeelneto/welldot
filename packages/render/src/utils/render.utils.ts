@@ -35,21 +35,28 @@ export const getLithologicalFillList = (
   const uniqueTextureCodes = [...new Set(data.map(d => d.fgdc_texture))];
   const texturesLoaded = Object.fromEntries(
     uniqueTextureCodes
-      .filter(code => _fgdcTextures[code])
+      .filter(code => {
+        const path = _fgdcTextures[code];
+        return path && path !== '-' && /^[Mm]/.test(path);
+      })
       .map(code => [code, _fgdcTextures[code]]),
   );
 
   return Object.fromEntries(
-    data.map(d => [
-      `${d.fgdc_texture}.${d.from}`,
-      textures
-        .paths()
-        .d(() => texturesLoaded[d.fgdc_texture])
-        .size(opts.size)
-        .strokeWidth(opts.strokeWidth)
-        .stroke(opts.stroke)
-        .background(d.color),
-    ]),
+    data.map(d => {
+      const pathData = texturesLoaded[d.fgdc_texture];
+      if (!pathData) return [`${d.fgdc_texture}.${d.from}`, d.color];
+      return [
+        `${d.fgdc_texture}.${d.from}`,
+        textures
+          .paths()
+          .d(() => pathData)
+          .size(opts.size)
+          .strokeWidth(opts.strokeWidth)
+          .stroke(opts.stroke)
+          .background(d.color),
+      ];
+    }),
   );
 };
 
