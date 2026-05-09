@@ -11,7 +11,7 @@ import type {
 } from '@welldot/core';
 import { getProfileDiamValues } from '@welldot/utils';
 import type { Conflict, DrawContext } from '~/types/render.types';
-import { mergeEnter, withTransition } from '~/utils/d3.utils';
+import { stableLayerKey, withTransition } from '~/utils/d3.utils';
 import {
   getConflictAreas,
   getYAxisFunctions,
@@ -83,11 +83,16 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
       .on('mouseout', ctx.tooltips.cementPad.hide);
   }
 
-  const hole = ctx.groups.holeGroup
-    .selectAll(`.${ctx.classes.boreHole.rect}`)
-    .data(data.bore_hole);
+  // --- bore_hole ---
+  // Key by diameter (identity of the hole segment, not its position).
+  // reorderComponentsDepth changes from/to after any mutation, so depth-based
+  // keys would prevent smooth UPDATE transitions for unchanged segments.
 
-  hole.exit().remove();
+  const hole = ctx.groups.holeGroup
+    .selectAll<SVGRectElement, BoreHole>(`.${ctx.classes.boreHole.rect}`)
+    .data(data.bore_hole, stableLayerKey);
+
+  hole.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newHole = hole
     .enter()
@@ -95,22 +100,34 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('class', ctx.classes.boreHole.rect)
     .attr('fill', ctx.theme.boreHole.fill)
     .attr('stroke', ctx.theme.boreHole.stroke)
-    .attr('opacity', ctx.theme.boreHole.opacity)
     .attr('stroke-width', ctx.theme.boreHole.strokeWidth)
     .attr('stroke-dasharray', ctx.theme.boreHole.strokeDasharray)
+    .attr('x', (d: BoreHole) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
+    .attr('width', (d: BoreHole) => xScale(d.diameter))
+    .attr('y', getYPos)
+    .attr('height', getHeight)
+    .attr('opacity', 0)
     .on('mouseover', ctx.tooltips.hole.show)
     .on('mouseout', ctx.tooltips.hole.hide);
 
-  const mergedHole = mergeEnter(newHole, hole)
+  withTransition(newHole, ctx.transition).attr(
+    'opacity',
+    ctx.theme.boreHole.opacity,
+  );
+
+  // x/width set immediately (diameter unchanged for updates); only y/height animate
+  hole
     .attr('x', (d: BoreHole) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
     .attr('width', (d: BoreHole) => xScale(d.diameter));
-  withTransition(mergedHole, ctx.transition)
+  withTransition(hole, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight);
 
+  // --- surface_case ---
+
   const surfaceCaseGs = ctx.groups.surfaceCaseGroup
-    .selectAll(`g.${ctx.classes.surfaceCase.rect}`)
-    .data(data.surface_case);
+    .selectAll<SVGGElement, SurfaceCase>(`g.${ctx.classes.surfaceCase.rect}`)
+    .data(data.surface_case, stableLayerKey);
 
   surfaceCaseGs.exit().transition(ctx.transition).style('opacity', 0).remove();
 
@@ -118,6 +135,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .enter()
     .append('g')
     .attr('class', ctx.classes.surfaceCase.rect)
+    .style('opacity', 0)
     .on('mouseover', ctx.tooltips.surfaceCase.show)
     .on('mouseout', ctx.tooltips.surfaceCase.hide);
 
@@ -136,9 +154,39 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('stroke', ctx.theme.surfaceCase.stroke)
     .attr('stroke-width', ctx.theme.surfaceCase.strokeWidth);
 
-  const mergedSC = mergeEnter(newSC, surfaceCaseGs);
+  newSC.each((d: SurfaceCase, i, nodes) => {
+    const x =
+      (ctx.POCO_CENTER -
+        xScale(
+          d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
+        )) /
+      2;
+    const w = xScale(
+      d.diameter + d.diameter * rcc.surfaceCase.diameterPaddingRatio,
+    );
+    const g = d3.select(nodes[i] as Element);
+    g.select('.surface-case-fill')
+      .attr('x', x)
+      .attr('width', w)
+      .attr('fill', ctx.textures.surface_case.url())
+      .attr('y', getYPos(d))
+      .attr('height', getHeight(d));
+    const sideNodes = g.selectAll('.surface-case-side').nodes();
+    d3.select(sideNodes[0] as Element)
+      .attr('x1', x)
+      .attr('x2', x)
+      .attr('y1', getYPos(d))
+      .attr('y2', getYPos(d) + getHeight(d));
+    d3.select(sideNodes[1] as Element)
+      .attr('x1', x + w)
+      .attr('x2', x + w)
+      .attr('y1', getYPos(d))
+      .attr('y2', getYPos(d) + getHeight(d));
+  });
 
-  mergedSC.each((d: SurfaceCase, i, nodes) => {
+  withTransition(newSC, ctx.transition).style('opacity', 1);
+
+  surfaceCaseGs.each((d: SurfaceCase, i, nodes) => {
     const x =
       (ctx.POCO_CENTER -
         xScale(
@@ -163,25 +211,29 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
   });
 
   withTransition(
-    mergedSC.select<SVGRectElement>('.surface-case-fill'),
+    surfaceCaseGs.select<SVGRectElement>('.surface-case-fill'),
     ctx.transition,
   )
     .attr('y', (d: SurfaceCase) => getYPos(d))
     .attr('height', (d: SurfaceCase) => getHeight(d));
 
-  mergedSC
-    .selectAll('.surface-case-side')
+  withTransition(
+    surfaceCaseGs.selectAll<SVGLineElement, SurfaceCase>('.surface-case-side'),
+    ctx.transition,
+  )
     .attr('y1', (d: unknown) => getYPos(d as SurfaceCase))
     .attr(
       'y2',
       (d: unknown) => getYPos(d as SurfaceCase) + getHeight(d as SurfaceCase),
     );
 
-  const holeFill = ctx.groups.holeFillGroup
-    .selectAll(`.${ctx.classes.holeFill.rect}`)
-    .data(data.hole_fill);
+  // --- hole_fill ---
 
-  holeFill.exit().remove();
+  const holeFill = ctx.groups.holeFillGroup
+    .selectAll<SVGRectElement, HoleFill>(`.${ctx.classes.holeFill.rect}`)
+    .data(data.hole_fill, stableLayerKey);
+
+  holeFill.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newHoleFill = holeFill
     .enter()
@@ -189,22 +241,32 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('class', ctx.classes.holeFill.rect)
     .attr('stroke', ctx.theme.holeFill.stroke)
     .attr('stroke-width', ctx.theme.holeFill.strokeWidth)
+    .attr('x', (d: HoleFill) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
+    .attr('width', (d: HoleFill) => xScale(d.diameter))
+    .attr('y', getYPos)
+    .attr('height', getHeight)
+    .attr('fill', (d: HoleFill) => ctx.textures[d.type].url())
+    .attr('opacity', 0)
     .on('mouseover', ctx.tooltips.holeFill.show)
     .on('mouseout', ctx.tooltips.holeFill.hide);
 
-  const mergedHoleFill = mergeEnter(newHoleFill, holeFill)
+  withTransition(newHoleFill, ctx.transition).attr('opacity', 1);
+
+  holeFill
     .attr('x', (d: HoleFill) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
-    .attr('width', (d: HoleFill) => xScale(d.diameter));
-  withTransition(mergedHoleFill, ctx.transition)
-    .attr('y', getYPos)
-    .attr('height', getHeight)
+    .attr('width', (d: HoleFill) => xScale(d.diameter))
     .attr('fill', (d: HoleFill) => ctx.textures[d.type].url());
+  withTransition(holeFill, ctx.transition)
+    .attr('y', getYPos)
+    .attr('height', getHeight);
+
+  // --- well_case ---
 
   const wellCase = ctx.groups.wellCaseGroup
-    .selectAll(`.${ctx.classes.wellCase.rect}`)
-    .data(data.well_case);
+    .selectAll<SVGRectElement, WellCase>(`.${ctx.classes.wellCase.rect}`)
+    .data(data.well_case, stableLayerKey);
 
-  wellCase.exit().remove();
+  wellCase.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newWellCase = wellCase
     .enter()
@@ -213,21 +275,30 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('fill', ctx.theme.wellCase.fill)
     .attr('stroke', ctx.theme.wellCase.stroke)
     .attr('stroke-width', ctx.theme.wellCase.strokeWidth)
+    .attr('x', (d: WellCase) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
+    .attr('width', (d: WellCase) => xScale(d.diameter))
+    .attr('y', getYPos)
+    .attr('height', getHeight)
+    .attr('opacity', 0)
     .on('mouseover', ctx.tooltips.wellCase.show)
     .on('mouseout', ctx.tooltips.wellCase.hide);
 
-  const mergedWellCase = mergeEnter(newWellCase, wellCase)
+  withTransition(newWellCase, ctx.transition).attr('opacity', 1);
+
+  wellCase
     .attr('x', (d: WellCase) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
     .attr('width', (d: WellCase) => xScale(d.diameter));
-  withTransition(mergedWellCase, ctx.transition)
+  withTransition(wellCase, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight);
 
-  const wellScreen = ctx.groups.wellScreenGroup
-    .selectAll(`.${ctx.classes.wellScreen.rect}`)
-    .data(data.well_screen);
+  // --- well_screen ---
 
-  wellScreen.exit().remove();
+  const wellScreen = ctx.groups.wellScreenGroup
+    .selectAll<SVGRectElement, WellScreen>(`.${ctx.classes.wellScreen.rect}`)
+    .data(data.well_screen, stableLayerKey);
+
+  wellScreen.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newWellScreen = wellScreen
     .enter()
@@ -236,15 +307,25 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('fill', ctx.textures.well_screen.url())
     .attr('stroke', ctx.theme.wellScreen.stroke)
     .attr('stroke-width', ctx.theme.wellScreen.strokeWidth)
+    .attr('x', (d: WellScreen) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
+    .attr('width', (d: WellScreen) => xScale(d.diameter))
+    .attr('y', getYPos)
+    .attr('height', getHeight)
+    .attr('opacity', 0)
     .on('mouseover', ctx.tooltips.wellScreen.show)
     .on('mouseout', ctx.tooltips.wellScreen.hide);
 
-  const mergedWellScreen = mergeEnter(newWellScreen, wellScreen)
+  withTransition(newWellScreen, ctx.transition).attr('opacity', 1);
+
+  wellScreen
     .attr('x', (d: WellScreen) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
     .attr('width', (d: WellScreen) => xScale(d.diameter));
-  withTransition(mergedWellScreen, ctx.transition)
+  withTransition(wellScreen, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight);
+
+  // --- conflict zones ---
+  // Conflicts are derived data (not directly edited), so depth-based keys are fine here.
 
   const conflictAreas: Conflict[] = [];
   conflictAreas.push(...getConflictAreas(data.well_case, data.well_screen));
@@ -253,10 +334,10 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
   const mergedConflicts = mergeConflicts(conflictAreas, 1);
 
   const conflict = ctx.groups.conflictGroup
-    .selectAll(`.${ctx.classes.conflict.rect}`)
-    .data(mergedConflicts);
+    .selectAll<SVGRectElement, Conflict>(`.${ctx.classes.conflict.rect}`)
+    .data(mergedConflicts, (d: Conflict) => `${d.from}_${d.to}_${d.diameter}`);
 
-  conflict.exit().remove();
+  conflict.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newConflict = conflict
     .enter()
@@ -265,13 +346,20 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('fill', ctx.textures.conflict.url())
     .attr('stroke', ctx.theme.conflict.stroke)
     .attr('stroke-width', ctx.theme.conflict.strokeWidth)
+    .attr('x', (d: Conflict) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
+    .attr('width', (d: Conflict) => xScale(d.diameter))
+    .attr('y', getYPos)
+    .attr('height', getHeight)
+    .attr('opacity', 0)
     .on('mouseover', ctx.tooltips.conflict.show)
     .on('mouseout', ctx.tooltips.conflict.hide);
 
-  const mergedConflict = mergeEnter(newConflict, conflict)
+  withTransition(newConflict, ctx.transition).attr('opacity', 1);
+
+  conflict
     .attr('x', (d: Conflict) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
     .attr('width', (d: Conflict) => xScale(d.diameter));
-  withTransition(mergedConflict, ctx.transition)
-    .attr('y', ctx.yScale(0))
+  withTransition(conflict, ctx.transition)
+    .attr('y', getYPos)
     .attr('height', getHeight);
 }
