@@ -1,9 +1,6 @@
-export type Option = {
-  label: string;
-  value: string;
-};
+import { Texture } from '@welldot/core';
 
 export type SelectOptions = {
-  options: Option[] | any[];
+  options: Texture[] | any[];
   disabled?: boolean;
 };

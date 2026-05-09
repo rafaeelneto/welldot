@@ -2,17 +2,17 @@ import React from 'react';
 
 import '@/app/global.css';
 import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
 import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
 
+import Header from '@/src_old/components/header/header.component';
 import {
   ColorSchemeScript,
-  MantineProvider,
   createTheme,
   MantineColorsTuple,
+  MantineProvider,
 } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import Header from '@/src_old/components/header/header.component';
 
 const myColor: MantineColorsTuple = [
   '#ebf8ff',
@@ -48,6 +48,7 @@ export default function RootLayout({
       <body style={{ height: '100%' }}>
         <div
           style={{ overflow: 'hidden', height: 0, width: 0 }}
+          // style={{ position: 'absolute', zIndex: 10000 }}
           id="svgDraftContainer"
         />
 

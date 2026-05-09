@@ -1,75 +1,138 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { checkIfProfileIsEmpty } from '@/src/utils/profile.utils';
-
-import { DinamicDrawer } from '@/src/utils/ProfileDrawer/ProfileDrawer';
-
-import { Profile } from '@/src/types/profile.types';
 import { useUIStore } from '@/src/store/ui.store';
-
+import { isWellEmpty, type Lithology, type Well } from '@welldot/core';
+import {
+  DeepPartial,
+  Highlights,
+  INTERACTIVE_RENDER_CONFIG,
+  RenderConfig,
+  WellRenderer,
+} from '@welldot/render';
 import styles from './profileDrawer.module.scss';
 
 interface ProfileDrawerProps {
-  profile: Profile;
+  profile: Well;
 }
 
 const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
-  const svgContainer = useRef(null);
-  const profileDrawer = useRef<DinamicDrawer | null>(null);
+  const svgContainer = useRef<SVGSVGElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const profileDrawer = useRef<WellRenderer | null>(null);
   const { length_units, diameter_units } = useUIStore();
+  const [config, setConfig] = useState<DeepPartial<RenderConfig>>(
+    INTERACTIVE_RENDER_CONFIG,
+  );
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [hoveredLithology, setHoveredLithology] = useState<Lithology | null>(
+    null,
+  );
 
   const MARGINS = { TOP: 30, RIGHT: 30, BOTTOM: 15, LEFT: 50 };
   const HEIGHT = 800 - MARGINS.TOP - MARGINS.BOTTOM;
-  const WIDTH = 200 - MARGINS.LEFT - MARGINS.RIGHT;
+  const WIDTH = Math.max(0, containerWidth - MARGINS.LEFT - MARGINS.RIGHT);
 
-  const setSVGContainer = () => {
-    if (!svgContainer.current) {
-      return;
-    }
-
-    profileDrawer.current = new DinamicDrawer(
-      // @ts-ignore
-      svgContainer.current,
-      HEIGHT,
-      WIDTH,
-      MARGINS,
-      {
-        tooltip: styles.tooltip,
-        tooltipTitle: styles.title,
-        tooltipPrimaryInfo: styles.primaryInfo,
-        tooltipSecondaryInfo: styles.secondaryInfo,
-      },
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+    const obs = new ResizeObserver(entries =>
+      setContainerWidth(entries[0].contentRect.width),
     );
+    obs.observe(wrapperRef.current);
+    return () => obs.disconnect();
+  }, []);
 
-    profileDrawer.current.prepareSvg();
-
-    profileDrawer.current.drawLog(profile, length_units, diameter_units);
-  };
-
+  // Re-initialise renderer when layout changes (config / container size).
   useEffect(() => {
-    setSVGContainer();
-  }, [svgContainer.current]);
+    const drawProfile = async () => {
+      if (!svgContainer.current || WIDTH <= 0) return;
+      setHoveredLithology(null);
+      profileDrawer.current = new WellRenderer(
+        [
+          {
+            selector: `.${styles.svgContainer}`,
+            height: HEIGHT,
+            width: WIDTH,
+            margins: {
+              top: MARGINS.TOP,
+              right: MARGINS.RIGHT,
+              bottom: MARGINS.BOTTOM,
+              left: MARGINS.LEFT,
+            },
+          },
+        ],
+        {
+          classNames: {
+            tooltip: {
+              root: styles.tooltip,
+              title: styles.title,
+              primaryInfo: styles.primaryInfo,
+              secondaryInfo: styles.secondaryInfo,
+            },
+          },
+          renderConfig: config,
+        },
+      );
+      await profileDrawer.current.prepareSvg();
+      profileDrawer.current.draw(profile, {
+        units: { length: length_units, diameter: diameter_units },
+      });
+    };
+    drawProfile();
+    // profileDrawer.current.renderLegend('#svg_legend', profile);
+  }, [svgContainer.current, config, containerWidth]);
 
+  // Redraw when profile, units, or hovered lithology changes.
   useEffect(() => {
-    if (profileDrawer.current) {
-      profileDrawer.current.drawLog(profile, length_units, diameter_units);
-    }
-  }, [profile, svgContainer.current, length_units, diameter_units]);
+    if (!profileDrawer.current) return;
+    const highlights: Highlights = hoveredLithology
+      ? { lithology: [{ from: hoveredLithology.from, to: hoveredLithology.to }] }
+      : {};
+    profileDrawer.current.draw(profile, {
+      units: { length: length_units, diameter: diameter_units },
+      highlights,
+    });
+    profileDrawer.current.renderLegend('#svg_legend', profile);
+  }, [profile, length_units, diameter_units, hoveredLithology]);
 
-  const noProfile = checkIfProfileIsEmpty(profile);
+  // Clear hover when profile swaps so we don't carry a stale datum.
+  useEffect(() => {
+    setHoveredLithology(null);
+  }, [profile]);
+
+  // Delegated listener — reads D3's __data__ directly off the hovered element.
+  useEffect(() => {
+    const svg = svgContainer.current;
+    if (!svg) return;
+
+    const handleOver = (e: Event) => {
+      const el = (e.target as Element).closest('.lithology-rect');
+      setHoveredLithology(el ? ((el as any).__data__ as Lithology) : null);
+    };
+    const handleLeave = () => setHoveredLithology(null);
+
+    svg.addEventListener('mouseover', handleOver);
+    svg.addEventListener('mouseleave', handleLeave);
+    return () => {
+      svg.removeEventListener('mouseover', handleOver);
+      svg.removeEventListener('mouseleave', handleLeave);
+    };
+  }, []);
+
+  const noProfile = isWellEmpty(profile);
 
   return (
-    <>
-      {noProfile ? (
+    <div className={styles.editorWrapper} ref={wrapperRef}>
+      {/* <RenderConfigEditor config={config} onChange={setConfig} /> */}
+      {noProfile && (
         <span className={styles.noFilesMsg}>Perfil não configurado</span>
-      ) : (
-        ''
       )}
+      {/* <svg id="svg_legend" /> */}
       <svg
+        id="#svg_drawer"
         className={`${styles.svgContainer} ${noProfile ? styles.hide : ''}`}
         ref={svgContainer}
       />
-    </>
+    </div>
   );
 };
 

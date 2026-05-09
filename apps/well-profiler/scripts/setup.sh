@@ -12,6 +12,6 @@ fi
 pnpm install
 
 echo "Copying pdfmake files to pdfmake/build"
-cp pdfmake/pdfmake.js node_modules/pdfmake/build/pdfmake.js
+# cp pdfmake/pdfmake.js node_modules/pdfmake/build/pdfmake.js
 cp pdfmake/vfs_fonts.js node_modules/pdfmake/build/vfs_fonts.js
 echo "Sucess"

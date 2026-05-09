@@ -31,10 +31,7 @@ import {
   ShareIcon,
 } from '@heroicons/react/24/solid';
 
-import {
-  checkIfProfileIsEmpty,
-  profileToWell,
-} from '@/src/utils/profile.utils';
+import { checkIfProfileIsEmpty, profileToWell } from '@welldot/core';
 import download from 'downloadjs';
 
 import ProfileDrawer from '@/src/components/organisms/ProfileDrawer/ProfileDrawer.component';
@@ -292,8 +289,8 @@ function ProfileEditor() {
             <div className={`${styles.perfilContainer}`} id="profileContainer">
               <ProfileDrawer profile={profile} />
             </div>
-            <div className="w-full h-full bg-white rounded-lg relative md:w-2/3 flex flex-col">
-              <div className="h-auto min-h-12 py-2 ml-2 flex flex-row justify-start items-center space-x-3 overflow-x-auto lg:overflow-x-hidden">
+            <div className="w-full h-full bg-white rounded-lg relative md:w-2/3">
+              <div className="h-auto py-2 ml-2 flex flex-row justify-start items-center space-x-3 overflow-x-auto lg:overflow-x-hidden">
                 <Button
                   onClick={() => {
                     // @ts-ignore

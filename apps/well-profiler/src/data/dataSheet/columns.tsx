@@ -1,9 +1,9 @@
 import {
-  textColumn,
-  floatColumn,
-  keyColumn,
   checkboxColumn,
   Column,
+  floatColumn,
+  keyColumn,
+  textColumn,
 } from 'react-datasheet-grid';
 
 import 'react-datasheet-grid/dist/style.css';
@@ -13,9 +13,8 @@ import {
   customSelectColumn,
 } from '@/src_old/utils/customColumns';
 
-import { FGDC_TEXTURES_OPTIONS } from '@/src_old/utils/fgdcTextures';
+import { FGDC_TEXTURES_OPTIONS } from '@welldot/core';
 
-import TextureHelper from '@/src_old/components/textureHelperColumn/textureHelper.component';
 import {
   BoreHole,
   Cave,
@@ -26,6 +25,7 @@ import {
   WellCase,
   WellScreen,
 } from '@/src/types/profile.types';
+import TextureHelper from '@/src_old/components/textureHelperColumn/textureHelper.component';
 
 const typedFloatColumn = floatColumn as Partial<Column<number, any, string>>;
 const typedTextColumn = textColumn as Partial<Column<string, any, string>>;
