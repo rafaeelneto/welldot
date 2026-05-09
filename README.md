@@ -214,6 +214,39 @@ The following data types are planned for future versions of the `.well` format:
 
 ---
 
+## Claude Code Skill — `welldot-converter`
+
+The `welldot-converter` skill for [Claude Code](https://claude.ai/code) converts any water well report (PDF, DOCX, image, or plain text) into a valid `.well` JSON file. It works with reports in any language (Portuguese, English, Spanish, etc.) and uses the official welldot spec as its source of truth.
+
+**What it does:**
+
+- Extracts all well data from a report — construction, lithology, fractures, caves, and more
+- Validates output against the `.well` format spec
+- Preserves the source document's language in all free-text fields
+- Flags fields that were absent in the report rather than guessing values
+
+**Install:**
+
+The skill is included in this repository under `.claude/skills/welldot-converter/`. If you cloned the repo, it is already available project-locally.
+
+To make it available globally across all your projects, copy it to your personal skills directory:
+
+```bash
+cp -r .claude/skills/welldot-converter ~/.claude/skills/
+```
+
+**Use:**
+
+Open Claude Code in any project and run:
+
+```
+/welldot-converter
+```
+
+Then attach or describe the well report you want to convert. Claude will extract the data, validate it, and produce a `.well` file ready for upload to [wellprofiler.com](https://wellprofiler.com) or use with `@welldot/core`.
+
+---
+
 ## Licensing
 
 This project is licensed under the [Apache 2.0](./LICENCE.md) license.
