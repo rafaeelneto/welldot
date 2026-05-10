@@ -73,17 +73,17 @@ const MyPreset = definePreset(Aura, {
 
   semantic: {
     primary: {
-      50: '#e0fff8',
-      100: '#b3fff0',
-      200: '#80ffe6',
-      300: '#4dffdc',
-      400: '#1affd2',
-      500: '#00ffc6',
-      600: '#00cca0',
-      700: '#00997a',
-      800: '#006655',
-      900: '#00332f',
-      950: '#001916',
+      50: '#f0f5fc',
+      100: '#dde9f8',
+      200: '#bdd1f1',
+      300: '#92b1e6',
+      400: '#5d86d2',
+      500: '#2f5fae',
+      600: '#29539b',
+      700: '#22427d',
+      800: '#1a325f',
+      900: '#112343',
+      950: '#0a172e',
     },
     colorScheme: {
       light: {
@@ -170,9 +170,12 @@ const MyPreset = definePreset(Aura, {
         light: {
           root: {
             primary: {
-              background: 'linear-gradient(180deg, {primary.400}, {primary.600})',
-              hoverBackground: 'linear-gradient(180deg, {primary.300}, {primary.500})',
-              activeBackground: 'linear-gradient(180deg, {primary.500}, {primary.700})',
+              background:
+                'linear-gradient(180deg, {primary.400}, {primary.600})',
+              hoverBackground:
+                'linear-gradient(180deg, {primary.300}, {primary.500})',
+              activeBackground:
+                'linear-gradient(180deg, {primary.500}, {primary.700})',
               borderColor: 'transparent',
               hoverBorderColor: 'transparent',
               activeBorderColor: 'transparent',
@@ -185,9 +188,12 @@ const MyPreset = definePreset(Aura, {
         dark: {
           root: {
             primary: {
-              background: 'linear-gradient(180deg, {primary.300}, {primary.500})',
-              hoverBackground: 'linear-gradient(180deg, {primary.200}, {primary.400})',
-              activeBackground: 'linear-gradient(180deg, {primary.400}, {primary.600})',
+              background:
+                'linear-gradient(180deg, {primary.300}, {primary.500})',
+              hoverBackground:
+                'linear-gradient(180deg, {primary.200}, {primary.400})',
+              activeBackground:
+                'linear-gradient(180deg, {primary.400}, {primary.600})',
               borderColor: 'transparent',
               hoverBorderColor: 'transparent',
               activeBorderColor: 'transparent',

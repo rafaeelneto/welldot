@@ -33,17 +33,35 @@
   --color-content-900: var(--w-content-900);
   --color-content-950: var(--w-content-950);
 
-  /* Typography families */
-  --font-family-display: 'Space Grotesk', sans-serif;
-  --font-family-serif: 'IBM Plex Serif', serif;
-  --font-family-mono: 'JetBrains Mono', monospace;
+  /* Primary — explicitly mapped so bg-primary-* / text-primary-* work */
+  --color-primary-50: var(--w-primary-50);
+  --color-primary-100: var(--w-primary-100);
+  --color-primary-200: var(--w-primary-200);
+  --color-primary-300: var(--w-primary-300);
+  --color-primary-400: var(--w-primary-400);
+  --color-primary-500: var(--w-primary-500);
+  --color-primary-600: var(--w-primary-600);
+  --color-primary-700: var(--w-primary-700);
+  --color-primary-800: var(--w-primary-800);
+  --color-primary-900: var(--w-primary-900);
+  --color-primary-950: var(--w-primary-950);
+
+  /* Typography families — TW v4 convention: --font-{name} → font-{name} utility */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Legacy names kept for CSS var usage (--font-display etc. in :root) */
+  --font-family-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-family-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 @layer base {
   :root {
-    --font-display: 'Space Grotesk', sans-serif;
-    --font-serif: 'IBM Plex Serif', serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-serif: 'IBM Plex Serif', Georgia, serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
     /* Border radius tokens */
     --radius-sm: 6px;
@@ -56,7 +74,38 @@
 }
 
 @layer components {
-  /* Glass treatment — light */
+  /* ── Page container (max-width + responsive padding) ── */
+  .container-landing {
+    width: 100%;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-landing {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container-landing {
+      padding-left: 3.5rem;
+      padding-right: 3.5rem;
+    }
+  }
+
+  @media (min-width: 1600px) {
+    .container-landing {
+      padding-left: 4.5rem;
+      padding-right: 4.5rem;
+    }
+  }
+
+  /* ── Glass treatment ─────────────────────────────────── */
   .glass {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.55));
     border: 1px solid rgba(255, 255, 255, 0.7);
@@ -68,7 +117,6 @@
       0 4px 12px -4px rgba(14, 30, 51, 0.06);
   }
 
-  /* Glass treatment — dark */
   .dark-mode .glass {
     background: linear-gradient(180deg, rgba(36, 48, 68, 0.6), rgba(26, 34, 48, 0.4));
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -78,4 +126,157 @@
       0 24px 60px -24px rgba(0, 0, 0, 0.5),
       0 4px 12px -4px rgba(0, 0, 0, 0.3);
   }
+
+  /* ── Glass nav ───────────────────────────────────────── */
+  .glass-nav {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.55));
+    border-bottom: 1px solid rgba(216, 221, 227, 0.55);
+    backdrop-filter: saturate(160%) blur(14px);
+  }
+
+  .dark-mode .glass-nav {
+    background: linear-gradient(180deg, rgba(13, 18, 24, 0.78), rgba(13, 18, 24, 0.45));
+    border-bottom-color: rgba(42, 51, 68, 0.6);
+  }
+
+  /* ── Section backgrounds ─────────────────────────────── */
+  .landing-bg {
+    background:
+      radial-gradient(1100px 600px at 88% -120px, oklch(92% 0.06 235 / 0.55), transparent 70%),
+      radial-gradient(900px 500px at -10% 30%, oklch(94% 0.05 40 / 0.35), transparent 70%),
+      linear-gradient(180deg, #ffffff 0%, #fbfaf6 60%, #f4f1e8 100%);
+  }
+
+  .dark-mode .landing-bg {
+    background:
+      radial-gradient(1100px 600px at 88% -120px, oklch(40% 0.12 235 / 0.45), transparent 70%),
+      radial-gradient(900px 500px at -10% 30%, oklch(35% 0.10 40 / 0.30), transparent 70%),
+      linear-gradient(180deg, #0d1218 0%, #0b1018 100%);
+  }
+
+  .manifesto-bg {
+    background:
+      radial-gradient(800px 400px at 0% 0%, oklch(94% 0.04 40 / 0.6), transparent 70%),
+      linear-gradient(180deg, #f6f4ee 0%, #efece1 100%);
+  }
+
+  .dark-mode .manifesto-bg {
+    background:
+      radial-gradient(800px 400px at 0% 0%, oklch(40% 0.10 40 / 0.35), transparent 70%),
+      linear-gradient(180deg, #121821 0%, #0d121a 100%);
+  }
+
+  /* ── Kicker (section label) ──────────────────────────── */
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--w-content-500);
+  }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: white;
+    border: 1px solid transparent;
+    text-decoration: none;
+    background: linear-gradient(180deg, var(--w-primary-400) 0%, var(--w-primary-600) 100%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.25) inset,
+      0 -1px 0 rgba(0, 0, 0, 0.15) inset,
+      0 10px 24px -8px oklch(48% 0.13 235 / 0.55);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.3) inset,
+      0 12px 28px -8px oklch(48% 0.13 235 / 0.7);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--w-content-400);
+    border: 1px solid var(--w-surface-200);
+    text-decoration: none;
+    background: transparent;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .btn-ghost:hover {
+    color: var(--w-content-0);
+    background: rgba(14, 30, 51, 0.04);
+    border-color: var(--w-surface-300);
+  }
+
+  .dark-mode .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* ── Live editor card internals ─────────────────────── */
+  .live-head-bg {
+    background: linear-gradient(180deg, rgba(246, 244, 238, 0.85), rgba(246, 244, 238, 0.5));
+  }
+
+  .dark-mode .live-head-bg {
+    background: linear-gradient(180deg, rgba(26, 34, 48, 0.85), rgba(19, 25, 34, 0.55));
+  }
+
+  .live-render-bg {
+    background:
+      radial-gradient(400px 300px at 100% 0%, oklch(94% 0.04 235 / 0.5), transparent 70%),
+      linear-gradient(180deg, rgba(246, 244, 238, 0.7), rgba(235, 231, 218, 0.4));
+  }
+
+  .dark-mode .live-render-bg {
+    background:
+      radial-gradient(400px 300px at 100% 0%, oklch(38% 0.10 235 / 0.3), transparent 70%),
+      linear-gradient(180deg, rgba(26, 34, 48, 0.7), rgba(19, 25, 34, 0.5));
+  }
+
+  /* ── Dark-mode toggle icon animation ────────────────── */
+  .icon-rotate-enter-active {
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .icon-rotate-leave-active {
+    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .icon-rotate-enter-from {
+    opacity: 0;
+    transform: rotate(-60deg) scale(0.5);
+  }
+  .icon-rotate-leave-to {
+    opacity: 0;
+    transform: rotate(60deg) scale(0.5);
+  }
+
+  /* ── JSON syntax tokens ──────────────────────────────── */
+  .tk-k { color: oklch(45% 0.18 30); }
+  .tk-s { color: oklch(45% 0.15 145); }
+  .tk-n { color: oklch(50% 0.18 270); }
+  .tk-p { color: var(--w-surface-500); }
+
+  .dark-mode .tk-k { color: oklch(72% 0.16 30); }
+  .dark-mode .tk-s { color: oklch(72% 0.15 145); }
+  .dark-mode .tk-n { color: oklch(72% 0.18 270); }
 }
