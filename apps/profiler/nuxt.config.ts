@@ -87,6 +87,14 @@ export default defineNuxtConfig({
     },
   },
 
+  fonts: {
+    families: [
+      { name: 'Space Grotesk', weights: [400, 500, 700] },
+      { name: 'IBM Plex Serif', weights: [400, 500], styles: ['italic'] },
+      { name: 'JetBrains Mono', weights: [400, 500] },
+    ],
+  },
+
   icon: {
     mode: 'svg',
     customCollections: [
@@ -144,7 +152,7 @@ export default defineNuxtConfig({
         { rel: 'manifest', href: '/manifest.json' },
       ],
       meta: [
-        { name: 'theme-color', content: '#181825' },
+        { name: 'theme-color', content: '#0d1218' },
         { name: 'apple-mobile-web-app-title', content: 'Welldot' },
       ],
     },

@@ -1,6 +1,10 @@
 const customPt = {
   button: {
-    root: 'transition-all duration-200 hover:scale-[1.02] active:scale-95 group',
+    root: 'font-display transition-all duration-200 hover:scale-[1.02] active:scale-95 group',
+    label: 'font-display font-medium',
+  },
+  inputtext: {
+    root: 'font-mono text-sm rounded-[var(--radius-sm)] focus:shadow-[inset_0_0_0_1.5px_var(--w-primary-500)]',
   },
   dialog: {
     header: (options) => {

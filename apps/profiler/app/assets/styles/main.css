@@ -5,6 +5,21 @@
 @custom-variant dark (&:where(.dark-mode, .dark-mode *));
 
 @theme {
+  /* Surface — resolved from PrimeVue CSS vars (flips per mode) */
+  --color-surface-0: var(--w-surface-0);
+  --color-surface-50: var(--w-surface-50);
+  --color-surface-100: var(--w-surface-100);
+  --color-surface-200: var(--w-surface-200);
+  --color-surface-300: var(--w-surface-300);
+  --color-surface-400: var(--w-surface-400);
+  --color-surface-500: var(--w-surface-500);
+  --color-surface-600: var(--w-surface-600);
+  --color-surface-700: var(--w-surface-700);
+  --color-surface-800: var(--w-surface-800);
+  --color-surface-900: var(--w-surface-900);
+  --color-surface-950: var(--w-surface-950);
+
+  /* Content — mirror of surface, flips per mode */
   --color-content-0: var(--w-content-0);
   --color-content-50: var(--w-content-50);
   --color-content-100: var(--w-content-100);
@@ -17,4 +32,50 @@
   --color-content-800: var(--w-content-800);
   --color-content-900: var(--w-content-900);
   --color-content-950: var(--w-content-950);
+
+  /* Typography families */
+  --font-family-display: 'Space Grotesk', sans-serif;
+  --font-family-serif: 'IBM Plex Serif', serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  :root {
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-serif: 'IBM Plex Serif', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Border radius tokens */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 14px;
+    --radius-2xl: 16px;
+    --radius-pill: 999px;
+  }
+}
+
+@layer components {
+  /* Glass treatment — light */
+  .glass {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.55));
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    backdrop-filter: saturate(160%) blur(14px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 0 0 1px rgba(216, 221, 227, 0.4),
+      0 24px 60px -24px rgba(14, 30, 51, 0.18),
+      0 4px 12px -4px rgba(14, 30, 51, 0.06);
+  }
+
+  /* Glass treatment — dark */
+  .dark-mode .glass {
+    background: linear-gradient(180deg, rgba(36, 48, 68, 0.6), rgba(26, 34, 48, 0.4));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 0 0 1px rgba(0, 0, 0, 0.3),
+      0 24px 60px -24px rgba(0, 0, 0, 0.5),
+      0 4px 12px -4px rgba(0, 0, 0, 0.3);
+  }
 }
