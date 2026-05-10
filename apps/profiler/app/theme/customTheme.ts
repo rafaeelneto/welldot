@@ -141,119 +141,13 @@ const MyPreset = definePreset(Aura, {
       },
     },
   },
-  components: {
-    message: {
-      text: {
-        sm: { fontSize: '0.75rem' },
-      },
-    },
-    button: {
-      colorScheme: {
-        dark: {
-          root: {
-            primary: {
-              color: '{content.950}',
-              hoverColor: '{content.950}',
-              activeColor: '{content.950}',
-              background: `
-                linear-gradient(135deg, {primary.400} 0%, {primary.500} 25%, {primary.600} 75%, {primary.600} 100%),
-                radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
-                linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%)
-              `,
-              hoverBackground: `
-                linear-gradient(135deg, {primary.400} 0%, {primary.500} 25%, {primary.600} 75%, {primary.700} 100%),
-                radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
-                linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.15) 50%, transparent 70%)
-              `,
-              activeBackground: `
-                linear-gradient(135deg, {primary.600} 0%, {primary.700} 25%, {primary.800} 75%, {primary.900} 100%),
-                radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 50%)
-              `,
-              borderColor: 'rgba(255, 255, 255, 0.2)',
-            },
-          },
-        },
-      },
-    },
-    checkbox: {
-      colorScheme: {
-        dark: {
-          icon: {
-            checkedColor: '{content.950}',
-            color: '{content.950}',
-            checkedHoverColor: '{content.950}',
-          },
-        },
-      },
-    },
-    toggleswitch: {
-      colorScheme: {
-        dark: {
-          root: {
-            checkedBackground: '{primary.600}',
-          },
-        },
-      },
-    },
-    dialog: {
-      colorScheme: {
-        light: {
-          root: { background: '{surface.0}' },
-        },
-        dark: {
-          root: {
-            background: '{surface.0}',
-            borderColor: 'none',
-            shadow: '0 0 0 1px rgba(0, 255, 198, 0.12), 0 2px 8px -2px rgba(0, 0, 0, 0.3)',
-          },
-        },
-      },
-    },
-    select: {
-      overlay: { background: '{surface.0}', color: '{content.0}' },
-      option: { focusBackground: '{surface.400}' },
-    },
-    multiselect: {
-      overlay: { background: '{surface.0}', color: '{content.0}' },
-      option: { focusBackground: '{surface.400}' },
-    },
-    toast: {
-      colorScheme: {
-        light: {
-          success: { detailColor: '{content.0}' },
-          error: { detailColor: '{content.0}' },
-        },
-        dark: {
-          success: { detailColor: '{content.0}' },
-          error: { detailColor: '{content.0}' },
-        },
-      },
-    },
-    togglebutton: {
-      colorScheme: {
-        dark: {
-          root: {
-            background: '{surface.50}',
-            checkedBackground: '{surface.50}',
-            hoverBackground: '{surface.200}',
-            hoverColor: '{content.0}',
-            borderColor: 'transparent',
-            checkedBorderColor: 'transparent',
-            color: '{content.0}',
-            checkedColor: '{primary.0}',
-          },
-          content: {
-            checkedBackground: '{primary.600}',
-          },
-        },
-      },
-    },
-  },
+  components: {},
 });
 
 export default {
   preset: MyPreset,
   options: {
+    prefix: 'w',
     darkModeSelector: '.dark-mode',
     cssLayer: {
       name: 'primevue',

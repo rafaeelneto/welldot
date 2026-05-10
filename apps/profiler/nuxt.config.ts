@@ -73,7 +73,10 @@ export default defineNuxtConfig({
 
   // @ts-ignore
   primevue: {
-    importPT: { as: 'customPt', from: path.resolve(__dirname, './app/theme/customPt.js') },
+    importPT: {
+      as: 'customPt',
+      from: path.resolve(__dirname, './app/theme/customPt.js'),
+    },
     importTheme: { from: '@/theme/customTheme.ts' },
     autoImport: true,
     directives: {
@@ -103,7 +106,8 @@ export default defineNuxtConfig({
     indexable: !isDev,
     url: isDev ? 'http://localhost:3000' : 'https://welldot.org',
     name: 'Welldot',
-    description: 'Open-source geological well log visualization and profiling tool',
+    description:
+      'Open-source geological well log visualization and profiling tool',
     defaultLocale: 'en',
     identity: {
       type: 'Organization',

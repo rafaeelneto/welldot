@@ -5,16 +5,16 @@
 @custom-variant dark (&:where(.dark-mode, .dark-mode *));
 
 @theme {
-  --color-content-0: var(--p-content-0);
-  --color-content-50: var(--p-content-50);
-  --color-content-100: var(--p-content-100);
-  --color-content-200: var(--p-content-200);
-  --color-content-300: var(--p-content-300);
-  --color-content-400: var(--p-content-400);
-  --color-content-500: var(--p-content-500);
-  --color-content-600: var(--p-content-600);
-  --color-content-700: var(--p-content-700);
-  --color-content-800: var(--p-content-800);
-  --color-content-900: var(--p-content-900);
-  --color-content-950: var(--p-content-950);
+  --color-content-0: var(--w-content-0);
+  --color-content-50: var(--w-content-50);
+  --color-content-100: var(--w-content-100);
+  --color-content-200: var(--w-content-200);
+  --color-content-300: var(--w-content-300);
+  --color-content-400: var(--w-content-400);
+  --color-content-500: var(--w-content-500);
+  --color-content-600: var(--w-content-600);
+  --color-content-700: var(--w-content-700);
+  --color-content-800: var(--w-content-800);
+  --color-content-900: var(--w-content-900);
+  --color-content-950: var(--w-content-950);
 }
