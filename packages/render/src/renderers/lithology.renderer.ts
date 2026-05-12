@@ -1,8 +1,16 @@
 import { Lithology } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
-import { stableLayerKey, withTransition } from '~/utils/d3.utils';
+import { mergeEnter, withTransition } from '~/utils/d3.utils';
 import { getLithologyFill, getYAxisFunctions } from '~/utils/render.utils';
 
+/**
+ * Renders lithology rects with FGDC texture fills.
+ *
+ * Each lithology layer is drawn as a rect spanning `geoXLeft` to `geoXRight`
+ * at the depth position determined by `ctx.yScale`. Fill textures are resolved
+ * via `getLithologyFill` using the FGDC texture config. Returns early if
+ * `data` is empty.
+ */
 export function drawLithology(ctx: DrawContext, data: Lithology[]): void {
   if (!data.length) return;
 
@@ -25,19 +33,12 @@ export function drawLithology(ctx: DrawContext, data: Lithology[]): void {
     to: depthTo,
   });
 
-  // Precompute fill before data join so it is available for both enter and update.
-  const fillFn = getLithologyFill(data, svg, ctx.theme.lithologyTexture);
-
-  // Key by content (not depth) so layers keep their DOM identity when depths are
-  // reordered after an add/delete — depth values change, rock type identity does not.
   const rects = lithologyGroup
-    .selectAll<SVGRectElement, Lithology>(`.${classes.lithology.rect}`)
-    .data(data, stableLayerKey);
+    .selectAll(`.${classes.lithology.rect}`)
+    .data(data);
 
-  // EXIT: collapse in place, then remove
-  rects.exit().transition(transition).attr('height', 0).remove();
+  rects.exit().remove();
 
-  // ENTER: position and fill set immediately; fade in via opacity only
   const newLayers = rects
     .enter()
     .append('rect')
@@ -46,18 +47,11 @@ export function drawLithology(ctx: DrawContext, data: Lithology[]): void {
     .attr('width', geoXRight - geoXLeft)
     .attr('stroke', theme.lithology.stroke)
     .attr('stroke-width', theme.lithology.strokeWidth)
-    .attr('y', getYPos)
-    .attr('height', getHeight)
-    .attr('fill', fillFn)
-    .attr('opacity', 0)
     .on('mouseover', tooltips.geology.show)
     .on('mouseout', tooltips.geology.hide);
 
-  withTransition(newLayers, transition).attr('opacity', 1);
-
-  // UPDATE: fill set immediately (avoids string interpolation glitch); animate y and height
-  rects.attr('fill', fillFn);
-  withTransition(rects, transition)
-    .attr('y', getYPos)
-    .attr('height', getHeight);
+  const merged = mergeEnter(newLayers, rects).attr('y', getYPos);
+  withTransition(merged, transition)
+    .attr('height', getHeight)
+    .attr('fill', getLithologyFill(data, svg, ctx.theme.lithologyTexture));
 }
