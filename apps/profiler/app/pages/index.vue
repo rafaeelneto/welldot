@@ -1,5 +1,22 @@
 <script setup lang="ts">
+import { useElementBounding } from '@vueuse/core';
+
 definePageMeta({ layout: 'landing' });
+
+// ── Scroll-driven hero progress ────────────────────────────────────────────
+// The band ref wraps hero + section I. The right column is sticky through
+// this entire range; progress 0→1 drives the Three.js card swap.
+const heroBandRef = ref<HTMLElement>();
+const { top: bandTop, height: bandHeight } = useElementBounding(heroBandRef);
+
+const scrollProgress = computed(() => {
+  if (!import.meta.client) return 0;
+  // bandTop is viewport-relative: 0 when band top reaches viewport top,
+  // goes negative as we scroll down into the band.
+  const scrolled = -bandTop.value;
+  const scrollable = bandHeight.value - window.innerHeight;
+  return scrollable > 0 ? Math.min(Math.max(scrolled / scrollable, 0), 1) : 0;
+});
 
 // ── Section data ────────────────────────────────────────────────────────────
 
@@ -105,217 +122,136 @@ const horizonProps = [
     body: 'Namespaces para campos específicos de órgãos e regiões, sem quebrar o núcleo padronizado.',
   },
 ];
-
-// ── Hero JSON card ──────────────────────────────────────────────────────────
-
-const sampleWell = {
-  version: 1,
-  name: 'PP-01',
-  well_type: 'tubular',
-  lat: -1.4558,
-  lng: -48.5039,
-  bore_hole: [{ from: 0, to: 80, diameter: 250 }],
-  well_case: [{ from: 0, to: 60, type: 'steel', diameter: 200 }],
-  well_screen: [
-    { from: 60, to: 80, type: 'wire_wound', diameter: 150, slot_mm: 0.5 },
-  ],
-  lithology: [
-    { from: 0, to: 20, color: '#f5deb3', fgdc_texture: '612' },
-    { from: 20, to: 80, color: '#7a8a6a', fgdc_texture: '616' },
-  ],
-};
-
-function hi(obj: unknown, depth = 0, indent = '  '): string {
-  const pad = indent.repeat(depth);
-  if (Array.isArray(obj)) {
-    if (!obj.length) return '<span class="tk-p">[]</span>';
-    return (
-      `<span class="tk-p">[</span>\n` +
-      obj
-        .map(x => `${pad}${indent}${hi(x, depth + 1, indent)}`)
-        .join('<span class="tk-p">,</span>\n') +
-      `\n${pad}<span class="tk-p">]</span>`
-    );
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const entries = Object.entries(obj as Record<string, unknown>);
-    return (
-      `<span class="tk-p">{</span>\n` +
-      entries
-        .map(
-          ([k, v]) =>
-            `${pad}${indent}<span class="tk-k">${k}</span><span class="tk-p">:</span> ${hi(v, depth + 1, indent)}`,
-        )
-        .join('<span class="tk-p">,</span>\n') +
-      `\n${pad}<span class="tk-p">}</span>`
-    );
-  }
-  if (typeof obj === 'string') return `<span class="tk-s">"${obj}"</span>`;
-  if (typeof obj === 'number') return `<span class="tk-n">${obj}</span>`;
-  return String(obj);
-}
-
-const jsonHtml = computed(() => hi(sampleWell));
 </script>
 
 <template>
-  <!-- ── Hero ─────────────────────────────────────────────────────────────── -->
-  <section
-    class="relative pt-8 pb-7 lg:pt-16 lg:pb-14 border-b border-surface-200/60 overflow-hidden"
-  >
+  <!-- ── Hero + §I band ──────────────────────────────────────────────────────
+       Two-column layout: left column scrolls (hero copy + section I content),
+       right column is sticky through both sections (Three.js visual).
+       Progress 0→1 drives the card gallery swap in HeroVisual.
+  ─────────────────────────────────────────────────────────────────────────── -->
+  <div ref="heroBandRef" class="relative border-b border-surface-200/60">
+    <!-- Band-wide background gradient -->
     <div
       class="absolute inset-0 pointer-events-none"
       style="
         background:
           radial-gradient(
-            420px 320px at 78% 50%,
-            oklch(70% 0.14 235 / 0.18),
+            420px 320px at 100% 20%,
+            oklch(70% 0.14 235 / 0.16),
             transparent 70%
           ),
           radial-gradient(
             360px 260px at 8% 90%,
-            oklch(72% 0.13 40 / 0.14),
+            oklch(72% 0.13 40 / 0.12),
+            transparent 70%
+          ),
+          radial-gradient(
+            700px 400px at 100% 100%,
+            oklch(72% 0.13 235 / 0.08),
             transparent 70%
           );
       "
     />
 
-    <div class="container-landing relative lg:grid lg:grid-cols-2 lg:gap-14 lg:items-center">
-      <!-- Content -->
+    <div class="lg:grid lg:grid-cols-[1fr_520px] lg:items-start">
+      <!-- ── Left: scrolling content ─────────────────────────────────────── -->
       <div>
+        <!-- Hero section -->
         <div
-          class="font-mono text-[11px] tracking-[0.12em] uppercase text-content-500 mb-[18px]"
+          class="container-landing relative pt-8 pb-7 lg:pt-16 lg:pb-14 border-b border-surface-200/40"
         >
-          .well · formato aberto
-        </div>
-        <h1
-          class="font-serif font-medium text-[44px] lg:text-[76px] leading-none tracking-[-0.025em] mb-[14px] lg:mb-[22px] text-balance"
-        >
-          Perfis de poços, em <em class="text-primary-500">arquivo aberto</em>.
-        </h1>
-        <p
-          class="text-[15px] lg:text-[19px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-5 lg:mb-7"
-        >
-          Editor livre para criar, visualizar e exportar perfis geológicos e
-          construtivos. Um JSON simples, versionado, legível por qualquer
-          linguagem.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-2.5 mb-5 lg:mb-7">
-          <Button label="Abrir editor →" as="a" href="#" />
-          <Button label="Ver especificação" as="a" href="#" variant="outlined" severity="secondary" />
-        </div>
-        <div
-          class="flex flex-wrap gap-[22px] pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
-        >
-          <span><b class="text-content-0 font-medium">v1.0</b> spec</span>
-          <span
-            ><b class="text-content-0 font-medium">Apache 2.0</b> licença</span
-          >
-          <span><b class="text-content-0 font-medium">welldot.org</b></span>
-        </div>
-      </div>
-
-      <!-- Live editor card (no SVG rendering) -->
-      <div
-        class="glass rounded-2xl overflow-hidden mt-7 lg:mt-0"
-        style="display: grid; grid-template-rows: 36px 1fr"
-      >
-        <!-- Header bar -->
-        <div
-          class="live-head-bg flex items-center gap-2 px-3 font-mono text-[11px] text-content-500 border-b border-surface-200"
-        >
-          <div class="flex gap-1">
-            <span class="w-[9px] h-[9px] rounded-full bg-surface-300" />
-            <span class="w-[9px] h-[9px] rounded-full bg-surface-300" />
-            <span class="w-[9px] h-[9px] rounded-full bg-surface-300" />
-          </div>
-          <span class="text-content-0 font-medium">PP-01.well</span>
-          <span class="flex-1" />
-          <span
-            class="px-2 py-0.5 text-[10px] bg-primary-50 text-primary-500 rounded-[4px] font-mono"
-            >v1.0</span
-          >
-        </div>
-        <!-- Body: JSON pane + render placeholder -->
-        <div
-          class="min-h-[260px] lg:min-h-[460px]"
-          style="display: grid; grid-template-columns: 40fr 60fr"
-        >
-          <!-- JSON pane -->
           <div
-            class="border-r border-surface-200 p-3.5 font-mono text-[11.5px] leading-[1.65] overflow-auto bg-surface-0"
+            class="font-mono text-[11px] tracking-[0.12em] uppercase text-content-500 mb-[18px]"
           >
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <pre class="m-0 whitespace-pre" v-html="jsonHtml" />
+            .well · formato aberto
           </div>
-          <!-- Render placeholder -->
-          <div class="live-render-bg p-3.5 flex flex-col">
-            <div
-              class="font-mono text-[9px] tracking-[0.1em] uppercase text-content-500 mb-2 flex justify-between"
+          <h1
+            class="font-serif font-medium text-[44px] lg:text-[76px] leading-none tracking-[-0.025em] mb-[14px] lg:mb-[22px] text-balance"
+          >
+            Perfis de poços, em
+            <em class="text-primary-500">arquivo aberto</em>.
+          </h1>
+          <p
+            class="text-[15px] lg:text-[19px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-5 lg:mb-7"
+          >
+            Editor livre para criar, visualizar e exportar perfis geológicos e
+            construtivos. Um JSON simples, versionado, legível por qualquer
+            linguagem.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-2.5 mb-5 lg:mb-7">
+            <Button label="Abrir editor →" as="a" href="#" />
+            <Button
+              label="Ver especificação"
+              as="a"
+              href="#"
+              variant="outlined"
+              severity="secondary"
+            />
+          </div>
+          <div
+            class="flex flex-wrap gap-[22px] pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
+          >
+            <span><b class="text-content-0 font-medium">v1.0</b> spec</span>
+            <span
+              ><b class="text-content-0 font-medium">Apache 2.0</b>
+              licença</span
             >
-              <span>Fig. perfil</span>
-            </div>
-            <div class="flex-1 flex items-center justify-center">
-              <div class="text-center opacity-40">
-                <div
-                  class="w-10 mx-auto mb-3 rounded border border-primary-200 bg-gradient-to-b from-primary-50 to-surface-100"
-                  style="height: 120px"
-                />
-                <p
-                  class="font-mono text-[9px] tracking-widest uppercase text-content-500"
-                >
-                  render · em breve
-                </p>
-              </div>
-            </div>
+            <span><b class="text-content-0 font-medium">welldot.org</b></span>
+          </div>
+        </div>
+
+        <!-- Mobile: hero visual (scroll-driven, inline) -->
+        <div
+          class="block lg:hidden relative w-full h-[min(520px,65vh)] border-b border-surface-200/40"
+        >
+          <ClientOnly>
+            <LandingHeroVisual :progress="scrollProgress * 2.5" />
+          </ClientOnly>
+        </div>
+
+        <!-- §I · O formato -->
+        <div class="container-landing relative py-14 lg:py-20">
+          <div class="kicker mb-[18px]">I · O formato</div>
+          <h2
+            class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-[14px]"
+          >
+            Um JSON.<br /><em class="text-primary-500">Três</em> propósitos.
+          </h2>
+          <p
+            class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8"
+          >
+            Hoje, dados de poços vivem em PDFs que não se conversam entre si. O
+            arquivo <b>.well</b> é um formato simples e versionado para mudar
+            isso — um único JSON que descreve o poço por inteiro, pensado como
+            <em>padrão internacional</em>.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <LandingPropCard
+              v-for="prop in formatProps"
+              :key="prop.num"
+              :num="prop.num"
+              :title="prop.title"
+            >
+              <!-- eslint-disable-next-line vue/no-v-html -->
+              <span v-html="prop.body" />
+            </LandingPropCard>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ── §I · Um JSON. Três propósitos. ───────────────────────────────────── -->
-  <section
-    class="relative py-14 lg:py-20 border-b border-surface-200/60 overflow-hidden"
-  >
-    <div
-      class="absolute inset-0 pointer-events-none"
-      style="
-        background: radial-gradient(
-          700px 400px at 100% 100%,
-          oklch(72% 0.13 235 / 0.1),
-          transparent 70%
-        );
-      "
-    />
-    <div class="container-landing relative">
-      <div class="kicker mb-[18px]">I · O formato</div>
-      <h2
-        class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-[14px]"
+      <!-- ── Right: sticky Three.js visual ──────────────────────────────── -->
+      <div
+        class="hidden lg:block sticky top-[60px] h-[calc(100vh-60px)] overflow-hidden pr-6 lg:pr-11 pt-8 lg:pt-16"
       >
-        Um JSON.<br /><em class="text-primary-500">Três</em> propósitos.
-      </h2>
-      <p
-        class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8"
-      >
-        Hoje, dados de poços vivem em PDFs que não se conversam entre si. O
-        arquivo <b>.well</b> é um formato simples e versionado para mudar isso —
-        um único JSON que descreve o poço por inteiro, pensado como
-        <em>padrão internacional</em>.
-      </p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <LandingPropCard
-          v-for="prop in formatProps"
-          :key="prop.num"
-          :num="prop.num"
-          :title="prop.title"
-        >
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <span v-html="prop.body" />
-        </LandingPropCard>
+        <div class="relative w-full h-full" style="perspective: 1600px">
+          <ClientOnly>
+            <LandingHeroVisual :progress="scrollProgress" />
+          </ClientOnly>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
   <!-- ── §II · Manifesto ──────────────────────────────────────────────────── -->
   <section
@@ -499,7 +435,14 @@ const jsonHtml = computed(() => hi(sampleWell));
         class="flex flex-col sm:flex-row gap-2.5 justify-center items-center"
       >
         <Button label="Abrir editor" as="a" href="#" />
-        <Button label="github.com/rafaeelneto/welldot" as="a" href="https://github.com/rafaeelneto/welldot" target="_blank" variant="outlined" severity="secondary" />
+        <Button
+          label="github.com/rafaeelneto/welldot"
+          as="a"
+          href="https://github.com/rafaeelneto/welldot"
+          target="_blank"
+          variant="outlined"
+          severity="secondary"
+        />
       </div>
     </div>
   </section>

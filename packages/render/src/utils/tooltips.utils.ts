@@ -1,5 +1,4 @@
 // TODO remove this dependency on d3-tip by implementing our own tooltip logic using plain divs and mouse events, which will also allow us to support touch devices
-import * as d3module from 'd3';
 // eslint-disable-next-line import-x/default
 import d3tip from 'd3-tip';
 import sanitizeHtml from 'sanitize-html';
@@ -22,8 +21,6 @@ import type {
   TooltipKey,
 } from '~/types/render.types';
 import { formatDiameter, formatLength } from '~/utils/format.utils';
-
-const d3 = Object.assign(d3module, { tip: d3tip });
 
 interface D3Tip {
   attr(name: string, value: string): D3Tip;
@@ -152,8 +149,7 @@ export const populateTooltips = (
       return;
     }
 
-    tooltips[tipTextKey] = (d3 as unknown as { tip: () => D3Tip })
-      .tip()
+    tooltips[tipTextKey] = (d3tip as unknown as () => D3Tip)()
       .attr('class', customClasses.tooltip.root)
       .direction('e')
       .html(tipsText[tipTextKey]);

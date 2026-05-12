@@ -9,7 +9,7 @@ import {
   type WellTextures,
 } from './configs/render.textures';
 
-const d3 = Object.assign(d3module, { tip: d3tip });
+const d3 = { ...d3module, tip: d3tip };
 
 import {
   isWellEmpty,
