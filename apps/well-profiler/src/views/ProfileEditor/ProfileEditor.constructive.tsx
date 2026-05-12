@@ -16,11 +16,11 @@ import {
 
 import {
   EMPTY_PROFILE,
-  BORE_HOLE_FEATURE_DEFAULT,
-  HOLE_FILL_FEATURE_DEFAULT,
-  WELL_SCREEN_FEATURE_DEFAULT,
-  SURFACE_CASE_FEATURE_DEFAULT,
-  WELL_CASE_FEATURE_DEFAULT,
+  makeDefaultBoreHole,
+  makeDefaultHoleFill,
+  makeDefaultWellScreen,
+  makeDefaultSurfaceCase,
+  makeDefaultWellCase,
 } from '@/src/data/profile/profile.data';
 
 import { useColumns } from '@/src/data/dataSheet/useColumns';
@@ -148,7 +148,7 @@ export default function ProfileEditorConstructive() {
             data={profile.bore_hole}
             onChangeValues={getUpdateListingFeatures<BoreHole>('bore_hole')}
             columns={boreHoleColumns}
-            defaultValue={() => BORE_HOLE_FEATURE_DEFAULT}
+            defaultValue={makeDefaultBoreHole}
           />
         </div>
         <div className="flex flex-col p-2.5">
@@ -158,7 +158,7 @@ export default function ProfileEditorConstructive() {
             data={profile.hole_fill}
             onChangeValues={getUpdateListingFeatures<HoleFill>('hole_fill')}
             columns={holeFillColumns}
-            defaultValue={() => HOLE_FILL_FEATURE_DEFAULT}
+            defaultValue={makeDefaultHoleFill}
           />
         </div>
       </section>
@@ -172,7 +172,7 @@ export default function ProfileEditorConstructive() {
               'surface_case',
             )}
             columns={surfaceCaseColumns}
-            defaultValue={() => SURFACE_CASE_FEATURE_DEFAULT}
+            defaultValue={makeDefaultSurfaceCase}
           />
         </div>
         <div className="flex flex-col p-2.5">
@@ -182,7 +182,7 @@ export default function ProfileEditorConstructive() {
             data={profile.well_case}
             onChangeValues={getUpdateListingFeatures<WellCase>('well_case')}
             columns={wellCaseColumns}
-            defaultValue={() => WELL_CASE_FEATURE_DEFAULT}
+            defaultValue={makeDefaultWellCase}
           />
         </div>
       </section>
@@ -193,7 +193,7 @@ export default function ProfileEditorConstructive() {
           data={profile.well_screen}
           onChangeValues={getUpdateListingFeatures<WellScreen>('well_screen')}
           columns={wellScreenColumns}
-          defaultValue={() => WELL_SCREEN_FEATURE_DEFAULT}
+          defaultValue={makeDefaultWellScreen}
         />
       </div>
     </div>

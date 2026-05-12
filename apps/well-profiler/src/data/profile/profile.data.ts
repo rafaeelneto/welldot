@@ -105,65 +105,74 @@ export function getEmptyProfile(): Profile {
   return JSON.parse(JSON.stringify(EMPTY_PROFILE)) as Profile;
 }
 
-export const LITHOLOGY_FEATURE_DEFAULT: Lithology = {
+export const makeDefaultLithology = (): Lithology & { id: string } => ({
+  id: crypto.randomUUID(),
   from: 0,
   to: 10,
   description: '',
   color: '#ff0000',
   fgdc_texture: '',
   geologic_unit: '',
-};
+  aquifer_unit: '',
+});
 
-export const FRACTURE_FEATURE_DEFAULT: Fracture = {
+export const makeDefaultFracture = (): Fracture & { id: string } => ({
+  id: crypto.randomUUID(),
   depth: 10,
   water_intake: false,
   azimuth: 0,
   dip: 0,
   swarm: false,
   description: '',
-};
+});
 
-export const CAVE_FEATURE_DEFAULT: Cave = {
+export const makeDefaultCave = (): Cave & { id: string } => ({
+  id: crypto.randomUUID(),
   from: 0,
   to: 10,
   water_intake: true,
   description: '',
-};
+});
 
-export const BORE_HOLE_FEATURE_DEFAULT: BoreHole = {
+export const makeDefaultBoreHole = (): BoreHole & { id: string } => ({
+  id: crypto.randomUUID(),
   from: 0,
   to: 10,
   diameter: 254,
   drilling_method: '',
-};
+});
 
-export const HOLE_FILL_FEATURE_DEFAULT: HoleFill = {
+export const makeDefaultHoleFill = (): HoleFill & { id: string } => ({
+  id: crypto.randomUUID(),
   from: 0,
   to: 10,
   type: 'seal',
   diameter: 254,
   description: '',
-};
+});
 
-export const SURFACE_CASE_FEATURE_DEFAULT: SurfaceCase = {
+export const makeDefaultSurfaceCase = (): SurfaceCase & { id: string } => ({
+  id: crypto.randomUUID(),
   from: 0,
   to: 20,
   diameter: 254,
-};
+});
 
-export const WELL_CASE_FEATURE_DEFAULT: WellCase = {
+export const makeDefaultWellCase = (): WellCase & { id: string } => ({
+  id: crypto.randomUUID(),
   from: 0,
   to: 10,
   type: '',
   diameter: 254,
-};
+});
 
-export const WELL_SCREEN_FEATURE_DEFAULT: WellScreen = {
+export const makeDefaultWellScreen = (): WellScreen & { id: string } => ({
+  id: crypto.randomUUID(),
   from: 0,
   to: 10,
   type: '',
   diameter: 254,
   screen_slot_mm: 0.75,
-};
+});
 
 export default EMPTY_PROFILE;
