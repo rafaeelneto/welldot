@@ -1,5 +1,9 @@
+import * as d3 from 'd3';
+
 import { Fracture } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
+import { mergeEnter } from '~/utils/d3.utils';
+import { makePointKey } from '~/utils/key.utils';
 import { makeSeededPrng } from '~/utils/render.utils';
 
 function wavyLine(
@@ -43,8 +47,6 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
     tooltips,
   } = ctx;
 
-  fracturesGroup.selectAll(`g.${classes.fractures.item}`).remove();
-
   const rf = renderConfig.fractures;
   const halfWidth = (POCO_WIDTH * rf.widthMultiplier) / 2;
   const xa = pocoCenterX - halfWidth;
@@ -52,23 +54,36 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
 
   const normToAbsX = (normX: number) => xa + normX * w;
 
-  data.forEach(fracture => {
+  const groups = fracturesGroup
+    .selectAll(`g.${classes.fractures.item}`)
+    .data(data, makePointKey('fracture'));
+
+  groups.exit().transition(ctx.transition).style('opacity', 0).remove();
+
+  const entered = groups
+    .enter()
+    .append('g')
+    .attr('class', classes.fractures.item)
+    .on('mouseover', tooltips.fracture.show)
+    .on('mouseout', tooltips.fracture.hide)
+    .style('cursor', 'pointer')
+    .style('opacity', 0);
+
+  const merged = mergeEnter(entered, groups);
+
+  merged.attr(
+    'transform',
+    fracture =>
+      `translate(0,${yScale(fracture.depth)}) rotate(${fracture.dip},${pocoCenterX},0)`,
+  );
+
+  merged.each(function (fracture) {
+    const g = d3.select(this);
+    g.selectAll('*').remove();
+
     const rng = makeSeededPrng(fracture.depth, 7919);
-    const cy = yScale(fracture.depth);
-
-    const g = fracturesGroup
-      .append('g')
-      .attr('class', classes.fractures.item)
-      .datum(fracture)
-      .attr(
-        'transform',
-        `translate(0,${cy}) rotate(${fracture.dip},${pocoCenterX},0)`,
-      )
-      .on('mouseover', tooltips.fracture.show)
-      .on('mouseout', tooltips.fracture.hide)
-      .style('cursor', 'pointer');
-
     const hitBuffer = fracture.swarm ? rf.hitBuffer.swarm : rf.hitBuffer.single;
+
     g.append('rect')
       .attr('class', classes.fractures.hitArea)
       .attr('x', xa)
@@ -187,4 +202,6 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
       }
     }
   });
+
+  merged.transition(ctx.transition).style('opacity', 1);
 }

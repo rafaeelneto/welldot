@@ -7,9 +7,9 @@ import { useProfileStore } from '@/src/store/profile/profile.store';
 import { Cave, Fracture, Lithology } from '@/src/types/profile.types';
 
 import {
-  CAVE_FEATURE_DEFAULT,
-  FRACTURE_FEATURE_DEFAULT,
-  LITHOLOGY_FEATURE_DEFAULT,
+  makeDefaultCave,
+  makeDefaultFracture,
+  makeDefaultLithology,
 } from '@/src/data/profile/profile.data';
 
 import { useColumns } from '@/src/data/dataSheet/useColumns';
@@ -37,7 +37,7 @@ export default function ProfileEditorConstructive() {
           data={profile.lithology}
           onChangeValues={getUpdateListingFeatures<Lithology>('lithology')}
           columns={lithologyColumns}
-          defaultValue={() => LITHOLOGY_FEATURE_DEFAULT}
+          defaultValue={makeDefaultLithology}
         />
       </div>
       <section className="grid grid-cols-1 xl:grid-cols-[700px_auto]">
@@ -48,7 +48,7 @@ export default function ProfileEditorConstructive() {
             data={profile.fractures}
             onChangeValues={getUpdateListingFeatures<Fracture>('fractures')}
             columns={fractureColumns}
-            defaultValue={() => FRACTURE_FEATURE_DEFAULT}
+            defaultValue={makeDefaultFracture}
           />
         </div>
         <div className="flex flex-col p-2.5"></div>
@@ -61,7 +61,7 @@ export default function ProfileEditorConstructive() {
             data={profile.caves}
             onChangeValues={getUpdateListingFeatures<Cave>('caves')}
             columns={caveColumns}
-            defaultValue={() => CAVE_FEATURE_DEFAULT}
+            defaultValue={makeDefaultCave}
           />
         </div>
         <div className="flex flex-col p-2.5"></div>

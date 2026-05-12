@@ -67,28 +67,6 @@ export const getYAxisFunctions = (
   };
 };
 
-function hashStr(s: string): string {
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) {
-    h = Math.imul(h, 33) ^ s.charCodeAt(i);
-  }
-  return (h >>> 0).toString(36);
-}
-
-/**
- * Returns a stable D3 data-join key for a depth-ranged datum by hashing its
- * non-depth fields. Keys survive `reorderComponentsDepth` because `from`/`to`
- * are excluded. Keys are sorted before serialization so field declaration order
- * in the type does not affect the result.
- */
-export function stableLayerKey<T extends { from: number; to: number }>(
-  d: T,
-): string {
-  const { from: _f, to: _t, ...rest } = d as Record<string, unknown>;
-  const sortedKeys = Object.keys(rest).sort();
-  return hashStr(JSON.stringify(rest, sortedKeys));
-}
-
 /** Returns a predicate that tests whether an interval overlaps the window [depthFrom, depthTo]. */
 export function filterByDepth(
   depthFrom: number,

@@ -26,6 +26,7 @@ import {
   DrawGroups,
   Highlights,
   InstanceState,
+  RenderableWell,
   RenderConfig,
   SvgInstance,
   SvgSelection,
@@ -238,7 +239,7 @@ export class WellRenderer {
    * @param options.highlights - Highlight overlays to display on top of the profile.
    */
   draw(
-    profile: Well,
+    profile: RenderableWell,
     options: { units?: Units; highlights?: Highlights } = {},
   ) {
     if (isWellEmpty(profile)) return;
@@ -284,7 +285,7 @@ export class WellRenderer {
 
   private drawLogToInstance(
     state: InstanceState,
-    profile: Well,
+    profile: RenderableWell,
     depthFrom: number,
     depthTo: number,
     highlights: Highlights = {},

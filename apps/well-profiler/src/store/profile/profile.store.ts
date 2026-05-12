@@ -1,5 +1,5 @@
 import { create, type StateCreator } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { notifications } from '@mantine/notifications';
 
@@ -8,9 +8,7 @@ import {
   BoreHole,
   Cave,
   CementPad,
-  Constructive,
   Fracture,
-  Geologic,
   HoleFill,
   Lithology,
   Profile,
@@ -19,7 +17,12 @@ import {
   WellCase,
   WellScreen,
 } from '@/src/types/profile.types';
-import { convertProfileFromJSON } from '@/src/utils/profile.utils';
+import { deserializeWell } from '@welldot/core';
+
+function withId<T extends object>(feature: T): T & { id: string } {
+  const f = feature as T & { id?: string };
+  return f.id ? (f as T & { id: string }) : { ...f, id: crypto.randomUUID() };
+}
 
 // TODO move this function to utils
 function reorderComponentsDepth<T>(
@@ -108,24 +111,31 @@ const state: StateCreator<IProfileState> = (set, get) => ({
     function reorderConstructive(newFeatures: T[]) {
       const currProfile = { ...get().profile };
 
-      currProfile[property] = newFeatures as any;
+      const featuresWithIds = newFeatures.map(withId);
+      currProfile[property] = featuresWithIds as any;
 
       if (CHAING_TYPES.has(property as ChainingKeys)) {
         currProfile[property] = reorderComponentsDepth<T>(
-          newFeatures as ChainingTypes[],
+          featuresWithIds as unknown as ChainingTypes[],
         ) as any;
       }
 
       if (currProfile[property][0]?.hasOwnProperty('depth')) {
-        currProfile[property] = newFeatures.sort((a, b) => {
-          if ('depth' in a && 'depth' in b) {
-            return a.depth - b.depth;
-          }
-          if ('from' in a && 'from' in b) {
-            return a.from - b.from;
-          }
-          return 0;
-        }).map((feature) => ({ ...feature, depth: feature['depth'] >= 0 ? feature['depth'] : 0 })) as any;
+        currProfile[property] = featuresWithIds
+          .sort((a, b) => {
+            if ('depth' in a && 'depth' in b) {
+              return (a as any).depth - (b as any).depth;
+            }
+            if ('from' in a && 'from' in b) {
+              return (a as any).from - (b as any).from;
+            }
+            return 0;
+          })
+          .map(feature => ({
+            ...feature,
+            depth:
+              (feature as any)['depth'] >= 0 ? (feature as any)['depth'] : 0,
+          })) as any;
       }
 
       get().updateProfile(currProfile);
@@ -150,7 +160,7 @@ const state: StateCreator<IProfileState> = (set, get) => ({
   },
   updateProfileFromJSON: (jsonProfile: string) => {
     try {
-      const importedWell = convertProfileFromJSON(jsonProfile);
+      const importedWell = deserializeWell(jsonProfile);
       if (!importedWell) return;
       get().updateProfile(importedWell);
     } catch (error) {

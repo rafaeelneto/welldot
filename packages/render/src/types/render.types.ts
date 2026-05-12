@@ -1,9 +1,16 @@
 import type {
+  BoreHole,
   Cave,
   Constructive,
   Fracture,
+  HoleFill,
   Lithology,
+  Reduction,
+  SurfaceCase,
   Units,
+  Well,
+  WellCase,
+  WellScreen,
 } from '@welldot/core';
 import {
   type BaseType,
@@ -481,4 +488,44 @@ export type DrawContext = {
   /** Full (unfiltered) construction profile — for x-scale domain. */
   constructionData: Constructive;
   groups: DrawGroups;
+};
+
+/** Attaches an optional stable render identity to any feature type. */
+export type WithId<T> = T & { id?: string | number };
+
+/**
+ * A `Well` profile where every feature array element may carry an optional `id`.
+ *
+ * When `id` is present the renderer uses it as the D3 data-join key, giving
+ * fully stable DOM identity regardless of depth edits or array reordering.
+ * When absent the renderer falls back to coordinate-based keys (`from:to` or
+ * `depth:index`).
+ *
+ * A plain `Well` object is directly assignable to `RenderableWell` — `id` is
+ * optional, so no migration is required for consumers that do not need stable
+ * animation. Consumers that do need it should generate a stable id (e.g.
+ * `crypto.randomUUID()`) once when a feature is created and keep it on the
+ * object across all subsequent edits.
+ */
+export type RenderableWell = Omit<
+  Well,
+  | 'lithology'
+  | 'fractures'
+  | 'caves'
+  | 'bore_hole'
+  | 'well_case'
+  | 'well_screen'
+  | 'hole_fill'
+  | 'surface_case'
+  | 'reduction'
+> & {
+  lithology: WithId<Lithology>[];
+  fractures: WithId<Fracture>[];
+  caves: WithId<Cave>[];
+  bore_hole: WithId<BoreHole>[];
+  well_case: WithId<WellCase>[];
+  well_screen: WithId<WellScreen>[];
+  hole_fill: WithId<HoleFill>[];
+  surface_case: WithId<SurfaceCase>[];
+  reduction: WithId<Reduction>[];
 };
