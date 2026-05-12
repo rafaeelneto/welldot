@@ -12,6 +12,7 @@ import type {
 import { getProfileDiamValues } from '@welldot/utils';
 import type { Conflict, DrawContext } from '~/types/render.types';
 import { mergeEnter, withTransition } from '~/utils/d3.utils';
+import { makeIntervalKey } from '~/utils/key.utils';
 import {
   getConflictAreas,
   getYAxisFunctions,
@@ -47,7 +48,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
   if (data.cement_pad && data.cement_pad.thickness && ctx.depthFrom === 0) {
     const cementPad = ctx.groups.cementPadGroup
       .selectAll('rect')
-      .data([data.cement_pad]);
+      .data([data.cement_pad], () => 'cement_pad');
 
     cementPad.exit().remove();
 
@@ -85,7 +86,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
   const hole = ctx.groups.holeGroup
     .selectAll(`.${ctx.classes.boreHole.rect}`)
-    .data(data.bore_hole);
+    .data(data.bore_hole, makeIntervalKey('bore_hole'));
 
   hole.exit().remove();
 
@@ -110,7 +111,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
   const surfaceCaseGs = ctx.groups.surfaceCaseGroup
     .selectAll(`g.${ctx.classes.surfaceCase.rect}`)
-    .data(data.surface_case);
+    .data(data.surface_case, makeIntervalKey('surface_case'));
 
   surfaceCaseGs.exit().transition(ctx.transition).style('opacity', 0).remove();
 
@@ -179,7 +180,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
   const holeFill = ctx.groups.holeFillGroup
     .selectAll(`.${ctx.classes.holeFill.rect}`)
-    .data(data.hole_fill);
+    .data(data.hole_fill, makeIntervalKey('hole_fill'));
 
   holeFill.exit().remove();
 
@@ -202,7 +203,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
   const wellCase = ctx.groups.wellCaseGroup
     .selectAll(`.${ctx.classes.wellCase.rect}`)
-    .data(data.well_case);
+    .data(data.well_case, makeIntervalKey('well_case'));
 
   wellCase.exit().remove();
 
@@ -225,7 +226,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
   const wellScreen = ctx.groups.wellScreenGroup
     .selectAll(`.${ctx.classes.wellScreen.rect}`)
-    .data(data.well_screen);
+    .data(data.well_screen, makeIntervalKey('well_screen'));
 
   wellScreen.exit().remove();
 
@@ -254,7 +255,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
   const conflict = ctx.groups.conflictGroup
     .selectAll(`.${ctx.classes.conflict.rect}`)
-    .data(mergedConflicts);
+    .data(mergedConflicts, makeIntervalKey('conflict'));
 
   conflict.exit().remove();
 

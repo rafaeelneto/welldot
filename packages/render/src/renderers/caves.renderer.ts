@@ -1,5 +1,9 @@
+import * as d3 from 'd3';
+
 import { Cave } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
+import { mergeEnter } from '~/utils/d3.utils';
+import { makeIntervalKey } from '~/utils/key.utils';
 import {
   makeSeededPrng,
   ptsToSmoothPath,
@@ -32,11 +36,28 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
     tooltips,
   } = ctx;
 
-  cavesGroup.selectAll(`g.${classes.caves.item}`).remove();
-
   const rc = renderConfig.caves;
 
-  data.forEach(cave => {
+  const groups = cavesGroup
+    .selectAll<SVGGElement, Cave>(`g.${classes.caves.item}`)
+    .data(data, makeIntervalKey('cave'));
+
+  groups.exit().remove();
+
+  const entered = groups
+    .enter()
+    .append('g')
+    .attr('class', classes.caves.item)
+    .style('cursor', 'pointer')
+    .on('mouseover', tooltips.cave.show)
+    .on('mouseout', tooltips.cave.hide);
+
+  const merged = mergeEnter(entered, groups);
+
+  merged.each(function (cave) {
+    const g = d3.select(this);
+    g.selectAll('*').remove();
+
     // Two different seeds so top and bottom contacts are visually independent.
     // Multiplying by 100 ensures uniqueness even for small integer coordinates
     // (e.g. from=5, to=10 → seedTop=510; from=10, to=5 → seedTop=1005).
@@ -48,7 +69,7 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
 
     const yTop = yScale(Math.max(cave.from, depthFrom));
     const yBot = yScale(Math.min(cave.to, depthTo));
-    const span = yBot - yTop; // pixel height of the cave band
+    const span = yBot - yTop;
 
     const amp = Math.max(
       rc.amplitude.min,
@@ -71,7 +92,6 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
         ] as [number, number][])
       : wavyContact(geoXLeft, geoXRight, yBot, amp, rc.pathSteps, rngBot);
 
-    // Smooth path strings for each contact
     const topPath = topCut
       ? `M ${geoXLeft.toFixed(1)},${yTop.toFixed(1)} L ${geoXRight.toFixed(1)},${yTop.toFixed(1)}`
       : ptsToSmoothPath(topPts);
@@ -90,15 +110,6 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
     const caveTexture = cave.water_intake
       ? textures.cave_wet
       : textures.cave_dry;
-
-    const g = cavesGroup
-      .append('g')
-      .attr('class', classes.caves.item)
-      .datum(cave)
-      .style('cursor', 'pointer')
-      .on('mouseover', tooltips.cave.show)
-      .on('mouseout', tooltips.cave.hide);
-
     const caveStroke = cave.water_intake
       ? theme.cave.wetStroke
       : theme.cave.dryStroke;

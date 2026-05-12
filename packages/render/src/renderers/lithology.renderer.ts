@@ -1,6 +1,7 @@
 import { Lithology } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
 import { mergeEnter, withTransition } from '~/utils/d3.utils';
+import { makeIntervalKey } from '~/utils/key.utils';
 import { getLithologyFill, getYAxisFunctions } from '~/utils/render.utils';
 
 /**
@@ -35,7 +36,7 @@ export function drawLithology(ctx: DrawContext, data: Lithology[]): void {
 
   const rects = lithologyGroup
     .selectAll(`.${classes.lithology.rect}`)
-    .data(data);
+    .data(data, makeIntervalKey('lithology'));
 
   rects.exit().remove();
 
