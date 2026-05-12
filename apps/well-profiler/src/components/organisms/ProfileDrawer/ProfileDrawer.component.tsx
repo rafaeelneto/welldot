@@ -85,7 +85,9 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
   useEffect(() => {
     if (!profileDrawer.current) return;
     const highlights: Highlights = hoveredLithology
-      ? { lithology: [{ from: hoveredLithology.from, to: hoveredLithology.to }] }
+      ? {
+          lithology: [{ from: hoveredLithology.from, to: hoveredLithology.to }],
+        }
       : {};
     profileDrawer.current.draw(profile, {
       units: { length: length_units, diameter: diameter_units },
@@ -110,12 +112,12 @@ const ProfileDrawer = ({ profile }: ProfileDrawerProps) => {
     };
     const handleLeave = () => setHoveredLithology(null);
 
-    svg.addEventListener('mouseover', handleOver);
-    svg.addEventListener('mouseleave', handleLeave);
-    return () => {
-      svg.removeEventListener('mouseover', handleOver);
-      svg.removeEventListener('mouseleave', handleLeave);
-    };
+    // svg.addEventListener('mouseover', handleOver);
+    // svg.addEventListener('mouseleave', handleLeave);
+    // return () => {
+    //   svg.removeEventListener('mouseover', handleOver);
+    //   svg.removeEventListener('mouseleave', handleLeave);
+    // };
   }, []);
 
   const noProfile = isWellEmpty(profile);

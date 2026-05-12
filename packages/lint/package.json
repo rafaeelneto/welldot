@@ -12,14 +12,15 @@
   },
   "dependencies": {
     "@eslint/js": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "eslint-config-prettier": "*",
     "eslint-plugin-import-x": "*",
-    "eslint-plugin-prettier": "*"
+    "eslint-plugin-prettier": "*",
+    "eslint-plugin-vue": "*",
+    "typescript-eslint": "*",
+    "vue-eslint-parser": "*"
   },
   "peerDependencies": {
-    "eslint": "^9.0.0",
+    "eslint": "^9.0.0 || ^10.0.0",
     "prettier": "^3.0.0"
   }
 }
