@@ -41,6 +41,10 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
   const rcc = ctx.renderConfig.construction;
 
+  // Enter selections have datum:unknown; cast getYPos once so it can be used
+  // as a ValueFn without triggering TS errors at each call site.
+  const yPos = getYPos as (d: unknown) => number;
+
   ctx.groups.constructionGroup
     .selectAll(`.${ctx.classes.cementPad.item}`)
     .remove();
@@ -84,11 +88,13 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
       .on('mouseout', ctx.tooltips.cementPad.hide);
   }
 
+  // ── Bore hole ──────────────────────────────────────────────────────────────
+
   const hole = ctx.groups.holeGroup
     .selectAll(`.${ctx.classes.boreHole.rect}`)
     .data(data.bore_hole, makeIntervalKey('bore_hole'));
 
-  hole.exit().remove();
+  hole.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newHole = hole
     .enter()
@@ -100,7 +106,9 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('stroke-width', ctx.theme.boreHole.strokeWidth)
     .attr('stroke-dasharray', ctx.theme.boreHole.strokeDasharray)
     .on('mouseover', ctx.tooltips.hole.show)
-    .on('mouseout', ctx.tooltips.hole.hide);
+    .on('mouseout', ctx.tooltips.hole.hide)
+    .attr('y', yPos)
+    .attr('height', 0);
 
   const mergedHole = mergeEnter(newHole, hole)
     .attr('x', (d: BoreHole) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
@@ -108,6 +116,8 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
   withTransition(mergedHole, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight);
+
+  // ── Surface case ───────────────────────────────────────────────────────────
 
   const surfaceCaseGs = ctx.groups.surfaceCaseGroup
     .selectAll(`g.${ctx.classes.surfaceCase.rect}`)
@@ -125,7 +135,9 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
   newSC
     .append('rect')
     .attr('class', 'surface-case-fill')
-    .attr('stroke', 'none');
+    .attr('stroke', 'none')
+    .attr('y', yPos)
+    .attr('height', 0);
   newSC
     .append('line')
     .attr('class', 'surface-case-side')
@@ -178,11 +190,13 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
       (d: unknown) => getYPos(d as SurfaceCase) + getHeight(d as SurfaceCase),
     );
 
+  // ── Hole fill ──────────────────────────────────────────────────────────────
+
   const holeFill = ctx.groups.holeFillGroup
     .selectAll(`.${ctx.classes.holeFill.rect}`)
     .data(data.hole_fill, makeIntervalKey('hole_fill'));
 
-  holeFill.exit().remove();
+  holeFill.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newHoleFill = holeFill
     .enter()
@@ -191,7 +205,9 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('stroke', ctx.theme.holeFill.stroke)
     .attr('stroke-width', ctx.theme.holeFill.strokeWidth)
     .on('mouseover', ctx.tooltips.holeFill.show)
-    .on('mouseout', ctx.tooltips.holeFill.hide);
+    .on('mouseout', ctx.tooltips.holeFill.hide)
+    .attr('y', yPos)
+    .attr('height', 0);
 
   const mergedHoleFill = mergeEnter(newHoleFill, holeFill)
     .attr('x', (d: HoleFill) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
@@ -201,11 +217,13 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('height', getHeight)
     .attr('fill', (d: HoleFill) => ctx.textures[d.type].url());
 
+  // ── Well case ──────────────────────────────────────────────────────────────
+
   const wellCase = ctx.groups.wellCaseGroup
     .selectAll(`.${ctx.classes.wellCase.rect}`)
     .data(data.well_case, makeIntervalKey('well_case'));
 
-  wellCase.exit().remove();
+  wellCase.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newWellCase = wellCase
     .enter()
@@ -215,7 +233,9 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('stroke', ctx.theme.wellCase.stroke)
     .attr('stroke-width', ctx.theme.wellCase.strokeWidth)
     .on('mouseover', ctx.tooltips.wellCase.show)
-    .on('mouseout', ctx.tooltips.wellCase.hide);
+    .on('mouseout', ctx.tooltips.wellCase.hide)
+    .attr('y', yPos)
+    .attr('height', 0);
 
   const mergedWellCase = mergeEnter(newWellCase, wellCase)
     .attr('x', (d: WellCase) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
@@ -224,11 +244,13 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('y', getYPos)
     .attr('height', getHeight);
 
+  // ── Well screen ────────────────────────────────────────────────────────────
+
   const wellScreen = ctx.groups.wellScreenGroup
     .selectAll(`.${ctx.classes.wellScreen.rect}`)
     .data(data.well_screen, makeIntervalKey('well_screen'));
 
-  wellScreen.exit().remove();
+  wellScreen.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newWellScreen = wellScreen
     .enter()
@@ -238,7 +260,9 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('stroke', ctx.theme.wellScreen.stroke)
     .attr('stroke-width', ctx.theme.wellScreen.strokeWidth)
     .on('mouseover', ctx.tooltips.wellScreen.show)
-    .on('mouseout', ctx.tooltips.wellScreen.hide);
+    .on('mouseout', ctx.tooltips.wellScreen.hide)
+    .attr('y', yPos)
+    .attr('height', 0);
 
   const mergedWellScreen = mergeEnter(newWellScreen, wellScreen)
     .attr('x', (d: WellScreen) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)
@@ -246,6 +270,8 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
   withTransition(mergedWellScreen, ctx.transition)
     .attr('y', getYPos)
     .attr('height', getHeight);
+
+  // ── Conflict zones ─────────────────────────────────────────────────────────
 
   const conflictAreas: Conflict[] = [];
   conflictAreas.push(...getConflictAreas(data.well_case, data.well_screen));
@@ -257,7 +283,7 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .selectAll(`.${ctx.classes.conflict.rect}`)
     .data(mergedConflicts, makeIntervalKey('conflict'));
 
-  conflict.exit().remove();
+  conflict.exit().transition(ctx.transition).attr('height', 0).remove();
 
   const newConflict = conflict
     .enter()
@@ -267,7 +293,9 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
     .attr('stroke', ctx.theme.conflict.stroke)
     .attr('stroke-width', ctx.theme.conflict.strokeWidth)
     .on('mouseover', ctx.tooltips.conflict.show)
-    .on('mouseout', ctx.tooltips.conflict.hide);
+    .on('mouseout', ctx.tooltips.conflict.hide)
+    .attr('y', ctx.yScale(0))
+    .attr('height', 0);
 
   const mergedConflict = mergeEnter(newConflict, conflict)
     .attr('x', (d: Conflict) => (ctx.POCO_CENTER - xScale(d.diameter)) / 2)

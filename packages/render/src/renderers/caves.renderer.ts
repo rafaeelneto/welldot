@@ -39,10 +39,10 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
   const rc = renderConfig.caves;
 
   const groups = cavesGroup
-    .selectAll<SVGGElement, Cave>(`g.${classes.caves.item}`)
+    .selectAll(`g.${classes.caves.item}`)
     .data(data, makeIntervalKey('cave'));
 
-  groups.exit().remove();
+  groups.exit().transition(ctx.transition).style('opacity', 0).remove();
 
   const entered = groups
     .enter()
@@ -50,7 +50,8 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
     .attr('class', classes.caves.item)
     .style('cursor', 'pointer')
     .on('mouseover', tooltips.cave.show)
-    .on('mouseout', tooltips.cave.hide);
+    .on('mouseout', tooltips.cave.hide)
+    .style('opacity', 0);
 
   const merged = mergeEnter(entered, groups);
 
@@ -139,4 +140,6 @@ export function drawCaves(ctx: DrawContext, data: Cave[]): void {
       .attr('stroke-linecap', 'round')
       .attr('stroke-linejoin', 'round');
   });
+
+  merged.transition(ctx.transition).style('opacity', 1);
 }

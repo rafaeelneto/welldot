@@ -38,7 +38,7 @@ export function drawLithology(ctx: DrawContext, data: Lithology[]): void {
     .selectAll(`.${classes.lithology.rect}`)
     .data(data, makeIntervalKey('lithology'));
 
-  rects.exit().remove();
+  rects.exit().transition(transition).attr('height', 0).remove();
 
   const newLayers = rects
     .enter()
@@ -49,10 +49,13 @@ export function drawLithology(ctx: DrawContext, data: Lithology[]): void {
     .attr('stroke', theme.lithology.stroke)
     .attr('stroke-width', theme.lithology.strokeWidth)
     .on('mouseover', tooltips.geology.show)
-    .on('mouseout', tooltips.geology.hide);
+    .on('mouseout', tooltips.geology.hide)
+    .attr('y', getYPos)
+    .attr('height', 0);
 
-  const merged = mergeEnter(newLayers, rects).attr('y', getYPos);
+  const merged = mergeEnter(newLayers, rects);
   withTransition(merged, transition)
+    .attr('y', getYPos)
     .attr('height', getHeight)
     .attr('fill', getLithologyFill(data, svg, ctx.theme.lithologyTexture));
 }

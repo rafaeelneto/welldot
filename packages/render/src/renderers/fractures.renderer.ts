@@ -55,10 +55,10 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
   const normToAbsX = (normX: number) => xa + normX * w;
 
   const groups = fracturesGroup
-    .selectAll<SVGGElement, Fracture>(`g.${classes.fractures.item}`)
+    .selectAll(`g.${classes.fractures.item}`)
     .data(data, makePointKey('fracture'));
 
-  groups.exit().remove();
+  groups.exit().transition(ctx.transition).style('opacity', 0).remove();
 
   const entered = groups
     .enter()
@@ -66,7 +66,8 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
     .attr('class', classes.fractures.item)
     .on('mouseover', tooltips.fracture.show)
     .on('mouseout', tooltips.fracture.hide)
-    .style('cursor', 'pointer');
+    .style('cursor', 'pointer')
+    .style('opacity', 0);
 
   const merged = mergeEnter(entered, groups);
 
@@ -201,4 +202,6 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
       }
     }
   });
+
+  merged.transition(ctx.transition).style('opacity', 1);
 }

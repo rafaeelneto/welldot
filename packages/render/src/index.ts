@@ -22,9 +22,11 @@ export type {
   LithologyTextureTheme,
   LithologyTheme,
   RenderConfig,
+  RenderableWell,
   SvgInstance,
   TooltipKey,
   WellTheme,
+  WithId,
 } from './types/render.types';
 export {
   formatDiameter,
@@ -32,4 +34,3 @@ export {
   getDiameterUnit,
   getLengthUnit,
 } from './utils/format.utils';
-// WellRendererPDF intentionally not exported — pending removal of src_old dependency
