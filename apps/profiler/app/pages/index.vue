@@ -94,7 +94,7 @@ const horizonProps = [
   {
     num: '§ 4.1',
     title: '.las nativo',
-    body: 'Importação e armazenamento de perfis elétricos LAS, lado a lado com o perfil litológico.',
+    body: 'Importação e armazenamento de perfis geofísicos LAS, lado a lado com o perfil litológico.',
   },
   {
     num: '§ 4.2',
@@ -154,26 +154,26 @@ const horizonProps = [
       "
     />
 
-    <div class="lg:grid lg:grid-cols-[1fr_520px] lg:items-start">
+    <div class="lg:grid lg:grid-cols-[1fr_660px] lg:items-start">
       <!-- ── Left: scrolling content ─────────────────────────────────────── -->
-      <div>
+      <div class="relative z-10">
         <!-- Hero section -->
         <div
-          class="container-landing relative pt-8 pb-7 lg:pt-16 lg:pb-14 border-b border-surface-200/40"
+          class="container-landing pt-8 pb-7 lg:pt-16 lg:pb-14 border-b border-surface-200/40"
         >
           <div
-            class="font-mono text-[11px] tracking-[0.12em] uppercase text-content-500 mb-[18px]"
+            class="font-mono text-[11px] tracking-[0.12em] uppercase text-content-500 mb-[18px] w-fit bg-surface-0/55 backdrop-blur-sm rounded px-2 py-0.5"
           >
             .well · formato aberto
           </div>
           <h1
-            class="font-serif font-medium text-[44px] lg:text-[76px] leading-none tracking-[-0.025em] mb-[14px] lg:mb-[22px] text-balance"
+            class="font-serif font-medium text-[44px] lg:text-[76px] leading-none tracking-[-0.025em] mb-[14px] lg:mb-[22px] text-balance w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             Perfis de poços, em
             <em class="text-primary-500">arquivo aberto</em>.
           </h1>
           <p
-            class="text-[15px] lg:text-[19px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-5 lg:mb-7"
+            class="text-[15px] lg:text-[19px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-5 lg:mb-7 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             Editor livre para criar, visualizar e exportar perfis geológicos e
             construtivos. Um JSON simples, versionado, legível por qualquer
@@ -203,7 +203,7 @@ const horizonProps = [
 
         <!-- Mobile: hero visual (scroll-driven, inline) -->
         <div
-          class="block lg:hidden relative w-full h-[min(520px,65vh)] border-b border-surface-200/40"
+          class="block lg:hidden relative w-full h-[min(680px,80vh)] border-b border-surface-200/40"
         >
           <ClientOnly>
             <LandingHeroVisual :progress="scrollProgress * 2.5" />
@@ -211,15 +211,19 @@ const horizonProps = [
         </div>
 
         <!-- §I · O formato -->
-        <div class="container-landing relative py-14 lg:py-20">
-          <div class="kicker mb-[18px]">I · O formato</div>
+        <div class="container-landing py-14 lg:py-20">
+          <div
+            class="kicker mb-[18px] w-fit bg-surface-0/55 backdrop-blur-sm rounded px-2 py-0.5"
+          >
+            I · O formato
+          </div>
           <h2
-            class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-[14px]"
+            class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-[14px] w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             Um JSON.<br /><em class="text-primary-500">Três</em> propósitos.
           </h2>
           <p
-            class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8"
+            class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             Hoje, dados de poços vivem em PDFs que não se conversam entre si. O
             arquivo <b>.well</b> é um formato simples e versionado para mudar
@@ -240,11 +244,14 @@ const horizonProps = [
         </div>
       </div>
 
-      <!-- ── Right: sticky Three.js visual ──────────────────────────────── -->
+      <!-- ── Right: sticky visual — bleeds leftward behind content ────────── -->
       <div
-        class="hidden lg:block sticky top-[60px] h-[calc(100vh-60px)] overflow-hidden pr-6 lg:pr-11 pt-8 lg:pt-16"
+        class="hidden lg:block sticky top-[60px] h-[calc(100vh-60px)] overflow-visible pt-8 lg:pt-14 pr-4 z-0"
       >
-        <div class="relative w-full h-full" style="perspective: 1600px">
+        <div
+          class="relative h-full"
+          style="margin-left: -120px; width: calc(100% + 120px)"
+        >
           <ClientOnly>
             <LandingHeroVisual :progress="scrollProgress" />
           </ClientOnly>
@@ -317,29 +324,21 @@ const horizonProps = [
           fora.
         </h2>
         <p class="text-[15px] leading-[1.55] text-content-400 mb-3.5">
-          Um único arquivo serve a múltiplos contextos: pode ser
-          <em>guardado em pastas</em>, versionado em git, indexado em
-          <em>bancos de dados</em> relacionais ou documentais, e — por ser texto
-          legível com especificação pública —
-          <em>analisado por modelos de IA</em> sem necessidade de parsers
-          proprietários.
-        </p>
-        <p class="text-[15px] leading-[1.55] text-content-400 mb-3.5">
-          Padronização internacional por padrão: <b>SI</b> em toda parte, chaves
-          em inglês, coordenadas <b>WGS84</b> em graus decimais. O núcleo é
-          rígido onde precisa ser comparável; o resto permanece
-          <em>flexível</em>.
+          Um único arquivo em texto legível: arquivável em pastas, versionável
+          em git, indexável em bancos de dados, <em>analisável por IA</em>. O
+          núcleo é rígido onde importa — <b>métricas em SI</b>, <b>WGS84</b>,
+          chaves em inglês — e <em>flexível</em> no resto.
         </p>
         <p
           class="text-[15px] lg:text-[18px] leading-[1.55] text-content-400 mb-6 lg:mb-0"
         >
-          Para conversar com modelos de IA, o repositório traz uma
-          <b>skill</b> pronta — basta apontar o agente para
+          O repositório inclui uma <b>skill</b> pronta: aponte qualquer agente
+          para
           <code
             class="font-mono text-[0.92em] bg-black/[0.04] px-1.5 py-0.5 rounded"
             >github.com/rafaeelneto/welldot</code
           >
-          e ele opera o formato sem prompt extra.
+          e ele opera o formato nativamente.
         </p>
       </div>
       <!-- Context stack -->

@@ -1,5 +1,6 @@
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
+import type { ComponentsDesignTokens } from '@primeuix/themes/types';
 
 // Cool-slate surface scale (blue-tinted neutrals, light → dark)
 const surfaceLight = {
@@ -176,9 +177,9 @@ const MyPreset = definePreset(Aura, {
                 'linear-gradient(180deg, {primary.300}, {primary.500})',
               activeBackground:
                 'linear-gradient(180deg, {primary.500}, {primary.700})',
-              borderColor: 'transparent',
-              hoverBorderColor: 'transparent',
-              activeBorderColor: 'transparent',
+              borderColor: 'none',
+              hoverBorderColor: 'none',
+              activeBorderColor: 'none',
               color: '{content.950}',
               hoverColor: '{content.950}',
               activeColor: '{content.950}',
@@ -205,7 +206,7 @@ const MyPreset = definePreset(Aura, {
         },
       },
     },
-  },
+  } as ComponentsDesignTokens,
 });
 
 export default {
