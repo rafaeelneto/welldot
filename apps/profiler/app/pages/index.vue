@@ -95,7 +95,7 @@ const horizonProps = computed(() =>
       "
     />
 
-    <div class="lg:grid lg:grid-cols-[1fr_660px] lg:items-start">
+    <div class="lg:grid lg:grid-cols-[1fr_660px] lg:items-start max-w-400 mx-auto w-full">
       <!-- ── Left: scrolling content ─────────────────────────────────────── -->
       <div class="relative z-10">
         <!-- Hero section -->
