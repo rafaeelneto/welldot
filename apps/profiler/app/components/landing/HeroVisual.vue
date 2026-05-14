@@ -4,6 +4,7 @@ import { WellRenderer, INTERACTIVE_RENDER_CONFIG } from '@welldot/render';
 import { useDark } from '@vueuse/core';
 
 const props = defineProps<{ progress: number }>();
+const { t } = useI18n();
 
 const svgId = `hero-well-${Math.random().toString(36).slice(2, 8)}`;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1160,8 +1161,8 @@ onUnmounted(() => {
     <div class="live-label">
       <span class="live-dot" />
       <span class="live-text">
-        <span class="live-title">live preview</span>
-        <span class="live-sub">perfil gerado ao vivo</span>
+        <span class="live-title">{{ t('heroVisual.liveTitle') }}</span>
+        <span class="live-sub">{{ t('heroVisual.liveSub') }}</span>
       </span>
     </div>
 

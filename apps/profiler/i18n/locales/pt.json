@@ -1,0 +1,167 @@
+{
+  "meta": {
+    "title": "Welldot — Formato aberto para perfis de poços",
+    "description": "Editor livre para criar, visualizar e exportar perfis geológicos e construtivos. Um JSON simples, versionado, legível por qualquer linguagem."
+  },
+  "nav": {
+    "editor": "Editor",
+    "github": "GitHub",
+    "openEditor": "Abrir editor",
+    "openEditorMobile": "Editor",
+    "menu": "Menu",
+    "theme": {
+      "light": "Modo claro",
+      "dark": "Modo escuro"
+    }
+  },
+  "footer": {
+    "version": "welldot · v1.0.0",
+    "spec": ".well spec v1.0",
+    "license": "Aberto · Apache 2.0"
+  },
+  "hero": {
+    "kicker": ".well · formato aberto",
+    "headline1": "Perfis de poços, em",
+    "headlineEm": "arquivo aberto",
+    "headline2": ".",
+    "body": "Editor livre para criar, visualizar e exportar perfis geológicos e construtivos. Um JSON simples, versionado, legível por qualquer linguagem.",
+    "ctaPrimary": "Abrir editor →",
+    "ctaSecondary": "Ver especificação",
+    "badgeSpec": "spec",
+    "badgeLicense": "licença",
+    "badgeSite": "welldot.org"
+  },
+  "format": {
+    "kicker": "I · O formato",
+    "headline1": "Um JSON.",
+    "headlineEm": "Três",
+    "headline2": "propósitos.",
+    "intro": "Hoje, dados de poços vivem em PDFs que não se conversam entre si. O arquivo {well} é um formato simples e versionado para mudar isso — um único JSON que descreve o poço por inteiro, pensado como {standard}.",
+    "standard": "padrão internacional",
+    "props": [
+      {
+        "num": "§ 1.1",
+        "title": "Visualização",
+        "body": "Biblioteca livre em D3.js para renderizar e exportar perfis geológicos e construtivos em escala real."
+      },
+      {
+        "num": "§ 1.2",
+        "title": "Registro",
+        "body": "Estrutura previsível para arquivar e versionar dados de poços, prontos para submissão e auditoria."
+      },
+      {
+        "num": "§ 1.3",
+        "title": "Pesquisa",
+        "body": "Campos métricos e organizados permitem cruzar e comparar poços entre aquíferos, regiões e épocas."
+      },
+      {
+        "num": "§ 1.4",
+        "title": "Aberto",
+        "body": "JSON legível por humanos, especificação pública e licença permissiva — livre para usar, estender e contribuir."
+      }
+    ]
+  },
+  "intention": {
+    "kicker": "II · Intenção",
+    "body": "Hoje, o dado de um poço d'água existe em muitos lugares: no caderno do perfurador, na planilha do consultor, no PDF do relatório entregue ao órgão licenciador. Cada um em seu formato, cada um {unreadable}. O {welldot} e o formato {well} foram criados para resolver isso.",
+    "unreadable": "ilegível para o outro",
+    "pillars": [
+      {
+        "title": "Editor ao vivo",
+        "body": "Tabelas ligadas ao desenho. Edite uma camada, veja o perfil redesenhado em escala real."
+      },
+      {
+        "title": "Formato aberto",
+        "body": "JSON legível, especificação pública e licença Apache 2.0. Implemente em qualquer linguagem."
+      },
+      {
+        "title": "Submissão pronta",
+        "body": "PDFs A4 em escala real, com cabeçalho, metadados e desenho multipágina."
+      }
+    ]
+  },
+  "contexts": {
+    "kicker": "III · Um arquivo, muitos contextos",
+    "headline1": "Padrão por dentro,",
+    "headlineEm": "flexível",
+    "headline2": "por fora.",
+    "text1": "Um único arquivo em texto legível: arquivável em pastas, versionável em git, indexável em bancos de dados, {aiEm}. O núcleo é rígido onde importa — {si}, {wgs}, chaves em inglês — e {flexible} no resto.",
+    "text2": "O repositório inclui uma {skill} pronta: aponte qualquer agente para {repo} e ele opera o formato nativamente.",
+    "aiEm": "analisável por IA",
+    "si": "métricas em SI",
+    "flexible": "flexível",
+    "cards": [
+      {
+        "title": "Pastas & arquivos",
+        "meta": "p4-exemplo.well · 12 KB"
+      },
+      {
+        "title": "Versionado",
+        "meta": "commit 9fa2d1d · main"
+      },
+      {
+        "title": "Banco de dados",
+        "meta": "JSONB · documentos · índices"
+      },
+      {
+        "title": "Modelos de IA",
+        "meta": "legível → sem parser proprietário"
+      },
+      {
+        "title": "welldot.skill",
+        "meta": "github.com/rafaeelneto/welldot"
+      }
+    ]
+  },
+  "horizon": {
+    "kicker": "IV · No horizonte",
+    "headline1": "O",
+    "headlineEm": "futuro",
+    "headline2": ".",
+    "intro": "A v1 cobre perfil geológico e construtivo. A especificação evolui de forma aberta para abraçar todo o ciclo de vida de um poço.",
+    "props": [
+      {
+        "num": "§ 4.1",
+        "title": ".las nativo",
+        "body": "Importação e armazenamento de perfis geofísicos LAS, lado a lado com o perfil litológico."
+      },
+      {
+        "num": "§ 4.2",
+        "title": "Testes de bombeamento",
+        "body": "Pump tests, recuperação, vazão específica e parâmetros hidrodinâmicos como séries temporais."
+      },
+      {
+        "num": "§ 4.3",
+        "title": "Histórico operacional",
+        "body": "Log de eventos: manutenções, troca de bomba, nível estático, paradas — datados e atribuíveis."
+      },
+      {
+        "num": "§ 4.4",
+        "title": "Qualidade da água",
+        "body": "Análises físico-químicas e bacteriológicas vinculadas à amostragem, profundidade e data."
+      },
+      {
+        "num": "§ 4.5",
+        "title": "Metadados estendidos",
+        "body": "Outorga, proprietário, regime de uso, referências cadastrais e vínculos com bases regulatórias."
+      },
+      {
+        "num": "§ 4.6",
+        "title": "Extensões da comunidade",
+        "body": "Namespaces para campos específicos de órgãos e regiões, sem quebrar o núcleo padronizado."
+      }
+    ]
+  },
+  "cta": {
+    "headline1": "Tudo sobre um poço,",
+    "headlineEm": "registrado de uma vez",
+    "headline2": ".",
+    "subtitle": "Livre para usar. Livre para implementar. Aberto para sempre.",
+    "primary": "Abrir editor",
+    "secondary": "github.com/rafaeelneto/welldot"
+  },
+  "heroVisual": {
+    "liveTitle": "live preview",
+    "liveSub": "perfil gerado ao vivo"
+  }
+}

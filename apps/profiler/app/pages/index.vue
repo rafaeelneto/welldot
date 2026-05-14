@@ -3,16 +3,14 @@ import { useElementBounding } from '@vueuse/core';
 
 definePageMeta({ layout: 'landing' });
 
+const { t, tm, rt } = useI18n();
+
 // ── Scroll-driven hero progress ────────────────────────────────────────────
-// The band ref wraps hero + section I. The right column is sticky through
-// this entire range; progress 0→1 drives the Three.js card swap.
 const heroBandRef = ref<HTMLElement>();
 const { top: bandTop, height: bandHeight } = useElementBounding(heroBandRef);
 
 const scrollProgress = computed(() => {
   if (!import.meta.client) return 0;
-  // bandTop is viewport-relative: 0 when band top reaches viewport top,
-  // goes negative as we scroll down into the band.
   const scrolled = -bandTop.value;
   const scrollable = bandHeight.value - window.innerHeight;
   return scrollable > 0 ? Math.min(Math.max(scrolled / scrollable, 0), 1) : 0;
@@ -20,108 +18,51 @@ const scrollProgress = computed(() => {
 
 // ── Section data ────────────────────────────────────────────────────────────
 
-const formatProps = [
-  {
-    num: '§ 1.1',
-    title: 'Visualização',
-    body: 'Biblioteca livre em D3.js para renderizar e exportar perfis geológicos e construtivos em escala real.',
-  },
-  {
-    num: '§ 1.2',
-    title: 'Registro',
-    body: 'Estrutura previsível para arquivar e versionar dados de poços, prontos para submissão e auditoria.',
-  },
-  {
-    num: '§ 1.3',
-    title: 'Pesquisa',
-    body: 'Campos métricos e organizados permitem cruzar e comparar poços entre aquíferos, regiões e épocas.',
-  },
-  {
-    num: '§ 1.4',
-    title: 'Aberto',
-    body: 'JSON legível por humanos, especificação pública e licença permissiva — livre para usar, estender e contribuir.',
-  },
-];
+const formatProps = computed(() =>
+  (tm('format.props') as any[]).map((p: any) => ({
+    num: rt(p.num),
+    title: rt(p.title),
+    body: rt(p.body),
+  }))
+);
 
-const pillars = [
-  {
-    icon: '⊙',
-    title: 'Editor ao vivo',
-    body: 'Tabelas ligadas ao desenho. Edite uma camada, veja o perfil redesenhado em escala real.',
-  },
-  {
-    icon: '{ }',
-    title: 'Formato aberto',
-    body: 'JSON legível, especificação pública e licença Apache 2.0. Implemente em qualquer linguagem.',
-  },
-  {
-    icon: 'A4',
-    title: 'Submissão pronta',
-    body: 'PDFs A4 em escala real, com cabeçalho, metadados e desenho multipágina.',
-  },
-];
+const PILLAR_ICONS = ['⊙', '{ }', 'A4'] as const;
 
-const ctxCards = [
-  { icon: '📁', title: 'Pastas & arquivos', meta: 'p4-exemplo.well · 12 KB' },
-  {
-    icon: 'git',
-    iconStyle: 'font-family: var(--font-mono); font-size: 13px;',
-    title: 'Versionado',
-    meta: 'commit 9fa2d1d · main',
-  },
-  {
-    icon: 'SQL',
-    iconStyle: 'font-family: var(--font-mono); font-size: 10px;',
-    title: 'Banco de dados',
-    meta: 'JSONB · documentos · índices',
-  },
-  {
-    icon: '✨',
-    title: 'Modelos de IA',
-    meta: 'legível → sem parser proprietário',
-  },
+const pillars = computed(() =>
+  (tm('intention.pillars') as any[]).map((p: any, i: number) => ({
+    icon: PILLAR_ICONS[i]!,
+    title: rt(p.title),
+    body: rt(p.body),
+  }))
+);
+
+const CTX_STATIC = [
+  { icon: '📁', iconStyle: undefined as string | undefined, highlight: false },
+  { icon: 'git', iconStyle: 'font-family: var(--font-mono); font-size: 13px;', highlight: false },
+  { icon: 'SQL', iconStyle: 'font-family: var(--font-mono); font-size: 10px;', highlight: false },
+  { icon: '✨', iconStyle: undefined as string | undefined, highlight: false },
   {
     icon: '⊕',
-    iconStyle:
-      'background: linear-gradient(135deg, var(--w-primary-500), oklch(58% 0.15 235)); color: white;',
-    title: 'welldot.skill',
-    meta: 'github.com/rafaeelneto/welldot',
+    iconStyle: 'background: linear-gradient(135deg, var(--w-primary-500), oklch(58% 0.15 235)); color: white;',
     highlight: true,
   },
 ];
 
-const horizonProps = [
-  {
-    num: '§ 4.1',
-    title: '.las nativo',
-    body: 'Importação e armazenamento de perfis geofísicos LAS, lado a lado com o perfil litológico.',
-  },
-  {
-    num: '§ 4.2',
-    title: 'Testes de bombeamento',
-    body: 'Pump tests, recuperação, vazão específica e parâmetros hidrodinâmicos como séries temporais.',
-  },
-  {
-    num: '§ 4.3',
-    title: 'Histórico operacional',
-    body: 'Log de eventos: manutenções, troca de bomba, nível estático, paradas — datados e atribuíveis.',
-  },
-  {
-    num: '§ 4.4',
-    title: 'Qualidade da água',
-    body: 'Análises físico-químicas e bacteriológicas vinculadas à amostragem, profundidade e data.',
-  },
-  {
-    num: '§ 4.5',
-    title: 'Metadados estendidos',
-    body: 'Outorga, proprietário, regime de uso, referências cadastrais e vínculos com bases regulatórias.',
-  },
-  {
-    num: '§ 4.6',
-    title: 'Extensões da comunidade',
-    body: 'Namespaces para campos específicos de órgãos e regiões, sem quebrar o núcleo padronizado.',
-  },
-];
+const ctxCards = computed(() =>
+  (tm('contexts.cards') as any[]).map((card: any, i: number) => ({
+    title: rt(card.title),
+    meta: rt(card.meta),
+    ...CTX_STATIC[i]!,
+  }))
+);
+
+const horizonProps = computed(() =>
+  (tm('horizon.props') as any[]).map((p: any) => ({
+    num: rt(p.num),
+    title: rt(p.title),
+    body: rt(p.body),
+  }))
+);
 </script>
 
 <template>
@@ -164,25 +105,23 @@ const horizonProps = [
           <div
             class="font-mono text-[11px] tracking-[0.12em] uppercase text-content-500 mb-[18px] w-fit bg-surface-0/55 backdrop-blur-sm rounded px-2 py-0.5"
           >
-            .well · formato aberto
+            {{ t('hero.kicker') }}
           </div>
           <h1
             class="font-serif font-medium text-[44px] lg:text-[76px] leading-none tracking-[-0.025em] mb-[14px] lg:mb-[22px] text-balance w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
-            Perfis de poços, em
-            <em class="text-primary-500">arquivo aberto</em>.
+            {{ t('hero.headline1') }}
+            <em class="text-primary-500">{{ t('hero.headlineEm') }}</em>{{ t('hero.headline2') }}
           </h1>
           <p
             class="text-[15px] lg:text-[19px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-5 lg:mb-7 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
-            Editor livre para criar, visualizar e exportar perfis geológicos e
-            construtivos. Um JSON simples, versionado, legível por qualquer
-            linguagem.
+            {{ t('hero.body') }}
           </p>
           <div class="flex flex-col sm:flex-row gap-2.5 mb-5 lg:mb-7">
-            <Button label="Abrir editor →" as="a" href="#" />
+            <Button :label="t('hero.ctaPrimary')" as="a" href="#" />
             <Button
-              label="Ver especificação"
+              :label="t('hero.ctaSecondary')"
               as="a"
               href="#"
               variant="outlined"
@@ -192,12 +131,12 @@ const horizonProps = [
           <div
             class="flex flex-wrap gap-[22px] pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
           >
-            <span><b class="text-content-0 font-medium">v1.0</b> spec</span>
+            <span><b class="text-content-0 font-medium">v1.0</b> {{ t('hero.badgeSpec') }}</span>
             <span
               ><b class="text-content-0 font-medium">Apache 2.0</b>
-              licença</span
+              {{ t('hero.badgeLicense') }}</span
             >
-            <span><b class="text-content-0 font-medium">welldot.org</b></span>
+            <span><b class="text-content-0 font-medium">{{ t('hero.badgeSite') }}</b></span>
           </div>
         </div>
 
@@ -215,20 +154,20 @@ const horizonProps = [
           <div
             class="kicker mb-[18px] w-fit bg-surface-0/55 backdrop-blur-sm rounded px-2 py-0.5"
           >
-            I · O formato
+            {{ t('format.kicker') }}
           </div>
           <h2
             class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-[14px] w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
-            Um JSON.<br /><em class="text-primary-500">Três</em> propósitos.
+            {{ t('format.headline1') }}<br /><em class="text-primary-500">{{ t('format.headlineEm') }}</em> {{ t('format.headline2') }}
           </h2>
           <p
             class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
-            Hoje, dados de poços vivem em PDFs que não se conversam entre si. O
-            arquivo <b>.well</b> é um formato simples e versionado para mudar
-            isso — um único JSON que descreve o poço por inteiro, pensado como
-            <em>padrão internacional</em>.
+            <i18n-t keypath="format.intro" tag="span">
+              <template #well><b>.well</b></template>
+              <template #standard><em>{{ t('format.standard') }}</em></template>
+            </i18n-t>
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LandingPropCard
@@ -237,8 +176,7 @@ const horizonProps = [
               :num="prop.num"
               :title="prop.title"
             >
-              <!-- eslint-disable-next-line vue/no-v-html -->
-              <span v-html="prop.body" />
+              {{ prop.body }}
             </LandingPropCard>
           </div>
         </div>
@@ -260,7 +198,7 @@ const horizonProps = [
     </div>
   </div>
 
-  <!-- ── §II · Manifesto ──────────────────────────────────────────────────── -->
+  <!-- ── §II · Intenção ──────────────────────────────────────────────────── -->
   <section
     class="manifesto-bg relative py-14 lg:py-20 border-b border-surface-200/60 overflow-hidden"
   >
@@ -275,16 +213,17 @@ const horizonProps = [
       "
     />
     <div class="container-landing relative">
-      <div class="kicker mb-3.5">II · Intenção</div>
+      <div class="kicker mb-3.5">{{ t('intention.kicker') }}</div>
       <p
         class="font-serif text-[19px] lg:text-[26px] leading-[1.45] max-w-[880px] mb-9 font-normal text-content-0"
       >
-        Hoje, o dado de um poço d'água existe em muitos lugares: no caderno do
-        perfurador, na planilha do consultor, no PDF do relatório entregue ao
-        órgão licenciador. Cada um em seu formato, cada um
-        <em class="text-primary-500">ilegível para o outro</em>. O
-        <b>welldot</b> e o formato <b>.well</b> foram criados para resolver
-        isso.
+        <i18n-t keypath="intention.body" tag="span">
+          <template #unreadable>
+            <em class="text-primary-500">{{ t('intention.unreadable') }}</em>
+          </template>
+          <template #welldot><b>welldot</b></template>
+          <template #well><b>.well</b></template>
+        </i18n-t>
       </p>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
         <LandingPillarCard
@@ -316,29 +255,32 @@ const horizonProps = [
     <div class="container-landing relative lg:grid lg:grid-cols-2 lg:gap-14">
       <!-- Text col -->
       <div>
-        <div class="kicker mb-[18px]">III · Um arquivo, muitos contextos</div>
+        <div class="kicker mb-[18px]">{{ t('contexts.kicker') }}</div>
         <h2
           class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-3.5"
         >
-          Padrão por dentro,<br /><em class="text-primary-500">flexível</em> por
-          fora.
+          {{ t('contexts.headline1') }}<br /><em class="text-primary-500">{{ t('contexts.headlineEm') }}</em> {{ t('contexts.headline2') }}
         </h2>
         <p class="text-[15px] leading-[1.55] text-content-400 mb-3.5">
-          Um único arquivo em texto legível: arquivável em pastas, versionável
-          em git, indexável em bancos de dados, <em>analisável por IA</em>. O
-          núcleo é rígido onde importa — <b>métricas em SI</b>, <b>WGS84</b>,
-          chaves em inglês — e <em>flexível</em> no resto.
+          <i18n-t keypath="contexts.text1" tag="span">
+            <template #aiEm><em>{{ t('contexts.aiEm') }}</em></template>
+            <template #si><b>{{ t('contexts.si') }}</b></template>
+            <template #wgs><b>WGS84</b></template>
+            <template #flexible><em>{{ t('contexts.flexible') }}</em></template>
+          </i18n-t>
         </p>
         <p
           class="text-[15px] lg:text-[18px] leading-[1.55] text-content-400 mb-6 lg:mb-0"
         >
-          O repositório inclui uma <b>skill</b> pronta: aponte qualquer agente
-          para
-          <code
-            class="font-mono text-[0.92em] bg-black/[0.04] px-1.5 py-0.5 rounded"
-            >github.com/rafaeelneto/welldot</code
-          >
-          e ele opera o formato nativamente.
+          <i18n-t keypath="contexts.text2" tag="span">
+            <template #skill><b>welldot.skill</b></template>
+            <template #repo>
+              <code
+                class="font-mono text-[0.92em] bg-black/[0.04] px-1.5 py-0.5 rounded"
+                >github.com/rafaeelneto/welldot</code
+              >
+            </template>
+          </i18n-t>
         </p>
       </div>
       <!-- Context stack -->
@@ -371,17 +313,16 @@ const horizonProps = [
       "
     />
     <div class="container-landing relative">
-      <div class="kicker mb-[18px]">IV · No horizonte</div>
+      <div class="kicker mb-[18px]">{{ t('horizon.kicker') }}</div>
       <h2
         class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-3.5"
       >
-        O <em class="text-primary-500">futuro</em>.
+        {{ t('horizon.headline1') }} <em class="text-primary-500">{{ t('horizon.headlineEm') }}</em>{{ t('horizon.headline2') }}
       </h2>
       <p
         class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8"
       >
-        A v1 cobre perfil geológico e construtivo. A especificação evolui de
-        forma aberta para abraçar todo o ciclo de vida de um poço.
+        {{ t('horizon.intro') }}
       </p>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <LandingPropCard
@@ -390,8 +331,7 @@ const horizonProps = [
           :num="prop.num"
           :title="prop.title"
         >
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <span v-html="prop.body" />
+          {{ prop.body }}
         </LandingPropCard>
       </div>
     </div>
@@ -421,21 +361,21 @@ const horizonProps = [
       <h2
         class="font-serif font-medium text-[40px] lg:text-[64px] leading-[1.05] tracking-[-0.025em] mb-3.5 text-balance"
       >
-        Tudo sobre um poço,<br /><em class="text-primary-500"
-          >registrado de uma vez</em
-        >.
+        {{ t('cta.headline1') }}<br /><em class="text-primary-500"
+          >{{ t('cta.headlineEm') }}</em
+        >{{ t('cta.headline2') }}
       </h2>
       <p
         class="text-[14px] lg:text-[18px] text-content-400 max-w-[540px] mx-auto mb-7"
       >
-        Livre para usar. Livre para implementar. Aberto para sempre.
+        {{ t('cta.subtitle') }}
       </p>
       <div
         class="flex flex-col sm:flex-row gap-2.5 justify-center items-center"
       >
-        <Button label="Abrir editor" as="a" href="#" />
+        <Button :label="t('cta.primary')" as="a" href="#" />
         <Button
-          label="github.com/rafaeelneto/welldot"
+          :label="t('cta.secondary')"
           as="a"
           href="https://github.com/rafaeelneto/welldot"
           target="_blank"

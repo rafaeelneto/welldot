@@ -37,6 +37,7 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
+    '@nuxtjs/i18n',
     '@primevue/nuxt-module',
     '@pinia/nuxt',
     'pinia-plugin-persistedstate/nuxt',
@@ -44,6 +45,24 @@ export default defineNuxtConfig({
     '@nuxtjs/seo',
     '@vite-pwa/nuxt',
   ],
+
+  i18n: {
+    strategy: 'no_prefix',
+    langDir: 'locales',
+    locales: [
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+      { code: 'pt', language: 'pt-BR', name: 'Português', file: 'pt.json' },
+    ],
+    defaultLocale: 'en',
+    vueI18n: './i18n.config.ts',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'welldot_locale',
+      cookieSecure: true,
+      alwaysRedirect: false,
+      redirectOn: 'root',
+    },
+  },
 
   // @ts-ignore
   viewport: {
@@ -108,6 +127,9 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: ['@vueuse/core', 'd3', 'd3-tip', 'textures', 'sanitize-html'],
+    },
   },
 
   site: {
@@ -165,4 +187,4 @@ export default defineNuxtConfig({
       routes: ['/sitemap.xml', '/robots.txt'],
     },
   },
-});
+} as Parameters<typeof defineNuxtConfig>[0]);

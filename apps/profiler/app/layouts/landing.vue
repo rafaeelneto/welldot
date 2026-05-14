@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { useDark } from '@vueuse/core';
 
+const { t, locale, locales } = useI18n();
+
+function setLocale(code: string) {
+  locale.value = code as 'pt' | 'en';
+}
+
 const isDark = useDark({
   selector: 'html',
   attribute: 'class',
@@ -45,14 +51,14 @@ const togglePt = {
             to="/"
             class="text-content-400 hover:text-content-0 font-medium transition-colors no-underline"
           >
-            Editor
+            {{ t('nav.editor') }}
           </NuxtLink>
           <NuxtLink
             to="https://github.com/rafaeelneto/welldot"
             target="_blank"
             class="text-content-400 hover:text-content-0 font-medium transition-colors no-underline"
           >
-            GitHub
+            {{ t('nav.github') }}
           </NuxtLink>
         </div>
 
@@ -63,7 +69,7 @@ const togglePt = {
           v-model="isDark"
           :on-label="''"
           :off-label="''"
-          :aria-label="isDark ? 'Modo claro' : 'Modo escuro'"
+          :aria-label="isDark ? t('nav.theme.light') : t('nav.theme.dark')"
           unstyled
           :pt="togglePt"
         >
@@ -85,7 +91,7 @@ const togglePt = {
 
         <!-- Desktop primary CTA -->
         <Button
-          label="Abrir editor"
+          :label="t('nav.openEditor')"
           size="small"
           as="a"
           href="#"
@@ -93,12 +99,18 @@ const togglePt = {
         />
 
         <!-- Mobile: primary CTA -->
-        <Button label="Editor" size="small" as="a" href="#" class="lg:hidden" />
+        <Button
+          :label="t('nav.openEditorMobile')"
+          size="small"
+          as="a"
+          href="#"
+          class="lg:hidden"
+        />
 
         <!-- Mobile hamburger -->
         <button
           class="lg:hidden w-8 h-8 border border-surface-200 rounded-lg flex items-center justify-center text-content-0"
-          aria-label="Menu"
+          :aria-label="t('nav.menu')"
         >
           <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
             <rect width="16" height="1.5" rx="0.75" fill="currentColor" />
@@ -131,10 +143,23 @@ const togglePt = {
       <div
         class="container-landing py-7 font-mono text-[11px] text-content-500 flex flex-wrap gap-6"
       >
-        <span>welldot · v1.0.0</span>
-        <span>.well spec v1.0</span>
+        <span>{{ t('footer.version') }}</span>
+        <span>{{ t('footer.spec') }}</span>
         <span class="flex-1" />
-        <span>Aberto · Apache 2.0</span>
+        <div class="flex items-center gap-3">
+          <button
+            v-for="loc in locales"
+            :key="loc.code"
+            class="uppercase transition-colors cursor-pointer"
+            :class="
+              locale === loc.code ? 'text-content-0' : 'hover:text-content-300'
+            "
+            @click="setLocale(loc.code)"
+          >
+            {{ loc.code }}
+          </button>
+        </div>
+        <span>{{ t('footer.license') }}</span>
       </div>
     </footer>
   </div>

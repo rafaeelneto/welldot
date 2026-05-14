@@ -1,0 +1,167 @@
+{
+  "meta": {
+    "title": "Welldot — Open well profile format",
+    "description": "Free editor to create, visualize, and export geological and construction profiles. A simple JSON, versioned, readable by any language."
+  },
+  "nav": {
+    "editor": "Editor",
+    "github": "GitHub",
+    "openEditor": "Open editor",
+    "openEditorMobile": "Editor",
+    "menu": "Menu",
+    "theme": {
+      "light": "Light mode",
+      "dark": "Dark mode"
+    }
+  },
+  "footer": {
+    "version": "welldot · v1.0.0",
+    "spec": ".well spec v1.0",
+    "license": "Open · Apache 2.0"
+  },
+  "hero": {
+    "kicker": ".well · open format",
+    "headline1": "Well profiles, in",
+    "headlineEm": "open format",
+    "headline2": ".",
+    "body": "Free editor to create, visualize, and export geological and construction profiles. A simple JSON, versioned, readable by any language.",
+    "ctaPrimary": "Open editor →",
+    "ctaSecondary": "View specification",
+    "badgeSpec": "spec",
+    "badgeLicense": "license",
+    "badgeSite": "welldot.org"
+  },
+  "format": {
+    "kicker": "I · The format",
+    "headline1": "One JSON.",
+    "headlineEm": "Three",
+    "headline2": "purposes.",
+    "intro": "Today, well data lives in PDFs that don't talk to each other. The {well} file is a simple, versioned format to change that — a single JSON that fully describes a well, designed as an {standard}.",
+    "standard": "international standard",
+    "props": [
+      {
+        "num": "§ 1.1",
+        "title": "Visualization",
+        "body": "Free D3.js library to render and export geological and construction profiles at real scale."
+      },
+      {
+        "num": "§ 1.2",
+        "title": "Record",
+        "body": "Predictable structure to archive and version well data, ready for submission and auditing."
+      },
+      {
+        "num": "§ 1.3",
+        "title": "Research",
+        "body": "Organized metric fields allow cross-referencing and comparing wells across aquifers, regions, and eras."
+      },
+      {
+        "num": "§ 1.4",
+        "title": "Open",
+        "body": "Human-readable JSON, public specification, and permissive license — free to use, extend, and contribute."
+      }
+    ]
+  },
+  "intention": {
+    "kicker": "II · Intention",
+    "body": "Today, a water well's data exists in many places: in the driller's notebook, in the consultant's spreadsheet, in the PDF report submitted to the licensing authority. Each in its own format, each {unreadable}. {welldot} and the {well} format were created to solve this.",
+    "unreadable": "unreadable to the other",
+    "pillars": [
+      {
+        "title": "Live editor",
+        "body": "Tables linked to the drawing. Edit a layer, see the profile redrawn at real scale."
+      },
+      {
+        "title": "Open format",
+        "body": "Human-readable JSON, public specification, and Apache 2.0 license. Implement in any language."
+      },
+      {
+        "title": "Submission-ready",
+        "body": "A4 PDFs at real scale, with header, metadata, and multi-page drawing."
+      }
+    ]
+  },
+  "contexts": {
+    "kicker": "III · One file, many contexts",
+    "headline1": "Standard inside,",
+    "headlineEm": "flexible",
+    "headline2": "outside.",
+    "text1": "A single human-readable text file: archivable in folders, versionable in git, indexable in databases, {aiEm}. The core is strict where it matters — {si}, {wgs}, English keys — and {flexible} everywhere else.",
+    "text2": "The repository includes a ready-made {skill}: point any agent to {repo} and it operates the format natively.",
+    "aiEm": "analyzable by AI",
+    "si": "SI metrics",
+    "flexible": "flexible",
+    "cards": [
+      {
+        "title": "Folders & files",
+        "meta": "p4-example.well · 12 KB"
+      },
+      {
+        "title": "Versioned",
+        "meta": "commit 9fa2d1d · main"
+      },
+      {
+        "title": "Database",
+        "meta": "JSONB · documents · indexes"
+      },
+      {
+        "title": "AI models",
+        "meta": "readable → no proprietary parser"
+      },
+      {
+        "title": "welldot.skill",
+        "meta": "github.com/rafaeelneto/welldot"
+      }
+    ]
+  },
+  "horizon": {
+    "kicker": "IV · On the horizon",
+    "headline1": "The",
+    "headlineEm": "future",
+    "headline2": ".",
+    "intro": "v1 covers geological and construction profiles. The specification evolves openly to embrace the full lifecycle of a well.",
+    "props": [
+      {
+        "num": "§ 4.1",
+        "title": "Native .las",
+        "body": "Import and storage of LAS geophysical profiles, side by side with the lithological profile."
+      },
+      {
+        "num": "§ 4.2",
+        "title": "Pump tests",
+        "body": "Pump tests, recovery, specific flow, and hydrodynamic parameters as time series."
+      },
+      {
+        "num": "§ 4.3",
+        "title": "Operational history",
+        "body": "Event log: maintenance, pump replacement, static level, shutdowns — dated and attributable."
+      },
+      {
+        "num": "§ 4.4",
+        "title": "Water quality",
+        "body": "Physical-chemical and bacteriological analyses linked to sampling, depth, and date."
+      },
+      {
+        "num": "§ 4.5",
+        "title": "Extended metadata",
+        "body": "Water rights, owner, usage regime, cadastral references, and links to regulatory databases."
+      },
+      {
+        "num": "§ 4.6",
+        "title": "Community extensions",
+        "body": "Namespaces for fields specific to agencies and regions, without breaking the standardized core."
+      }
+    ]
+  },
+  "cta": {
+    "headline1": "Everything about a well,",
+    "headlineEm": "recorded at once",
+    "headline2": ".",
+    "subtitle": "Free to use. Free to implement. Open forever.",
+    "primary": "Open editor",
+    "secondary": "github.com/rafaeelneto/welldot"
+  },
+  "heroVisual": {
+    "liveTitle": "live preview",
+    "liveSub": "generated live profile"
+  }
+}
