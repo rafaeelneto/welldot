@@ -1,4 +1,12 @@
 const customPt = {
+  drawer: {
+    root: 'font-display backdrop-saturate-150 backdrop-blur-2xl',
+    header: 'border-b border-surface-200/60',
+    title: 'font-serif tracking-tight',
+    content: 'overflow-y-auto',
+    footer: 'border-t border-surface-200/60',
+    mask: { class: 'backdrop-blur-[2px]' },
+  },
   button: {
     root: () => {
       return 'font-display transition-all duration-200 hover:scale-[1.02] active:scale-95 group border-none';

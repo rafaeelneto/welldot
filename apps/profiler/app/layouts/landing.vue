@@ -7,6 +7,8 @@ function setLocale(code: string) {
   locale.value = code as 'pt' | 'en';
 }
 
+const drawerOpen = ref(false);
+
 const isDark = useDark({
   selector: 'html',
   attribute: 'class',
@@ -111,6 +113,7 @@ const togglePt = {
         <button
           class="lg:hidden w-8 h-8 border border-surface-200 rounded-lg flex items-center justify-center text-content-0"
           :aria-label="t('nav.menu')"
+          @click="drawerOpen = true"
         >
           <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
             <rect width="16" height="1.5" rx="0.75" fill="currentColor" />
@@ -132,6 +135,62 @@ const togglePt = {
         </button>
       </div>
     </nav>
+
+    <!-- Mobile nav drawer -->
+    <Drawer v-model:visible="drawerOpen" position="right" class="w-72!">
+      <template #header>
+        <span class="font-bold text-base tracking-tight">welldot</span>
+      </template>
+
+      <nav class="flex flex-col gap-1 mt-2">
+        <NuxtLink
+          to="/"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-200 hover:text-content-0 hover:bg-surface-100 transition-colors no-underline"
+          @click="drawerOpen = false"
+        >
+          <Icon name="heroicons:pencil-square" class="w-4 h-4 shrink-0" />
+          {{ t('nav.editor') }}
+        </NuxtLink>
+        <NuxtLink
+          to="https://github.com/rafaeelneto/welldot"
+          target="_blank"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-200 hover:text-content-0 hover:bg-surface-100 transition-colors no-underline"
+          @click="drawerOpen = false"
+        >
+          <Icon name="heroicons:arrow-top-right-on-square" class="w-4 h-4 shrink-0" />
+          {{ t('nav.github') }}
+        </NuxtLink>
+      </nav>
+
+      <Divider class="my-4" />
+
+      <div class="flex items-center gap-2 px-1">
+        <span class="text-xs text-content-400 font-mono uppercase mr-auto">{{ t('nav.theme.light') }}</span>
+        <ToggleButton
+          v-model="isDark"
+          :on-label="''"
+          :off-label="''"
+          :aria-label="isDark ? t('nav.theme.light') : t('nav.theme.dark')"
+          unstyled
+          :pt="togglePt"
+        >
+          <Transition name="icon-rotate" mode="out-in">
+            <Icon v-if="isDark" key="sun" name="heroicons:sun" class="w-4 h-4 shrink-0" />
+            <Icon v-else key="moon" name="heroicons:moon" class="w-4 h-4 shrink-0" />
+          </Transition>
+        </ToggleButton>
+      </div>
+
+      <template #footer>
+        <Button
+          :label="t('nav.openEditor')"
+          class="w-full"
+          as="a"
+          href="#"
+          @click="drawerOpen = false"
+        />
+      </template>
+    </Drawer>
 
     <!-- Page content -->
     <main>

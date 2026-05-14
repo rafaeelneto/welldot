@@ -161,6 +161,39 @@ const MyPreset = definePreset(Aura, {
   },
 
   components: {
+    drawer: {
+      header: {
+        padding: '1rem 1.25rem',
+      },
+      title: {
+        fontSize: '0.9375rem',
+        fontWeight: '600',
+      },
+      content: {
+        padding: '0.5rem 1.25rem 1.25rem',
+      },
+      footer: {
+        padding: '1rem 1.25rem',
+      },
+      colorScheme: {
+        light: {
+          root: {
+            background: 'rgba(255, 255, 255, 0.92)',
+            borderColor: '{surface.200}',
+            color: '{content.0}',
+            shadow: '-20px 0 48px -8px rgba(14, 30, 51, 0.14), -2px 0 8px -2px rgba(14, 30, 51, 0.06)',
+          },
+        },
+        dark: {
+          root: {
+            background: 'rgba(13, 18, 24, 0.88)',
+            borderColor: '{surface.200}',
+            color: '{content.0}',
+            shadow: '-20px 0 48px -8px rgba(0, 0, 0, 0.60), -2px 0 8px -2px rgba(0, 0, 0, 0.40)',
+          },
+        },
+      },
+    },
     button: {
       root: {
         borderRadius: '999px',
