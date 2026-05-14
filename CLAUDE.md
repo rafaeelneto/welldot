@@ -2,9 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Each package and app has its own `CLAUDE.md` with deeper context:
+
+| Workspace | File |
+|---|---|
+| `packages/core` | [packages/core/CLAUDE.md](packages/core/CLAUDE.md) |
+| `packages/utils` | [packages/utils/CLAUDE.md](packages/utils/CLAUDE.md) |
+| `packages/render` | [packages/render/CLAUDE.md](packages/render/CLAUDE.md) |
+| `packages/lint` | [packages/lint/CLAUDE.md](packages/lint/CLAUDE.md) |
+| `apps/profiler` *(active)* | [apps/profiler/CLAUDE.md](apps/profiler/CLAUDE.md) |
+| `apps/well-profiler` *(deprecated)* | [apps/well-profiler/CLAUDE.md](apps/well-profiler/CLAUDE.md) |
+
 ## Project Overview
 
-Well-Profiler is an open-source ecosystem for geological well log visualization, built around the `.well` open file format — a JSON-based standard for water well data. The repo is a **pnpm + Turbo monorepo** consisting of three published TypeScript libraries and a Next.js web application.
+Well-Profiler is an open-source ecosystem for geological well log visualization, built around the `.well` open file format — a JSON-based standard for water well data. The repo is a **pnpm + Turbo monorepo** consisting of three published TypeScript libraries and two web applications.
 
 ## Commands
 
@@ -38,20 +49,25 @@ pnpm build        # tsup build → dist/
     ↓
 @welldot/render        ← D3-based SVG renderer for .well profiles
     ↓
-apps/well-profiler     ← Next.js 15 web app consuming all three libraries
+apps/profiler          ← Nuxt 4 web app (active, welldot.org)
+apps/well-profiler     ← Next.js 15 web app (deprecated, migration in progress)
 ```
 
 ### Packages
 
-**`packages/core`** — No internal dependencies. Defines the canonical `.well` schema via TypeScript types (`types/well.types.ts`), Zod validators (`validators/well.validators.ts`), and serialization utilities. The `fgdc.textures.ts` utility provides FGDC geological pattern symbolization used by the renderer.
+**`packages/core`** — No internal dependencies. Defines the canonical `.well` schema. See [packages/core/CLAUDE.md](packages/core/CLAUDE.md).
 
-**`packages/render`** — D3-based SVG visualization engine. The main class is `Renderer.ts`; it delegates to specialized renderers in `renderers/` (construction, lithology, fractures, caves, legend, etc.). Depends on `@welldot/core` and `@welldot/utils`.
+**`packages/utils`** — Profile analysis utilities (depth, diameter, gravel pack). See [packages/utils/CLAUDE.md](packages/utils/CLAUDE.md).
 
-**`packages/utils`** — Profile analysis utilities. Single source file (`src/profile.utils.ts`) with comprehensive Vitest test coverage.
+**`packages/render`** — D3-based SVG visualization engine. See [packages/render/CLAUDE.md](packages/render/CLAUDE.md).
 
-**`packages/lint`** — Private. Shared ESLint configs exported as `base`, `typescript`, `react`, `vue`, `nuxt`.
+**`packages/lint`** — Private. Shared ESLint flat-config presets. See [packages/lint/CLAUDE.md](packages/lint/CLAUDE.md).
 
-**`apps/well-profiler`** — Next.js 15 app. Uses the App Router (`app/`). UI built with Mantine 7 and Zustand for state. The `src/` directory contains organism-level React components; `src_old/` contains legacy code being phased out.
+### Apps
+
+**`apps/profiler`** — **Active app.** Nuxt 4 + Vue 3, deployed to Cloudflare Pages at welldot.org. PrimeVue UI, Tailwind CSS 4, Pinia, i18n (EN/PT). See [apps/profiler/CLAUDE.md](apps/profiler/CLAUDE.md).
+
+**`apps/well-profiler`** — **Deprecated.** Legacy Next.js 15 app being replaced by `apps/profiler`. See [apps/well-profiler/CLAUDE.md](apps/well-profiler/CLAUDE.md).
 
 ### Build outputs
 
@@ -60,9 +76,9 @@ Libraries output ESM (`dist/index.js`), CJS (`dist/index.cjs`), and TypeScript d
 ## Key Tech
 
 - **Visualization:** D3.js 7, textures.js (pattern fills)
-- **UI:** React 18, Mantine 7, Zustand, react-router-dom 6
+- **UI (active app):** Vue 3, Nuxt 4, PrimeVue 4, Tailwind CSS 4, Pinia
+- **UI (legacy app):** React 18, Mantine 7, Zustand, react-router-dom 6
 - **Validation:** Zod 3
 - **PDF export:** jsPDF + jsPDF-AutoTable, pdfmake
 - **Testing:** Vitest + jsdom
-- **Styling:** Sass/SCSS
 - **Node:** ≥18; **pnpm:** 10.22.0
