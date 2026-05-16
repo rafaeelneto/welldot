@@ -93,13 +93,13 @@ watch(
 
 /* ── Dark tokens ──────────────────────────────────────────────────────────── */
 .viewer[data-theme='dark'] {
-  --bg:           #131922;  /* surface-50  dark */
-  --chrome-bg:    #1a2230;  /* surface-100 dark */
-  --border:       #2a3344;  /* surface-200 dark */
-  --text:         #d8dde3;  /* surface-200 light — comfortable reading */
-  --fname:        #7888a0;  /* content-400 */
-  --badge-bg:     rgba(93, 134, 210, 0.14);
-  --badge-fg:     #92b1e6;  /* primary-300 */
+  --bg: #131922; /* surface-50  dark */
+  --chrome-bg: #1a2230; /* surface-100 dark */
+  --border: #2a3344; /* surface-200 dark */
+  --text: #d8dde3; /* surface-200 light — comfortable reading */
+  --fname: #7888a0; /* content-400 */
+  --badge-bg: rgba(93, 134, 210, 0.14);
+  --badge-fg: #92b1e6; /* primary-300 */
   --badge-border: rgba(93, 134, 210, 0.28);
   --scroll-thumb: rgba(255, 255, 255, 0.1);
   --k: #e06c75;
@@ -110,13 +110,13 @@ watch(
 
 /* ── Light tokens ─────────────────────────────────────────────────────────── */
 .viewer[data-theme='light'] {
-  --bg:           #f7f8fa;  /* surface-50  light — just off-white */
-  --chrome-bg:    #eef0f3;  /* surface-100 light */
-  --border:       #d8dde3;  /* surface-200 light — clear card edge */
-  --text:         #1a2230;  /* surface-800 dark  — rich dark text  */
-  --fname:        #7888a0;  /* content-400 */
-  --badge-bg:     rgba(93, 134, 210, 0.08);
-  --badge-fg:     #3d6bc0;  /* primary-600 adjusted for light bg */
+  --bg: #f7f8fa; /* surface-50  light — just off-white */
+  --chrome-bg: #eef0f3; /* surface-100 light */
+  --border: #d8dde3; /* surface-200 light — clear card edge */
+  --text: #1a2230; /* surface-800 dark  — rich dark text  */
+  --fname: #7888a0; /* content-400 */
+  --badge-bg: rgba(93, 134, 210, 0.08);
+  --badge-fg: #3d6bc0; /* primary-600 adjusted for light bg */
   --badge-border: rgba(93, 134, 210, 0.22);
   --scroll-thumb: rgba(0, 0, 0, 0.1);
   --k: #c7254e;
@@ -138,7 +138,9 @@ watch(
 }
 
 .viewer[data-theme='light'] {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
 }
 
 .chrome {
@@ -151,8 +153,16 @@ watch(
   flex-shrink: 0;
 }
 
-.dots { display: flex; gap: 6px; }
-.dot  { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.dots {
+  display: flex;
+  gap: 6px;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 .fname {
   flex: 1;
@@ -188,13 +198,28 @@ watch(
   scroll-behavior: smooth;
 }
 
-.content::-webkit-scrollbar       { width: 4px; }
-.content::-webkit-scrollbar-track { background: transparent; }
-.content::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 2px; }
+.content::-webkit-scrollbar {
+  width: 4px;
+}
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.content::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 2px;
+}
 
 /* ── Syntax ───────────────────────────────────────────────────────────────── */
-:deep(.k) { color: var(--k); }
-:deep(.s) { color: var(--s); }
-:deep(.n) { color: var(--n); }
-:deep(.b) { color: var(--b); }
+:deep(.k) {
+  color: var(--k);
+}
+:deep(.s) {
+  color: var(--s);
+}
+:deep(.n) {
+  color: var(--n);
+}
+:deep(.b) {
+  color: var(--b);
+}
 </style>

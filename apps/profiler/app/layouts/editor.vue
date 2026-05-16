@@ -34,9 +34,13 @@ const actionBtnPt = {
 </script>
 
 <template>
-  <div class="landing-bg h-dvh flex flex-col overflow-hidden text-content-0 font-display">
+  <div
+    class="landing-bg h-dvh flex flex-col overflow-hidden text-content-0 font-display"
+  >
     <!-- Desktop nav (hidden on mobile) -->
-    <nav class="glass-nav hidden lg:flex sticky top-0 z-50 shrink-0 items-center gap-3 px-6 py-3">
+    <nav
+      class="glass-nav hidden lg:flex sticky top-0 z-50 shrink-0 items-center gap-3 px-6 py-3"
+    >
       <!-- Brand -->
       <NuxtLink
         to="/"
@@ -57,12 +61,18 @@ const actionBtnPt = {
       <div class="flex flex-col min-w-0">
         <div class="flex items-baseline gap-2">
           <span class="kicker shrink-0">{{ t('editor.well') }}</span>
-          <span class="font-semibold text-[15px] text-content-0 truncate leading-tight">P4 — Exemplo</span>
+          <span
+            class="font-semibold text-[15px] text-content-0 truncate leading-tight"
+            >P4 — Exemplo</span
+          >
         </div>
         <div class="flex items-center gap-1.5 mt-0.5">
           <span class="w-1.5 h-1.5 rounded-full bg-primary-500 shrink-0" />
-          <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-content-400">
-            {{ t('editor.status.saved') }} · 160 M · 15 {{ t('editor.status.layers').toUpperCase() }}
+          <span
+            class="font-mono text-[10px] tracking-[0.12em] uppercase text-content-400"
+          >
+            {{ t('editor.status.saved') }} · 160 M · 15
+            {{ t('editor.status.layers').toUpperCase() }}
           </span>
         </div>
       </div>
@@ -101,8 +111,18 @@ const actionBtnPt = {
         :pt="togglePt"
       >
         <Transition name="icon-rotate" mode="out-in">
-          <Icon v-if="isDark" key="sun" name="heroicons:sun" class="w-4 h-4 shrink-0" />
-          <Icon v-else key="moon" name="heroicons:moon" class="w-4 h-4 shrink-0" />
+          <Icon
+            v-if="isDark"
+            key="sun"
+            name="heroicons:sun"
+            class="w-4 h-4 shrink-0"
+          />
+          <Icon
+            v-else
+            key="moon"
+            name="heroicons:moon"
+            class="w-4 h-4 shrink-0"
+          />
         </Transition>
       </ToggleButton>
 

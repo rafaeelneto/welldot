@@ -33,12 +33,12 @@ may evolve; anything in this SKILL.md is secondary to the live spec.
 
 Required sources (web_fetch each session):
 
-| Doc | URL |
-|---|---|
-| Main repo | https://github.com/rafaeelneto/welldot |
-| Core README | https://github.com/rafaeelneto/welldot/blob/main/packages/core/README.md |
-| Format spec | https://github.com/rafaeelneto/welldot/blob/main/packages/core/well-specifications.md |
-| FGDC textures | https://github.com/rafaeelneto/welldot/blob/main/packages/core/fgdc-textures.md |
+| Doc           | URL                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------- |
+| Main repo     | https://github.com/rafaeelneto/welldot                                                |
+| Core README   | https://github.com/rafaeelneto/welldot/blob/main/packages/core/README.md              |
+| Format spec   | https://github.com/rafaeelneto/welldot/blob/main/packages/core/well-specifications.md |
+| FGDC textures | https://github.com/rafaeelneto/welldot/blob/main/packages/core/fgdc-textures.md       |
 
 If this SKILL.md conflicts with the GitHub spec, **the GitHub spec wins**.
 
@@ -70,6 +70,7 @@ Applies to: `lat`, `lng`, `elevation`, `from`, `to`, `diameter`, `screen_slot_mm
 `azimuth`, and all other numeric fields.
 
 Accepted conversions (only when original unit is explicit in the document):
+
 - ft → m: `× 0.3048` | in → mm: `× 25.4` | cm → mm: `× 10`
 - DMS → decimal degrees: convert precisely
 - SIRGAS 2000 UTM → WGS84 decimal: convert precisely or ask the user
@@ -78,12 +79,12 @@ Accepted conversions (only when original unit is explicit in the document):
 
 ## Input formats
 
-| Format | How to read |
-|---|---|
-| PDF | Use `pdf-reading` skill; rasterize pages for scanned PDFs |
-| DOCX | Use `file-reading` skill → docx extraction |
-| Image (JPG/PNG/TIFF) | Pass as base64 to Anthropic vision API |
-| Plain text / CSV | Read directly from context |
+| Format               | How to read                                               |
+| -------------------- | --------------------------------------------------------- |
+| PDF                  | Use `pdf-reading` skill; rasterize pages for scanned PDFs |
+| DOCX                 | Use `file-reading` skill → docx extraction                |
+| Image (JPG/PNG/TIFF) | Pass as base64 to Anthropic vision API                    |
+| Plain text / CSV     | Read directly from context                                |
 
 Check `/mnt/user-data/uploads/` for uploaded files.
 
@@ -92,6 +93,7 @@ Check `/mnt/user-data/uploads/` for uploaded files.
 ## Step 1 — Fetch the latest docs
 
 web_fetch the four URLs above. Pay attention to:
+
 - Required fields per object type
 - Allowed vocabularies (well_type, drilling_method, aquifer_unit, etc.)
 - Any new fields or types added since this SKILL.md was written
@@ -102,6 +104,7 @@ web_fetch the four URLs above. Pay attention to:
 ## Step 2 — Read the report file
 
 Identify format and extract content:
+
 - PDF → consult `/mnt/skills/public/pdf-reading/SKILL.md`
 - DOCX → consult `/mnt/skills/public/file-reading/SKILL.md`
 - Image → load as base64, send to Anthropic API with vision (Step 3)
@@ -164,27 +167,32 @@ version: 1 (integer)
 
 ### API call
 
-```javascript
-const response = await fetch("https://api.anthropic.com/v1/messages", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
+````javascript
+const response = await fetch('https://api.anthropic.com/v1/messages', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    model: "claude-sonnet-4-20250514",
+    model: 'claude-sonnet-4-20250514',
     max_tokens: 4000,
     system: EXTRACTION_SYSTEM_PROMPT,
-    messages: [{
-      role: "user",
-      content: [
-        { type: "text", text: extractedText },
-        // image: { type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } }
-      ]
-    }]
-  })
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: extractedText },
+          // image: { type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } }
+        ],
+      },
+    ],
+  }),
 });
 const data = await response.json();
-const raw = data.content.filter(b => b.type === "text").map(b => b.text).join("");
-const wellData = JSON.parse(raw.replace(/```json|```/g, "").trim());
-```
+const raw = data.content
+  .filter(b => b.type === 'text')
+  .map(b => b.text)
+  .join('');
+const wellData = JSON.parse(raw.replace(/```json|```/g, '').trim());
+````
 
 ---
 
@@ -204,6 +212,7 @@ const wellData = JSON.parse(raw.replace(/```json|```/g, "").trim());
 Save to `/mnt/user-data/outputs/<well_name>.well` (sanitized from well name; default: `well.well`).
 
 Present the file with a brief summary:
+
 - Sections found: constructive (bore_hole, casing, screen, etc.) / geologic (lithology, fractures)
 - Total depth
 - Fields absent in the report (intentionally omitted) that may need manual completion
@@ -224,19 +233,19 @@ Ask targeted questions for missing critical data. Common gaps:
 
 ## Common report term lookup
 
-| Section | PT terms | EN terms |
-|---|---|---|
-| Metadata | Nome do poço, empresa perfuradora, data de conclusão, cota | Well name, driller, completion date, elevation |
-| Borehole | Perfuração, diâmetro de perfuração, profundidade total | Drilling, borehole diameter, total depth |
-| Casing | Revestimento, tubo de aço/PVC | Casing, steel/PVC pipe |
-| Reduction | Redutor, adaptador | Reducer, adapter |
-| Screen | Filtro, seção filtrante, ranhura, wire-wound | Screen, slotted section, slot opening |
-| Gravel pack | Pré-filtro, enrocamento, seixo | Gravel pack, filter gravel |
-| Seal | Cimentação anular, bentonita, vedação | Annular seal, bentonite, cement |
-| Cement pad | Laje de proteção, laje de concreto | Wellhead pad, concrete pad |
-| Lithology | Perfil litológico, coluna geológica, camadas | Lithological profile, geologic column, layers |
-| Fractures | Fraturas, zonas fraturadas | Fractures, fracture zones |
-| Caves | Cavernas, zonas cavernosas | Caves, voids, cavities |
+| Section     | PT terms                                                   | EN terms                                       |
+| ----------- | ---------------------------------------------------------- | ---------------------------------------------- |
+| Metadata    | Nome do poço, empresa perfuradora, data de conclusão, cota | Well name, driller, completion date, elevation |
+| Borehole    | Perfuração, diâmetro de perfuração, profundidade total     | Drilling, borehole diameter, total depth       |
+| Casing      | Revestimento, tubo de aço/PVC                              | Casing, steel/PVC pipe                         |
+| Reduction   | Redutor, adaptador                                         | Reducer, adapter                               |
+| Screen      | Filtro, seção filtrante, ranhura, wire-wound               | Screen, slotted section, slot opening          |
+| Gravel pack | Pré-filtro, enrocamento, seixo                             | Gravel pack, filter gravel                     |
+| Seal        | Cimentação anular, bentonita, vedação                      | Annular seal, bentonite, cement                |
+| Cement pad  | Laje de proteção, laje de concreto                         | Wellhead pad, concrete pad                     |
+| Lithology   | Perfil litológico, coluna geológica, camadas               | Lithological profile, geologic column, layers  |
+| Fractures   | Fraturas, zonas fraturadas                                 | Fractures, fracture zones                      |
+| Caves       | Cavernas, zonas cavernosas                                 | Caves, voids, cavities                         |
 
 ---
 

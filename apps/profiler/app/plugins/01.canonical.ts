@@ -7,8 +7,14 @@ export default defineNuxtPlugin({
     const cleanCanonical = () => {
       const cleanUrl = new URL(url.toString());
 
-      const paramsToRemove = ['utm_source', 'utm_medium', 'utm_campaign', 'fbclid', 'gclid'];
-      paramsToRemove.forEach((param) => cleanUrl.searchParams.delete(param));
+      const paramsToRemove = [
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'fbclid',
+        'gclid',
+      ];
+      paramsToRemove.forEach(param => cleanUrl.searchParams.delete(param));
 
       return cleanUrl.toString();
     };

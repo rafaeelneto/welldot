@@ -23,7 +23,7 @@ const formatProps = computed(() =>
     num: rt(p.num),
     title: rt(p.title),
     body: rt(p.body),
-  }))
+  })),
 );
 
 const PILLAR_ICONS = ['⊙', '{ }', 'A4'] as const;
@@ -33,17 +33,26 @@ const pillars = computed(() =>
     icon: PILLAR_ICONS[i]!,
     title: rt(p.title),
     body: rt(p.body),
-  }))
+  })),
 );
 
 const CTX_STATIC = [
   { icon: '📁', iconStyle: undefined as string | undefined, highlight: false },
-  { icon: 'git', iconStyle: 'font-family: var(--font-mono); font-size: 13px;', highlight: false },
-  { icon: 'SQL', iconStyle: 'font-family: var(--font-mono); font-size: 10px;', highlight: false },
+  {
+    icon: 'git',
+    iconStyle: 'font-family: var(--font-mono); font-size: 13px;',
+    highlight: false,
+  },
+  {
+    icon: 'SQL',
+    iconStyle: 'font-family: var(--font-mono); font-size: 10px;',
+    highlight: false,
+  },
   { icon: '✨', iconStyle: undefined as string | undefined, highlight: false },
   {
     icon: '⊕',
-    iconStyle: 'background: linear-gradient(135deg, var(--w-primary-500), oklch(58% 0.15 235)); color: white;',
+    iconStyle:
+      'background: linear-gradient(135deg, var(--w-primary-500), oklch(58% 0.15 235)); color: white;',
     highlight: true,
   },
 ];
@@ -53,7 +62,7 @@ const ctxCards = computed(() =>
     title: rt(card.title),
     meta: rt(card.meta),
     ...CTX_STATIC[i]!,
-  }))
+  })),
 );
 
 const horizonProps = computed(() =>
@@ -61,7 +70,7 @@ const horizonProps = computed(() =>
     num: rt(p.num),
     title: rt(p.title),
     body: rt(p.body),
-  }))
+  })),
 );
 </script>
 
@@ -95,7 +104,9 @@ const horizonProps = computed(() =>
       "
     />
 
-    <div class="lg:grid lg:grid-cols-[1fr_660px] lg:items-start max-w-400 mx-auto w-full">
+    <div
+      class="lg:grid lg:grid-cols-[1fr_660px] lg:items-start max-w-400 mx-auto w-full"
+    >
       <!-- ── Left: scrolling content ─────────────────────────────────────── -->
       <div class="relative z-10">
         <!-- Hero section -->
@@ -111,7 +122,8 @@ const horizonProps = computed(() =>
             class="font-serif font-medium text-[44px] lg:text-[76px] leading-none tracking-[-0.025em] mb-[14px] lg:mb-[22px] text-balance w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             {{ t('hero.headline1') }}
-            <em class="text-primary-500">{{ t('hero.headlineEm') }}</em>{{ t('hero.headline2') }}
+            <em class="text-primary-500">{{ t('hero.headlineEm') }}</em
+            >{{ t('hero.headline2') }}
           </h1>
           <p
             class="text-[15px] lg:text-[19px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-5 lg:mb-7 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
@@ -131,12 +143,19 @@ const horizonProps = computed(() =>
           <div
             class="flex flex-wrap gap-[22px] pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
           >
-            <span><b class="text-content-0 font-medium">v1.0</b> {{ t('hero.badgeSpec') }}</span>
+            <span
+              ><b class="text-content-0 font-medium">v1.0</b>
+              {{ t('hero.badgeSpec') }}</span
+            >
             <span
               ><b class="text-content-0 font-medium">Apache 2.0</b>
               {{ t('hero.badgeLicense') }}</span
             >
-            <span><b class="text-content-0 font-medium">{{ t('hero.badgeSite') }}</b></span>
+            <span
+              ><b class="text-content-0 font-medium">{{
+                t('hero.badgeSite')
+              }}</b></span
+            >
           </div>
         </div>
 
@@ -159,14 +178,19 @@ const horizonProps = computed(() =>
           <h2
             class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-[14px] w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
-            {{ t('format.headline1') }}<br /><em class="text-primary-500">{{ t('format.headlineEm') }}</em> {{ t('format.headline2') }}
+            {{ t('format.headline1') }}<br /><em class="text-primary-500">{{
+              t('format.headlineEm')
+            }}</em>
+            {{ t('format.headline2') }}
           </h2>
           <p
             class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             <i18n-t keypath="format.intro" tag="span">
               <template #well><b>.well</b></template>
-              <template #standard><em>{{ t('format.standard') }}</em></template>
+              <template #standard
+                ><em>{{ t('format.standard') }}</em></template
+              >
             </i18n-t>
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -259,14 +283,23 @@ const horizonProps = computed(() =>
         <h2
           class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-3.5"
         >
-          {{ t('contexts.headline1') }}<br /><em class="text-primary-500">{{ t('contexts.headlineEm') }}</em> {{ t('contexts.headline2') }}
+          {{ t('contexts.headline1') }}<br /><em class="text-primary-500">{{
+            t('contexts.headlineEm')
+          }}</em>
+          {{ t('contexts.headline2') }}
         </h2>
         <p class="text-[15px] leading-[1.55] text-content-400 mb-3.5">
           <i18n-t keypath="contexts.text1" tag="span">
-            <template #aiEm><em>{{ t('contexts.aiEm') }}</em></template>
-            <template #si><b>{{ t('contexts.si') }}</b></template>
+            <template #aiEm
+              ><em>{{ t('contexts.aiEm') }}</em></template
+            >
+            <template #si
+              ><b>{{ t('contexts.si') }}</b></template
+            >
             <template #wgs><b>WGS84</b></template>
-            <template #flexible><em>{{ t('contexts.flexible') }}</em></template>
+            <template #flexible
+              ><em>{{ t('contexts.flexible') }}</em></template
+            >
           </i18n-t>
         </p>
         <p
@@ -317,7 +350,9 @@ const horizonProps = computed(() =>
       <h2
         class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-3.5"
       >
-        {{ t('horizon.headline1') }} <em class="text-primary-500">{{ t('horizon.headlineEm') }}</em>{{ t('horizon.headline2') }}
+        {{ t('horizon.headline1') }}
+        <em class="text-primary-500">{{ t('horizon.headlineEm') }}</em
+        >{{ t('horizon.headline2') }}
       </h2>
       <p
         class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8"
@@ -361,8 +396,9 @@ const horizonProps = computed(() =>
       <h2
         class="font-serif font-medium text-[40px] lg:text-[64px] leading-[1.05] tracking-[-0.025em] mb-3.5 text-balance"
       >
-        {{ t('cta.headline1') }}<br /><em class="text-primary-500"
-          >{{ t('cta.headlineEm') }}</em
+        {{ t('cta.headline1') }}<br /><em class="text-primary-500">{{
+          t('cta.headlineEm')
+        }}</em
         >{{ t('cta.headline2') }}
       </h2>
       <p

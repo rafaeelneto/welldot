@@ -3,6 +3,7 @@
 ## Naming Conventions
 
 **Files:**
+
 - `kebab-case` with domain suffix: `well.utils.ts`, `lithology.renderer.ts`, `render.configs.ts`
 - Test files: `filename.test.ts` co-located alongside source
 - Type files: `*.types.ts`
@@ -12,18 +13,22 @@
 - React components (deprecated app): `PascalCase.tsx`
 
 **Types / Interfaces:**
+
 - `PascalCase`, no `I` prefix
 - Examples: `Well`, `BoreHole`, `DrawContext`, `RenderConfig`, `WellTheme`
 
 **Functions:**
+
 - `camelCase`, verb-noun pattern
 - Examples: `parseWell`, `serializeWell`, `getProfileMaxDepth`, `formatLength`, `filterByDepth`
 
 **Constants:**
+
 - `SCREAMING_SNAKE_CASE`
 - Examples: `EMPTY_WELL`, `DEFAULT_WELL_THEME`, `DEFAULT_RENDER_CONFIG`
 
 **Variables:**
+
 - `camelCase`; `_`-prefixed for intentionally unused params (ESLint exemption)
 
 ## File Structure
@@ -72,11 +77,12 @@ Each package exposes its public API exclusively through `src/index.ts` (barrel e
 ## Comments & Documentation
 
 - JSDoc for public functions: `@param`, `@returns`, `@example` where helpful
-- Inline comments explain *why*, not *what*
+- Inline comments explain _why_, not _what_
 - No multi-line block comments except JSDoc
 - Section separators in large files (see above)
 
 Example (from `profile.utils.ts`):
+
 ```typescript
 /**
  * Returns the deepest recorded depth for each component array in a well profile.

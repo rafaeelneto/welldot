@@ -157,7 +157,10 @@ const togglePt = {
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-200 hover:text-content-0 hover:bg-surface-100 transition-colors no-underline"
           @click="drawerOpen = false"
         >
-          <Icon name="heroicons:arrow-top-right-on-square" class="w-4 h-4 shrink-0" />
+          <Icon
+            name="heroicons:arrow-top-right-on-square"
+            class="w-4 h-4 shrink-0"
+          />
           {{ t('nav.github') }}
         </NuxtLink>
       </nav>
@@ -165,7 +168,9 @@ const togglePt = {
       <Divider class="my-4" />
 
       <div class="flex items-center gap-2 px-1">
-        <span class="text-xs text-content-400 font-mono uppercase mr-auto">{{ t('nav.theme.light') }}</span>
+        <span class="text-xs text-content-400 font-mono uppercase mr-auto">{{
+          t('nav.theme.light')
+        }}</span>
         <ToggleButton
           v-model="isDark"
           :on-label="''"
@@ -175,8 +180,18 @@ const togglePt = {
           :pt="togglePt"
         >
           <Transition name="icon-rotate" mode="out-in">
-            <Icon v-if="isDark" key="sun" name="heroicons:sun" class="w-4 h-4 shrink-0" />
-            <Icon v-else key="moon" name="heroicons:moon" class="w-4 h-4 shrink-0" />
+            <Icon
+              v-if="isDark"
+              key="sun"
+              name="heroicons:sun"
+              class="w-4 h-4 shrink-0"
+            />
+            <Icon
+              v-else
+              key="moon"
+              name="heroicons:moon"
+              class="w-4 h-4 shrink-0"
+            />
           </Transition>
         </ToggleButton>
       </div>

@@ -244,7 +244,8 @@ const MyPreset = definePreset(Aura, {
           navButton: {
             background: 'rgba(247, 248, 250, 0.80)',
             color: '{content.400}',
-            shadow: '0 0 0 1px rgba(216, 221, 227, 0.60), 0 2px 8px rgba(216, 221, 227, 0.40)',
+            shadow:
+              '0 0 0 1px rgba(216, 221, 227, 0.60), 0 2px 8px rgba(216, 221, 227, 0.40)',
           },
         },
         dark: {
@@ -254,7 +255,8 @@ const MyPreset = definePreset(Aura, {
           navButton: {
             background: 'rgba(13, 18, 24, 0.80)',
             color: '{content.400}',
-            shadow: '0 0 0 1px rgba(42, 51, 68, 0.60), 0 2px 8px rgba(42, 51, 68, 0.40)',
+            shadow:
+              '0 0 0 1px rgba(42, 51, 68, 0.60), 0 2px 8px rgba(42, 51, 68, 0.40)',
           },
         },
       },

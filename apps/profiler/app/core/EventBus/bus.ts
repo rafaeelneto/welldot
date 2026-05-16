@@ -16,7 +16,10 @@ export class EventBus {
   private pendingEvents: string[] = [];
   private queuedEvents: Map<AppEventsKeys, QueuedEvent[]> = new Map();
 
-  on<E extends AppEventsKeys>(eventName: E, callback: EventCallback<AppEventsPayload<E>>): () => void {
+  on<E extends AppEventsKeys>(
+    eventName: E,
+    callback: EventCallback<AppEventsPayload<E>>,
+  ): () => void {
     if (!this.callbacks.has(eventName)) {
       this.callbacks.set(eventName, new Set());
     }
@@ -27,7 +30,10 @@ export class EventBus {
     };
   }
 
-  once<E extends AppEventsKeys>(eventName: E, callback: EventCallback<AppEventsPayload<E>>): () => void {
+  once<E extends AppEventsKeys>(
+    eventName: E,
+    callback: EventCallback<AppEventsPayload<E>>,
+  ): () => void {
     const wrapper = async (payload: AppEventsPayload<E>) => {
       try {
         return await callback(payload);
@@ -39,21 +45,32 @@ export class EventBus {
     return unsubscribe;
   }
 
-  onAsync<E extends AppEventsKeys>(eventName: E, timeoutMs: number = 30000): Promise<AppEventsPayload<E>> {
+  onAsync<E extends AppEventsKeys>(
+    eventName: E,
+    timeoutMs: number = 30000,
+  ): Promise<AppEventsPayload<E>> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         unsubscribe();
-        reject(new Error(`Timeout waiting for "${eventName}" (${timeoutMs}ms)`));
+        reject(
+          new Error(`Timeout waiting for "${eventName}" (${timeoutMs}ms)`),
+        );
       }, timeoutMs);
 
-      const unsubscribe = this.once(eventName, (payload: AppEventsPayload<E>) => {
-        clearTimeout(timeout);
-        resolve(payload);
-      });
+      const unsubscribe = this.once(
+        eventName,
+        (payload: AppEventsPayload<E>) => {
+          clearTimeout(timeout);
+          resolve(payload);
+        },
+      );
     });
   }
 
-  emit<E extends AppEventsKeys>(eventName: E, payload: AppEventsPayload<E>): string {
+  emit<E extends AppEventsKeys>(
+    eventName: E,
+    payload: AppEventsPayload<E>,
+  ): string {
     const eventId = this.generateEventId();
     const event: Event<AppEventsPayload<E>> = {
       id: eventId,
@@ -68,11 +85,17 @@ export class EventBus {
     return eventId;
   }
 
-  off<E extends AppEventsKeys>(eventName: E, callback: EventCallback<AppEventsPayload<E>>): void {
+  off<E extends AppEventsKeys>(
+    eventName: E,
+    callback: EventCallback<AppEventsPayload<E>>,
+  ): void {
     this.callbacks.get(eventName)?.delete(callback);
   }
 
-  emitQueue<E extends AppEventsKeys>(eventName: E, payload: AppEventsPayload<E>): string {
+  emitQueue<E extends AppEventsKeys>(
+    eventName: E,
+    payload: AppEventsPayload<E>,
+  ): string {
     const eventId = this.generateEventId();
     const event: Event<AppEventsPayload<E>> = {
       id: eventId,
@@ -82,7 +105,8 @@ export class EventBus {
       createdAt: new Date(),
     };
 
-    const hasListeners = this.callbacks.has(eventName) && this.callbacks.get(eventName)!.size > 0;
+    const hasListeners =
+      this.callbacks.has(eventName) && this.callbacks.get(eventName)!.size > 0;
 
     if (hasListeners) {
       this.pendingEvents.push(eventId);
@@ -103,7 +127,7 @@ export class EventBus {
     const queue = this.queuedEvents.get(eventName);
     if (!queue || queue.length === 0) return;
 
-    queue.forEach((queued) => {
+    queue.forEach(queued => {
       if (!queued.consumed) {
         queued.consumed = true;
         this.pendingEvents.push(queued.event.id);
@@ -119,8 +143,9 @@ export class EventBus {
     this.notifyListeners('onEventProcessing', event);
 
     try {
-      const callbacks = this.callbacks.get(event.name as AppEventsKeys) || new Set();
-      callbacks.forEach((callback) => {
+      const callbacks =
+        this.callbacks.get(event.name as AppEventsKeys) || new Set();
+      callbacks.forEach(callback => {
         if (!callback) return;
         (callback as (...a: any[]) => any).apply(event, event.payload);
       });
@@ -135,7 +160,7 @@ export class EventBus {
   }
 
   private notifyListeners(method: keyof BusListener, ...args: any[]): void {
-    this.listeners.forEach((listener) => {
+    this.listeners.forEach(listener => {
       const callback = listener[method];
       if (callback) {
         (callback as (...a: any[]) => any).apply(listener, args);

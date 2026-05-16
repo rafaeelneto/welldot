@@ -4,7 +4,10 @@ export function useDateFns() {
   return datefns;
 }
 
-export function formatDate(date: Date | string | undefined, format = 'dd/MM/yyyy HH:mm'): string {
+export function formatDate(
+  date: Date | string | undefined,
+  format = 'dd/MM/yyyy HH:mm',
+): string {
   if (!date) return '';
 
   let dateToFormat = date;

@@ -41,12 +41,14 @@ src/
 ```
 
 Key types from `well.types.ts`:
+
 - `Well` — root profile: `{ id, name, units, constructive, geologic, ... }`
 - `Constructive` — `{ bore_hole[], well_case[], reduction[], well_screen[], surface_case[] }`
 - `Geologic` — `{ lithology[], fractures[], caves[] }`
 - All depth-bearing components carry `{ depth_from, depth_to }` + component-specific fields
 
 Key patterns:
+
 - Runtime validation at deserialization boundary only (`parseWell()` / `deserializeWell()`)
 - Legacy migration handled in `well.utils.ts` (`profileToWell`, `convertProfileFromJSON`)
 - `EMPTY_WELL` constant for safe default initialization
@@ -64,6 +66,7 @@ src/
 ```
 
 Key functions:
+
 - `getProfileMaxDepth(profile)` → `number`
 - `getProfileLastItemsDepths(profile)` → `number[]` (max depth per component array)
 - `getProfileDiamValues(constructionData)` → `number[]`
@@ -106,6 +109,7 @@ src/
 ```
 
 **WellRenderer lifecycle:**
+
 1. Constructor: configure `svgInstances[]`, `theme`, `renderConfig`, `units`
 2. `prepareSvg()`: load FGDC textures, set up SVG containers, defs
 3. `draw(profile)`: delegate to each specialized renderer with a `DrawContext`
@@ -113,6 +117,7 @@ src/
 5. `highlightLayers()` / `clearHighlights()`: layer selection API
 
 **DrawContext** is a shared object passed to all renderers:
+
 ```typescript
 {
   svg: SvgSelection;
