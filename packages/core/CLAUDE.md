@@ -41,35 +41,89 @@ pnpm lint       # eslint
 
 ## Documentation requirements
 
-This package ships three public doc files that must be kept in sync with the code. **Any change that touches types, validators, or FGDC textures requires updating the relevant doc files in the same commit.**
+**Any change that touches types, validators, or FGDC textures requires updating the relevant doc files in the same commit.**
 
-### `well-specifications.md`
+### Doc layout
+
+```
+docs/
+  spec/
+    v1/
+      well-format.md        ← v1 format spec (stable; update only for corrections)
+    v2/
+      overview.md           ← Changes from v1, Purpose, Design Principles, Known Limitations
+      format-reference.md   ← Top-level fields, Datetime, Units, Precision, CRS/location/well_id/profiles,
+                               Extensibility, Cross-reference & uniqueness rules
+      object-schemas.md     ← All object schemas + hydrodynamic_events + aquifer_analysis +
+                               history_logs + Complete Example JSON
+      interoperability.md   ← JSON-LD Context, GWML2 relationship, Schema Validation
+  schema/
+    v1/                     ← stub; v1 schema TBD
+    v2/
+      well.schema.json      ← generated from src/validators/well.validators.ts via zod-to-json-schema;
+                               mirrors welldot.org/schema/v2/well.schema.json — DO NOT hand-edit
+      profiles/             ← stub for profile schemas (e.g. brazil-ana/v1/schema.json)
+  reference/
+    fgdc-textures.md        ← FGDC texture code reference (code → label, pending status)
+  profiles/                 ← stub for future profile spec docs
+```
+
+### `docs/spec/v1/well-format.md`
+
+Update only for corrections (factual errors, broken examples). This spec is stable and shipped; no additive changes belong here.
+
+### `docs/spec/v2/overview.md`
 
 Update when:
-- A field is added, removed, or renamed on any type (`Well`, `BoreHole`, `WellCase`, `Lithology`, etc.)
-- A field changes type, unit, or constraint (e.g. a `string` becomes a union, a value becomes required)
-- A new top-level section or component type is introduced
-- A vocabulary value (e.g. `well_type` recommended values) is added or changed
+- A new known limitation is recognized.
+- A design principle is revised during the ratification process.
+- The "Changes from v1" section gains a new entry (e.g. v2.1 additions).
 
-What to update: the relevant field table, example JSON snippet if it illustrates the changed field, and version notes if the change is breaking.
-
-### `fgdc-textures.md`
+### `docs/spec/v2/format-reference.md`
 
 Update when:
-- A new texture code is added to `FGDC_TEXTURES_OPTIONS` in `src/utils/fgdc.textures.ts`
-- A texture's `label` or `pending` status changes
-- The series summary at the top (counts of available vs pending) changes
+- A field is added, removed, or renamed on any top-level type (`Well`, `WellId`, `Location`, `LocationProperties`).
+- The canonical unit of any field changes.
+- A new precision field is added.
+- The deprecation policy lifecycle rules change.
+- Cross-reference or uniqueness rules change.
 
-What to update: the row in the corresponding series table, and the summary counts in the preamble.
+What to update: the relevant field table, the field-to-unit binding list if the field has a length/diameter/flow/time unit, and version notes if the change is breaking.
+
+### `docs/spec/v2/object-schemas.md`
+
+Update when:
+- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, or any `hydrodynamic_events` event type).
+- A new event type is added to `hydrodynamic_events`.
+- The Complete Example JSON no longer validates against the current types.
+
+What to update: the field table for the changed type and the Complete Example JSON if the change affects it.
+
+### `docs/schema/v2/well.schema.json`
+
+Regenerate (do not hand-edit) after any change to `src/validators/well.validators.ts`. Generation command (once `zod-to-json-schema` is wired into the build):
+
+```bash
+pnpm generate:schema
+```
+
+### `docs/reference/fgdc-textures.md`
+
+Update when:
+- A new texture code is added to `FGDC_TEXTURES_OPTIONS` in `src/utils/fgdc.textures.ts`.
+- A texture's `label` or `pending` status changes.
+- The series summary at the top (counts of available vs pending) changes.
+
+What to update: the row in the corresponding series table and the summary counts in the preamble.
 
 ### `README.md`
 
 Update when:
-- A function or type is added to or removed from the public API (`src/index.ts`)
-- Installation requirements change (new peer deps, Node version, etc.)
-- A code example in the README no longer compiles against the current types
+- A function or type is added to or removed from the public API (`src/index.ts`).
+- Installation requirements change (new peer deps, Node version, etc.).
+- A code example in the README no longer compiles against the current types.
 
-What to update: the relevant Quick Start example, the exports table if one exists, and any mention of the changed symbol.
+What to update: the relevant Quick Start example, the exports table, and any mention of the changed symbol.
 
 ## Constraints
 

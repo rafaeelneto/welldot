@@ -16,7 +16,7 @@ TypeScript types, Zod validators, and serialization utilities for the `.well` op
 
 The format is designed for three use cases: visualization of technical well profiles, registration with regulatory bodies, and hydrogeological research.
 
-See the [full format specification](./well-specifications.md) for the complete schema reference and design rationale.
+See the [v1 format specification](./docs/spec/v1/well-format.md) for the complete schema reference and design rationale. The [v2 draft](./docs/spec/v2/overview.md) adds hydrodynamic events, aquifer analysis, history logs, and structured location/identity fields.
 
 ## Installation
 
@@ -160,7 +160,7 @@ Codes are grouped by series:
 | 600 | Sedimentary lithology *(most useful for well logging)* |
 | 700 | Metamorphic and igneous lithology |
 
-See [fgdc-textures.md](./fgdc-textures.md) for the complete annotated list of all 284 codes.
+See [fgdc-textures.md](./docs/reference/fgdc-textures.md) for the complete annotated list of all 284 codes.
 
 ## `.well` Format Overview
 
@@ -189,7 +189,7 @@ A minimal `.well` document:
 }
 ```
 
-For the complete schema reference, field vocabulary, design rationale, and versioning policy see the [`.well` format specification](./well-specifications.md).
+For the complete schema reference, field vocabulary, design rationale, and versioning policy see the [`.well` v1 format specification](./docs/spec/v1/well-format.md).
 
 ## Contributing
 
