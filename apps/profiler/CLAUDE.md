@@ -12,7 +12,7 @@
 - **SEO:** `@nuxtjs/seo` (schema.org, OG, sitemap, robots)
 - **PWA:** `@vite-pwa/nuxt` (auto-update, disabled in dev)
 - **Fonts:** Space Grotesk, IBM Plex Serif, JetBrains Mono (via `@nuxt/fonts`)
-- **Icons:** Heroicons via `@nuxt/icon`, custom SVG icons in `app/assets/icons/` (prefix `welldot:`)
+- **Icons:** Phosphor (`ph:`) via `@nuxt/icon` — **preferred**. Heroicons (`heroicons:`) remain as secondary usange when there is no phosphor good icon or is explicit said. Custom SVG icons in `app/assets/icons/` (prefix `welldot:`)
 - **Deploy:** Cloudflare Pages (Nitro `cloudflare-pages` preset); preview via `wrangler`
 
 ## Directory layout
@@ -89,7 +89,7 @@ When `README.md` is eventually replaced with real content, keep it in sync:
 - `@welldot/render` uses D3 and mutates the DOM — wrap renderer calls in `onMounted` or `<ClientOnly>`.
 - SSR is enabled; avoid `window`/`document` access outside of client lifecycle hooks or `process.client` guards.
 - Deployed to Cloudflare Pages — no Node.js server runtime. All server routes must be Cloudflare-compatible.
-- Always prefer PrimeVue icons (`@nuxt/icon` with Heroicons) over other icon libraries.
+- **Icons:** Use Phosphor (`ph:`) for all new UI. Prefer the **duotone** variant (`ph:icon-name-duotone`) as the default — it matches the editorial aesthetic. Fall back to `ph:icon-name` (regular) only when duotone is unavailable. Browse at https://icones.js.org/collection/ph. Do not use Heroicons in new components; the landing page (`layouts/landing.vue`) may keep its existing `heroicons:` usage.
 - try to use tailwind canonical classes instead of custom measurements
 - always use semantic colors definition primary, secondary, surface, content
 - preffer primevue components and check documentation for better usage and customization (some changes should be global level theming on customTheme.ts or customPt.js)

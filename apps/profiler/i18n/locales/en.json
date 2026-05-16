@@ -163,5 +163,32 @@
   "heroVisual": {
     "liveTitle": "live preview",
     "liveSub": "generated live profile"
+  },
+  "editor": {
+    "well": "Well",
+    "save": "Save",
+    "open": "Open",
+    "share": "Share",
+    "exportPdf": "Export PDF",
+    "back": "Back",
+    "menu": "Menu",
+    "viewProfile": "Profile",
+    "viewData": "Data",
+    "tabs": {
+      "general": "General",
+      "construction": "Construction",
+      "constructionShort": "Constr.",
+      "geological": "Geological",
+      "summary": "Summary"
+    },
+    "status": {
+      "saved": "Saved",
+      "layers": "Layers"
+    },
+    "zoom": {
+      "in": "Zoom in",
+      "out": "Zoom out",
+      "fit": "Fit"
+    }
   }
 }

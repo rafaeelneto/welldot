@@ -181,7 +181,8 @@ const MyPreset = definePreset(Aura, {
             background: 'rgba(255, 255, 255, 0.92)',
             borderColor: '{surface.200}',
             color: '{content.0}',
-            shadow: '-20px 0 48px -8px rgba(14, 30, 51, 0.14), -2px 0 8px -2px rgba(14, 30, 51, 0.06)',
+            shadow:
+              '-20px 0 48px -8px rgba(14, 30, 51, 0.14), -2px 0 8px -2px rgba(14, 30, 51, 0.06)',
           },
         },
         dark: {
@@ -189,9 +190,78 @@ const MyPreset = definePreset(Aura, {
             background: 'rgba(13, 18, 24, 0.88)',
             borderColor: '{surface.200}',
             color: '{content.0}',
-            shadow: '-20px 0 48px -8px rgba(0, 0, 0, 0.60), -2px 0 8px -2px rgba(0, 0, 0, 0.40)',
+            shadow:
+              '-20px 0 48px -8px rgba(0, 0, 0, 0.60), -2px 0 8px -2px rgba(0, 0, 0, 0.40)',
           },
         },
+      },
+    },
+    tabs: {
+      tablist: {
+        borderWidth: '0 0 1px 0',
+        borderColor: '{surface.200}',
+        background: 'transparent',
+      },
+      tab: {
+        background: 'transparent',
+        hoverBackground: 'transparent',
+        activeBackground: 'transparent',
+        borderWidth: '0',
+        borderColor: 'transparent',
+        hoverBorderColor: 'transparent',
+        activeBorderColor: 'transparent',
+        color: '{content.400}',
+        hoverColor: '{content.200}',
+        activeColor: '{content.0}',
+        padding: '0.875rem 0.25rem',
+        fontWeight: '500',
+        margin: '0 1.25rem 0 0',
+        focus: {
+          ring: {
+            width: '2px',
+            style: 'solid',
+            color: '{primary.color}',
+            offset: '-2px',
+            shadow: 'none',
+          },
+        },
+      },
+      tabpanel: {
+        background: 'transparent',
+        color: '{content.0}',
+        padding: '0',
+      },
+      activeBar: {
+        height: '2px',
+        bottom: '0px',
+        background: '{primary.500}',
+      },
+      colorScheme: {
+        light: {
+          activeBar: {
+            background: '{primary.600}',
+          },
+          navButton: {
+            background: 'rgba(247, 248, 250, 0.80)',
+            color: '{content.400}',
+            shadow: '0 0 0 1px rgba(216, 221, 227, 0.60), 0 2px 8px rgba(216, 221, 227, 0.40)',
+          },
+        },
+        dark: {
+          activeBar: {
+            background: '{primary.400}',
+          },
+          navButton: {
+            background: 'rgba(13, 18, 24, 0.80)',
+            color: '{content.400}',
+            shadow: '0 0 0 1px rgba(42, 51, 68, 0.60), 0 2px 8px rgba(42, 51, 68, 0.40)',
+          },
+        },
+      },
+    },
+    selectbutton: {
+      border: {
+        radius: '999px',
       },
     },
     button: {

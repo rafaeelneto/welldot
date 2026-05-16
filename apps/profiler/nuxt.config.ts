@@ -44,6 +44,7 @@ export default defineNuxtConfig({
     'nuxt-viewport',
     '@nuxtjs/seo',
     '@vite-pwa/nuxt',
+    '@vueuse/nuxt',
   ],
 
   i18n: {
