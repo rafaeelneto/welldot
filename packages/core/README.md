@@ -8,15 +8,18 @@ TypeScript types, Zod validators, and serialization utilities for the `.well` op
 
 ## What is `.well`?
 
-`.well` is an open file format for encoding the complete static record of a water well as a single, self-describing JSON document. A `.well` file contains:
+`.well` is an open file format for encoding the complete record of a water well as a single, self-describing JSON document. A `.well` file contains:
 
 - **Constructive data** — borehole geometry, casing strings, screens, reducers, gravel packs, and cement pads
 - **Geologic data** — lithological column, discrete fractures, and cave zones
-- **Administrative metadata** — name, driller, construction date, geographic coordinates, and elevation
+- **Administrative metadata** — well identity, authority-scoped IDs (`well_id`), driller, construction date, and geographic coordinates with explicit CRS
+- **Hydrodynamic events** — append-only ledger of static level readings, pumping tests (constant-rate, step-drawdown, airlift), and recovery phases
+- **Aquifer analysis** — interpreted parameter sets: transmissivity, specific capacity, storativity, and Jacob loss coefficients
+- **Operational history** — timestamped log of maintenance, inspections, and incidents with HTTPS attachment references
 
 The format is designed for three use cases: visualization of technical well profiles, registration with regulatory bodies, and hydrogeological research.
 
-See the [v1 format specification](./docs/spec/v1/well-format.md) for the complete schema reference and design rationale. The [v2 draft](./docs/spec/v2/overview.md) adds hydrodynamic events, aquifer analysis, history logs, and structured location/identity fields.
+See the [v2 format specification](./docs/spec/v2/overview.md) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
 
 ## Installation
 

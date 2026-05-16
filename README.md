@@ -6,7 +6,7 @@ This repository is an open-source software ecosystem for geological well log vis
 
 The core tools — the Well Profiler app, the `.well` format, and the libraries — are free and open source under the Apache 2.0 license.
 
-You can try the app at [wellprofiler.com](https://wellprofiler.com). The source lives at [github.com/rafaeelneto/welldot](https://github.com/rafaeelneto/welldot).
+You can try the app at [welldot.org](https://welldot.org). The source lives at [github.com/rafaeelneto/welldot](https://github.com/rafaeelneto/welldot).
 
 ---
 
@@ -22,18 +22,16 @@ The `.well` format is designed to serve three purposes:
 
 The format is human-readable JSON with full, descriptive key names. It is easy to inspect, diff, and version-control without tooling.
 
-**Example `.well` file:**
+**Example `.well` file (v2):**
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "well_type": "tubular",
   "name": "Poço PP-01",
   "well_driller": "Perfuradora XYZ",
   "construction_date": "2024-03-15",
-  "lat": -1.4558,
-  "lng": -48.5039,
-  "elevation": 12.5,
+  "location": { "lat": -1.4558, "lng": -48.5039, "elevation": 12.5 },
   "bore_hole": [
     { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
   ],
@@ -53,7 +51,7 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
       "to": 80,
       "type": "wire_wound",
       "diameter": 150,
-      "screen_slot_mm": 0.5
+      "screen_slot": 0.5
     }
   ],
   "surface_case": [{ "from": 0, "to": 3, "diameter": 300 }],
@@ -78,7 +76,7 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
       "to": 20,
       "description": "Areia fina",
       "color": "#f5deb3",
-      "fgdc_texture": "sand",
+      "texture": { "code": 607, "vocabulary": "fgdc" },
       "geologic_unit": "Quaternário",
       "aquifer_unit": "freático"
     }
@@ -106,21 +104,26 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
 
 The format captures:
 
-| Section        | Field                                                                                                 | Description                                                                             |
-| -------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Metadata       | `version`, `well_type`, `name`, `well_driller`, `construction_date`, `lat`, `lng`, `elevation`, `obs` | Version, well classification, name, driller, date, coordinates, elevation, observations |
-| Borehole       | `bore_hole[]`                                                                                         | Depth intervals and drilling method                                                     |
-| Well casing    | `well_case[]`                                                                                         | Casing material, diameter, and depth                                                    |
-| Reductions     | `reduction[]`                                                                                         | Diameter transitions between casing sections                                            |
-| Well screen    | `well_screen[]`                                                                                       | Screen type, slot size, and depth                                                       |
-| Surface casing | `surface_case[]`                                                                                      | Outer protective casing                                                                 |
-| Hole fill      | `hole_fill[]`                                                                                         | Gravel pack and cement seal intervals                                                   |
-| Cement pad     | `cement_pad`                                                                                          | Surface pad dimensions                                                                  |
-| Lithology      | `lithology[]`                                                                                         | Geologic layers with FGDC texture codes, colors, and aquifer units                      |
-| Fractures      | `fractures[]`                                                                                         | Depth, azimuth, dip, water intake                                                       |
-| Caves          | `caves[]`                                                                                             | Depth intervals and water intake                                                        |
+| Section             | Field                                                                      | Description                                                                    |
+| ------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Identity            | `version`, `well_type`, `name`, `well_driller`, `construction_date`, `obs` | Version, well classification, name, driller, date, and free-text observations  |
+| Location            | `location`                                                                 | Lat/lng/elevation with explicit CRS and datum; default WGS84 (`EPSG:4326`)     |
+| Registry IDs        | `well_id[]`                                                                | Authority-scoped identifiers (e.g. SIAGAS, ANA, NGWD)                          |
+| Borehole            | `bore_hole[]`                                                              | Depth intervals and drilling method                                            |
+| Well casing         | `well_case[]`                                                              | Casing material, diameter, and depth                                           |
+| Reductions          | `reduction[]`                                                              | Diameter transitions between casing sections                                   |
+| Well screen         | `well_screen[]`                                                            | Screen type, slot size (`screen_slot`, mm), and depth                          |
+| Surface casing      | `surface_case[]`                                                           | Outer protective casing                                                        |
+| Hole fill           | `hole_fill[]`                                                              | Gravel pack and cement seal intervals                                          |
+| Cement pad          | `cement_pad`                                                               | Surface pad dimensions                                                         |
+| Lithology           | `lithology[]`                                                              | Geologic layers with FGDC texture codes, colors, and aquifer units             |
+| Fractures           | `fractures[]`                                                              | Depth, azimuth, dip, water intake                                              |
+| Caves               | `caves[]`                                                                  | Depth intervals and water intake                                               |
+| Hydrodynamic events | `hydrodynamic_events[]`                                                    | Pumping tests, static readings, airlift, and recovery phases with time-series  |
+| Aquifer analysis    | `aquifer_analysis[]`                                                       | Interpreted transmissivity, specific capacity, storativity, Jacob coefficients |
+| Operational history | `history_logs[]`                                                           | Timestamped log of maintenance, inspections, and incidents                     |
 
-All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`packages/core/well-specifications.md`](packages/core/well-specifications.md).
+All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`packages/core/docs/spec/v2/`](packages/core/docs/spec/v2/).
 
 The format is open. You are welcome to implement parsers, exporters, converters, or viewers in any language. Contributions to the specification are welcome via issues and pull requests.
 
@@ -180,11 +183,11 @@ To use the libraries in your own project, install them individually — see the 
 
 ## Tech Stack
 
-- [Next.js](https://nextjs.org/) + [TypeScript](https://www.typescriptlang.org/)
-- [React](https://react.dev/)
+- [Nuxt 4](https://nuxt.com/) + [Vue 3](https://vuejs.org/) + [TypeScript](https://www.typescriptlang.org/) — active web app (`apps/profiler`, deployed at welldot.org)
+- [PrimeVue 4](https://primevue.org/) + [Tailwind CSS 4](https://tailwindcss.com/) — UI components and styling
 - [`@welldot/render`](./packages/render) — SVG profile rendering (built on [D3.js](https://d3js.org/))
 - [pdfmake](http://pdfmake.org/) — PDF export
-- [Mantine](https://mantine.dev/) — UI components
+- [Pinia](https://pinia.vuejs.org/) — state management
 
 ---
 
@@ -196,21 +199,26 @@ Well Profiler uses the [FGDC Digital Cartographic Standard for Geologic Map Symb
 
 ## Roadmap
 
-### `.well` format extensions
+### `.well` format — v2 shipped
 
-The following data types are planned for future versions of the `.well` format:
+The following were delivered in `.well` v2.0 (shipped in `@welldot/core` v0.2.0):
 
-- **Pump tests** — step-drawdown and constant-rate test results, including static/dynamic water levels, specific capacity, and transmissivity estimates
-- **Water quality** — physico-chemical and microbiological parameters tied to sampling date and depth interval
-- **History log** — timestamped records of maintenance events, rehabilitations, and operational changes over the well's lifespan
-- **Extended metadata** — owner, responsible hydrogeologist, licensing authority, permit number, and operational status
-- **Production data** — installed pump capacity, operational depth, and average yield
+- **Pumping tests** — constant-rate, step-drawdown, airlift, and recovery-only event types with full time-series readings
+- **Aquifer analysis** — transmissivity, specific capacity, storativity, hydraulic conductivity, and Jacob loss coefficients with method and analyst attribution
+- **Operational history log** — timestamped records of maintenance, inspections, and incidents with HTTPS attachment references
+- **Structured location** — `location` object with explicit CRS, elevation datum, and one-sigma precision fields
+- **Registry identifiers** — `well_id[]` array linking a well to multiple national and institutional registries
+
+### `.well` format — future versions
+
+- **Water quality** — physico-chemical and microbiological parameters tied to sampling date and depth interval (reserved for v3)
+- **Geophysical logs** — downhole resistivity, gamma ray, and caliper surveys (reserved for v3)
+- **Multi-well linking** — observation well references for storativity determination (reserved for v3)
 
 ### Ecosystem
 
 - **`.LAS` file import** — support for the industry-standard Log ASCII Standard format used in oil, gas, and water-well logging
-- **Water pumping test analysis** — built-in support for step-drawdown and constant-rate tests with aquifer parameter estimation (transmissivity, storage coefficient, specific capacity)
-- **Better internationalization** — unit system switching (SI / imperial), multi-language UI, and locale-aware date and number formats in Well Profiler
+- **Better internationalization** — unit system switching (SI / imperial), multi-language UI, and locale-aware date and number formats
 
 ---
 
@@ -243,7 +251,7 @@ Open Claude Code in any project and run:
 /welldot-converter
 ```
 
-Then attach or describe the well report you want to convert. Claude will extract the data, validate it, and produce a `.well` file ready for upload to [wellprofiler.com](https://wellprofiler.com) or use with `@welldot/core`.
+Then attach or describe the well report you want to convert. Claude will extract the data, validate it, and produce a `.well` file ready for upload to [welldot.org](https://welldot.org) or use with `@welldot/core`.
 
 ---
 

@@ -1,6 +1,6 @@
 # `.well` File Format Specification — Version 2.0: Overview
 
-**Version:** 2.0 (proposed) **Extension:** `.well` **Encoding:** UTF-8 **Base format:** JSON **MIME type:** `application/vnd.well+json` **JSON Schema:** `https://welldot.org/schema/v2/well.schema.json` **JSON Schema draft:** 2020-12 **JSON-LD Context (optional):** `https://welldot.org/context/v2.jsonld` **Status:** Draft — not yet ratified
+**Version:** 2.0 **Extension:** `.well` **Encoding:** UTF-8 **Base format:** JSON **MIME type:** `application/vnd.well+json` **JSON Schema:** `https://welldot.org/schema/v2/well.schema.json` **JSON Schema draft:** 2020-12 **JSON-LD Context (optional):** `https://welldot.org/context/v2.jsonld` **Status:** Ratified — shipped in `@welldot/core` v0.2.0
 
 **See also:** [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md)
 
@@ -9,7 +9,7 @@
 ## Changes from v1
 
 ```
-v2.0-draft additions:
+v2.0 additions:
 - location object (supersedes top-level lat/lng/elevation)
 - well_id (array of authority-scoped identifiers)
 - profiles (JSON Schema URLs for regulatory and domain-specific constraints)
@@ -22,14 +22,14 @@ v2.0-draft additions:
 - optional *_precision fields on key measurements
 - WellScreen.screen_slot renamed from screen_slot_mm
 
-v2.0-draft tightenings:
+v2.0 tightenings:
 - All numeric values are SI by spec. The format does not encode a
   units declaration; see § Units for the canonical mapping. v1 was
   de facto SI in practice and no v1 file in existence declared
   non-SI units, so this is a clarification rather than a breaking
   change. Display and input units are application concerns.
 
-v2.0-draft preserves all v1 fields. Parsers must accept v1 documents
+v2.0 preserves all v1 fields. Parsers must accept v1 documents
 unchanged and must accept the following v1-to-v2 normalizations:
 - Top-level lat/lng/elevation → location.lat/lng/elevation
 - fgdc_texture: "<code>" → texture: { code, vocabulary: "fgdc" }
@@ -82,4 +82,4 @@ The following are recognized limitations of this version, reserved for future ve
 
 ---
 
-_Draft — `.well` Format Specification v2.0_
+_`.well` Format Specification v2.0 — Ratified_
