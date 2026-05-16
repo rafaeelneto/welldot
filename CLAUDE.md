@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Each package and app has its own `CLAUDE.md` with deeper context:
 
-| Workspace | File |
-|---|---|
-| `packages/core` | [packages/core/CLAUDE.md](packages/core/CLAUDE.md) |
-| `packages/utils` | [packages/utils/CLAUDE.md](packages/utils/CLAUDE.md) |
-| `packages/render` | [packages/render/CLAUDE.md](packages/render/CLAUDE.md) |
-| `packages/lint` | [packages/lint/CLAUDE.md](packages/lint/CLAUDE.md) |
-| `apps/profiler` *(active)* | [apps/profiler/CLAUDE.md](apps/profiler/CLAUDE.md) |
-| `apps/well-profiler` *(deprecated)* | [apps/well-profiler/CLAUDE.md](apps/well-profiler/CLAUDE.md) |
+| Workspace                           | File                                                         |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `packages/core`                     | [packages/core/CLAUDE.md](packages/core/CLAUDE.md)           |
+| `packages/utils`                    | [packages/utils/CLAUDE.md](packages/utils/CLAUDE.md)         |
+| `packages/render`                   | [packages/render/CLAUDE.md](packages/render/CLAUDE.md)       |
+| `packages/lint`                     | [packages/lint/CLAUDE.md](packages/lint/CLAUDE.md)           |
+| `apps/profiler` _(active)_          | [apps/profiler/CLAUDE.md](apps/profiler/CLAUDE.md)           |
+| `apps/well-profiler` _(deprecated)_ | [apps/well-profiler/CLAUDE.md](apps/well-profiler/CLAUDE.md) |
 
 ## Project Overview
 
@@ -31,6 +31,7 @@ pnpm format       # Prettier formatting
 ```
 
 To work on a single package (e.g., `render`):
+
 ```bash
 cd packages/render
 pnpm dev          # tsup --watch

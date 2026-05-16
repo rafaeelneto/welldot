@@ -69,6 +69,7 @@ pnpm dev        # tsup --watch
 ### `README.md`
 
 Update when:
+
 - The `Renderer` constructor signature changes (new options, changed defaults)
 - `draw()`, `clear()`, or any other public method changes its signature or behavior
 - A new `RenderConfig` or `WellTheme` option is added, removed, or renamed

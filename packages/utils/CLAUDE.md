@@ -17,11 +17,11 @@ src/
 
 ## Key exports
 
-| Function | Purpose |
-|---|---|
-| `getProfileLastItemsDepths(well)` | Max depth per component array (lithology, fractures, bore_hole, etc.) |
-| `getProfileDiamValues(constructive)` | All diameter values in a constructive section |
-| `getPropertyFromConstructiveData(data, prop)` | Extract a named property from all constructive component arrays |
+| Function                                      | Purpose                                                               |
+| --------------------------------------------- | --------------------------------------------------------------------- |
+| `getProfileLastItemsDepths(well)`             | Max depth per component array (lithology, fractures, bore_hole, etc.) |
+| `getProfileDiamValues(constructive)`          | All diameter values in a constructive section                         |
+| `getPropertyFromConstructiveData(data, prop)` | Extract a named property from all constructive component arrays       |
 
 All functions operate on `Well` / `Constructive` types from `@welldot/core`. No side effects, no state.
 
@@ -38,6 +38,7 @@ pnpm dev        # tsup --watch
 `packages/utils` has no README today. If one is added, it must be kept in sync. Until then, the `src/profile.utils.ts` JSDoc comments **are** the public documentation — keep them accurate.
 
 Update JSDoc when:
+
 - A function's parameter types or return type changes (update `@param` / `@returns`)
 - A function's behavior changes in a way that would surprise a caller
 - A new exported function is added — it must have a JSDoc block before merging

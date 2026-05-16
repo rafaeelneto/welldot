@@ -8,13 +8,13 @@ Single source of truth for linting rules across the monorepo. Exports named flat
 
 ## Exports
 
-| Export path | Use case |
-|---|---|
-| `@welldot/lint/base` | Any JS/TS project — base rules + import-x + prettier |
-| `@welldot/lint/typescript` | TypeScript-specific rules on top of base |
-| `@welldot/lint/react` | React + hooks rules |
-| `@welldot/lint/vue` | Vue SFCs (vue-eslint-parser) |
-| `@welldot/lint/nuxt` | Nuxt-specific additions on top of vue |
+| Export path                | Use case                                             |
+| -------------------------- | ---------------------------------------------------- |
+| `@welldot/lint/base`       | Any JS/TS project — base rules + import-x + prettier |
+| `@welldot/lint/typescript` | TypeScript-specific rules on top of base             |
+| `@welldot/lint/react`      | React + hooks rules                                  |
+| `@welldot/lint/vue`        | Vue SFCs (vue-eslint-parser)                         |
+| `@welldot/lint/nuxt`       | Nuxt-specific additions on top of vue                |
 
 ## Usage in consuming packages
 
@@ -30,6 +30,7 @@ export default [...base, ...ts];
 This package has no README. Changes are documented inline in the config files via JSDoc comments. Keep them current.
 
 Update the config file comment header when:
+
 - A rule is added, removed, or its severity changes — add a one-line comment explaining why if the rule is non-obvious
 - A new export preset is added — add a `@description` block to the new file
 

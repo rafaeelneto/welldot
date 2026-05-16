@@ -61,22 +61,22 @@ new WellRenderer(svgs: SvgInstance[], options?: {
 })
 ```
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `svgs` | `SvgInstance[]` | One or more SVG panel descriptors (`{ selector, height, width, margins }`) |
-| `renderConfig` | `DeepPartial<RenderConfig>` | Controls zoom, pan, animation, labels, tooltips, layout |
-| `theme` | `DeepPartial<WellTheme>` | Visual style overrides (merged with `DEFAULT_WELL_THEME`) |
-| `units` | `Units` | `{ length: 'm' \| 'ft'; diameter: 'mm' \| 'inches' }` |
-| `classNames` | `DeepPartial<ComponentsClassNames>` | Override CSS class names for any SVG element |
-| `onError` | `(err: Error) => void` | Error callback |
+| Option         | Type                                | Description                                                                |
+| -------------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| `svgs`         | `SvgInstance[]`                     | One or more SVG panel descriptors (`{ selector, height, width, margins }`) |
+| `renderConfig` | `DeepPartial<RenderConfig>`         | Controls zoom, pan, animation, labels, tooltips, layout                    |
+| `theme`        | `DeepPartial<WellTheme>`            | Visual style overrides (merged with `DEFAULT_WELL_THEME`)                  |
+| `units`        | `Units`                             | `{ length: 'm' \| 'ft'; diameter: 'mm' \| 'inches' }`                      |
+| `classNames`   | `DeepPartial<ComponentsClassNames>` | Override CSS class names for any SVG element                               |
+| `onError`      | `(err: Error) => void`              | Error callback                                                             |
 
 #### Methods
 
-| Method | Description |
-|--------|-------------|
-| `prepareSvg(): Promise<void>` | Initialise SVG DOM structure and preload FGDC textures. Call once before the first `draw`. |
-| `draw(profile: Well, options?: { units?: Units; highlights?: Highlights }): void` | Render or re-render the full well profile. |
-| `renderLegend(selector: string, profile: Well): void` | Render a standalone legend into a separate SVG. |
+| Method                                                                            | Description                                                                                |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `prepareSvg(): Promise<void>`                                                     | Initialise SVG DOM structure and preload FGDC textures. Call once before the first `draw`. |
+| `draw(profile: Well, options?: { units?: Units; highlights?: Highlights }): void` | Render or re-render the full well profile.                                                 |
+| `renderLegend(selector: string, profile: Well): void`                             | Render a standalone legend into a separate SVG.                                            |
 
 ---
 
@@ -101,22 +101,22 @@ Does nothing if the profile contains no fractures or caves.
 
 ### Config presets
 
-| Export | Description |
-|--------|-------------|
+| Export                      | Description                                        |
+| --------------------------- | -------------------------------------------------- |
 | `INTERACTIVE_RENDER_CONFIG` | Full-featured preset: zoom, pan, animation enabled |
-| `STATIC_RENDER_CONFIG` | Zoom and pan disabled; suitable for static exports |
-| `DEFAULT_WELL_THEME` | Complete default visual theme |
+| `STATIC_RENDER_CONFIG`      | Zoom and pan disabled; suitable for static exports |
+| `DEFAULT_WELL_THEME`        | Complete default visual theme                      |
 
 ---
 
 ### Format utilities
 
-| Export | Signature | Description |
-|--------|-----------|-------------|
-| `formatLength` | `(m: number, units: LengthUnits) => string` | Depth in metres → unit-aware string |
-| `formatDiameter` | `(mm: number, units: DiameterUnits) => string` | Diameter in mm → unit-aware string |
-| `getLengthUnit` | `(units: LengthUnits) => string` | Returns `'m'` or `'ft'` |
-| `getDiameterUnit` | `(units: DiameterUnits) => string` | Returns `'mm'` or `'"'` |
+| Export            | Signature                                      | Description                         |
+| ----------------- | ---------------------------------------------- | ----------------------------------- |
+| `formatLength`    | `(m: number, units: LengthUnits) => string`    | Depth in metres → unit-aware string |
+| `formatDiameter`  | `(mm: number, units: DiameterUnits) => string` | Diameter in mm → unit-aware string  |
+| `getLengthUnit`   | `(units: LengthUnits) => string`               | Returns `'m'` or `'ft'`             |
+| `getDiameterUnit` | `(units: DiameterUnits) => string`             | Returns `'mm'` or `'"'`             |
 
 ---
 

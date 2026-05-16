@@ -222,13 +222,13 @@ The three primary measurements — `lat`, `lng`, `elevation` — are top-level f
 
 ### `LocationProperties`
 
-| Field                 | Type   | Required | Description                                                                                                                                                                                                                                                       |
-| --------------------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `elevation_datum`     | string | no       | Reference datum for `elevation`. See vocabulary below. Default: `wgs84_ellipsoid`.                                                                                                                                                                                |
-| `crs`                 | string | no       | EPSG code of the coordinate reference system. Must be a geographic (not projected) CRS. Default: `"EPSG:4326"` (WGS84).                                                                                                                                           |
-| `lat_precision`       | number | no       | One-sigma precision of `lat` in decimal degrees.                                                                                                                                                                                                                  |
-| `lng_precision`       | number | no       | One-sigma precision of `lng` in decimal degrees.                                                                                                                                                                                                                  |
-| `elevation_precision` | number | no       | One-sigma precision of `elevation` in meters.                                                                                                                                                                                                                     |
+| Field                 | Type   | Required | Description                                                                                                                                                       |
+| --------------------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `elevation_datum`     | string | no       | Reference datum for `elevation`. See vocabulary below. Default: `wgs84_ellipsoid`.                                                                                |
+| `crs`                 | string | no       | EPSG code of the coordinate reference system. Must be a geographic (not projected) CRS. Default: `"EPSG:4326"` (WGS84).                                           |
+| `lat_precision`       | number | no       | One-sigma precision of `lat` in decimal degrees.                                                                                                                  |
+| `lng_precision`       | number | no       | One-sigma precision of `lng` in decimal degrees.                                                                                                                  |
+| `elevation_precision` | number | no       | One-sigma precision of `elevation` in meters.                                                                                                                     |
 | `original_crs`        | string | no       | EPSG code of the source CRS, preserved for traceability when source data was in a projected CRS that the converter transformed to geographic. Informational only. |
 
 ### `elevation_datum` — Recommended values

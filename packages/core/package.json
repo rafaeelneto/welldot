@@ -58,16 +58,20 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
+    "generate:schema": "tsx scripts/generate-schema.ts",
     "prepublishOnly": "pnpm run build && pnpm run test"
   },
   "dependencies": {
+    "defu": "^6.1.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@welldot/lint": "workspace:*",
     "tsup": "^8.3.0",
+    "tsx": "^4.22.0",
     "typescript": "^5.3.3",
     "vite": "^8.0.9",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "zod-to-json-schema": "^3.25.2"
   }
 }

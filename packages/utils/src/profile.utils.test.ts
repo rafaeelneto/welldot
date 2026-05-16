@@ -33,11 +33,25 @@ function makeWellCase(o: Partial<WellCase> = {}): WellCase {
 }
 
 function makeWellScreen(o: Partial<WellScreen> = {}): WellScreen {
-  return { from: 10, to: 20, type: 'wire_wound', diameter: 100, screen_slot_mm: 0.5, ...o };
+  return {
+    from: 10,
+    to: 20,
+    type: 'wire_wound',
+    diameter: 100,
+    screen_slot_mm: 0.5,
+    ...o,
+  };
 }
 
 function makeReduction(o: Partial<Reduction> = {}): Reduction {
-  return { from: 5, to: 6, diam_from: 200, diam_to: 150, type: 'conical', ...o };
+  return {
+    from: 5,
+    to: 6,
+    diam_from: 200,
+    diam_to: 150,
+    type: 'conical',
+    ...o,
+  };
 }
 
 function makeSurfaceCase(o: Partial<SurfaceCase> = {}): SurfaceCase {
@@ -45,7 +59,14 @@ function makeSurfaceCase(o: Partial<SurfaceCase> = {}): SurfaceCase {
 }
 
 function makeHoleFill(o: Partial<HoleFill> = {}): HoleFill {
-  return { from: 0, to: 10, type: 'gravel_pack', diameter: 250, description: 'fine gravel', ...o };
+  return {
+    from: 0,
+    to: 10,
+    type: 'gravel_pack',
+    diameter: 250,
+    description: 'fine gravel',
+    ...o,
+  };
 }
 
 function makeLithology(o: Partial<Lithology> = {}): Lithology {
@@ -62,7 +83,15 @@ function makeLithology(o: Partial<Lithology> = {}): Lithology {
 }
 
 function makeFracture(o: Partial<Fracture> = {}): Fracture {
-  return { depth: 15, water_intake: true, description: 'fracture', swarm: false, azimuth: 0, dip: 45, ...o };
+  return {
+    depth: 15,
+    water_intake: true,
+    description: 'fracture',
+    swarm: false,
+    azimuth: 0,
+    dip: 45,
+    ...o,
+  };
 }
 
 function makeCave(o: Partial<Cave> = {}): Cave {
@@ -100,7 +129,9 @@ function emptyConstructive(): Constructive {
 
 describe('getProfileLastItemsDepths', () => {
   it('returns all zeros for a fully empty well', () => {
-    expect(getProfileLastItemsDepths(emptyWell())).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    expect(getProfileLastItemsDepths(emptyWell())).toEqual([
+      0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ]);
   });
 
   it('returns depths in component order: lithology, fractures, caves, bore_hole, hole_fill, reduction, surface_case, well_case, well_screen', () => {
@@ -116,7 +147,9 @@ describe('getProfileLastItemsDepths', () => {
       well_case: [makeWellCase({ to: 18 })],
       well_screen: [makeWellScreen({ to: 25 })],
     };
-    expect(getProfileLastItemsDepths(well)).toEqual([5, 12, 8, 20, 15, 7, 3, 18, 25]);
+    expect(getProfileLastItemsDepths(well)).toEqual([
+      5, 12, 8, 20, 15, 7, 3, 18, 25,
+    ]);
   });
 
   it('uses the LAST item in each array, not the first', () => {
@@ -180,7 +213,9 @@ describe('getProfileDiamValues', () => {
       well_case: [makeWellCase({ diameter: 150 })],
       reduction: [makeReduction({ diam_from: 200, diam_to: 150 })],
     };
-    expect(getProfileDiamValues(data)).toEqual([200, 250, 300, 100, 150, 200, 150]);
+    expect(getProfileDiamValues(data)).toEqual([
+      200, 250, 300, 100, 150, 200, 150,
+    ]);
   });
 
   it('flattens both diam_from and diam_to from each reduction entry', () => {
@@ -197,7 +232,10 @@ describe('getProfileDiamValues', () => {
   it('handles multiple items in a single component', () => {
     const data: Constructive = {
       ...emptyConstructive(),
-      bore_hole: [makeBoreHole({ diameter: 200 }), makeBoreHole({ diameter: 250 })],
+      bore_hole: [
+        makeBoreHole({ diameter: 200 }),
+        makeBoreHole({ diameter: 250 }),
+      ],
     };
     expect(getProfileDiamValues(data)).toEqual([200, 250]);
   });
@@ -215,7 +253,9 @@ describe('getProfileDiamValues', () => {
 
 describe('getConstructivePropertySummary', () => {
   it('returns an empty array when all sections are empty', () => {
-    expect(getConstructivePropertySummary(emptyConstructive(), 'type')).toEqual([]);
+    expect(getConstructivePropertySummary(emptyConstructive(), 'type')).toEqual(
+      [],
+    );
   });
 
   it('returns an empty array for fully absent constructive (empty partial)', () => {
@@ -224,7 +264,10 @@ describe('getConstructivePropertySummary', () => {
 
   it('extracts `type` from well_screen and well_case (in component order)', () => {
     const data: Partial<Constructive> = {
-      well_case: [makeWellCase({ type: 'steel' }), makeWellCase({ type: 'pvc' })],
+      well_case: [
+        makeWellCase({ type: 'steel' }),
+        makeWellCase({ type: 'pvc' }),
+      ],
       well_screen: [makeWellScreen({ type: 'wire_wound' })],
     };
     // component order: bore_hole, hole_fill, surface_case, well_screen, well_case, reduction
@@ -253,8 +296,12 @@ describe('getConstructivePropertySummary', () => {
     const data: Partial<Constructive> = {
       bore_hole: [makeBoreHole({ diameter: 200 })],
     };
-    expect(() => getConstructivePropertySummary(data, 'diameter')).not.toThrow();
-    expect(getConstructivePropertySummary<number>(data, 'diameter')).toEqual([200]);
+    expect(() =>
+      getConstructivePropertySummary(data, 'diameter'),
+    ).not.toThrow();
+    expect(getConstructivePropertySummary<number>(data, 'diameter')).toEqual([
+      200,
+    ]);
   });
 
   it('returns undefined for a property that does not exist on items', () => {
@@ -315,86 +362,207 @@ describe('calculateHoleFillVolume', () => {
   });
 
   it('computes the gross cylinder volume when no inner sections overlap', () => {
-    const fill = makeHoleFill({ from: 0, to: 10, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 0,
+      to: 10,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const well: Well = { ...emptyWell(), hole_fill: [fill] };
     const expected = calculateCilindricVolume(200, 10);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('subtracts the full well_case volume when it exactly spans the fill interval', () => {
-    const fill = makeHoleFill({ from: 0, to: 10, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 0,
+      to: 10,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const casing = makeWellCase({ from: 0, to: 10, diameter: 100 });
-    const well: Well = { ...emptyWell(), hole_fill: [fill], well_case: [casing] };
-    const expected = calculateCilindricVolume(200, 10) - calculateCilindricVolume(100, 10);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    const well: Well = {
+      ...emptyWell(),
+      hole_fill: [fill],
+      well_case: [casing],
+    };
+    const expected =
+      calculateCilindricVolume(200, 10) - calculateCilindricVolume(100, 10);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('clips the subtracted length when well_case only partially overlaps (starts inside fill)', () => {
     // fill: 0–10, casing: 5–10 → overlap = 5m
-    const fill = makeHoleFill({ from: 0, to: 10, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 0,
+      to: 10,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const casing = makeWellCase({ from: 5, to: 10, diameter: 100 });
-    const well: Well = { ...emptyWell(), hole_fill: [fill], well_case: [casing] };
-    const expected = calculateCilindricVolume(200, 10) - calculateCilindricVolume(100, 5);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    const well: Well = {
+      ...emptyWell(),
+      hole_fill: [fill],
+      well_case: [casing],
+    };
+    const expected =
+      calculateCilindricVolume(200, 10) - calculateCilindricVolume(100, 5);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('clips the subtracted length when well_case ends before fill ends (starts before fill)', () => {
     // fill: 5–15, casing: 0–10 → overlap = 5m (5–10)
-    const fill = makeHoleFill({ from: 5, to: 15, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 5,
+      to: 15,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const casing = makeWellCase({ from: 0, to: 10, diameter: 100 });
-    const well: Well = { ...emptyWell(), hole_fill: [fill], well_case: [casing] };
-    const expected = calculateCilindricVolume(200, 10) - calculateCilindricVolume(100, 5);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    const well: Well = {
+      ...emptyWell(),
+      hole_fill: [fill],
+      well_case: [casing],
+    };
+    const expected =
+      calculateCilindricVolume(200, 10) - calculateCilindricVolume(100, 5);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('does not subtract a well_case that is completely outside the fill interval (below)', () => {
-    const fill = makeHoleFill({ from: 0, to: 5, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 0,
+      to: 5,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const casing = makeWellCase({ from: 6, to: 10, diameter: 100 });
-    const well: Well = { ...emptyWell(), hole_fill: [fill], well_case: [casing] };
+    const well: Well = {
+      ...emptyWell(),
+      hole_fill: [fill],
+      well_case: [casing],
+    };
     const expected = calculateCilindricVolume(200, 5);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('does not subtract a well_case that is completely outside the fill interval (above)', () => {
-    const fill = makeHoleFill({ from: 5, to: 10, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 5,
+      to: 10,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const casing = makeWellCase({ from: 0, to: 4, diameter: 100 });
-    const well: Well = { ...emptyWell(), hole_fill: [fill], well_case: [casing] };
+    const well: Well = {
+      ...emptyWell(),
+      hole_fill: [fill],
+      well_case: [casing],
+    };
     const expected = calculateCilindricVolume(200, 5);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('subtracts well_screen volume when it overlaps the fill interval', () => {
-    const fill = makeHoleFill({ from: 0, to: 10, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 0,
+      to: 10,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const screen = makeWellScreen({ from: 0, to: 10, diameter: 100 });
-    const well: Well = { ...emptyWell(), hole_fill: [fill], well_screen: [screen] };
-    const expected = calculateCilindricVolume(200, 10) - calculateCilindricVolume(100, 10);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    const well: Well = {
+      ...emptyWell(),
+      hole_fill: [fill],
+      well_screen: [screen],
+    };
+    const expected =
+      calculateCilindricVolume(200, 10) - calculateCilindricVolume(100, 10);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('subtracts both well_case and well_screen when both overlap the fill', () => {
     // fill: 0–10, casing: 0–5, screen: 5–10
-    const fill = makeHoleFill({ from: 0, to: 10, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 0,
+      to: 10,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const casing = makeWellCase({ from: 0, to: 5, diameter: 100 });
     const screen = makeWellScreen({ from: 5, to: 10, diameter: 100 });
-    const well: Well = { ...emptyWell(), hole_fill: [fill], well_case: [casing], well_screen: [screen] };
+    const well: Well = {
+      ...emptyWell(),
+      hole_fill: [fill],
+      well_case: [casing],
+      well_screen: [screen],
+    };
     const expected =
       calculateCilindricVolume(200, 10) -
       calculateCilindricVolume(100, 5) -
       calculateCilindricVolume(100, 5);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('sums volumes across multiple fill segments of the same type', () => {
-    const fill1 = makeHoleFill({ from: 0, to: 5, diameter: 200, type: 'gravel_pack' });
-    const fill2 = makeHoleFill({ from: 5, to: 10, diameter: 200, type: 'gravel_pack' });
+    const fill1 = makeHoleFill({
+      from: 0,
+      to: 5,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
+    const fill2 = makeHoleFill({
+      from: 5,
+      to: 10,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const well: Well = { ...emptyWell(), hole_fill: [fill1, fill2] };
-    const expected = calculateCilindricVolume(200, 5) + calculateCilindricVolume(200, 5);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    const expected =
+      calculateCilindricVolume(200, 5) + calculateCilindricVolume(200, 5);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 
   it('filters by type correctly — seal fills are not counted for gravel_pack and vice-versa', () => {
-    const gravelFill = makeHoleFill({ from: 0, to: 5, diameter: 200, type: 'gravel_pack' });
-    const sealFill = makeHoleFill({ from: 5, to: 10, diameter: 200, type: 'seal' });
+    const gravelFill = makeHoleFill({
+      from: 0,
+      to: 5,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
+    const sealFill = makeHoleFill({
+      from: 5,
+      to: 10,
+      diameter: 200,
+      type: 'seal',
+    });
     const well: Well = { ...emptyWell(), hole_fill: [gravelFill, sealFill] };
     const gravelVolume = calculateHoleFillVolume('gravel_pack', well);
     const sealVolume = calculateHoleFillVolume('seal', well);
@@ -404,12 +572,24 @@ describe('calculateHoleFillVolume', () => {
 
   it('handles adjacent (touching) well_case: exactly touching boundary is not counted as overlap', () => {
     // fill: 0–5, casing: 5–10 — casing.from === fill.to, no overlap
-    const fill = makeHoleFill({ from: 0, to: 5, diameter: 200, type: 'gravel_pack' });
+    const fill = makeHoleFill({
+      from: 0,
+      to: 5,
+      diameter: 200,
+      type: 'gravel_pack',
+    });
     const casing = makeWellCase({ from: 5, to: 10, diameter: 100 });
-    const well: Well = { ...emptyWell(), hole_fill: [fill], well_case: [casing] };
+    const well: Well = {
+      ...emptyWell(),
+      hole_fill: [fill],
+      well_case: [casing],
+    };
     // !(5 > 5 || 10 < 0) → !(false || false) → true, so there IS overlap at a single point
     // overlap length = min(5,10) - max(0,5) = 5 - 5 = 0, volume subtracted = 0
     const expected = calculateCilindricVolume(200, 5);
-    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(expected, 10);
+    expect(calculateHoleFillVolume('gravel_pack', well)).toBeCloseTo(
+      expected,
+      10,
+    );
   });
 });

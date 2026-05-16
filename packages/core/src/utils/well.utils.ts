@@ -1,4 +1,11 @@
-import { Constructive, Geologic, Lithology, Well } from '../types/well.types';
+import {
+  Constructive,
+  Geologic,
+  Lithology,
+  Location,
+  Well,
+} from '../types/well.types';
+import { mergeWell } from '../validators/well.validators';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -6,10 +13,11 @@ type RawJSON = Record<string, unknown>;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const WELL_FORMAT_VERSION = 1;
+const WELL_FORMAT_VERSION = 2;
 const INCHES_TO_MM = 25.4;
 
 const EMPTY_WELL: Well = {
+  version: 2,
   bore_hole: [],
   well_case: [],
   reduction: [],
@@ -29,11 +37,49 @@ function createEmptyWell(): Well {
 }
 
 function normalizeLithology(items: RawJSON[]): Lithology[] {
-  return items.map(item => ({ aquifer_unit: '', ...item })) as Lithology[];
+  return items.map(item => {
+    const base = { aquifer_unit: '', ...item };
+    // v1 fgdc_texture → texture object
+    if ('fgdc_texture' in base && !('texture' in base)) {
+      const { fgdc_texture, ...rest } = base as Record<string, unknown>;
+      return {
+        ...rest,
+        texture: { code: fgdc_texture, vocabulary: 'fgdc' },
+      } as Lithology;
+    }
+    return base as Lithology;
+  });
+}
+
+function normalizeWellScreens(items: RawJSON[]): Well['well_screen'] {
+  return items.map(item => {
+    if ('screen_slot_mm' in item && !('screen_slot' in item)) {
+      const { screen_slot_mm, ...rest } = item;
+      return {
+        ...rest,
+        screen_slot: screen_slot_mm,
+      } as Well['well_screen'][number];
+    }
+    return item as Well['well_screen'][number];
+  });
 }
 
 function decodeV1Well(raw: RawJSON): Well {
-  return {
+  // v1→v2 normalizations for deserialize path
+  const lat = raw.lat as number | undefined;
+  const lng = raw.lng as number | undefined;
+  const elevation = raw.elevation as number | undefined;
+  const hasCoords =
+    lat !== undefined || lng !== undefined || elevation !== undefined;
+
+  const location: Location | undefined =
+    hasCoords && lat !== undefined && lng !== undefined
+      ? { lat, lng, ...(elevation !== undefined && { elevation }) }
+      : undefined;
+
+  const rawScreens = (raw.well_screen as RawJSON[] | undefined) ?? [];
+
+  const decoded: Well = {
     ...createEmptyWell(),
     ...(raw.well_type !== undefined && { well_type: raw.well_type as string }),
     ...(raw.name !== undefined && { name: raw.name as string }),
@@ -43,14 +89,15 @@ function decodeV1Well(raw: RawJSON): Well {
     ...(raw.construction_date !== undefined && {
       construction_date: raw.construction_date as string,
     }),
-    ...(raw.lat !== undefined && { lat: raw.lat as number }),
-    ...(raw.lng !== undefined && { lng: raw.lng as number }),
-    ...(raw.elevation !== undefined && { elevation: raw.elevation as number }),
+    ...(lat !== undefined && { lat }),
+    ...(lng !== undefined && { lng }),
+    ...(elevation !== undefined && { elevation }),
+    ...(location !== undefined && { location }),
     ...(raw.obs !== undefined && { obs: raw.obs as string }),
     bore_hole: (raw.bore_hole as Well['bore_hole']) ?? [],
     well_case: (raw.well_case as Well['well_case']) ?? [],
     reduction: (raw.reduction as Well['reduction']) ?? [],
-    well_screen: (raw.well_screen as Well['well_screen']) ?? [],
+    well_screen: normalizeWellScreens(rawScreens),
     surface_case: (raw.surface_case as Well['surface_case']) ?? [],
     hole_fill: (raw.hole_fill as Well['hole_fill']) ?? [],
     ...(raw.cement_pad
@@ -60,6 +107,60 @@ function decodeV1Well(raw: RawJSON): Well {
     fractures: (raw.fractures as Well['fractures']) ?? [],
     caves: (raw.caves as Well['caves']) ?? [],
   };
+  return mergeWell(decoded, raw) as Well;
+}
+
+function decodeV2Well(raw: RawJSON): Well {
+  const rawScreens = (raw.well_screen as RawJSON[] | undefined) ?? [];
+
+  const decoded: Well = {
+    ...createEmptyWell(),
+    ...(raw.version !== undefined && { version: raw.version as number }),
+    ...(raw['@context'] !== undefined && {
+      '@context': raw['@context'] as Well['@context'],
+    }),
+    ...(raw.well_id !== undefined && {
+      well_id: raw.well_id as Well['well_id'],
+    }),
+    ...(raw.location !== undefined && {
+      location: raw.location as Well['location'],
+    }),
+    ...(raw.profiles !== undefined && {
+      profiles: raw.profiles as Well['profiles'],
+    }),
+    ...(raw.well_type !== undefined && { well_type: raw.well_type as string }),
+    ...(raw.name !== undefined && { name: raw.name as string }),
+    ...(raw.well_driller !== undefined && {
+      well_driller: raw.well_driller as string,
+    }),
+    ...(raw.construction_date !== undefined && {
+      construction_date: raw.construction_date as string,
+    }),
+    ...(raw.obs !== undefined && { obs: raw.obs as string }),
+    bore_hole: (raw.bore_hole as Well['bore_hole']) ?? [],
+    well_case: (raw.well_case as Well['well_case']) ?? [],
+    reduction: (raw.reduction as Well['reduction']) ?? [],
+    well_screen: normalizeWellScreens(rawScreens),
+    surface_case: (raw.surface_case as Well['surface_case']) ?? [],
+    hole_fill: (raw.hole_fill as Well['hole_fill']) ?? [],
+    ...(raw.cement_pad
+      ? { cement_pad: raw.cement_pad as Well['cement_pad'] }
+      : {}),
+    lithology: normalizeLithology((raw.lithology as RawJSON[]) ?? []),
+    fractures: (raw.fractures as Well['fractures']) ?? [],
+    caves: (raw.caves as Well['caves']) ?? [],
+    ...(raw.hydrodynamic_events !== undefined && {
+      hydrodynamic_events:
+        raw.hydrodynamic_events as Well['hydrodynamic_events'],
+    }),
+    ...(raw.aquifer_analysis !== undefined && {
+      aquifer_analysis: raw.aquifer_analysis as Well['aquifer_analysis'],
+    }),
+    ...(raw.history_logs !== undefined && {
+      history_logs: raw.history_logs as Well['history_logs'],
+    }),
+  };
+  return mergeWell(decoded, raw) as Well;
 }
 
 function convertLegacyDiameters(
@@ -80,6 +181,10 @@ function normalizeConstructive(src: RawJSON): Partial<Constructive> {
     diam_pol?: number;
   })[];
 
+  const rawScreens = convertLegacyDiameters(
+    (src.well_screen ?? []) as (RawJSON & { diam_pol?: number })[],
+  ) as RawJSON[];
+
   return {
     bore_hole: convertLegacyDiameters(boreHoleData) as Well['bore_hole'],
     hole_fill: convertLegacyDiameters(
@@ -91,9 +196,7 @@ function normalizeConstructive(src: RawJSON): Partial<Constructive> {
     well_case: convertLegacyDiameters(
       (src.well_case ?? []) as (RawJSON & { diam_pol?: number })[],
     ) as Well['well_case'],
-    well_screen: convertLegacyDiameters(
-      (src.well_screen ?? []) as (RawJSON & { diam_pol?: number })[],
-    ) as Well['well_screen'],
+    well_screen: normalizeWellScreens(rawScreens),
     reduction: (src.reduction ?? []) as Well['reduction'],
     ...(src.cement_pad
       ? { cement_pad: src.cement_pad as Well['cement_pad'] }
@@ -123,15 +226,16 @@ function normalizeGeologic(raw: RawJSON): Geologic {
 export function serializeWell(well: Well): string {
   const payload: Record<string, unknown> = {
     version: WELL_FORMAT_VERSION,
+    ...(well['@context'] !== undefined && { '@context': well['@context'] }),
+    ...(well.well_id !== undefined && { well_id: well.well_id }),
+    ...(well.location !== undefined && { location: well.location }),
+    ...(well.profiles !== undefined && { profiles: well.profiles }),
     ...(well.well_type !== undefined && { well_type: well.well_type }),
     ...(well.name !== undefined && { name: well.name }),
     ...(well.well_driller !== undefined && { well_driller: well.well_driller }),
     ...(well.construction_date !== undefined && {
       construction_date: well.construction_date,
     }),
-    ...(well.lat !== undefined && { lat: well.lat }),
-    ...(well.lng !== undefined && { lng: well.lng }),
-    ...(well.elevation !== undefined && { elevation: well.elevation }),
     ...(well.obs !== undefined && { obs: well.obs }),
     bore_hole: well.bore_hole,
     well_case: well.well_case,
@@ -143,6 +247,13 @@ export function serializeWell(well: Well): string {
     lithology: well.lithology,
     fractures: well.fractures,
     caves: well.caves,
+    ...(well.hydrodynamic_events !== undefined && {
+      hydrodynamic_events: well.hydrodynamic_events,
+    }),
+    ...(well.aquifer_analysis !== undefined && {
+      aquifer_analysis: well.aquifer_analysis,
+    }),
+    ...(well.history_logs !== undefined && { history_logs: well.history_logs }),
   };
 
   return JSON.stringify(payload);
@@ -178,10 +289,11 @@ export function isWellEmpty(well: Well | null | undefined): boolean {
  * formats) and returns a normalized {@link Well} object.
  *
  * Handles:
- * - Versioned format (v1)
+ * - Versioned format v1 and v2
  * - Legacy format with `constructive` / `geologic` sub-objects
  * - Legacy `diam_pol` inch diameters → `diameter` mm conversion
  * - Typo `bole_hole` → `bore_hole` compatibility
+ * - v1→v2 normalizations: `fgdc_texture`, `screen_slot_mm`, `lat/lng/elevation → location`
  *
  * @param jsonString - Raw JSON string to parse.
  * @returns A normalized {@link Well}, or `null` if the parsed data is empty.
@@ -201,9 +313,9 @@ export function deserializeWell(jsonString: string): Well | null {
   }
 
   if (typeof raw.version === 'number') {
-    if (raw.version !== 1)
-      throw new Error(`Unsupported .well format version: ${raw.version}`);
-    return decodeV1Well(raw);
+    if (raw.version === 2) return decodeV2Well(raw);
+    if (raw.version === 1) return decodeV1Well(raw);
+    throw new Error(`Unsupported .well format version: ${raw.version}`);
   }
 
   if (isWellEmpty(raw as unknown as Well)) return null;

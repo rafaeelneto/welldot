@@ -75,6 +75,7 @@ Update only for corrections (factual errors, broken examples). This spec is stab
 ### `docs/spec/v2/overview.md`
 
 Update when:
+
 - A new known limitation is recognized.
 - A design principle is revised during the ratification process.
 - The "Changes from v1" section gains a new entry (e.g. v2.1 additions).
@@ -82,6 +83,7 @@ Update when:
 ### `docs/spec/v2/format-reference.md`
 
 Update when:
+
 - A field is added, removed, or renamed on any top-level type (`Well`, `WellId`, `Location`, `LocationProperties`).
 - The canonical unit of any field changes.
 - A new precision field is added.
@@ -93,6 +95,7 @@ What to update: the relevant field table, the field-to-unit binding list if the 
 ### `docs/spec/v2/object-schemas.md`
 
 Update when:
+
 - A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, or any `hydrodynamic_events` event type).
 - A new event type is added to `hydrodynamic_events`.
 - The Complete Example JSON no longer validates against the current types.
@@ -110,6 +113,7 @@ pnpm generate:schema
 ### `docs/reference/fgdc-textures.md`
 
 Update when:
+
 - A new texture code is added to `FGDC_TEXTURES_OPTIONS` in `src/utils/fgdc.textures.ts`.
 - A texture's `label` or `pending` status changes.
 - The series summary at the top (counts of available vs pending) changes.
@@ -119,6 +123,7 @@ What to update: the row in the corresponding series table and the summary counts
 ### `README.md`
 
 Update when:
+
 - A function or type is added to or removed from the public API (`src/index.ts`).
 - Installation requirements change (new peer deps, Node version, etc.).
 - A code example in the README no longer compiles against the current types.
