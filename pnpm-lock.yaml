@@ -101,6 +101,9 @@ importers:
       '@welldot/render':
         specifier: workspace:*
         version: link:../../packages/render
+      '@welldot/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0

@@ -26,6 +26,7 @@
     "@vueuse/nuxt": "14.3.0",
     "@welldot/core": "workspace:*",
     "@welldot/render": "workspace:*",
+    "@welldot/utils": "workspace:*",
     "date-fns": "^4.1.0",
     "eslint": "^10.3.0",
     "immer": "^11.1.8",
