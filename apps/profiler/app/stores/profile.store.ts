@@ -1,3 +1,4 @@
+import { useDebounceFn } from '@vueuse/core';
 import type { Well } from '@welldot/core';
 import { WellSchema, deserializeWell, isWellEmpty } from '@welldot/core';
 import type { RenderableWell } from '@welldot/render';
@@ -10,8 +11,8 @@ import {
 } from '@welldot/utils';
 import type { Draft } from 'immer';
 import { defineStore } from 'pinia';
-import { makeDeepProxy } from '~/utils/state';
 import { computed, ref } from 'vue';
+import { makeDeepProxy } from '~/utils/state';
 
 // ─── Stable render-key registry ──────────────────────────────────────────────
 // WeakMap maps each feature object instance → a stable UUID.
@@ -80,14 +81,28 @@ export const useProfileStore = defineStore(
     });
 
     // ── Public well — renderable read, mutable via proxy ──────────────────
-    // get → RenderableWell wrapped in a deep proxy; every property set is
-    // intercepted and routed through updateWell (Immer + undo/redo).
-    // Usage: store.well.value.name = 'x'
-    //        store.well.value.hydrodynamic_events[1].steps.static_level = 12.3
+    // Recipes from rapid successive proxy sets are queued and flushed together
+    // in a single updateWell call (one undo entry per burst of mutations).
+    // get: store.well.value.name
+    // set: store.well.value.name = 'x'
+    //      store.well.value.hydrodynamic_events[1].steps.static_level = 12.3
+    const _recipeQueue: ((draft: Draft<Well>) => void)[] = [];
+    const _flushQueue = useDebounceFn(() => {
+      const recipes = _recipeQueue.splice(0);
+      updateWell(draft => {
+        for (const r of recipes) r(draft);
+      });
+    }, 200);
+
+    function _queueUpdate(recipe: (draft: Draft<Well>) => void): void {
+      _recipeQueue.push(recipe);
+      _flushQueue();
+    }
+
     const well = computed<RenderableWell | null>(() => {
       const w = renderableWell.value;
       if (!w) return null;
-      return makeDeepProxy(w, [], updateWell);
+      return makeDeepProxy(w, [], _queueUpdate);
     });
 
     // ── Measurements — lazy computed, never blocking ───────────────────────
@@ -121,7 +136,9 @@ export const useProfileStore = defineStore(
     // Constructive counts
     const boreHoleCount = computed(() => _well.value?.bore_hole.length ?? 0);
     const wellCaseCount = computed(() => _well.value?.well_case.length ?? 0);
-    const wellScreenCount = computed(() => _well.value?.well_screen.length ?? 0);
+    const wellScreenCount = computed(
+      () => _well.value?.well_screen.length ?? 0,
+    );
     const holeFillCount = computed(() => _well.value?.hole_fill.length ?? 0);
     const reductionCount = computed(() => _well.value?.reduction.length ?? 0);
     const surfaceCaseCount = computed(
