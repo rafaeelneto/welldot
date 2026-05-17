@@ -490,22 +490,26 @@ export type DrawContext = {
   groups: DrawGroups;
 };
 
-/** Attaches an optional stable render identity to any feature type. */
-export type WithId<T> = T & { id?: string | number };
+/**
+ * Attaches an optional stable render identity to any feature type.
+ *
+ * **`key` is runtime-only.** It exists solely in memory while the renderer is
+ * running and must never be written to a `.well` file. It is not part of the
+ * `.well` v2 spec — persisting it would produce a non-conformant file.
+ */
+export type WithKey<T> = T & { key?: string | number };
 
 /**
- * A `Well` profile where every feature array element may carry an optional `id`.
+ * A `Well` profile where every feature array element may carry an optional `key`.
  *
- * When `id` is present the renderer uses it as the D3 data-join key, giving
- * fully stable DOM identity regardless of depth edits or array reordering.
+ * When `key` is present the renderer uses it as the D3 data-join key,
+ * giving fully stable DOM identity regardless of depth edits or array reordering.
  * When absent the renderer falls back to coordinate-based keys (`from:to` or
  * `depth:index`).
  *
- * A plain `Well` object is directly assignable to `RenderableWell` — `id` is
- * optional, so no migration is required for consumers that do not need stable
- * animation. Consumers that do need it should generate a stable id (e.g.
- * `crypto.randomUUID()`) once when a feature is created and keep it on the
- * object across all subsequent edits.
+ * **`key` is runtime-only** — generate it once per feature (e.g.
+ * `crypto.randomUUID()`) and keep it in memory across edits, but always strip
+ * it before serializing to a `.well` file.
  */
 export type RenderableWell = Omit<
   Well,
@@ -519,13 +523,13 @@ export type RenderableWell = Omit<
   | 'surface_case'
   | 'reduction'
 > & {
-  lithology: WithId<Lithology>[];
-  fractures: WithId<Fracture>[];
-  caves: WithId<Cave>[];
-  bore_hole: WithId<BoreHole>[];
-  well_case: WithId<WellCase>[];
-  well_screen: WithId<WellScreen>[];
-  hole_fill: WithId<HoleFill>[];
-  surface_case: WithId<SurfaceCase>[];
-  reduction: WithId<Reduction>[];
+  lithology: WithKey<Lithology>[];
+  fractures: WithKey<Fracture>[];
+  caves: WithKey<Cave>[];
+  bore_hole: WithKey<BoreHole>[];
+  well_case: WithKey<WellCase>[];
+  well_screen: WithKey<WellScreen>[];
+  hole_fill: WithKey<HoleFill>[];
+  surface_case: WithKey<SurfaceCase>[];
+  reduction: WithKey<Reduction>[];
 };

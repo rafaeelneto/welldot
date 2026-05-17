@@ -39,7 +39,7 @@ const WELL_PROFILES: RenderableWell[] = [
     reduction: [],
     well_screen: [
       {
-        id: 'ws-0',
+        key: 'ws-0',
         from: 167,
         to: 180,
         type: 'wire_wound',
@@ -47,7 +47,7 @@ const WELL_PROFILES: RenderableWell[] = [
         screen_slot: 0.5,
       },
       {
-        id: 'ws-1',
+        key: 'ws-1',
         from: 185,
         to: 200,
         type: 'wire_wound',
@@ -55,7 +55,7 @@ const WELL_PROFILES: RenderableWell[] = [
         screen_slot: 0.5,
       },
       {
-        id: 'ws-2',
+        key: 'ws-2',
         from: 207,
         to: 224,
         type: 'wire_wound',
@@ -65,7 +65,7 @@ const WELL_PROFILES: RenderableWell[] = [
     ],
     hole_fill: [
       {
-        id: 'hf-0',
+        key: 'hf-0',
         from: 0,
         to: 30,
         type: 'seal',
@@ -73,7 +73,7 @@ const WELL_PROFILES: RenderableWell[] = [
         description: 'Cimento',
       },
       {
-        id: 'hf-1',
+        key: 'hf-1',
         from: 30,
         to: 165,
         type: 'seal',
@@ -81,7 +81,7 @@ const WELL_PROFILES: RenderableWell[] = [
         description: 'Bentonita',
       },
       {
-        id: 'hf-2',
+        key: 'hf-2',
         from: 165,
         to: 240,
         type: 'gravel_pack',
@@ -92,7 +92,7 @@ const WELL_PROFILES: RenderableWell[] = [
     cement_pad: { type: '', width: 0, thickness: 0, length: 0 },
     lithology: [
       {
-        id: 'li-0',
+        key: 'li-0',
         from: 0,
         to: 6,
         color: '#f6ebc9',
@@ -102,7 +102,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-1',
+        key: 'li-1',
         from: 6,
         to: 12,
         color: '#c25c1e',
@@ -112,7 +112,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-2',
+        key: 'li-2',
         from: 12,
         to: 25,
         color: '#b26d40',
@@ -122,7 +122,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-3',
+        key: 'li-3',
         from: 25,
         to: 42,
         color: '#e08d40',
@@ -132,7 +132,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-4',
+        key: 'li-4',
         from: 42,
         to: 65,
         color: '#b8624b',
@@ -142,7 +142,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Bauru',
       },
       {
-        id: 'li-5',
+        key: 'li-5',
         from: 65,
         to: 92,
         color: '#71814f',
@@ -152,7 +152,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Bauru',
       },
       {
-        id: 'li-6',
+        key: 'li-6',
         from: 92,
         to: 118,
         color: '#849c78',
@@ -162,7 +162,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Bauru',
       },
       {
-        id: 'li-7',
+        key: 'li-7',
         from: 118,
         to: 145,
         color: '#70705e',
@@ -172,7 +172,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Caiuá',
       },
       {
-        id: 'li-8',
+        key: 'li-8',
         from: 145,
         to: 168,
         color: '#504b4b',
@@ -182,7 +182,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Caiuá',
       },
       {
-        id: 'li-9',
+        key: 'li-9',
         from: 168,
         to: 188,
         color: '#3b3434',
@@ -192,7 +192,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Caiuá',
       },
       {
-        id: 'li-10',
+        key: 'li-10',
         from: 188,
         to: 210,
         color: '#5c5454',
@@ -202,7 +202,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Confinado',
       },
       {
-        id: 'li-11',
+        key: 'li-11',
         from: 210,
         to: 228,
         color: '#726c6c',
@@ -212,7 +212,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Confinado',
       },
       {
-        id: 'li-12',
+        key: 'li-12',
         from: 228,
         to: 240,
         color: '#d3cccc',
@@ -238,7 +238,7 @@ const WELL_PROFILES: RenderableWell[] = [
     well_screen: [],
     hole_fill: [
       {
-        id: 'hf-0',
+        key: 'hf-0',
         from: 0,
         to: 8,
         type: 'seal',
@@ -246,7 +246,7 @@ const WELL_PROFILES: RenderableWell[] = [
         description: 'Cimento',
       },
       {
-        id: 'hf-1',
+        key: 'hf-1',
         from: 8,
         to: 85,
         type: 'seal',
@@ -257,7 +257,7 @@ const WELL_PROFILES: RenderableWell[] = [
     cement_pad: { type: '', width: 0, thickness: 0, length: 0 },
     lithology: [
       {
-        id: 'li-0',
+        key: 'li-0',
         from: 0,
         to: 8,
         color: '#c8a97a',
@@ -267,7 +267,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-1',
+        key: 'li-1',
         from: 8,
         to: 22,
         color: '#a08878',
@@ -277,7 +277,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-2',
+        key: 'li-2',
         from: 22,
         to: 40,
         color: '#c4b8a8',
@@ -287,7 +287,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-3',
+        key: 'li-3',
         from: 40,
         to: 62,
         color: '#c5ceb6',
@@ -297,7 +297,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-4',
+        key: 'li-4',
         from: 62,
         to: 90,
         color: '#d0ccc0',
@@ -307,7 +307,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Jandaíra',
       },
       {
-        id: 'li-5',
+        key: 'li-5',
         from: 90,
         to: 115,
         color: '#c8c4bc',
@@ -317,7 +317,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Jandaíra',
       },
       {
-        id: 'li-6',
+        key: 'li-6',
         from: 115,
         to: 142,
         color: '#c4c0b4',
@@ -327,7 +327,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Jandaíra',
       },
       {
-        id: 'li-7',
+        key: 'li-7',
         from: 142,
         to: 162,
         color: '#b8b4ac',
@@ -337,7 +337,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Jandaíra',
       },
       {
-        id: 'li-8',
+        key: 'li-8',
         from: 162,
         to: 178,
         color: '#a8b4b8',
@@ -347,7 +347,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Jandaíra',
       },
       {
-        id: 'li-9',
+        key: 'li-9',
         from: 178,
         to: 190,
         color: '#a4aeac',
@@ -359,7 +359,7 @@ const WELL_PROFILES: RenderableWell[] = [
     ],
     fractures: [
       {
-        id: 'fr-0',
+        key: 'fr-0',
         depth: 95,
         water_intake: true,
         description: 'Fratura produtiva',
@@ -368,7 +368,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 35,
       },
       {
-        id: 'fr-1',
+        key: 'fr-1',
         depth: 130,
         water_intake: true,
         description: 'Fratura produtiva',
@@ -377,7 +377,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 28,
       },
       {
-        id: 'fr-2',
+        key: 'fr-2',
         depth: 165,
         water_intake: true,
         description: 'Enxame fraturado',
@@ -388,14 +388,14 @@ const WELL_PROFILES: RenderableWell[] = [
     ],
     caves: [
       {
-        id: 'cv-0',
+        key: 'cv-0',
         from: 98,
         to: 104,
         water_intake: true,
         description: 'Caverna em calcário',
       },
       {
-        id: 'cv-1',
+        key: 'cv-1',
         from: 152,
         to: 157,
         water_intake: false,
@@ -416,7 +416,7 @@ const WELL_PROFILES: RenderableWell[] = [
     well_screen: [],
     hole_fill: [
       {
-        id: 'hf-0',
+        key: 'hf-0',
         from: 0,
         to: 5,
         type: 'seal',
@@ -424,7 +424,7 @@ const WELL_PROFILES: RenderableWell[] = [
         description: 'Cimento',
       },
       {
-        id: 'hf-1',
+        key: 'hf-1',
         from: 5,
         to: 38,
         type: 'seal',
@@ -435,7 +435,7 @@ const WELL_PROFILES: RenderableWell[] = [
     cement_pad: { type: '', width: 0, thickness: 0, length: 0 },
     lithology: [
       {
-        id: 'li-0',
+        key: 'li-0',
         from: 0,
         to: 5,
         color: '#c8a97a',
@@ -445,7 +445,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-1',
+        key: 'li-1',
         from: 5,
         to: 15,
         color: '#b08050',
@@ -455,7 +455,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-2',
+        key: 'li-2',
         from: 15,
         to: 38,
         color: '#8a6040',
@@ -465,7 +465,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-3',
+        key: 'li-3',
         from: 38,
         to: 58,
         color: '#6e6860',
@@ -475,7 +475,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-4',
+        key: 'li-4',
         from: 58,
         to: 82,
         color: '#606060',
@@ -485,7 +485,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Fraturado',
       },
       {
-        id: 'li-5',
+        key: 'li-5',
         from: 82,
         to: 105,
         color: '#505058',
@@ -495,7 +495,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Fraturado',
       },
       {
-        id: 'li-6',
+        key: 'li-6',
         from: 105,
         to: 120,
         color: '#404048',
@@ -505,7 +505,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Fraturado',
       },
       {
-        id: 'li-7',
+        key: 'li-7',
         from: 120,
         to: 135,
         color: '#383840',
@@ -517,7 +517,7 @@ const WELL_PROFILES: RenderableWell[] = [
     ],
     fractures: [
       {
-        id: 'fr-0',
+        key: 'fr-0',
         depth: 62,
         water_intake: true,
         description: 'Fratura produtiva',
@@ -526,7 +526,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 62,
       },
       {
-        id: 'fr-1',
+        key: 'fr-1',
         depth: 78,
         water_intake: true,
         description: 'Fratura produtiva',
@@ -535,7 +535,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 71,
       },
       {
-        id: 'fr-2',
+        key: 'fr-2',
         depth: 95,
         water_intake: true,
         description: 'Enxame fraturado',
@@ -544,7 +544,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 58,
       },
       {
-        id: 'fr-3',
+        key: 'fr-3',
         depth: 112,
         water_intake: false,
         description: 'Fratura seca',
@@ -553,7 +553,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 75,
       },
       {
-        id: 'fr-4',
+        key: 'fr-4',
         depth: 126,
         water_intake: true,
         description: 'Fratura produtiva',
@@ -579,7 +579,7 @@ const WELL_PROFILES: RenderableWell[] = [
     reduction: [],
     well_screen: [
       {
-        id: 'ws-0',
+        key: 'ws-0',
         from: 187,
         to: 202,
         type: 'wire_wound',
@@ -587,7 +587,7 @@ const WELL_PROFILES: RenderableWell[] = [
         screen_slot: 0.5,
       },
       {
-        id: 'ws-1',
+        key: 'ws-1',
         from: 208,
         to: 228,
         type: 'wire_wound',
@@ -595,7 +595,7 @@ const WELL_PROFILES: RenderableWell[] = [
         screen_slot: 0.75,
       },
       {
-        id: 'ws-2',
+        key: 'ws-2',
         from: 235,
         to: 258,
         type: 'wire_wound',
@@ -605,7 +605,7 @@ const WELL_PROFILES: RenderableWell[] = [
     ],
     hole_fill: [
       {
-        id: 'hf-0',
+        key: 'hf-0',
         from: 0,
         to: 20,
         type: 'seal',
@@ -613,7 +613,7 @@ const WELL_PROFILES: RenderableWell[] = [
         description: 'Cimento',
       },
       {
-        id: 'hf-1',
+        key: 'hf-1',
         from: 20,
         to: 185,
         type: 'seal',
@@ -621,7 +621,7 @@ const WELL_PROFILES: RenderableWell[] = [
         description: 'Bentonita',
       },
       {
-        id: 'hf-2',
+        key: 'hf-2',
         from: 185,
         to: 270,
         type: 'gravel_pack',
@@ -632,7 +632,7 @@ const WELL_PROFILES: RenderableWell[] = [
     cement_pad: { type: '', width: 0, thickness: 0, length: 0 },
     lithology: [
       {
-        id: 'li-0',
+        key: 'li-0',
         from: 0,
         to: 6,
         color: '#f6ebc9',
@@ -642,7 +642,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-1',
+        key: 'li-1',
         from: 6,
         to: 10,
         color: '#c25c1e',
@@ -652,7 +652,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-2',
+        key: 'li-2',
         from: 10,
         to: 17,
         color: '#b26d40',
@@ -662,7 +662,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-3',
+        key: 'li-3',
         from: 17,
         to: 28,
         color: '#bb5332',
@@ -672,7 +672,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-4',
+        key: 'li-4',
         from: 28,
         to: 45,
         color: '#e08d40',
@@ -682,7 +682,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-5',
+        key: 'li-5',
         from: 45,
         to: 70,
         color: '#b8624b',
@@ -692,7 +692,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Livre',
       },
       {
-        id: 'li-6',
+        key: 'li-6',
         from: 70,
         to: 95,
         color: '#71814f',
@@ -702,7 +702,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Livre',
       },
       {
-        id: 'li-7',
+        key: 'li-7',
         from: 95,
         to: 120,
         color: '#849c78',
@@ -712,7 +712,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Livre',
       },
       {
-        id: 'li-8',
+        key: 'li-8',
         from: 120,
         to: 150,
         color: '#70705e',
@@ -722,7 +722,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Confinado',
       },
       {
-        id: 'li-9',
+        key: 'li-9',
         from: 150,
         to: 175,
         color: '#444242',
@@ -732,7 +732,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Confinado',
       },
       {
-        id: 'li-10',
+        key: 'li-10',
         from: 175,
         to: 205,
         color: '#3b3434',
@@ -742,7 +742,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Confinado',
       },
       {
-        id: 'li-11',
+        key: 'li-11',
         from: 205,
         to: 230,
         color: '#c5ceb6',
@@ -752,7 +752,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Confinado',
       },
       {
-        id: 'li-12',
+        key: 'li-12',
         from: 230,
         to: 255,
         color: '#d3cccc',
@@ -762,7 +762,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Confinado',
       },
       {
-        id: 'li-13',
+        key: 'li-13',
         from: 255,
         to: 270,
         color: '#dfd8d8',
@@ -788,7 +788,7 @@ const WELL_PROFILES: RenderableWell[] = [
     well_screen: [],
     hole_fill: [
       {
-        id: 'hf-0',
+        key: 'hf-0',
         from: 0,
         to: 5,
         type: 'seal',
@@ -796,7 +796,7 @@ const WELL_PROFILES: RenderableWell[] = [
         description: 'Cimento',
       },
       {
-        id: 'hf-1',
+        key: 'hf-1',
         from: 5,
         to: 30,
         type: 'seal',
@@ -807,7 +807,7 @@ const WELL_PROFILES: RenderableWell[] = [
     cement_pad: { type: '', width: 0, thickness: 0, length: 0 },
     lithology: [
       {
-        id: 'li-0',
+        key: 'li-0',
         from: 0,
         to: 5,
         color: '#c8a97a',
@@ -817,7 +817,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-1',
+        key: 'li-1',
         from: 5,
         to: 12,
         color: '#d4956a',
@@ -827,7 +827,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-2',
+        key: 'li-2',
         from: 12,
         to: 30,
         color: '#9e7060',
@@ -837,7 +837,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-3',
+        key: 'li-3',
         from: 30,
         to: 48,
         color: '#726860',
@@ -847,7 +847,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: '',
       },
       {
-        id: 'li-4',
+        key: 'li-4',
         from: 48,
         to: 65,
         color: '#5e5860',
@@ -857,7 +857,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Fraturado',
       },
       {
-        id: 'li-5',
+        key: 'li-5',
         from: 65,
         to: 80,
         color: '#505060',
@@ -867,7 +867,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Fraturado',
       },
       {
-        id: 'li-6',
+        key: 'li-6',
         from: 80,
         to: 92,
         color: '#484855',
@@ -877,7 +877,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Fraturado',
       },
       {
-        id: 'li-7',
+        key: 'li-7',
         from: 92,
         to: 102,
         color: '#404050',
@@ -887,7 +887,7 @@ const WELL_PROFILES: RenderableWell[] = [
         aquifer_unit: 'Aquífero Fraturado',
       },
       {
-        id: 'li-8',
+        key: 'li-8',
         from: 102,
         to: 110,
         color: '#383848',
@@ -899,7 +899,7 @@ const WELL_PROFILES: RenderableWell[] = [
     ],
     fractures: [
       {
-        id: 'fr-0',
+        key: 'fr-0',
         depth: 52,
         water_intake: true,
         description: 'Fratura produtiva',
@@ -908,7 +908,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 65,
       },
       {
-        id: 'fr-1',
+        key: 'fr-1',
         depth: 68,
         water_intake: true,
         description: 'Fratura produtiva',
@@ -917,7 +917,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 72,
       },
       {
-        id: 'fr-2',
+        key: 'fr-2',
         depth: 85,
         water_intake: true,
         description: 'Enxame fraturado',
@@ -926,7 +926,7 @@ const WELL_PROFILES: RenderableWell[] = [
         dip: 60,
       },
       {
-        id: 'fr-3',
+        key: 'fr-3',
         depth: 104,
         water_intake: false,
         description: 'Fratura seca',
@@ -1075,8 +1075,8 @@ function redraw() {
 const partialWellJson = computed(() => {
   if (!currentWell.value) return '{}';
   const partial = getPartialWell(props.progress, currentWell.value);
-  const strip = <T extends { id?: string | number }>(arr: T[]) =>
-    arr.map(({ id: _id, ...rest }) => rest);
+  const strip = <T extends { key?: string | number }>(arr: T[]) =>
+    arr.map(({ key: _key, ...rest }) => rest);
   const clean = {
     ...partial,
     lithology: strip(partial.lithology),

@@ -78,7 +78,7 @@ new WellRenderer(svgs: SvgInstance[], options?: {
 | `draw(profile: RenderableWell, options?: { units?: Units; highlights?: Highlights }): void` | Render or re-render the full well profile.                                                 |
 | `renderLegend(selector: string, profile: Well): void`                             | Render a standalone legend into a separate SVG.                                            |
 
-`RenderableWell` extends `Well` with an optional `id` field on each feature array element, enabling stable D3 data-join keys across re-renders. A plain `Well` object is directly assignable to `RenderableWell`.
+`RenderableWell` extends `Well` with an optional `key` field on each feature array element, enabling stable D3 data-join keys across re-renders. A plain `Well` object is directly assignable to `RenderableWell`. **`key` is runtime-only** — keep it in memory across edits for stable animation, but strip it before serializing to a `.well` file.
 
 ---
 

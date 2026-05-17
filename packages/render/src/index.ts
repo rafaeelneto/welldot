@@ -26,7 +26,7 @@ export type {
   SvgInstance,
   TooltipKey,
   WellTheme,
-  WithId,
+  WithKey,
 } from './types/render.types';
 export {
   formatDiameter,

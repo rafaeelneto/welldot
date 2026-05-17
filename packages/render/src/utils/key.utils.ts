@@ -10,12 +10,12 @@
 export const makeIntervalKey =
   (type: string) =>
   (d: unknown, _i: number): string => {
-    const { id, from, to } = d as {
-      id?: string | number;
+    const { key, from, to } = d as {
+      key?: string | number;
       from: number;
       to: number;
     };
-    return id ? `${id}` : `${type}:${from}:${to}`;
+    return key ? `${key}` : `${type}:${from}:${to}`;
   };
 
 /**
@@ -25,6 +25,9 @@ export const makeIntervalKey =
 export const makePointKey =
   (type: string) =>
   (d: unknown, i: number): string => {
-    const { id, depth } = d as { id?: string | number; depth: number };
-    return id ? `${id}` : `${type}:${depth}:${i}`;
+    const { key, depth } = d as {
+      key?: string | number;
+      depth: number;
+    };
+    return key ? `${key}` : `${type}:${depth}:${i}`;
   };
