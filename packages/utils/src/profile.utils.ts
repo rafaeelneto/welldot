@@ -1,4 +1,10 @@
-import { Constructive, HoleFill, Reduction, Well } from '@welldot/core';
+import {
+  AquiferAnalysis,
+  Constructive,
+  HoleFill,
+  Reduction,
+  Well,
+} from '@welldot/core';
 
 type DepthPoint = { depth: number };
 type DepthInterval = { to: number };
@@ -111,7 +117,7 @@ export function getConstructivePropertySummary<T>(
  * @param height - Height (or depth span) in meters.
  * @returns Volume in cubic meters (m³).
  */
-export function calculateCilindricVolume(
+export function calculateCylindricVolume(
   diameter: number,
   height: number,
 ): number {
@@ -145,7 +151,7 @@ export function calculateHoleFillVolume(
   const holeFillType = profile.hole_fill.filter(el => el.type === type);
 
   holeFillType.forEach(el => {
-    let outerVolume = calculateCilindricVolume(el.diameter, el.to - el.from);
+    let outerVolume = calculateCylindricVolume(el.diameter, el.to - el.from);
 
     for (let i = 0; i < wellCase.length; i++) {
       const wC = wellCase[i] as DepthRange;
@@ -155,7 +161,7 @@ export function calculateHoleFillVolume(
         if (wC.from > el.from) from = wC.from;
         if (wC.to < el.to) to = wC.to;
 
-        outerVolume -= calculateCilindricVolume(wC.diameter, to - from);
+        outerVolume -= calculateCylindricVolume(wC.diameter, to - from);
       }
     }
 
@@ -167,7 +173,7 @@ export function calculateHoleFillVolume(
         if (wS.from > el.from) from = wS.from;
         if (wS.to < el.to) to = wS.to;
 
-        outerVolume -= calculateCilindricVolume(wS.diameter, to - from);
+        outerVolume -= calculateCylindricVolume(wS.diameter, to - from);
       }
     }
 
@@ -175,4 +181,96 @@ export function calculateHoleFillVolume(
   });
 
   return volume;
+}
+
+// ─── Derived hydrodynamic parameter computations ──────────────────────────────
+
+/** Drawdown s at a level reading: readingDepth − staticLevel (m). */
+export function calculateDrawdown(
+  readingDepth: number,
+  staticLevel: number,
+): number {
+  return readingDepth - staticLevel;
+}
+
+/** Specific capacity Q/s (m²/h). Throws RangeError when drawdown is zero. */
+export function calculateSpecificCapacity(
+  flowRate: number,
+  drawdown: number,
+): number {
+  if (drawdown === 0) throw new RangeError('drawdown must not be zero');
+  return flowRate / drawdown;
+}
+
+/** Unit drawdown s/Q (h/m²). Throws RangeError when flowRate is zero. */
+export function calculateUnitDrawdown(
+  drawdown: number,
+  flowRate: number,
+): number {
+  if (flowRate === 0) throw new RangeError('flowRate must not be zero');
+  return drawdown / flowRate;
+}
+
+/** Formation head loss via Jacob B coefficient: jacobB × flowRate (m). */
+export function calculateFormationLoss(
+  jacobB: number,
+  flowRate: number,
+): number {
+  return jacobB * flowRate;
+}
+
+/** Well head loss via Jacob C coefficient: jacobC × flowRate² (m). */
+export function calculateWellLoss(jacobC: number, flowRate: number): number {
+  return jacobC * flowRate ** 2;
+}
+
+/** Hydraulic conductivity K = transmissivity / aquiferThickness (m/h). Throws RangeError when aquiferThickness is zero. */
+export function calculateHydraulicConductivity(
+  transmissivity: number,
+  aquiferThickness: number,
+): number {
+  if (aquiferThickness === 0)
+    throw new RangeError('aquiferThickness must not be zero');
+  return transmissivity / aquiferThickness;
+}
+
+// ─── Hydrodynamic event query utilities ──────────────────────────────────────
+
+/**
+ * Returns the static water level (m) from the most recent hydrodynamic event
+ * that carries a `static_level` field. Events are compared by UTC datetime.
+ * Returns `undefined` if no such event exists.
+ */
+export function getLatestStaticLevel(well: Well): number | undefined {
+  const events = well.hydrodynamic_events;
+  if (!events || events.length === 0) return undefined;
+  const withLevel = events.filter(
+    (e): e is typeof e & { static_level: number } =>
+      'static_level' in e &&
+      (e as { static_level?: number }).static_level !== undefined,
+  );
+  if (withLevel.length === 0) return undefined;
+  withLevel.sort(
+    (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+  );
+  return (withLevel[0] as { static_level: number }).static_level;
+}
+
+/**
+ * Returns the value of `field` from the most recent `aquifer_analysis` entry
+ * where that field is present. Entries are compared by UTC datetime.
+ * Returns `undefined` if no matching entry exists.
+ */
+export function getLatestAquiferAnalysisField<K extends keyof AquiferAnalysis>(
+  well: Well,
+  field: K,
+): AquiferAnalysis[K] | undefined {
+  const entries = well.aquifer_analysis;
+  if (!entries || entries.length === 0) return undefined;
+  const withField = entries.filter(e => e[field] !== undefined);
+  if (withField.length === 0) return undefined;
+  withField.sort(
+    (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+  );
+  return withField[0][field];
 }
