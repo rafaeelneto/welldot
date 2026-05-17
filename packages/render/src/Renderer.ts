@@ -243,6 +243,14 @@ export class WellRenderer {
     options: { units?: Units; highlights?: Highlights } = {},
   ) {
     if (isWellEmpty(profile)) return;
+
+    if (profile.version !== 2) {
+      console.warn(
+        `[WellRenderer] Received a .well file with version ${profile.version ?? 'unknown'}. ` +
+          `Only v2 is supported. Normalize with deserializeWell() from @welldot/core before rendering.`,
+      );
+    }
+
     this.units = { ...this.units, ...options.units };
     const highlights = options.highlights ?? {};
 

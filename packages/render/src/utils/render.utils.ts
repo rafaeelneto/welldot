@@ -32,7 +32,11 @@ export const getLithologicalFillList = (
   data: Lithology[],
   opts: LithologyTextureOptions,
 ) => {
-  const uniqueTextureCodes = [...new Set(data.map(d => d.fgdc_texture))];
+  const textureKey = (d: Lithology) => String(d.texture.code);
+  const isFgdc = (d: Lithology) =>
+    !d.texture.vocabulary || d.texture.vocabulary === 'fgdc';
+
+  const uniqueTextureCodes = [...new Set(data.filter(isFgdc).map(textureKey))];
   const texturesLoaded = Object.fromEntries(
     uniqueTextureCodes
       .filter(code => {
@@ -44,10 +48,11 @@ export const getLithologicalFillList = (
 
   return Object.fromEntries(
     data.map(d => {
-      const pathData = texturesLoaded[d.fgdc_texture];
-      if (!pathData) return [`${d.fgdc_texture}.${d.from}`, d.color];
+      const key = textureKey(d);
+      const pathData = isFgdc(d) ? texturesLoaded[key] : undefined;
+      if (!pathData) return [`${key}.${d.from}`, d.color];
       return [
-        `${d.fgdc_texture}.${d.from}`,
+        `${key}.${d.from}`,
         textures
           .paths()
           .d(() => pathData)
@@ -68,7 +73,7 @@ export const getLithologyFill = (
 ) => {
   const lithologicalFill = getLithologicalFillList(geologyData, opts);
   return (d: Lithology) => {
-    const fill = lithologicalFill[`${d.fgdc_texture}.${d.from}`];
+    const fill = lithologicalFill[`${String(d.texture.code)}.${d.from}`];
     if (!fill.url) return fill;
     svg.call(fill as unknown as (selection: SvgSelection) => void);
     return fill.url();

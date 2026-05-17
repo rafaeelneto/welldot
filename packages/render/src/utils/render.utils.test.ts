@@ -71,7 +71,7 @@ const makeLithology = (overrides: Partial<Lithology> = {}): Lithology => ({
   to: 10,
   description: 'clay',
   color: '#aabbcc',
-  fgdc_texture: '120',
+  texture: { code: '120', vocabulary: 'fgdc' },
   geologic_unit: '',
   aquifer_unit: '',
   ...overrides,
@@ -452,7 +452,7 @@ describe('getLithologicalFillList', () => {
 
   it('single lithology creates entry keyed by "texture.from"', () => {
     const result = getLithologicalFillList(
-      [makeLithology({ fgdc_texture: '120', from: 5 })],
+      [makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 5 })],
       DEFAULT_TEXTURE_OPTS,
     );
     expect(result).toHaveProperty('120.5');
@@ -460,8 +460,8 @@ describe('getLithologicalFillList', () => {
 
   it('two lithologies with same texture but different from → two entries (no key collision)', () => {
     const lits = [
-      makeLithology({ fgdc_texture: '120', from: 0 }),
-      makeLithology({ fgdc_texture: '120', from: 10 }),
+      makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 }),
+      makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 10 }),
     ];
     const result = getLithologicalFillList(lits, DEFAULT_TEXTURE_OPTS);
     expect(Object.keys(result)).toHaveLength(2);
@@ -471,8 +471,8 @@ describe('getLithologicalFillList', () => {
 
   it('two lithologies with different texture codes → two entries', () => {
     const lits = [
-      makeLithology({ fgdc_texture: '120', from: 0 }),
-      makeLithology({ fgdc_texture: '601', from: 10 }),
+      makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 }),
+      makeLithology({ texture: { code: '601', vocabulary: 'fgdc' }, from: 10 }),
     ];
     expect(
       Object.keys(getLithologicalFillList(lits, DEFAULT_TEXTURE_OPTS)),
@@ -480,7 +480,7 @@ describe('getLithologicalFillList', () => {
   });
 
   it('texture code absent from fgdcTextures → entry created without throwing', () => {
-    const lit = makeLithology({ fgdc_texture: '999', from: 0 });
+    const lit = makeLithology({ texture: { code: '999', vocabulary: 'fgdc' }, from: 0 });
     expect(() =>
       getLithologicalFillList([lit], DEFAULT_TEXTURE_OPTS),
     ).not.toThrow();
@@ -490,7 +490,7 @@ describe('getLithologicalFillList', () => {
   });
 
   it('forwards size to textures.paths().size()', () => {
-    getLithologicalFillList([makeLithology({ fgdc_texture: '120', from: 0 })], {
+    getLithologicalFillList([makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 })], {
       size: 42,
       strokeWidth: 1,
       stroke: '#ff0000',
@@ -499,7 +499,7 @@ describe('getLithologicalFillList', () => {
   });
 
   it('forwards strokeWidth to textures.paths().strokeWidth()', () => {
-    getLithologicalFillList([makeLithology({ fgdc_texture: '120', from: 0 })], {
+    getLithologicalFillList([makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 })], {
       size: 150,
       strokeWidth: 2.5,
       stroke: '#ff0000',
@@ -508,7 +508,7 @@ describe('getLithologicalFillList', () => {
   });
 
   it('forwards stroke to textures.paths().stroke()', () => {
-    getLithologicalFillList([makeLithology({ fgdc_texture: '120', from: 0 })], {
+    getLithologicalFillList([makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 })], {
       size: 150,
       strokeWidth: 1,
       stroke: '#aabbcc',
@@ -530,14 +530,14 @@ describe('getLithologyFill', () => {
   });
 
   it('calling the returned function returns the texture url string', () => {
-    const lit = makeLithology({ fgdc_texture: '120', from: 0 });
+    const lit = makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 });
     const fill = getLithologyFill([lit], makeSvg(), DEFAULT_TEXTURE_OPTS);
     expect(fill(lit)).toBe('url(#mock-texture)');
   });
 
   it('svg.call is invoked once per fill call', () => {
     const svg = makeSvg();
-    const lit = makeLithology({ fgdc_texture: '120', from: 0 });
+    const lit = makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 });
     const fill = getLithologyFill([lit], svg, DEFAULT_TEXTURE_OPTS);
     fill(lit);
     expect(svg.call).toHaveBeenCalledTimes(1);
@@ -545,14 +545,14 @@ describe('getLithologyFill', () => {
 
   it('svg.call is invoked with the texture object', () => {
     const svg = makeSvg();
-    const lit = makeLithology({ fgdc_texture: '120', from: 0 });
+    const lit = makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 });
     const fill = getLithologyFill([lit], svg, DEFAULT_TEXTURE_OPTS);
     fill(lit);
     expect(svg.call).toHaveBeenCalledWith(mockTexturePaths);
   });
 
   it('forwards texture opts through to getLithologicalFillList', () => {
-    const lit = makeLithology({ fgdc_texture: '120', from: 0 });
+    const lit = makeLithology({ texture: { code: '120', vocabulary: 'fgdc' }, from: 0 });
     const fill = getLithologyFill([lit], makeSvg(), {
       size: 99,
       strokeWidth: 3,

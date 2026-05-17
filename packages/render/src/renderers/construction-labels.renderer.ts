@@ -124,7 +124,7 @@ export function drawConstructionLabels(
     .forEach((d: WellScreen) =>
       placeLabel(
         d,
-        `${clc.labels.wellScreenPrefix} ${fmtD(d.diameter)}${dUnit} ${d.type} ${clc.labels.wellScreenSlotPrefix} ${fmtD((d as WellScreen).screen_slot_mm)}${dUnit}`,
+        `${clc.labels.wellScreenPrefix} ${fmtD(d.diameter)}${dUnit} ${d.type} ${clc.labels.wellScreenSlotPrefix} ${fmtD((d as WellScreen).screen_slot)}${dUnit}`,
       ),
     );
 }

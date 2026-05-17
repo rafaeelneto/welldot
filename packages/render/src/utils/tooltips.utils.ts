@@ -96,7 +96,7 @@ export const populateTooltips = (
                 <strong>Diâmetro:</strong> ${esc(formatDiameter(d.diameter, units.diameter))} ${esc(units.diameter)}</span>
               <span class="${customClasses.tooltip.secondaryInfo}"><strong>Tipo:</strong> ${esc(d.type)}</span>
               <span class="${customClasses.tooltip.secondaryInfo}">
-                <strong>Ranhura:</strong> ${esc(d.screen_slot_mm)} mm
+                <strong>Ranhura:</strong> ${esc(d.screen_slot)} mm
               </span>
           `,
     conflict: (_: unknown, d: { from: number; to: number }) => `
