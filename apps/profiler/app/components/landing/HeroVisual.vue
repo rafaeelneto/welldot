@@ -31,11 +31,13 @@ const WELL_PROFILES: RenderableWell[] = [
     name: 'Poço Bauru-Paraná',
     well_type: 'tubular',
     bore_hole: [
-      { id: 'bh-0', from: 0, to: 30, diameter: 600 },
-      { id: 'bh-1', from: 30, to: 240, diameter: 500 },
+      { key: 'bh-0', from: 0, to: 30, diameter: 600 },
+      { key: 'bh-1', from: 30, to: 240, diameter: 500 },
     ],
-    surface_case: [{ id: 'sc-0', from: 0, to: 30, diameter: 600 }],
-    well_case: [{ id: 'wc-0', from: 0, to: 165, type: 'steel', diameter: 450 }],
+    surface_case: [{ key: 'sc-0', from: 0, to: 30, diameter: 600 }],
+    well_case: [
+      { key: 'wc-0', from: 0, to: 165, type: 'steel', diameter: 450 },
+    ],
     reduction: [],
     well_screen: [
       {
@@ -231,9 +233,9 @@ const WELL_PROFILES: RenderableWell[] = [
     version: 2,
     name: 'Poço Carste Nordeste',
     well_type: 'tubular',
-    bore_hole: [{ id: 'bh-0', from: 0, to: 190, diameter: 400 }],
-    surface_case: [{ id: 'sc-0', from: 0, to: 8, diameter: 460 }],
-    well_case: [{ id: 'wc-0', from: 0, to: 85, type: 'steel', diameter: 350 }],
+    bore_hole: [{ key: 'bh-0', from: 0, to: 190, diameter: 400 }],
+    surface_case: [{ key: 'sc-0', from: 0, to: 8, diameter: 460 }],
+    well_case: [{ key: 'wc-0', from: 0, to: 85, type: 'steel', diameter: 350 }],
     reduction: [],
     well_screen: [],
     hole_fill: [
@@ -409,9 +411,9 @@ const WELL_PROFILES: RenderableWell[] = [
     version: 2,
     name: 'Poço Embasamento Sul',
     well_type: 'tubular',
-    bore_hole: [{ id: 'bh-0', from: 0, to: 135, diameter: 300 }],
-    surface_case: [{ id: 'sc-0', from: 0, to: 5, diameter: 360 }],
-    well_case: [{ id: 'wc-0', from: 0, to: 38, type: 'steel', diameter: 250 }],
+    bore_hole: [{ key: 'bh-0', from: 0, to: 135, diameter: 300 }],
+    surface_case: [{ key: 'sc-0', from: 0, to: 5, diameter: 360 }],
+    well_case: [{ key: 'wc-0', from: 0, to: 38, type: 'steel', diameter: 250 }],
     reduction: [],
     well_screen: [],
     hole_fill: [
@@ -571,11 +573,13 @@ const WELL_PROFILES: RenderableWell[] = [
     name: 'Poço Amazônia Profunda',
     well_type: 'tubular',
     bore_hole: [
-      { id: 'bh-0', from: 0, to: 20, diameter: 600 },
-      { id: 'bh-1', from: 20, to: 270, diameter: 450 },
+      { key: 'bh-0', from: 0, to: 20, diameter: 600 },
+      { key: 'bh-1', from: 20, to: 270, diameter: 450 },
     ],
-    surface_case: [{ id: 'sc-0', from: 0, to: 20, diameter: 600 }],
-    well_case: [{ id: 'wc-0', from: 0, to: 185, type: 'steel', diameter: 400 }],
+    surface_case: [{ key: 'sc-0', from: 0, to: 20, diameter: 600 }],
+    well_case: [
+      { key: 'wc-0', from: 0, to: 185, type: 'steel', diameter: 400 },
+    ],
     reduction: [],
     well_screen: [
       {
@@ -781,9 +785,9 @@ const WELL_PROFILES: RenderableWell[] = [
     version: 2,
     name: 'Poço Semi-Árido',
     well_type: 'tubular',
-    bore_hole: [{ id: 'bh-0', from: 0, to: 110, diameter: 250 }],
-    surface_case: [{ id: 'sc-0', from: 0, to: 5, diameter: 310 }],
-    well_case: [{ id: 'wc-0', from: 0, to: 30, type: 'steel', diameter: 200 }],
+    bore_hole: [{ key: 'bh-0', from: 0, to: 110, diameter: 250 }],
+    surface_case: [{ key: 'sc-0', from: 0, to: 5, diameter: 310 }],
+    well_case: [{ key: 'wc-0', from: 0, to: 30, type: 'steel', diameter: 200 }],
     reduction: [],
     well_screen: [],
     hole_fill: [
