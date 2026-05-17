@@ -1,9 +1,5 @@
 import type { Well } from '@welldot/core';
-import {
-  WellSchema,
-  deserializeWell,
-  isWellEmpty,
-} from '@welldot/core';
+import { WellSchema, deserializeWell, isWellEmpty } from '@welldot/core';
 import type { RenderableWell } from '@welldot/render';
 import {
   calculateHoleFillVolume,
@@ -14,6 +10,7 @@ import {
 } from '@welldot/utils';
 import type { Draft } from 'immer';
 import { defineStore } from 'pinia';
+import { makeDeepProxy } from '~/utils/state';
 import { computed, ref } from 'vue';
 
 // ─── Stable render-key registry ──────────────────────────────────────────────
@@ -49,7 +46,7 @@ export const useProfileStore = defineStore(
   () => {
     // ── Core state ─────────────────────────────────────────────────────────
     const {
-      state: well,
+      state: _well,
       update: _update,
       reset: _reset,
       undo,
@@ -66,7 +63,7 @@ export const useProfileStore = defineStore(
     // Keys are attached using the WeakMap registry so they stay stable across
     // edits: unmodified elements keep their key, modified ones get a new one.
     const renderableWell = computed<RenderableWell | null>(() => {
-      const w = well.value;
+      const w = _well.value;
       if (!w) return null;
       return {
         ...w,
@@ -82,25 +79,36 @@ export const useProfileStore = defineStore(
       };
     });
 
+    // ── Public well — renderable read, mutable via proxy ──────────────────
+    // get → RenderableWell wrapped in a deep proxy; every property set is
+    // intercepted and routed through updateWell (Immer + undo/redo).
+    // Usage: store.well.value.name = 'x'
+    //        store.well.value.hydrodynamic_events[1].steps.static_level = 12.3
+    const well = computed<RenderableWell | null>(() => {
+      const w = renderableWell.value;
+      if (!w) return null;
+      return makeDeepProxy(w, [], updateWell);
+    });
+
     // ── Measurements — lazy computed, never blocking ───────────────────────
 
     // Depth
     const maxDepth = computed(() => {
-      if (!well.value) return 0;
-      return Math.max(0, ...getProfileLastItemsDepths(well.value));
+      if (!_well.value) return 0;
+      return Math.max(0, ...getProfileLastItemsDepths(_well.value));
     });
 
     // Geologic counts
-    const lithologyCount = computed(() => well.value?.lithology.length ?? 0);
-    const fractureCount = computed(() => well.value?.fractures.length ?? 0);
-    const caveCount = computed(() => well.value?.caves.length ?? 0);
+    const lithologyCount = computed(() => _well.value?.lithology.length ?? 0);
+    const fractureCount = computed(() => _well.value?.fractures.length ?? 0);
+    const caveCount = computed(() => _well.value?.caves.length ?? 0);
     const totalGeologicLayers = computed(
       () => lithologyCount.value + fractureCount.value + caveCount.value,
     );
 
     // Per-unit thickness (from, to, thickness, description)
     const lithologyThicknesses = computed(() =>
-      (well.value?.lithology ?? []).map(l => ({
+      (_well.value?.lithology ?? []).map(l => ({
         from: l.from,
         to: l.to,
         thickness: l.to - l.from,
@@ -111,13 +119,13 @@ export const useProfileStore = defineStore(
     );
 
     // Constructive counts
-    const boreHoleCount = computed(() => well.value?.bore_hole.length ?? 0);
-    const wellCaseCount = computed(() => well.value?.well_case.length ?? 0);
-    const wellScreenCount = computed(() => well.value?.well_screen.length ?? 0);
-    const holeFillCount = computed(() => well.value?.hole_fill.length ?? 0);
-    const reductionCount = computed(() => well.value?.reduction.length ?? 0);
+    const boreHoleCount = computed(() => _well.value?.bore_hole.length ?? 0);
+    const wellCaseCount = computed(() => _well.value?.well_case.length ?? 0);
+    const wellScreenCount = computed(() => _well.value?.well_screen.length ?? 0);
+    const holeFillCount = computed(() => _well.value?.hole_fill.length ?? 0);
+    const reductionCount = computed(() => _well.value?.reduction.length ?? 0);
     const surfaceCaseCount = computed(
-      () => well.value?.surface_case.length ?? 0,
+      () => _well.value?.surface_case.length ?? 0,
     );
     const totalConstructiveLayers = computed(
       () =>
@@ -131,7 +139,7 @@ export const useProfileStore = defineStore(
 
     // Diameters
     const diameterValues = computed(() =>
-      well.value ? getProfileDiamValues(well.value) : [],
+      _well.value ? getProfileDiamValues(_well.value) : [],
     );
     const maxDiameter = computed(() =>
       diameterValues.value.length ? Math.max(...diameterValues.value) : 0,
@@ -143,24 +151,24 @@ export const useProfileStore = defineStore(
 
     // Fill volumes (m³)
     const gravelPackVolume = computed(() =>
-      well.value ? calculateHoleFillVolume('gravel_pack', well.value) : 0,
+      _well.value ? calculateHoleFillVolume('gravel_pack', _well.value) : 0,
     );
     const sealVolume = computed(() =>
-      well.value ? calculateHoleFillVolume('seal', well.value) : 0,
+      _well.value ? calculateHoleFillVolume('seal', _well.value) : 0,
     );
 
     // Hydrodynamic derived values
     const latestStaticLevel = computed(() =>
-      well.value ? getLatestStaticLevel(well.value) : undefined,
+      _well.value ? getLatestStaticLevel(_well.value) : undefined,
     );
     const latestTransmissivity = computed(() =>
-      well.value
-        ? getLatestAquiferAnalysisField(well.value, 'transmissivity')
+      _well.value
+        ? getLatestAquiferAnalysisField(_well.value, 'transmissivity')
         : undefined,
     );
     const latestSpecificCapacity = computed(() =>
-      well.value
-        ? getLatestAquiferAnalysisField(well.value, 'specific_capacity')
+      _well.value
+        ? getLatestAquiferAnalysisField(_well.value, 'specific_capacity')
         : undefined,
     );
 
@@ -188,7 +196,7 @@ export const useProfileStore = defineStore(
 
     /** Apply an Immer recipe to the current well. Tracked in undo/redo history. */
     function updateWell(recipe: (draft: Draft<Well>) => void): void {
-      if (!well.value) return;
+      if (!_well.value) return;
       _update(draft => {
         if (draft) recipe(draft as Draft<Well>);
       });
@@ -209,7 +217,7 @@ export const useProfileStore = defineStore(
      * Populates `errors` on failure; clears it on success.
      */
     function validate(): boolean {
-      if (!well.value) {
+      if (!_well.value) {
         errors.value = {};
         return true;
       }
@@ -237,7 +245,7 @@ export const useProfileStore = defineStore(
      * accidental bleed-through before the object hits serialisation.
      */
     function getExportableWell(): Well | null {
-      const w = well.value;
+      const w = _well.value;
       if (!w) return null;
       return {
         ...w,
@@ -261,13 +269,13 @@ export const useProfileStore = defineStore(
     }
 
     return {
-      // ── Core state
+      // ── State (raw ref — persistence only, prefer `well` in components)
+      _well,
+
+      // ── Well (renderable read / Immer-recipe write)
       well,
       errors,
       isDirty,
-
-      // ── Renderable (keys attached, runtime-only)
-      renderableWell,
 
       // ── History
       canUndo,
@@ -323,7 +331,7 @@ export const useProfileStore = defineStore(
       key: 'welldot_profile',
       // Only persist the well data — errors, isDirty, and history are
       // transient session state and must not survive page reload.
-      pick: ['well'],
+      pick: ['_well'],
     },
   },
 );
