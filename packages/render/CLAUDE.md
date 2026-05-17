@@ -6,6 +6,8 @@ D3-based SVG visualization engine for geological well profiles. Depends on `@wel
 
 Renders `.well` profile data into an SVG element. Consumers instantiate `Renderer`, call `draw()` with a `Well` and a config, and the library mutates a provided DOM container. Used by both apps.
 
+Supports `.well` format v2 only. Consumers must normalize older files with `deserializeWell()` from `@welldot/core` before calling `draw()`.
+
 ## Source layout
 
 ```
@@ -86,3 +88,4 @@ What to update: the Quick Start example if it no longer compiles, the options/co
 - `textures.js` and `d3-tip` are runtime deps; do not remove them.
 - `sanitize-html` is used before injecting any user-supplied strings into SVG.
 - All sub-renderers receive a `DrawContext` (scales, groups, config) — do not pass the raw `Well` to them directly.
+- Only `.well` v2 (`version: 2`) is supported. v1 files must be normalized via `deserializeWell()` from `@welldot/core` before rendering.

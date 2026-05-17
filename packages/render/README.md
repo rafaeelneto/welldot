@@ -75,8 +75,10 @@ new WellRenderer(svgs: SvgInstance[], options?: {
 | Method                                                                            | Description                                                                                |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `prepareSvg(): Promise<void>`                                                     | Initialise SVG DOM structure and preload FGDC textures. Call once before the first `draw`. |
-| `draw(profile: Well, options?: { units?: Units; highlights?: Highlights }): void` | Render or re-render the full well profile.                                                 |
+| `draw(profile: RenderableWell, options?: { units?: Units; highlights?: Highlights }): void` | Render or re-render the full well profile.                                                 |
 | `renderLegend(selector: string, profile: Well): void`                             | Render a standalone legend into a separate SVG.                                            |
+
+`RenderableWell` extends `Well` with an optional `id` field on each feature array element, enabling stable D3 data-join keys across re-renders. A plain `Well` object is directly assignable to `RenderableWell`.
 
 ---
 
@@ -89,8 +91,10 @@ drawWellLegend(
   selector: string,
   profile:  Well,
   options?: {
-    config?:  Partial<LegendRenderConfig>;
-    cssVars?: Partial<CssVarsConfig>;
+    config?:     Partial<LegendRenderConfig>;
+    theme?:      Partial<WellTheme>;
+    classNames?: ComponentsClassNames['legend'];
+    textures?:   TexturesConfig;
   }
 ): void
 ```
@@ -122,27 +126,26 @@ Does nothing if the profile contains no fractures or caves.
 
 ## Theming
 
-Visual appearance is controlled by CSS custom properties (`--wp-*`) defined on `:root`. Import the package stylesheet or override properties inline:
+Visual appearance is controlled by the `theme` option passed to `WellRenderer`. All colors, stroke widths, and opacities are defined as a `WellTheme` object. Use `DEFAULT_WELL_THEME` as a base and pass a `DeepPartial<WellTheme>` to override specific values:
 
 ```ts
-// Override via renderConfig at construction time
 new WellRenderer(svgs, {
-  renderConfig: {
-    cssVars: {
-      fractureWetStroke: '#0077cc',
-      wellCaseFill: '#f5f5f5',
-    },
+  theme: {
+    lithology: { stroke: '#222222', strokeWidth: 1.5 },
+    wellCase: { fill: '#f5f5f5', stroke: '#333333', strokeWidth: 2 },
   },
 });
 ```
 
-All CSS variables (colors, stroke widths, opacities) are listed in `src/styles/main.css`.
+See `DEFAULT_WELL_THEME` in `src/configs/render.configs.ts` for all available keys.
 
 ---
 
 ## Data format
 
 `@welldot/render` renders [`Well`](https://www.npmjs.com/package/@welldot/core) objects from `@welldot/core`. See that package for the `.well` file format specification, types, and validators.
+
+**Version requirement:** Only `.well` v2 (`version: 2`) is supported. Pass raw JSON through `deserializeWell()` from `@welldot/core` before calling `draw()` — it normalizes v1 files to v2 automatically.
 
 ---
 
