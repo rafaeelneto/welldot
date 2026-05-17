@@ -23,7 +23,7 @@
 - UI: PrimeVue 4.5.5 + tailwindcss-primeui 0.6.1
 - Styling: Tailwind CSS 4.3.0 (Vite plugin)
 - State: Pinia 3.0.4 + pinia-plugin-persistedstate 4.7.1
-- Icons: @nuxt/icon 2.2.2 + @iconify-json/heroicons
+- Icons: @nuxt/icon 2.2.2 + Phosphor (`ph:`, primary) + Heroicons (`heroicons:`, legacy)
 - Utils: VueUse 14.3.0, date-fns 4.1.0
 - SEO: @nuxtjs/seo 3.4.0
 - PWA: @vite-pwa/nuxt 1.1.1

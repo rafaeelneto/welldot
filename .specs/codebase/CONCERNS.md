@@ -1,6 +1,6 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-05-10
+**Analysis Date:** 2026-05-10 | **Last Updated:** 2026-05-17
 
 ## Tech Debt
 
@@ -35,7 +35,8 @@
 
 - Files: `packages/render/src/Renderer.ts`, `packages/render/src/renderers/*.renderer.ts`
 - Why fragile: All D3 rendering logic is untested. Changes to scale calculations, data joins, or depth math can silently produce incorrect visual output.
-- Common failures: Depth scale misalignment when `profile` has unusual depth ranges; stable key collisions when layer order changes.
+- Common failures: Depth scale misalignment when `profile` has unusual depth ranges; D3 key collisions if `WithKey.key` values are duplicated across layers.
+- Key system: `key.utils.ts` generates stable D3 data-join keys (`WithKey<T>`) — the `key` field is runtime-only and must be unique per feature array. When absent the renderer falls back to coordinate-based keys (`from:to`).
 - Safe modification: Run the app manually against edge-case `.well` files (empty profiles, single-layer profiles, very deep wells, negative depths) after any renderer change.
 - Test coverage: Only utility functions (`render.utils`, `render.styles`, `d3.utils`) have tests. The main renderer and all component renderers are untested.
 
@@ -106,5 +107,5 @@
 
 ---
 
-_Concerns audit: 2026-05-10_
+_Concerns audit: 2026-05-10 | Updated: 2026-05-17_
 _Update as issues are fixed or new ones discovered_

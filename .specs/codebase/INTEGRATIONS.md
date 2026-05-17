@@ -37,8 +37,12 @@ Library packages (`@welldot/core`, `@welldot/utils`, `@welldot/render`) are **fu
 ## Iconography
 
 **Service:** Iconify + `@nuxt/icon`
-**Icon sets:** `@iconify-json/heroicons` (Heroicons)
-**Custom icons:** `apps/profiler/app/assets/icons/` — local Welldot-specific SVG icons
+**Icon sets (priority order):**
+1. **Phosphor** (`ph:`) — primary icon set for all new components; prefer duotone variant (`ph:icon-name-duotone`), fall back to regular (`ph:icon-name`)
+2. **Heroicons** (`heroicons:`) — legacy; still present in some older components, not used in new ones
+3. **Custom** (`welldot:`) — project-specific SVG icons in `apps/profiler/app/assets/icons/`
+
+**Custom icons:** `apps/profiler/app/assets/icons/` — local Welldot-specific SVG icons (auto-registered as `welldot:` prefix)
 
 ---
 

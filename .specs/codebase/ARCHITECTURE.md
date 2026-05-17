@@ -36,21 +36,26 @@ src/
   validators/
     well.validators.ts  ← Zod schemas (one per type), WellSchema, parseWell()
   utils/
-    well.utils.ts       ← serialize/deserialize, legacy format migration helpers
+    well.utils.ts       ← serialize/deserialize, v1→v2 migration helpers
     fgdc.textures.ts    ← FGDC geological pattern code library
+    units.ts            ← unit conversion utilities (m↔ft, mm↔in)
 ```
 
-Key types from `well.types.ts`:
+Key types from `well.types.ts` (v2 schema):
 
-- `Well` — root profile: `{ id, name, units, constructive, geologic, ... }`
-- `Constructive` — `{ bore_hole[], well_case[], reduction[], well_screen[], surface_case[] }`
-- `Geologic` — `{ lithology[], fractures[], caves[] }`
-- All depth-bearing components carry `{ depth_from, depth_to }` + component-specific fields
+- `Well` — root: `{ version: 2, name, well_type, units, location?, well_id?, profiles, hydrodynamic_events?, aquifer_analysis?, history_logs?, ... }`
+- `profiles` array contains per-profile data: `{ bore_hole[], well_case[], well_screen[], reduction[], surface_case[], hole_fill[], lithology[], fractures[], caves[], ... }`
+- `Location` — `{ lat, lng, elevation?, properties? }` (replaces flat lat/lng/elevation in v1)
+- `WellId` — `{ authority, id, primary? }`
+- `HydrodynamicEvent` — union of pumping test event types: `ConstantRateEvent`, `StepDrawdownEvent`, `AirliftEvent`, `SpotMeasurementEvent`, `RecoveryOnlyEvent`
+- `AquiferAnalysis` — Jacob analysis results (transmissivity, hydraulic conductivity, etc.)
+- All depth-bearing components carry `{ from, to }` (in meters from ground) + component-specific fields
 
 Key patterns:
 
 - Runtime validation at deserialization boundary only (`parseWell()` / `deserializeWell()`)
-- Legacy migration handled in `well.utils.ts` (`profileToWell`, `convertProfileFromJSON`)
+- v1→v2 migration handled transparently in `deserializeWell()` (flat lat/lng → `location`, `fgdc_texture` → `texture`, `screen_slot_mm` → `screen_slot`)
+- Legacy `convertProfileFromJSON()` / `profileToWell()` bridges for old pre-v1 format
 - `EMPTY_WELL` constant for safe default initialization
 
 ---
@@ -67,11 +72,24 @@ src/
 
 Key functions:
 
-- `getProfileMaxDepth(profile)` → `number`
-- `getProfileLastItemsDepths(profile)` → `number[]` (max depth per component array)
-- `getProfileDiamValues(constructionData)` → `number[]`
-- `getConstructivePropertyValues<T>(constructive, key)` → `T[]`
+**Depth & geometry:**
+- `getProfileMaxDepth(well)` → `number`
+- `getProfileLastItemsDepths(well)` → `{ [component]: number }` (max depth per component)
+- `getProfileDiamValues(constructive)` → `number[]`
+- `getConstructivePropertySummary(data, prop)` → extracted values across all constructive arrays
 - `getEstimatedGravelPackVolume(...)` → `number`
+
+**Hydrodynamic calculations (Jacob / Theis):**
+- `calculateDrawdown(readingDepth, staticLevel)` → `number` (m)
+- `calculateSpecificCapacity(flowRate, drawdown)` → `number` (m²/h)
+- `calculateUnitDrawdown(drawdown, flowRate)` → `number` (h/m²)
+- `calculateFormationLoss(jacobB, flowRate)` → `number` (m)
+- `calculateWellLoss(jacobC, flowRate)` → `number` (m)
+- `calculateHydraulicConductivity(transmissivity, aquiferThickness)` → `number` (m/h)
+
+**Well data queries:**
+- `getLatestStaticLevel(well)` → most recent static water level from `hydrodynamic_events`
+- `getLatestAquiferAnalysisField(well, field)` → most recent value of named field from `aquifer_analysis`
 
 ---
 
@@ -97,16 +115,25 @@ src/
     render.classnames.ts ← BEM CSS class name constants
     render.textures.ts   ← texture fill pipeline
   types/
-    render.types.ts      ← WellTheme, RenderConfig, DrawContext, SvgInstance
+    render.types.ts      ← WellTheme, RenderConfig, DrawContext, SvgInstance, RenderableWell, WithKey
   utils/
-    d3.utils.ts          ← D3 selection helpers, stable layer keys
+    d3.utils.ts          ← D3 selection helpers
     format.utils.ts      ← formatLength(), formatDiameter(), unit conversion
     geometry.utils.ts    ← SVG path helpers (smooth curves, wavy contacts)
+    key.utils.ts         ← stable D3 key generation (replaces coordinate-based keys)
     render.utils.ts      ← texture loading, tooltip population
     render.styles.ts     ← dynamic CSS string generation
     tooltips.utils.ts
     fgdcTextures.ts      ← FGDC texture importer
+  data/
+    fgdcTextures.json    ← FGDC pattern data consumed by textures.js
 ```
+
+**Key types in `render.types.ts`:**
+
+- `RenderableWell` — a well profile (single entry from `Well.profiles`) where every feature element may carry an optional `key?: string | number` for stable D3 data-join identity. When `key` is absent the renderer falls back to coordinate-based keys.
+- `WithKey<T>` — `T & { key?: string | number }` (replaces former `WithId`)
+- `Highlights` — per-component overlay config passed to `draw()`
 
 **WellRenderer lifecycle:**
 

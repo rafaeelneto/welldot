@@ -45,7 +45,9 @@ well-profiler/
 │   │       ├── renderers/          ← one file per visual component
 │   │       ├── configs/
 │   │       ├── types/
-│   │       └── utils/
+│   │       ├── utils/
+│   │       └── data/
+│   │           └── fgdcTextures.json  ← FGDC pattern data (consumed by textures.js)
 │   │
 │   ├── utils/                      ← @welldot/utils (published)
 │   │   └── src/
@@ -77,10 +79,11 @@ well-profiler/
 **Location:** `packages/core/src/`
 **Key files:**
 
-- `types/well.types.ts` — Well, Constructive, Geologic, BoreHole, Lithology, etc.
+- `types/well.types.ts` — Well (v2), BoreHole, Lithology, Location, WellId, HydrodynamicEvent, AquiferAnalysis, etc.
 - `validators/well.validators.ts` — Zod schemas + `parseWell()`
-- `utils/well.utils.ts` — `serializeWell()`, `deserializeWell()`, legacy migration
+- `utils/well.utils.ts` — `serializeWell()`, `deserializeWell()` (with v1→v2 migration), legacy migration
 - `utils/fgdc.textures.ts` — FGDC geological pattern library
+- `utils/units.ts` — unit conversion utilities
 
 ### `packages/render`
 
@@ -91,7 +94,9 @@ well-profiler/
 - `Renderer.ts` — `WellRenderer` class, main public API
 - `renderers/*.renderer.ts` — specialized drawers (lithology, construction, fractures, etc.)
 - `configs/render.configs.ts` — `DEFAULT_WELL_THEME`, `DEFAULT_RENDER_CONFIG`
-- `types/render.types.ts` — `DrawContext`, `WellTheme`, `RenderConfig`, `SvgInstance`
+- `types/render.types.ts` — `DrawContext`, `WellTheme`, `RenderConfig`, `RenderableWell`, `WithKey`, `SvgInstance`
+- `utils/key.utils.ts` — stable D3 data-join key generation
+- `data/fgdcTextures.json` — FGDC pattern data
 
 ### `packages/utils`
 

@@ -119,6 +119,7 @@ export function getProfileLastItemsDepths(profile: Well): number[] { ... }
 - Multi-word component names required
 - `defineProps` before `defineEmits`
 - Nuxt auto-imports active: composables and utils in `app/composables/` and `app/utils/` are globally available without explicit imports
+- **Icons:** use Phosphor (`ph:icon-name-duotone`) as default; fall back to `ph:icon-name` (regular) when duotone unavailable. Do not use Heroicons in new components — they are legacy.
 
 ## ESLint Rules (summary)
 
