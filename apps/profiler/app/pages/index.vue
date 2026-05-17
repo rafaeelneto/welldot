@@ -114,19 +114,19 @@ const horizonProps = computed(() =>
           class="container-landing pt-8 pb-7 lg:pt-16 lg:pb-14 border-b border-surface-200/40"
         >
           <div
-            class="font-mono text-[11px] tracking-[0.12em] uppercase text-content-500 mb-[18px] w-fit bg-surface-0/55 backdrop-blur-sm rounded px-2 py-0.5"
+            class="font-mono text-[11px] tracking-[0.12em] uppercase text-content-500 mb-4.5 w-fit bg-surface-0/55 backdrop-blur-sm rounded px-2 py-0.5"
           >
             {{ t('hero.kicker') }}
           </div>
           <h1
-            class="font-serif font-medium text-[44px] lg:text-[76px] leading-none tracking-[-0.025em] mb-[14px] lg:mb-[22px] text-balance w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
+            class="font-serif font-medium text-[44px] lg:text-[76px] leading-none tracking-tight mb-3.5 lg:mb-5.5 text-balance w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             {{ t('hero.headline1') }}
             <em class="text-primary-500">{{ t('hero.headlineEm') }}</em
             >{{ t('hero.headline2') }}
           </h1>
           <p
-            class="text-[15px] lg:text-[19px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-5 lg:mb-7 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
+            class="text-[15px] lg:text-[19px] leading-[1.55] text-content-400 lg:max-w-120 mb-5 lg:mb-7 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             {{ t('hero.body') }}
           </p>
@@ -141,7 +141,7 @@ const horizonProps = computed(() =>
             />
           </div>
           <div
-            class="flex flex-wrap gap-[22px] pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
+            class="flex flex-wrap gap-5.5 pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
           >
             <span
               ><b class="text-content-0 font-medium">v1.0</b>
@@ -171,12 +171,12 @@ const horizonProps = computed(() =>
         <!-- §I · O formato -->
         <div class="container-landing py-14 lg:py-20">
           <div
-            class="kicker mb-[18px] w-fit bg-surface-0/55 backdrop-blur-sm rounded px-2 py-0.5"
+            class="kicker mb-4.5 w-fit bg-surface-0/55 backdrop-blur-sm rounded px-2 py-0.5"
           >
             {{ t('format.kicker') }}
           </div>
           <h2
-            class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-[14px] w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
+            class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-tight mb-3.5 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             {{ t('format.headline1') }}<br /><em class="text-primary-500">{{
               t('format.headlineEm')
@@ -184,7 +184,7 @@ const horizonProps = computed(() =>
             {{ t('format.headline2') }}
           </h2>
           <p
-            class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
+            class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-120 mb-8 w-fit bg-surface-0/55 backdrop-blur-sm rounded-md px-2 py-1"
           >
             <i18n-t keypath="format.intro" tag="span">
               <template #well><b>.well</b></template>
@@ -208,7 +208,7 @@ const horizonProps = computed(() =>
 
       <!-- ── Right: sticky visual — bleeds leftward behind content ────────── -->
       <div
-        class="hidden lg:block sticky top-[60px] h-[calc(100vh-60px)] overflow-visible pt-8 lg:pt-14 pr-4 z-0"
+        class="hidden lg:block sticky top-15 h-[calc(100vh-60px)] overflow-visible pt-8 lg:pt-14 pr-4 z-0"
       >
         <div
           class="relative h-full"
@@ -227,7 +227,7 @@ const horizonProps = computed(() =>
     class="manifesto-bg relative py-14 lg:py-20 border-b border-surface-200/60 overflow-hidden"
   >
     <div
-      class="absolute right-[-100px] top-[30%] w-[500px] h-[500px] pointer-events-none rounded-full"
+      class="absolute right-[-100px] top-[30%] size-125 pointer-events-none rounded-full"
       style="
         background: radial-gradient(
           closest-side,
@@ -239,7 +239,7 @@ const horizonProps = computed(() =>
     <div class="container-landing relative">
       <div class="kicker mb-3.5">{{ t('intention.kicker') }}</div>
       <p
-        class="font-serif text-[19px] lg:text-[26px] leading-[1.45] max-w-[880px] mb-9 font-normal text-content-0"
+        class="font-serif text-[19px] lg:text-[26px] leading-[1.45] max-w-220 mb-9 font-normal text-content-0"
       >
         <i18n-t keypath="intention.body" tag="span">
           <template #unreadable>
@@ -279,9 +279,9 @@ const horizonProps = computed(() =>
     <div class="container-landing relative lg:grid lg:grid-cols-2 lg:gap-14">
       <!-- Text col -->
       <div>
-        <div class="kicker mb-[18px]">{{ t('contexts.kicker') }}</div>
+        <div class="kicker mb-4.5">{{ t('contexts.kicker') }}</div>
         <h2
-          class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-3.5"
+          class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-tight mb-3.5"
         >
           {{ t('contexts.headline1') }}<br /><em class="text-primary-500">{{
             t('contexts.headlineEm')
@@ -346,16 +346,16 @@ const horizonProps = computed(() =>
       "
     />
     <div class="container-landing relative">
-      <div class="kicker mb-[18px]">{{ t('horizon.kicker') }}</div>
+      <div class="kicker mb-4.5">{{ t('horizon.kicker') }}</div>
       <h2
-        class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-[-0.025em] mb-3.5"
+        class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-tight mb-3.5"
       >
         {{ t('horizon.headline1') }}
         <em class="text-primary-500">{{ t('horizon.headlineEm') }}</em
         >{{ t('horizon.headline2') }}
       </h2>
       <p
-        class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-[480px] mb-8"
+        class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-120 mb-8"
       >
         {{ t('horizon.intro') }}
       </p>
@@ -394,7 +394,7 @@ const horizonProps = computed(() =>
     />
     <div class="container-landing relative">
       <h2
-        class="font-serif font-medium text-[40px] lg:text-[64px] leading-[1.05] tracking-[-0.025em] mb-3.5 text-balance"
+        class="font-serif font-medium text-[40px] lg:text-[64px] leading-[1.05] tracking-tight mb-3.5 text-balance"
       >
         {{ t('cta.headline1') }}<br /><em class="text-primary-500">{{
           t('cta.headlineEm')
@@ -402,7 +402,7 @@ const horizonProps = computed(() =>
         >{{ t('cta.headline2') }}
       </h2>
       <p
-        class="text-[14px] lg:text-[18px] text-content-400 max-w-[540px] mx-auto mb-7"
+        class="text-[14px] lg:text-[18px] text-content-400 max-w-135 mx-auto mb-7"
       >
         {{ t('cta.subtitle') }}
       </p>

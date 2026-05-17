@@ -7,7 +7,7 @@ defineProps<{
 
 <template>
   <div
-    class="glass rounded-lg p-[18px] hover:-translate-y-0.5 transition-transform duration-200 cursor-default"
+    class="glass rounded-lg p-4.5 hover:-translate-y-0.5 transition-transform duration-200 cursor-default"
   >
     <div
       class="font-mono text-[10px] tracking-[0.12em] text-primary-500 mb-1.5"

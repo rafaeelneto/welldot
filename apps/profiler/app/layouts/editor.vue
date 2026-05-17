@@ -13,7 +13,7 @@ const isDark = useDark({
 const togglePt = {
   root: {
     class: [
-      'w-8 h-8 rounded-lg border flex items-center justify-center cursor-pointer',
+      'size-8 rounded-lg border flex items-center justify-center cursor-pointer',
       'transition-colors duration-200 outline-none',
       'focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1',
       'border-surface-200 text-content-400',
@@ -47,7 +47,7 @@ const actionBtnPt = {
         class="flex items-center gap-2.5 font-bold text-base tracking-tight text-content-0 no-underline shrink-0"
       >
         <div
-          class="w-[26px] h-[26px] rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-mono text-[10px] font-semibold"
+          class="w-6.5 h-6.5 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-mono text-[10px] font-semibold"
         >
           wd
         </div>
@@ -83,17 +83,17 @@ const actionBtnPt = {
       <div class="flex items-center gap-0.5">
         <Button :label="t('editor.save')" unstyled :pt="actionBtnPt">
           <template #icon>
-            <Icon name="ph:floppy-disk-duotone" class="w-4 h-4 shrink-0" />
+            <Icon name="ph:floppy-disk-duotone" class="size-4 shrink-0" />
           </template>
         </Button>
         <Button :label="t('editor.open')" unstyled :pt="actionBtnPt">
           <template #icon>
-            <Icon name="ph:folder-open-duotone" class="w-4 h-4 shrink-0" />
+            <Icon name="ph:folder-open-duotone" class="size-4 shrink-0" />
           </template>
         </Button>
         <Button :label="t('editor.share')" unstyled :pt="actionBtnPt">
           <template #icon>
-            <Icon name="ph:share-network-duotone" class="w-4 h-4 shrink-0" />
+            <Icon name="ph:share-network-duotone" class="size-4 shrink-0" />
           </template>
         </Button>
       </div>
@@ -115,13 +115,13 @@ const actionBtnPt = {
             v-if="isDark"
             key="sun"
             name="heroicons:sun"
-            class="w-4 h-4 shrink-0"
+            class="size-4 shrink-0"
           />
           <Icon
             v-else
             key="moon"
             name="heroicons:moon"
-            class="w-4 h-4 shrink-0"
+            class="size-4 shrink-0"
           />
         </Transition>
       </ToggleButton>
@@ -129,7 +129,7 @@ const actionBtnPt = {
       <!-- Export PDF (primary CTA) -->
       <Button :label="t('editor.exportPdf')" size="small">
         <template #icon>
-          <Icon name="ph:file-pdf-duotone" class="w-4 h-4 shrink-0" />
+          <Icon name="ph:file-pdf-duotone" class="size-4 shrink-0" />
         </template>
       </Button>
     </nav>

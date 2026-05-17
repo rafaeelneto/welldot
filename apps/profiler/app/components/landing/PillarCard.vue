@@ -6,9 +6,9 @@ defineProps<{
 </script>
 
 <template>
-  <div class="glass rounded-[14px] p-[22px]">
+  <div class="glass rounded-3.5 p-5.5">
     <div
-      class="w-8 h-8 rounded-[8px] flex items-center justify-center font-mono text-[13px] font-semibold mb-[14px] text-primary-500"
+      class="size-8 rounded-lg flex items-center justify-center font-mono text-[13px] font-semibold mb-3.5 text-primary-500"
       style="
         background: linear-gradient(
           135deg,
@@ -27,7 +27,7 @@ defineProps<{
     >
       {{ title }}
     </h3>
-    <p class="font-display text-[14px] leading-[1.5] text-content-400">
+    <p class="font-display text-[14px] leading-normal text-content-400">
       <slot />
     </p>
   </div>

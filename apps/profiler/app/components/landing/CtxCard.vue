@@ -10,7 +10,7 @@ defineProps<{
 
 <template>
   <div
-    class="flex items-center gap-3.5 px-[18px] py-4 rounded-[12px] glass transition-shadow duration-200"
+    class="flex items-center gap-3.5 px-4.5 py-4 rounded-xl glass transition-shadow duration-200"
     :class="highlight ? 'border-primary-500' : ''"
     :style="
       highlight
@@ -19,7 +19,7 @@ defineProps<{
     "
   >
     <div
-      class="w-10 h-10 rounded-[10px] flex-shrink-0 flex items-center justify-center text-primary-500"
+      class="size-10 rounded-2.5 shrink-0 flex items-center justify-center text-primary-500"
       style="
         background: linear-gradient(
           135deg,

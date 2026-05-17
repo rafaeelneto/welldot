@@ -1156,7 +1156,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="entranceRef" class="editor-card w-full h-full relative">
+  <div ref="entranceRef" class="editor-card size-full relative">
     <!-- Live preview label -->
     <div class="live-label">
       <span class="live-dot" />

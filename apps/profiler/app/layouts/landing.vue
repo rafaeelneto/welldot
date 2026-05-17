@@ -19,7 +19,7 @@ const isDark = useDark({
 const togglePt = {
   root: {
     class: [
-      'w-8 h-8 rounded-lg border flex items-center justify-center cursor-pointer',
+      'size-8 rounded-lg border flex items-center justify-center cursor-pointer',
       'transition-colors duration-200 outline-none',
       'focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1',
       'border-surface-200 text-content-400',
@@ -40,7 +40,7 @@ const togglePt = {
           class="flex items-center gap-2.5 font-bold text-base tracking-tight text-content-0 no-underline"
         >
           <div
-            class="w-[26px] h-[26px] rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-mono text-[10px] font-semibold"
+            class="w-6.5 h-6.5 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-mono text-[10px] font-semibold"
           >
             wd
           </div>
@@ -80,13 +80,13 @@ const togglePt = {
               v-if="isDark"
               key="sun"
               name="heroicons:sun"
-              class="w-4 h-4 shrink-0"
+              class="size-4 shrink-0"
             />
             <Icon
               v-else
               key="moon"
               name="heroicons:moon"
-              class="w-4 h-4 shrink-0"
+              class="size-4 shrink-0"
             />
           </Transition>
         </ToggleButton>
@@ -111,7 +111,7 @@ const togglePt = {
 
         <!-- Mobile hamburger -->
         <button
-          class="lg:hidden w-8 h-8 border border-surface-200 rounded-lg flex items-center justify-center text-content-0"
+          class="lg:hidden size-8 border border-surface-200 rounded-lg flex items-center justify-center text-content-0"
           :aria-label="t('nav.menu')"
           @click="drawerOpen = true"
         >
@@ -148,7 +148,7 @@ const togglePt = {
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-200 hover:text-content-0 hover:bg-surface-100 transition-colors no-underline"
           @click="drawerOpen = false"
         >
-          <Icon name="heroicons:pencil-square" class="w-4 h-4 shrink-0" />
+          <Icon name="heroicons:pencil-square" class="size-4 shrink-0" />
           {{ t('nav.editor') }}
         </NuxtLink>
         <NuxtLink
@@ -159,7 +159,7 @@ const togglePt = {
         >
           <Icon
             name="heroicons:arrow-top-right-on-square"
-            class="w-4 h-4 shrink-0"
+            class="size-4 shrink-0"
           />
           {{ t('nav.github') }}
         </NuxtLink>
@@ -184,13 +184,13 @@ const togglePt = {
               v-if="isDark"
               key="sun"
               name="heroicons:sun"
-              class="w-4 h-4 shrink-0"
+              class="size-4 shrink-0"
             />
             <Icon
               v-else
               key="moon"
               name="heroicons:moon"
-              class="w-4 h-4 shrink-0"
+              class="size-4 shrink-0"
             />
           </Transition>
         </ToggleButton>

@@ -49,10 +49,10 @@ const viewOptions = computed(() => [
     <!-- Row 1: top bar -->
     <div class="flex items-center gap-3 px-4 py-3">
       <button
-        class="w-8 h-8 rounded-full border border-surface-200 flex items-center justify-center text-content-400 hover:text-content-0 hover:border-surface-300 transition-colors shrink-0"
+        class="size-8 rounded-full border border-surface-200 flex items-center justify-center text-content-400 hover:text-content-0 hover:border-surface-300 transition-colors shrink-0"
         :aria-label="t('editor.back')"
       >
-        <Icon name="ph:arrow-left" class="w-4 h-4" />
+        <Icon name="ph:arrow-left" class="size-4" />
       </button>
 
       <div class="flex flex-col min-w-0 flex-1">
@@ -64,16 +64,16 @@ const viewOptions = computed(() => [
       </div>
 
       <button
-        class="w-8 h-8 rounded-full border border-surface-200 flex items-center justify-center text-content-400 hover:text-content-0 hover:border-surface-300 transition-colors shrink-0"
+        class="size-8 rounded-full border border-surface-200 flex items-center justify-center text-content-400 hover:text-content-0 hover:border-surface-300 transition-colors shrink-0"
         :aria-label="t('editor.menu')"
       >
-        <Icon name="ph:dots-three-vertical" class="w-4 h-4" />
+        <Icon name="ph:dots-three-vertical" class="size-4" />
       </button>
     </div>
 
     <!-- Row 2: status bar -->
     <div class="flex items-center gap-2 px-4 pb-2.5">
-      <span class="w-1.5 h-1.5 rounded-full bg-primary-500 shrink-0" />
+      <span class="size-1.5 rounded-full bg-primary-500 shrink-0" />
       <span
         class="font-mono text-[10px] tracking-[0.12em] uppercase text-content-400"
       >
@@ -93,7 +93,7 @@ const viewOptions = computed(() => [
         :allow-empty="false"
       >
         <template #option="{ option }">
-          <Icon :name="option.icon" class="w-3.5 h-3.5 shrink-0" />
+          <Icon :name="option.icon" class="size-3.5 shrink-0" />
           {{ option.label }}
         </template>
       </SelectButton>
@@ -133,22 +133,22 @@ const viewOptions = computed(() => [
             unstyled
             :aria-label="t('editor.zoom.in')"
             :pt="{
-              root: 'w-7 h-7 rounded-full flex items-center justify-center text-content-800 dark:text-content-200 hover:text-content-0 transition-colors cursor-pointer',
+              root: 'size-7 rounded-full flex items-center justify-center text-content-800 dark:text-content-200 hover:text-content-0 transition-colors cursor-pointer',
             }"
           >
             <template #icon>
-              <Icon name="ph:plus" class="w-3.5 h-3.5" />
+              <Icon name="ph:plus" class="size-3.5" />
             </template>
           </Button>
           <Button
             unstyled
             :aria-label="t('editor.zoom.out')"
             :pt="{
-              root: 'w-7 h-7 rounded-full flex items-center justify-center text-content-800 dark:text-content-200 hover:text-content-0 transition-colors cursor-pointer',
+              root: 'size-7 rounded-full flex items-center justify-center text-content-800 dark:text-content-200 hover:text-content-0 transition-colors cursor-pointer',
             }"
           >
             <template #icon>
-              <Icon name="ph:minus" class="w-3.5 h-3.5" />
+              <Icon name="ph:minus" class="size-3.5" />
             </template>
           </Button>
           <Button
