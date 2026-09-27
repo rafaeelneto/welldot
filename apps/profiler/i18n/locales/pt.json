@@ -362,6 +362,7 @@
       "metadataFields": {
         "name": "Nome",
         "wellType": "Tipo",
+        "wellPurpose": "Finalidade",
         "driller": "Perfurador",
         "constructionDate": "Data de Construção",
         "latitude": "Latitude",
@@ -473,6 +474,24 @@
         "type": "Tipo",
         "addRow": "Adicionar redução"
       },
+      "centralizer": {
+        "title": "Centralizadores",
+        "tag": "CENTRALIZADORES",
+        "from": "De",
+        "to": "Até",
+        "spacing": "Espaçamento",
+        "type": "Tipo",
+        "diameter": "Diâmetro",
+        "description": "Descrição",
+        "addRow": "Adicionar centralizadores",
+        "hint": "Uma linha por intervalo. Use a mesma profundidade em De e Até para um único centralizador; deixe o espaçamento vazio se desconhecido.",
+        "types": {
+          "springBow": "Mola (spring bow)",
+          "rigid": "Rígido",
+          "semiRigid": "Semirrígido",
+          "polymer": "Polimérico"
+        }
+      },
       "wellScreen": {
         "title": "Filtro",
         "tag": "FILTROS",
@@ -536,10 +555,16 @@
       "generalInfo": "Informações Gerais",
       "location": "Localização",
       "observations": "Observações",
-      "name": "Nome",
+      "name": "Nome do Poço",
       "driller": "Perfurador",
       "constructionDate": "Data de Construção",
       "wellType": "Tipo de Poço",
+      "wellPurpose": "Finalidade do Poço",
+      "artesianDeprecated": {
+        "message": "\"Artesiano\" está obsoleto como tipo de poço desde o .well v2.1 — é uma condição hidráulica, não um método construtivo. Escolha o método construtivo; a condição de artesiano jorrante é registrada como nível estático negativo nos eventos hidrodinâmicos.",
+        "action": "Alterar para tubular"
+      },
+      "flowingArtesian": "Artesiano jorrante — último nível estático acima do terreno",
       "coordinates": "Coordenadas",
       "coordinatesLabel": "Formato de Coordenadas",
       "dd": "DD",
@@ -558,10 +583,20 @@
       "metadata": "Metadados",
       "wellTypes": {
         "tubular": "Tubular",
-        "artesian": "Artesiano",
+        "artesian": "Artesiano (obsoleto)",
         "handDug": "Cacimba / poço escavado",
         "horizontal": "Horizontal",
         "infiltrationGallery": "Galeria de infiltração"
+      },
+      "wellPurposes": {
+        "production": "Produção / captação",
+        "monitoring": "Poço de monitoramento",
+        "piezometer": "Piezômetro",
+        "waterLevelIndicator": "INA — indicador de nível d'água",
+        "observation": "Poço de observação",
+        "exploration": "Pesquisa / exploratório",
+        "injection": "Injeção / recarga",
+        "dewatering": "Rebaixamento"
       },
       "wellIds": {
         "title": "Identificadores do Poço",
@@ -621,6 +656,17 @@
         "diamTo": "Diâm. Até",
         "from": "De",
         "to": "Até"
+      },
+      "centralizer": {
+        "title": "Centralizadores",
+        "tag": "CENTRALIZADORES",
+        "type": "Tipo",
+        "diameter": "Diâm.",
+        "spacing": "Espaçamento",
+        "from": "De",
+        "to": "Até",
+        "count": "Qtd.",
+        "total": "Total de centralizadores"
       },
       "holeFill": {
         "title": "Espaço Anular",

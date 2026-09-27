@@ -4,6 +4,7 @@ import { calculatedWellDepth } from '~/utils/wellDepth';
 export type WellMetadataFieldKey =
   | 'name'
   | 'well_type'
+  | 'well_purpose'
   | 'well_driller'
   | 'construction_date'
   | 'lat'
@@ -22,6 +23,10 @@ export function useWellMetadataFields() {
     {
       key: 'well_type',
       label: t('editor.exportPdfDialog.metadataFields.wellType'),
+    },
+    {
+      key: 'well_purpose',
+      label: t('editor.exportPdfDialog.metadataFields.wellPurpose'),
     },
     {
       key: 'well_driller',
@@ -65,6 +70,8 @@ export function useWellMetadataFields() {
           : '';
       case 'well_type':
         return well.well_type ? resolveWellTypeLabel(well.well_type, t) : '';
+      case 'well_purpose':
+        return formatWellPurposes(well.well_purpose, t);
       case 'well_depth':
         return String(well.well_depth ?? calculatedWellDepth(well));
       default:

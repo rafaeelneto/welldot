@@ -2,6 +2,7 @@ import type { Well } from '@welldot/core';
 import { format, parseISO } from 'date-fns';
 import { formatCoord } from '~/utils/coords';
 import { calculatedWellDepth } from '~/utils/wellDepth';
+import { formatWellPurposes } from '~/utils/wellPurpose';
 import { resolveWellTypeLabel } from '~/utils/wellType';
 import { createPdfFormatters } from './formatters';
 import type { ContentTable, TableCell } from './pdfmake.types';
@@ -64,6 +65,12 @@ export function buildMetadataTable(
     fields.push({
       label: t('editor.general.wellType'),
       value: resolveWellTypeLabel(well.well_type, t),
+    });
+  }
+  if (well.well_purpose?.length) {
+    fields.push({
+      label: t('editor.general.wellPurpose'),
+      value: formatWellPurposes(well.well_purpose, t),
     });
   }
   if (well.well_driller) {

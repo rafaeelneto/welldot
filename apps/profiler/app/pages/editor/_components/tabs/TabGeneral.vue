@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import FormField from '~/components/FormField.vue';
+
 const { t } = useI18n();
 const profileStore = useProfileStore();
 
@@ -66,12 +68,40 @@ function setPrimary(index: number) {
 
 // ─── Well type Select ─────────────────────────────────────────────────────────
 
-const wellTypeOptions = computed(() =>
-  WELL_TYPE_VALUES.map(value => ({
+// Deprecated values (e.g. `artesian`) are never offered, but stay visible as
+// an option while the loaded well still uses one, so the Select shows it.
+const wellTypeOptions = computed(() => {
+  const current = profileStore.well.well_type;
+  const values: string[] = [...WELL_TYPE_VALUES];
+  if (current && isDeprecatedWellType(current)) values.push(current);
+  return values.map(value => ({
     label: resolveWellTypeLabel(value, t),
     value,
-  })),
+  }));
+});
+
+const hasDeprecatedWellType = computed(() =>
+  isDeprecatedWellType(profileStore.well.well_type),
 );
+
+// ─── Well purpose checkboxes ──────────────────────────────────────────────────
+
+const wellPurposeOptions = computed(() => {
+  // Keep non-canonical values (e.g. `x-` prefixed) from loaded files visible.
+  const extra = (profileStore.well.well_purpose ?? []).filter(
+    v => !(WELL_PURPOSE_VALUES as readonly string[]).includes(v),
+  );
+  return [...WELL_PURPOSE_VALUES, ...extra].map(value => ({
+    label: resolveWellPurposeLabel(value, t),
+    value,
+  }));
+});
+
+const wellPurpose = computed({
+  get: () => profileStore.well.well_purpose ?? [],
+  set: (value: string[]) =>
+    (profileStore.well.well_purpose = value.length ? value : undefined),
+});
 </script>
 
 <template>
@@ -113,7 +143,7 @@ const wellTypeOptions = computed(() =>
       </div>
 
       <!-- Well Type (half-width) -->
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid sm:grid-cols-2 gap-4">
         <FormField :label="t('editor.general.wellType')">
           <Select
             v-model="profileStore.well.well_type"
@@ -125,6 +155,42 @@ const wellTypeOptions = computed(() =>
           />
         </FormField>
       </div>
+
+      <!-- Well Purpose -->
+      <FormField :label="t('editor.general.wellPurpose')">
+        <div
+          class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-x-4 gap-y-2.5 pt-1"
+        >
+          <label
+            v-for="option in wellPurposeOptions"
+            :key="option.value"
+            class="flex items-center gap-2.5 text-sm text-content-0 cursor-pointer"
+          >
+            <Checkbox v-model="wellPurpose" :value="option.value" />
+            {{ option.label }}
+          </label>
+        </div>
+      </FormField>
+
+      <Message v-if="hasDeprecatedWellType" severity="warn" size="small">
+        <div class="flex flex-col items-start gap-2">
+          <span>{{ t('editor.general.artesianDeprecated.message') }}</span>
+          <Button
+            :label="t('editor.general.artesianDeprecated.action')"
+            severity="warn"
+            size="small"
+            outlined
+            @click="profileStore.well.well_type = 'tubular'"
+          />
+        </div>
+      </Message>
+
+      <Tag
+        v-if="profileStore.flowingArtesian"
+        severity="info"
+        class="self-start"
+        :value="t('editor.general.flowingArtesian')"
+      />
     </section>
 
     <!-- ── Section: Well Identifiers ────────────────────────────────────── -->

@@ -81,10 +81,10 @@ importers:
         specifier: ^0.11.3
         version: 0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))
       '@primeuix/themes':
-        specifier: ^2.0.3
+        specifier: 2.0.3
         version: 2.0.3
       '@primevue/nuxt-module':
-        specifier: ^4.5.5
+        specifier: 4.5.5
         version: 4.5.5(@babel/parser@7.29.8)(magicast@0.5.2)(vue@3.5.34(typescript@5.9.3))
       '@revolist/vue3-datagrid':
         specifier: ^4.21.9
@@ -147,13 +147,13 @@ importers:
         specifier: ^4.7.1
         version: 4.7.1(@nuxt/kit@4.4.4(magicast@0.5.2))(@pinia/nuxt@0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))
       primevue:
-        specifier: ^4.5.5
+        specifier: 4.5.5
         version: 4.5.5(vue@3.5.34(typescript@5.9.3))
       tailwindcss:
         specifier: ^4.3.0
         version: 4.3.0
       tailwindcss-primeui:
-        specifier: ^0.6.1
+        specifier: 0.6.1
         version: 0.6.1(tailwindcss@4.3.0)
       uqr:
         specifier: ^0.1.3

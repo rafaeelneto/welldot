@@ -50,6 +50,21 @@ describe('buildMetadataTable', () => {
     expect(serialized).not.toContain('editor.general.wellType');
   });
 
+  it('includes well_purpose as a joined list of translated labels', () => {
+    const well = baseWell({ well_purpose: ['production', 'x-custom'] });
+    const serialized = JSON.stringify(buildMetadataTable(well, baseOptions, t));
+    expect(serialized).toContain('editor.general.wellPurpose');
+    expect(serialized).toContain(
+      'editor.general.wellPurposes.production, x-custom',
+    );
+  });
+
+  it('omits well_purpose when empty', () => {
+    const well = baseWell({ name: 'A', well_purpose: [] });
+    const serialized = JSON.stringify(buildMetadataTable(well, baseOptions, t));
+    expect(serialized).not.toContain('editor.general.wellPurpose');
+  });
+
   it('formats coordinates via coordinateFormat and elevation via lengthUnit', () => {
     const well = baseWell({
       location: { lat: -23.5, lng: -46.6, elevation: 760 },

@@ -63,6 +63,21 @@ describe('buildSectionTables', () => {
     expect(sections).toHaveLength(2);
   });
 
+  it('includes a centralizer table with "—" for unknown spacing/diameter', () => {
+    const well = baseWell({
+      centralizers: [
+        { from: 6, to: 30, spacing: 6, type: 'spring_bow', diameter: 240 },
+        { from: 40, to: 40, type: 'rigid' },
+      ],
+    });
+    const sections = buildSectionTables(well, baseOptions, t);
+    expect(sections).toHaveLength(1);
+    const serialized = JSON.stringify(sections[0]);
+    expect(serialized).toContain('spring_bow');
+    expect(serialized).toContain('rigid');
+    expect(serialized).toContain('—');
+  });
+
   it('inserts a volume subtotal row when the hole-fill type changes', () => {
     const well = baseWell({
       hole_fill: [

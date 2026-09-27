@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { calculateHoleFillSegmentVolume } from '@welldot/utils';
+import {
+  calculateHoleFillSegmentVolume,
+  getCentralizerDepths,
+} from '@welldot/utils';
 import type { SummaryColumn, SummaryGroup } from './summary/SummaryTable.vue';
 import SummaryTable from './summary/SummaryTable.vue';
 import SummaryKpis from './summary/SummaryKpis.vue';
@@ -152,6 +155,58 @@ const reductionGroups = computed<SummaryGroup[]>(() => {
     },
   }));
   return [{ rows }];
+});
+
+// ─── Centralizadores (centralizers) ─────────────────────────────────────────
+
+const centralizerColumns = computed<SummaryColumn[]>(() => [
+  { key: 'type', label: t('editor.summary.centralizer.type'), lead: true },
+  { key: 'diameter', label: t('editor.summary.centralizer.diameter') },
+  {
+    key: 'spacing',
+    label: t('editor.summary.centralizer.spacing'),
+    align: 'right',
+  },
+  { key: 'from', label: t('editor.summary.centralizer.from'), align: 'right' },
+  { key: 'to', label: t('editor.summary.centralizer.to'), align: 'right' },
+  {
+    key: 'count',
+    label: t('editor.summary.centralizer.count'),
+    align: 'right',
+  },
+]);
+
+const centralizerGroups = computed<SummaryGroup[]>(() => {
+  const items = [...(profileStore.well.centralizers ?? [])].sort(
+    (a, b) => a.from - b.from,
+  );
+  // The count is derived (never stored) and only known when the interval is a
+  // single centralizer or has a spacing — otherwise it's shown as unknown.
+  const counts = items.map(c =>
+    c.from === c.to || c.spacing ? getCentralizerDepths(c).length : null,
+  );
+  const rows = items.map((c, i) => ({
+    cells: {
+      type: resolveCentralizerTypeLabel(c.type, t) || '—',
+      diameter: c.diameter != null ? formatDiameter(c.diameter) : '—',
+      spacing: c.spacing != null ? formatLength(c.spacing) : '—',
+      from: formatLength(c.from),
+      to: formatLength(c.to),
+      count: counts[i] != null ? String(counts[i]) : '—',
+    },
+  }));
+  const knownTotal = counts.reduce<number>((sum, n) => sum + (n ?? 0), 0);
+  const hasUnknown = counts.some(n => n == null);
+  return [
+    {
+      rows,
+      total: {
+        label: t('editor.summary.centralizer.total'),
+        value: hasUnknown ? `≥ ${knownTotal}` : String(knownTotal),
+        colspan: 5,
+      },
+    },
+  ];
 });
 
 // ─── Espaço Anular (hole_fill) ──────────────────────────────────────────────
@@ -345,6 +400,22 @@ const lithologyGroups = computed<SummaryGroup[]>(() => {
         </span>
       </div>
       <SummaryTable :columns="reductionColumns" :groups="reductionGroups" />
+    </section>
+
+    <section class="flex flex-col gap-5">
+      <div class="flex items-baseline justify-between">
+        <h3
+          class="font-serif text-[22px] font-medium tracking-[-0.015em] text-content-0 m-0"
+        >
+          {{ t('editor.summary.centralizer.title') }}
+        </h3>
+        <span
+          class="font-mono text-[10px] tracking-[0.08em] uppercase text-content-500"
+        >
+          {{ t('editor.summary.centralizer.tag') }}
+        </span>
+      </div>
+      <SummaryTable :columns="centralizerColumns" :groups="centralizerGroups" />
     </section>
 
     <section class="flex flex-col gap-5">

@@ -362,6 +362,7 @@
       "metadataFields": {
         "name": "Name",
         "wellType": "Type",
+        "wellPurpose": "Purpose",
         "driller": "Driller",
         "constructionDate": "Construction date",
         "latitude": "Latitude",
@@ -473,6 +474,24 @@
         "type": "Type",
         "addRow": "Add reduction"
       },
+      "centralizer": {
+        "title": "Centralizers",
+        "tag": "CENTRALIZERS",
+        "from": "From",
+        "to": "To",
+        "spacing": "Spacing",
+        "type": "Type",
+        "diameter": "Diameter",
+        "description": "Description",
+        "addRow": "Add centralizers",
+        "hint": "One row per interval. Use the same depth in From and To for a single centralizer; leave spacing empty if unknown.",
+        "types": {
+          "springBow": "Spring bow",
+          "rigid": "Rigid",
+          "semiRigid": "Semi-rigid",
+          "polymer": "Polymer"
+        }
+      },
       "wellScreen": {
         "title": "Screen",
         "tag": "SCREEN",
@@ -536,10 +555,16 @@
       "generalInfo": "General Information",
       "location": "Location",
       "observations": "Observations",
-      "name": "Name",
+      "name": "Well Name",
       "driller": "Driller",
       "constructionDate": "Construction Date",
       "wellType": "Well Type",
+      "wellPurpose": "Well Purpose",
+      "artesianDeprecated": {
+        "message": "\"Artesian\" is deprecated as a well type since .well v2.1 — it is a hydraulic condition, not a construction method. Pick the construction method instead; a flowing artesian condition is recorded as a negative static level in the hydrodynamic events.",
+        "action": "Change to tubular"
+      },
+      "flowingArtesian": "Flowing artesian — latest static level is above ground",
       "coordinates": "Coordinates",
       "coordinatesLabel": "Coordinate Format",
       "dd": "DD",
@@ -558,10 +583,20 @@
       "metadata": "Metadata",
       "wellTypes": {
         "tubular": "Tubular",
-        "artesian": "Artesian",
+        "artesian": "Artesian (deprecated)",
         "handDug": "Hand dug",
         "horizontal": "Horizontal",
         "infiltrationGallery": "Infiltration gallery"
+      },
+      "wellPurposes": {
+        "production": "Production",
+        "monitoring": "Monitoring well",
+        "piezometer": "Piezometer",
+        "waterLevelIndicator": "Water level indicator",
+        "observation": "Observation well",
+        "exploration": "Exploration",
+        "injection": "Injection / recharge",
+        "dewatering": "Dewatering"
       },
       "wellIds": {
         "title": "Well Identifiers",
@@ -621,6 +656,17 @@
         "diamTo": "Diam. To",
         "from": "From",
         "to": "To"
+      },
+      "centralizer": {
+        "title": "Centralizers",
+        "tag": "CENTRALIZERS",
+        "type": "Type",
+        "diameter": "Diam.",
+        "spacing": "Spacing",
+        "from": "From",
+        "to": "To",
+        "count": "Qty.",
+        "total": "Total centralizers"
       },
       "holeFill": {
         "title": "Annular Space",

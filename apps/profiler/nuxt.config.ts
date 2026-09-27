@@ -105,6 +105,10 @@ export default defineNuxtConfig({
     },
     importTheme: { from: '@/theme/customTheme.ts' },
     autoImport: true,
+    components: {
+      include: ['*'],
+      exclude: ['Form', 'FormField'],
+    },
     directives: {
       include: ['*'],
     },
