@@ -100,6 +100,7 @@ export type ConstructionTheme = {
   wellCase: { fill: string; stroke: string; strokeWidth: number };
   wellScreen: { stroke: string; strokeWidth: number };
   reduction: { fill: string; stroke: string; strokeWidth: number };
+  centralizer: { fill: string; stroke: string; strokeWidth: number };
   conflict: { stroke: string; strokeWidth: number };
 };
 export type LabelsTheme = {
@@ -231,6 +232,10 @@ export type ComponentsClassNames = {
     group: string;
     item: string;
   };
+  centralizer: {
+    group: string;
+    item: string;
+  };
   conflict: {
     group: string;
     rect: string;
@@ -270,6 +275,7 @@ export type TooltipKey =
   | 'wellCase'
   | 'wellScreen'
   | 'reduction'
+  | 'centralizer'
   | 'conflict'
   | 'fracture'
   | 'cementPad'
@@ -303,6 +309,7 @@ export type TooltipLabels<T = string> = {
   wellCase: { title: T };
   wellScreen: { title: T; slot: T };
   reduction: { title: T };
+  centralizer: { title: T; depth: T; spacing: T };
   conflict: { title: T };
   fracture: {
     title: T;
@@ -394,6 +401,10 @@ export type RenderConfig = {
     surfaceCase: {
       diameterPaddingRatio: number;
     };
+    centralizer: {
+      /** Half the marker height in pixels (constant regardless of zoom). */
+      markerHalfHeight: number;
+    };
   };
   textures?: TexturesConfig;
   constructionLabels: {
@@ -478,6 +489,7 @@ export type LegendRenderConfig = {
     wellCase: string;
     wellScreen: string;
     reduction: string;
+    centralizer: string;
     cementPad: string;
     conflict: string;
   };
@@ -518,6 +530,7 @@ export type DrawGroups = {
   wellCaseGroup: SvgSelection;
   wellScreenGroup: SvgSelection;
   reductionGroup: SvgSelection;
+  centralizerGroup: SvgSelection;
   conflictGroup: SvgSelection;
   highlightsGeologicGroup: SvgSelection;
   highlightsConstructionGroup: SvgSelection;

@@ -26,6 +26,7 @@ src/
     construction-labels.renderer.ts
     fractures.renderer.ts
     caves.renderer.ts
+    centralizers.renderer.ts        ← .well v2.1 centralizer markers (redrawn on zoom)
     highlights.renderer.ts
     legend.renderer.ts
     unit-labels.renderer.ts

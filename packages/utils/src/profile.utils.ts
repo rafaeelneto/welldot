@@ -1,5 +1,6 @@
 import {
   AquiferAnalysis,
+  Centralizer,
   Constructive,
   HoleFill,
   Reduction,
@@ -273,6 +274,46 @@ export function getLatestStaticLevel(well: Well): number | undefined {
     (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
   );
   return (withLevel[0] as { static_level: number }).static_level;
+}
+
+/**
+ * Returns `true` when the most recent static water level is above ground
+ * (negative, per the `.well` level sign convention), i.e. the well is flowing
+ * artesian. Returns `false` when there is no static level on record.
+ *
+ * Since `.well` v2.1 this is the canonical way to detect a flowing artesian
+ * well; `well_type: "artesian"` is deprecated.
+ */
+export function isFlowingArtesian(well: Well): boolean {
+  const level = getLatestStaticLevel(well);
+  return level !== undefined && level < 0;
+}
+
+/**
+ * Returns the individual centralizer depths (m) described by a
+ * {@link Centralizer} entry: `from`, `from + spacing`, … up to `to`.
+ *
+ * - `from === to` → a single centralizer at that depth.
+ * - No usable `spacing` → only the known endpoints `[from, to]`, since the
+ *   positions in between are unknown.
+ *
+ * Positions are rounded to millimeters to absorb floating-point drift.
+ */
+export function getCentralizerDepths(centralizer: Centralizer): number[] {
+  const { from, to, spacing } = centralizer;
+  const top = Math.min(from, to);
+  const bottom = Math.max(from, to);
+  if (top === bottom) return [top];
+  if (!spacing || spacing <= 0) return [top, bottom];
+
+  const round = (n: number) => Math.round(n * 1000) / 1000;
+  const depths: number[] = [];
+  for (let i = 0; ; i++) {
+    const depth = round(top + i * spacing);
+    if (depth > bottom) break;
+    depths.push(depth);
+  }
+  return depths;
 }
 
 /**

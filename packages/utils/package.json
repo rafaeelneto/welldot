@@ -1,6 +1,6 @@
 {
   "name": "@welldot/utils",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Profile analysis utilities for the .well open format — depth, diameter, cylindrical volume, gravel pack estimates, and aquifer hydraulics.",
   "keywords": [
     "well",

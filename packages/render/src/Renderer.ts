@@ -45,6 +45,7 @@ import {
 } from './configs/render.configs';
 import { drawAnnotationLabels } from './renderers/annotation-labels.renderer';
 import { drawCaves } from './renderers/caves.renderer';
+import { drawCentralizers } from './renderers/centralizers.renderer';
 import { drawConstructionLabels } from './renderers/construction-labels.renderer';
 import { drawConstructive } from './renderers/construction.renderer';
 import { drawFractures } from './renderers/fractures.renderer';
@@ -215,6 +216,7 @@ export class WellRenderer {
     construction.append('g').attr('class', this.classes.wellCase.group);
     construction.append('g').attr('class', this.classes.wellScreen.group);
     construction.append('g').attr('class', this.classes.reduction.group);
+    construction.append('g').attr('class', this.classes.centralizer.group);
     construction.append('g').attr('class', this.classes.conflict.group);
     construction
       .append('g')
@@ -377,6 +379,7 @@ export class WellRenderer {
     const wellCaseGroup = svg.select(`.${this.classes.wellCase.group}`);
     const wellScreenGroup = svg.select(`.${this.classes.wellScreen.group}`);
     const reductionGroup = svg.select(`.${this.classes.reduction.group}`);
+    const centralizerGroup = svg.select(`.${this.classes.centralizer.group}`);
     const conflictGroup = svg.select(`.${this.classes.conflict.group}`);
     const constructionLabelsGroup = svg.select(
       `.${this.classes.constructionLabels.group}`,
@@ -428,6 +431,7 @@ export class WellRenderer {
       well_case: profile.well_case,
       well_screen: profile.well_screen,
       reduction: profile.reduction,
+      centralizers: profile.centralizers ?? [],
       fractures: profile.fractures,
     } as Constructive;
 
@@ -503,6 +507,7 @@ export class WellRenderer {
       wellCaseGroup,
       wellScreenGroup,
       reductionGroup,
+      centralizerGroup,
       conflictGroup,
       highlightsGeologicGroup,
       highlightsConstructionGroup,
@@ -543,6 +548,7 @@ export class WellRenderer {
       well_case: constructionData.well_case.filter(inDepth),
       well_screen: constructionData.well_screen.filter(inDepth),
       reduction: constructionData.reduction?.filter(inDepth) ?? [],
+      centralizers: constructionData.centralizers?.filter(inDepth) ?? [],
     };
 
     const zooming = (e: { transform: d3module.ZoomTransform }): void => {
@@ -622,6 +628,7 @@ export class WellRenderer {
           ) ?? [],
         caves: profile.caves?.filter(inDepth) ?? [],
       });
+      drawCentralizers(zoomedCtx, filteredConstruction);
       drawConstructionLabels(zoomedCtx, {
         well_case: constructionData.well_case.filter(inDepth),
         well_screen: constructionData.well_screen.filter(inDepth),
@@ -650,6 +657,7 @@ export class WellRenderer {
         ) ?? [],
       );
       drawConstructive(ctx, filteredConstruction);
+      drawCentralizers(ctx, filteredConstruction);
       drawConstructionLabels(ctx, {
         well_case: filteredConstruction.well_case,
         well_screen: filteredConstruction.well_screen,

@@ -55,6 +55,10 @@ export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     group: 'well-screen',
     rect: 'well-screen-rect',
   },
+  centralizer: {
+    group: 'centralizer',
+    item: 'centralizer-marker',
+  },
   reduction: {
     group: 'reduction',
     item: 'reduction-poly',

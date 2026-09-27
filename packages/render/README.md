@@ -35,7 +35,7 @@ Call `prepareSvg()` once after mounting the SVG element, then call `draw(profile
 ## What it renders
 
 - **Lithology column** — geological layers with FGDC standard texture patterns and custom fill colors
-- **Construction** — borehole, well casings, diameter reductions, well screens, hole fills (gravel pack / cement seal), and cement pad
+- **Construction** — borehole, well casings, diameter reductions, well screens, hole fills (gravel pack / cement seal), centralizers (`.well` v2.1 — bow markers in the annulus at each derived position; size via `renderConfig.construction.centralizer.markerHalfHeight`, colors via `theme.centralizer`, tooltip key `centralizer`), and cement pad
 - **Fractures** — individual and swarm fractures with dip angles and water-intake indicators
 - **Caves** — cavity zones with wavy geological contact lines
 - **Labels** — depth annotations, lithology descriptions, and geologic / aquifer unit strips
