@@ -10,16 +10,16 @@ TypeScript types, Zod validators, and serialization utilities for the `.well` op
 
 `.well` is an open file format for encoding the complete record of a water well as a single, self-describing JSON document. A `.well` file contains:
 
-- **Constructive data** — borehole geometry, casing strings, screens, reducers, gravel packs, and cement pads
+- **Constructive data** — borehole geometry, casing strings, screens, reducers, gravel packs, centralizers, and cement pads
 - **Geologic data** — lithological column, discrete fractures, and cave zones
-- **Administrative metadata** — well identity, authority-scoped IDs (`well_id`), driller, construction date, and geographic coordinates with explicit CRS
+- **Administrative metadata** — well identity, construction type and purpose (`well_type`, `well_purpose`), authority-scoped IDs (`well_id`), driller, construction date, and geographic coordinates with explicit CRS
 - **Hydrodynamic events** — append-only ledger of static level readings, pumping tests (constant-rate, step-drawdown, airlift), and recovery phases
 - **Aquifer analysis** — interpreted parameter sets: transmissivity, specific capacity, storativity, and Jacob loss coefficients
 - **Operational history** — timestamped log of maintenance, inspections, and incidents with HTTPS attachment references
 
 The format is designed for three use cases: visualization of technical well profiles, registration with regulatory bodies, and hydrogeological research.
 
-See the [v2 format specification](./docs/spec/v2/overview.md) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
+See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.1) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
 
 ## Installation
 
@@ -80,6 +80,7 @@ All types are exported as TypeScript type-only exports (zero runtime cost).
 | `SurfaceCase`           | Protective casing near the surface                                              |
 | `HoleFill`              | Annular fill material (`gravel_pack` or `seal`)                                 |
 | `CementPad`             | Concrete wellhead pad dimensions                                                |
+| `Centralizer`           | Casing/screen centralizers over a depth interval with spacing (v2.1)            |
 | `Lithology`             | Geological description of a depth interval                                      |
 | `Texture`               | `{ code: string \| number; vocabulary?: string }` — lithology texture reference |
 | `Fracture`              | A discrete fracture or fracture zone                                            |
@@ -123,6 +124,7 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 | `SurfaceCaseSchema`           | `SurfaceCase`                                                           |
 | `HoleFillSchema`              | `HoleFill`                                                              |
 | `CementPadSchema`             | `CementPad`                                                             |
+| `CentralizerSchema`           | `Centralizer`                                                           |
 | `LithologySchema`             | `Lithology`                                                             |
 | `TextureSchema`               | `Texture`                                                               |
 | `FractureSchema`              | `Fracture`                                                              |

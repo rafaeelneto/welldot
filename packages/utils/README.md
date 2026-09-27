@@ -70,6 +70,8 @@ Derived from pumping-test data. The three marked functions throw `RangeError` ra
 | Function                                     | Returns                                                                                                                                                  |
 | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `getLatestStaticLevel(well)`                 | Static water level (m) from the most recent hydrodynamic event carrying one, compared by UTC datetime. `undefined` if none.                              |
+| `isFlowingArtesian(well)`                    | Whether the most recent static level is above ground (negative). The v2.1 way to detect a flowing artesian well.                                         |
+| `getCentralizerDepths(centralizer)`          | Individual centralizer depths (m) from `from`, `to`, and `spacing`. Only the endpoints when spacing is unknown.                                          |
 | `getLatestAquiferAnalysisField(well, field)` | Value of `field` from the most recent `aquifer_analysis` entry that defines it. `undefined` if none.                                                     |
 | `checkIfProfileIsEmpty(well)`                | Whether the well has any data worth rendering. Re-exported from `@welldot/core`.                                                                         |
 | `formatNumber(value, options?)`              | Locale-aware display string with bounded fraction digits, so floating-point noise never reaches the UI. Returns `'—'` for `null`, `undefined`, or `NaN`. |

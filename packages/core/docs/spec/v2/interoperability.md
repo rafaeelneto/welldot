@@ -1,4 +1,4 @@
-# `.well` File Format Specification — Version 2.0: Interoperability
+# `.well` File Format Specification — Version 2.1: Interoperability
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md)
 
@@ -57,7 +57,7 @@ Adds mappings for `lithology`, `fractures`, `caves`, `texture`, `texture.code`, 
 
 **Phase 4 — Hydrodynamic & analysis (v2.1)**
 
-Adds mappings for `hydrodynamic_events`, `aquifer_analysis`, `history_logs`, and supporting types (`PumpingStep`, `LevelReading`, `RecoveryPhase`, `Attachment`). Maps event readings to O&M's `OM_Observation` pattern and time-series to TimeseriesML where alignment is verified. This phase ships alongside the v2.1 spec revision.
+Adds mappings for `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquifer_analysis`, `history_logs`, and supporting types (`PumpingStep`, `LevelReading`, `RecoveryPhase`, `Attachment`). Maps event readings to O&M's `OM_Observation` pattern and time-series to TimeseriesML where alignment is verified. This phase ships alongside the v2.1 spec revision.
 
 ### Versioning and stability
 
@@ -127,6 +127,8 @@ The mapping below is **informative, not normative**. Class names in italics are 
 | `reduction[]`               | GWML2-WellConstruction | No direct equivalent — casing transition                           |
 | `hole_fill[]`               | GWML2-WellConstruction | Annular fill / gravel pack / seal (?)                              |
 | `cement_pad`                | GWML2-WellConstruction | No direct equivalent — wellhead furniture                          |
+| `centralizers[]`            | GWML2-WellConstruction | No verified equivalent — casing accessory (?)                      |
+| `well_purpose[]`            | GWML2-Well             | `GW_Well` purpose / use property (?)                               |
 | `lithology[]`               | GWML2-Well             | _`GW_GeologyLogCoverage`_ (realizes `CV_DiscreteCoverage`)         |
 | `lithology[].geologic_unit` | GWML2-Main             | _`GW_HydrogeologicalUnit`_ (specializes GeoSciML `GeologicUnit`)   |
 | `fractures[]`               | GWML2-Well             | Fracture log interval (?)                                          |

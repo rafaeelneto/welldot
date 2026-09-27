@@ -117,8 +117,8 @@ Accepted conversions (only when original unit is explicit in the document):
 - SIRGAS 2000 UTM → WGS84 decimal: convert precisely or ask the user
 
 Use empty arrays (`[]`) for array fields the document has nothing for. **Omit** `cement_pad`,
-`location`, `well_id`, `hydrodynamic_events`, `aquifer_analysis`, and `history_logs` entirely
-rather than emitting empty placeholders.
+`location`, `well_id`, `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquifer_analysis`, and
+`history_logs` entirely rather than emitting empty placeholders.
 
 ---
 
@@ -169,7 +169,12 @@ transcribe the report's own phrase verbatim, in its own language:
 
 - `bore_hole[].drilling_method`: rotary, percussion, cable_tool, auger, air_hammer
 - `cement_pad.type`: material and/or shape, e.g. "concrete", "circular" (may combine both)
-- `well_type`: tubular, artesian, hand_dug, horizontal, infiltration_gallery (use `x-` prefix if none fit)
+- `well_type`: tubular, hand_dug, horizontal, infiltration_gallery (use `x-` prefix if none fit). This is
+  the **construction method only** — never emit `artesian` (deprecated in v2.1); "artesiano/jorrante" is a
+  hydraulic condition, recorded as a negative `static_level` in a `spot_measurement` when the report gives one
+- `well_purpose` (array): production, monitoring, piezometer, water_level_indicator (INA), observation,
+  exploration, injection, dewatering — only when the report states the use
+- `centralizers[].type`: spring_bow, rigid, semi_rigid, polymer
 
 **Tier 2 — pure free text, NO recommended vocabulary exists for these at all.** Never invent or
 apply an enum. Always transcribe the report's own wording verbatim, in its own language:
@@ -292,6 +297,9 @@ debris, or partial backfill reduced the depth; SIAGAS-style records with a separ
    flag it as a bug in the extraction (not a data problem) if one of those was force-fit to a value the
    report didn't actually say
 7. `well_screen[].screen_slot` used, not the v1 `screen_slot_mm`
+   7b. `well_type` is not `artesian`; `well_purpose`, if present, is an array; `centralizers[].spacing`, if
+   present, is > 0 and came from the report (never derived from a count); water levels above ground are
+   negative
 8. Every `hydrodynamic_events[]`, `aquifer_analysis[]`, `history_logs[]` `datetime` (and `updated_at`) is
    RFC 3339 **with a UTC offset** — reject and fix any naked `YYYY-MM-DDTHH:MM:SS` or bare date used
    where an instant is required (only `construction_date` is a bare calendar date)

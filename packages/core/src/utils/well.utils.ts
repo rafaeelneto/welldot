@@ -170,6 +170,9 @@ function decodeV2Well(raw: RawJSON): Well {
       profiles: raw.profiles as Well['profiles'],
     }),
     ...(raw.well_type !== undefined && { well_type: raw.well_type as string }),
+    ...(raw.well_purpose !== undefined && {
+      well_purpose: raw.well_purpose as Well['well_purpose'],
+    }),
     ...(raw.name !== undefined && { name: raw.name as string }),
     ...(raw.well_driller !== undefined && {
       well_driller: raw.well_driller as string,
@@ -187,6 +190,9 @@ function decodeV2Well(raw: RawJSON): Well {
     well_screen: normalizeWellScreens(rawScreens),
     surface_case: (raw.surface_case as Well['surface_case']) ?? [],
     hole_fill: (raw.hole_fill as Well['hole_fill']) ?? [],
+    ...(raw.centralizers !== undefined && {
+      centralizers: raw.centralizers as Well['centralizers'],
+    }),
     ...(raw.cement_pad
       ? { cement_pad: raw.cement_pad as Well['cement_pad'] }
       : {}),
@@ -275,6 +281,9 @@ export function serializeWell(well: Well): string {
     ...(well.location !== undefined && { location: well.location }),
     ...(well.profiles !== undefined && { profiles: well.profiles }),
     ...(well.well_type !== undefined && { well_type: well.well_type }),
+    ...(well.well_purpose !== undefined && {
+      well_purpose: well.well_purpose,
+    }),
     ...(well.name !== undefined && { name: well.name }),
     ...(well.well_driller !== undefined && { well_driller: well.well_driller }),
     ...(well.construction_date !== undefined && {
@@ -288,6 +297,9 @@ export function serializeWell(well: Well): string {
     well_screen: well.well_screen,
     surface_case: well.surface_case,
     hole_fill: well.hole_fill,
+    ...(well.centralizers !== undefined && {
+      centralizers: well.centralizers,
+    }),
     ...(well.cement_pad && { cement_pad: well.cement_pad }),
     lithology: well.lithology,
     fractures: well.fractures,
@@ -346,6 +358,7 @@ export function redactWell(well: Well, visibility: SectionVisibility): Well {
     delete redacted.well_id;
     delete redacted.location;
     delete redacted.well_type;
+    delete redacted.well_purpose;
     delete redacted.name;
     delete redacted.well_driller;
     delete redacted.construction_date;
@@ -362,6 +375,7 @@ export function redactWell(well: Well, visibility: SectionVisibility): Well {
     redacted.well_screen = [];
     redacted.surface_case = [];
     redacted.hole_fill = [];
+    delete redacted.centralizers;
     delete redacted.cement_pad;
     delete redacted.well_depth;
   }

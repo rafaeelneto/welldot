@@ -66,7 +66,11 @@ docs/
   reference/
     fgdc-textures.md        ← FGDC texture code reference (code → label, pending status)
   profiles/                 ← stub for future profile spec docs
+  proposals/                ← design proposals for spec revisions (status noted in each file)
 ```
+
+The v2 docs describe the current minor revision (v2.1). Minor revisions are additive: new fields MUST be
+optional, deprecations are listed in `overview.md` § Deprecations, and `version` stays `2`.
 
 ### `docs/spec/v1/well-format.md`
 
@@ -96,7 +100,7 @@ What to update: the relevant field table, the field-to-unit binding list if the 
 
 Update when:
 
-- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, or any `hydrodynamic_events` event type).
+- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `Centralizer`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, or any `hydrodynamic_events` event type).
 - A new event type is added to `hydrodynamic_events`.
 - The Complete Example JSON no longer validates against the current types.
 

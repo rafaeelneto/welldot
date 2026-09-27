@@ -98,6 +98,12 @@
     "well_type": {
       "type": "string"
     },
+    "well_purpose": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "name": {
       "type": "string"
     },
@@ -292,6 +298,40 @@
           "type",
           "diameter",
           "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "centralizers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "number"
+          },
+          "to": {
+            "type": "number"
+          },
+          "spacing": {
+            "type": "number",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "type": {
+            "type": "string"
+          },
+          "diameter": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "type"
         ],
         "additionalProperties": false
       }

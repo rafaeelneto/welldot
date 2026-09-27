@@ -1,4 +1,4 @@
-# `.well` File Format Specification — Version 2.0: Format Reference
+# `.well` File Format Specification — Version 2.1: Format Reference
 
 **See also:** [overview.md](./overview.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md)
 
@@ -48,6 +48,8 @@
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `1`     | Initial release — constructive and geologic data only                                                                                                                                                                                                                 |
 | `2`     | Adds location, well_id (array), profiles, texture object, hydrodynamic_events, aquifer_analysis, history_logs, optional @context, \*\_precision fields, and extensibility conventions. Tightens unit semantics: all values are canonical SI, no per-file declaration. |
+
+Minor revisions (`2.1`, …) are additive and do not change the `version` integer: a v2.1 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
 
 ### Parser version handling
 
@@ -119,7 +121,7 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 | Field               | Type    | Required | Description                                                                                                                                                                                                                                     |
 | ------------------- | ------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `version`           | integer | yes      | Format version. Must be `2` for this spec.                                                                                                                                                                                                      |
-| `well_type`         | string  | yes      | Classification of the well. See vocabulary below.                                                                                                                                                                                               |
+| `well_type`         | string  | yes      | Construction method of the well. See vocabulary below.                                                                                                                                                                                          |
 | `name`              | string  | no       | Well name or local identifier.                                                                                                                                                                                                                  |
 | `well_driller`      | string  | no       | Name of the drilling company or individual.                                                                                                                                                                                                     |
 | `construction_date` | string  | no       | ISO 8601 calendar date of well completion (`YYYY-MM-DD`). Date-only by design — time of day for construction completion is not meaningful at the precision the well registry cares about. Interpreted as the local civil date at the well site. |
@@ -134,6 +136,13 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 | `well_id`  | `WellId[]`                | no       | Array of authority-scoped identifiers. See § well_id.                        |
 | `location` | `Location`                | no       | Geographic position and elevation. See § location.                           |
 | `profiles` | string[]                  | no       | Array of JSON Schema URLs declaring conformance to profiles. See § profiles. |
+
+### v2.1 additions
+
+| Field          | Type            | Required | Description                                                      |
+| -------------- | --------------- | -------- | ---------------------------------------------------------------- |
+| `well_purpose` | string[]        | no       | Intended use(s) of the well. See § well_purpose.                 |
+| `centralizers` | `Centralizer[]` | no       | Casing/screen centralizers. See object-schemas.md § Centralizer. |
 
 ---
 
@@ -162,17 +171,36 @@ When two events share the same instant, the optional `sequence` integer breaks t
 
 ## `well_type` — Recommended values
 
-The `well_type` field accepts any string. The values below are the recommended vocabulary for interoperability. Tools should treat unrecognized values gracefully.
+The `well_type` field accepts any string and describes the well's **construction method**. The values below are the recommended vocabulary for interoperability. Tools should treat unrecognized values gracefully.
 
 | Value                  | Portuguese (BR)         | Description                                    |
 | ---------------------- | ----------------------- | ---------------------------------------------- |
 | `tubular`              | Tubular                 | Conventional rotary or percussion drilled well |
-| `artesian`             | Artesiano               | Free-flowing artesian well                     |
 | `hand_dug`             | Cacimba / poço escavado | Manually excavated well or cistern             |
 | `horizontal`           | Horizontal              | Horizontal or sub-horizontal well              |
 | `infiltration_gallery` | Galeria de infiltração  | Horizontal subsurface infiltration gallery     |
+| `artesian`             | Artesiano               | **Deprecated in v2.1** — see below             |
 
 Non-canonical values SHOULD use the `x-` prefix (e.g. `x-radial_collector`).
+
+**`artesian` (deprecated in v2.1, removal in v3).** Artesianism is a hydraulic condition, not a construction method: an artesian well is usually a `tubular` well. A flowing artesian condition is recorded as a `hydrodynamic_events` entry whose `static_level` is negative (see § Level sign convention), and applications derive the label from it. Parsers MUST continue to accept `well_type: "artesian"` and MUST NOT rewrite it. Authoring tools SHOULD offer to migrate it to the actual construction method on edit.
+
+---
+
+## `well_purpose` — Recommended values _(since v2.1)_
+
+`well_purpose` is an optional array of strings giving the well's current intended use(s). A well may have more than one purpose (e.g. `["production", "monitoring"]`). Changes of use over time belong in `history_logs` (category `change_of_use`). Non-canonical values SHOULD use the `x-` prefix.
+
+| Value                   | Portuguese (BR)                 | Description                                                      |
+| ----------------------- | ------------------------------- | ---------------------------------------------------------------- |
+| `production`            | Produção / captação             | Water supply abstraction                                         |
+| `monitoring`            | Poço de monitoramento           | Groundwater level and/or quality monitoring                      |
+| `piezometer`            | Piezômetro                      | Measures hydraulic head at a discrete depth interval             |
+| `water_level_indicator` | INA — indicador de nível d'água | Open standpipe for water table readings (typically geotechnical) |
+| `observation`           | Poço de observação              | Observation well for aquifer tests on a nearby pumping well      |
+| `exploration`           | Pesquisa / exploratório         | Investigation or test well                                       |
+| `injection`             | Injeção / recarga               | Managed aquifer recharge or injection                            |
+| `dewatering`            | Rebaixamento                    | Construction or mining dewatering                                |
 
 ---
 
@@ -298,6 +326,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `well_screen[].from`, `well_screen[].to`
 - `surface_case[].from`, `surface_case[].to`
 - `hole_fill[].from`, `hole_fill[].to`
+- `centralizers[].from`, `centralizers[].to`, `centralizers[].spacing`
 - `cement_pad.width`, `cement_pad.length`, `cement_pad.thickness`
 - `lithology[].from`, `lithology[].to`
 - `fractures[].depth`, `fractures[].depth_precision`
@@ -318,6 +347,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `well_screen[].diameter`, `well_screen[].screen_slot`
 - `surface_case[].diameter`
 - `hole_fill[].diameter`
+- `centralizers[].diameter`
 
 **Cubic meter per hour (`m3/h`)** — all volumetric flow rates:
 
@@ -355,6 +385,10 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `aquifer_analysis[].well_efficiency_pct` (percentage, 0–100)
 - `aquifer_analysis[].specific_capacity` (derived ratio in m³/h per m, i.e. `m2/h`)
 - Lithology `color` (CSS hex string)
+
+### Level sign convention
+
+Depths are measured from ground level (0) and increase downward. Water levels above ground level are therefore **negative**. This applies to `static_level`, `LevelReading.depth`, and `aquifer_analysis[].static_level` / `dynamic_level`. A negative static level is how a flowing artesian condition is recorded (see § `well_type`). This convention was implicit in v2.0 and is made explicit in v2.1 without changing semantics.
 
 ### Diameter and the as-built convention
 

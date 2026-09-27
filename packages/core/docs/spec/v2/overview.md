@@ -1,8 +1,35 @@
-# `.well` File Format Specification — Version 2.0: Overview
+# `.well` File Format Specification — Version 2.1: Overview
 
-**Version:** 2.0 **Extension:** `.well` **Encoding:** UTF-8 **Base format:** JSON **MIME type:** `application/vnd.well+json` **JSON Schema:** `https://welldot.org/schema/v2/well.schema.json` **JSON Schema draft:** 2020-12 **JSON-LD Context (optional):** `https://welldot.org/context/v2.jsonld` **Status:** Ratified — shipped in `@welldot/core` v0.2.0
+**Version:** 2.1 **Extension:** `.well` **Encoding:** UTF-8 **Base format:** JSON **MIME type:** `application/vnd.well+json` **JSON Schema:** `https://welldot.org/schema/v2/well.schema.json` **JSON Schema draft:** 2020-12 **JSON-LD Context (optional):** `https://welldot.org/context/v2.jsonld` **Status:** v2.0 ratified — shipped in `@welldot/core` v0.2.0 · v2.1 shipped in `@welldot/core` v0.3.0
 
 **See also:** [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md)
+
+---
+
+## Changes in v2.1
+
+v2.1 is an additive minor revision. Every valid v2.0 document is a valid v2.1 document, and documents keep declaring `"version": 2`.
+
+```
+v2.1 additions:
+- well_purpose (optional string[]): intended use(s) of the well —
+  production, monitoring, piezometer, water_level_indicator (INA),
+  observation, exploration, injection, dewatering
+- centralizers (optional Centralizer[]): casing/screen centralizers
+  as depth interval + spacing
+- history_logs category `change_of_use`
+
+v2.1 clarifications:
+- well_type describes the construction method only
+- Level sign convention: water levels above ground are negative
+  (made explicit; already implied by "ground level as zero")
+```
+
+### Deprecations
+
+| Deprecated              | Replacement                                                                                               | Removal |
+| ----------------------- | --------------------------------------------------------------------------------------------------------- | ------- |
+| `well_type: "artesian"` | Construction method in `well_type` (usually `tubular`) + negative `static_level` in `hydrodynamic_events` | v3      |
 
 ---
 
@@ -60,7 +87,7 @@ The `.well` format is an open standard for representing water well data. It is d
 - **Self-contained** — a single file encodes the complete record of one well.
 - **Units are SI, declared by spec** — all numeric values in a `.well` file are stored in SI units. The format does not encode a per-file units declaration. See § Units for the canonical unit of each quantity. Conversion to and from a user's preferred display or input units is an application concern.
 - **CRS is declared, not assumed** — geographic coordinates are accompanied by an explicit coordinate reference system declaration. The default is WGS84 (`EPSG:4326`).
-- **Ground level as zero** — all depth values are measured from ground level (0); elevation above the WGS84 ellipsoid (or declared datum) is stored separately in `location.elevation`.
+- **Ground level as zero** — all depth values are measured from ground level (0); elevation above the WGS84 ellipsoid (or declared datum) is stored separately in `location.elevation`. Water levels above ground are negative.
 - **Geographic north** — all azimuth values are referenced to geographic north.
 - **Append-only event history (by authoring convention)** — `hydrodynamic_events` is intended as a ledger. New measurements should be added as new entries; existing entries should not be modified. This is enforced by authoring tools in the welldot stack, not by the file format itself. The format provides `id`, `datetime`, and `sequence` to support this discipline.
 - **Derived values are never stored raw** — `s/Q`, `Q/s`, drawdown `s`, and any other value computable from stored fields must not appear as stored fields. Applications compute them on demand.
@@ -82,4 +109,4 @@ The following are recognized limitations of this version, reserved for future ve
 
 ---
 
-_`.well` Format Specification v2.0 — Ratified_
+_`.well` Format Specification v2.1_
