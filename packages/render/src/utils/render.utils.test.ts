@@ -102,6 +102,11 @@ const makeLabels = (): TooltipLabels => ({
   wellCase: { title: 'REVESTIMENTO' },
   wellScreen: { title: 'FILTROS', slot: 'Ranhura:' },
   reduction: { title: 'REDUÇÃO' },
+  centralizer: {
+    title: 'CENTRALIZADOR',
+    depth: 'Profundidade:',
+    spacing: 'Espaçamento:',
+  },
   conflict: { title: 'CONFLITO' },
   fracture: {
     title: 'FRATURA',
@@ -144,6 +149,7 @@ const makeClasses = (): ComponentsClassNames => ({
   wellCase: { group: '', rect: '' },
   wellScreen: { group: '', rect: '' },
   reduction: { group: '', item: '' },
+  centralizer: { group: '', item: '' },
   conflict: { group: '', rect: '' },
   unitLabels: { group: '', geoRect: '', aqRect: '', text: '' },
   legend: {
@@ -853,6 +859,31 @@ describe('populateTooltips', () => {
     it('hole tooltip includes diameter', () => {
       const hole: BoreHole = { from: 0, to: 50, diameter: 200 };
       expect(getHtmlFn('hole')(null, hole)).toContain('200');
+    });
+
+    it('centralizer tooltip shows depth, spacing and type', () => {
+      const html = getHtmlFn('centralizer')(null, {
+        from: 6,
+        to: 30,
+        spacing: 6,
+        type: 'spring_bow',
+        depth: 18,
+      });
+      expect(html).toContain('CENTRALIZADOR');
+      expect(html).toContain('18');
+      expect(html).toContain('Espaçamento:');
+      expect(html).toContain('spring_bow');
+    });
+
+    it('centralizer tooltip omits the interval line for a single centralizer', () => {
+      const html = getHtmlFn('centralizer')(null, {
+        from: 12,
+        to: 12,
+        type: 'rigid',
+        depth: 12,
+      });
+      expect(html).not.toContain('Espaçamento:');
+      expect(html).not.toContain('até');
     });
 
     it('fracture with swarm=true shows "ENXAME DE FRATURAS"', () => {

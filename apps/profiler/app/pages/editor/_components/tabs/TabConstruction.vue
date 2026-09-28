@@ -6,6 +6,7 @@ import SectionHoleFill from './construction/SectionHoleFill.vue';
 import SectionWellCase from './construction/SectionWellCase.vue';
 import SectionReduction from './construction/SectionReduction.vue';
 import SectionWellScreen from './construction/SectionWellScreen.vue';
+import SectionCentralizers from './construction/SectionCentralizers.vue';
 </script>
 
 <template>
@@ -24,5 +25,6 @@ import SectionWellScreen from './construction/SectionWellScreen.vue';
     <SectionWellCase />
     <SectionReduction />
     <SectionWellScreen />
+    <SectionCentralizers />
   </div>
 </template>

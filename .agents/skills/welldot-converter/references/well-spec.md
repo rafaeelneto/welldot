@@ -1,4 +1,4 @@
-# `.well` Format Specification — Quick Reference (v2)
+# `.well` Format Specification — Quick Reference (v2.1)
 
 **Extension:** `.well` | **Encoding:** UTF-8 | **Base format:** JSON
 **MIME type:** `application/vnd.well+json`
@@ -32,6 +32,7 @@ This is a condensed reference for extraction. The normative source is
 {
   "version": 2,
   "well_type": "tubular",
+  "well_purpose": ["production"],
   "name": "...",
   "well_driller": "...",
   "construction_date": "YYYY-MM-DD",
@@ -46,7 +47,7 @@ This is a condensed reference for extraction. The normative source is
   "profiles": [],
 
   "bore_hole": [...], "well_case": [...], "reduction": [...], "well_screen": [...],
-  "surface_case": [...], "hole_fill": [...], "cement_pad": {...},
+  "surface_case": [...], "hole_fill": [...], "centralizers": [...], "cement_pad": {...},
 
   "lithology": [...], "fractures": [...], "caves": [...],
 
@@ -58,11 +59,28 @@ This is a condensed reference for extraction. The normative source is
 ellipsoid unless `properties.elevation_datum` says otherwise; only report an elevation if the document
 states one — never estimate it.
 
-### `well_type` — open vocabulary
+### `well_type` — open vocabulary (construction method only)
 
-`tubular` | `artesian` | `hand_dug` | `horizontal` | `infiltration_gallery`. Any string is accepted; use
+`tubular` | `hand_dug` | `horizontal` | `infiltration_gallery`. Any string is accepted; use
 the recommended values above when they fit, otherwise write the term as an `x-`-prefixed value (e.g.
 `x-radial_collector`) rather than forcing a mismatch.
+
+**Do not emit `artesian`** (deprecated in v2.1). A report saying "poço artesiano"/"jorrante" describes a
+hydraulic condition: set `well_type` to the construction method (usually `tubular`) and, if the report
+gives a static level above ground, record it as a `spot_measurement` with a **negative** `static_level`.
+Never invent a level to encode the condition.
+
+### `well_purpose` — open vocabulary, array (v2.1, optional)
+
+`production` | `monitoring` | `piezometer` | `water_level_indicator` (INA) | `observation` |
+`exploration` | `injection` | `dewatering`. Only fill it when the report states the use (e.g.
+"poço de monitoramento", "piezômetro", "captação para abastecimento"); omit the field otherwise.
+Several values are allowed (e.g. `["production", "monitoring"]`). Non-canonical uses take the `x-` prefix.
+
+### Level sign convention
+
+Depths grow downward from ground level (0). Water levels **above** ground are **negative**
+(`static_level`, `LevelReading.depth`, `aquifer_analysis` levels).
 
 ### `well_depth` — current/usable depth, not the drilled depth
 
@@ -140,6 +158,21 @@ those are not part of the spec.
 | `type`        | string      | yes      | **Tier 3 — closed enum.** Exactly `gravel_pack` or `seal`. Classify the report's material into one of these two; this is the one field in this group that must NOT be left as free text. |
 | `diameter`    | number (mm) | yes      |                                                                                                                                                                                          |
 | `description` | string      | yes      | Near-verbatim material description (e.g. grain size, brand). See § Free-text preservation.                                                                                               |
+
+### `centralizers[]` (v2.1, optional — omit entirely if the report doesn't mention them)
+
+One entry per interval where centralizers were installed at a regular spacing.
+
+| Field         | Type        | Required | Notes                                                                                                                          |
+| ------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `from`, `to`  | number (m)  | yes      | Depth of the first and last centralizer. `from === to` for a single centralizer.                                               |
+| `spacing`     | number (m)  | no       | "a cada 6 m" → `6`. **Omit if the report doesn't give it** — never infer it from a count. Never store a count.                 |
+| `type`        | string      | yes      | **Tier 1.** Recommended `spring_bow`, `rigid`, `semi_rigid`, `polymer` when the wording maps losslessly; else verbatim phrase. |
+| `diameter`    | number (mm) | no       | As-built outer diameter, only when stated.                                                                                     |
+| `description` | string      | no       | Near-verbatim (material, brand). See § Free-text preservation.                                                                 |
+
+If the report only says centralizers were used along a string (no depths), use that string's interval
+for `from`/`to` and omit `spacing`.
 
 ### `cement_pad` (single object, optional — omit entirely if not in the report)
 
@@ -382,7 +415,7 @@ Mutable chronological record of interventions/inspections/incidents — distinct
 | `id`          | string         | yes      | Unique within `history_logs`.                                                                                                                                          |
 | `datetime`    | string         | yes      | RFC 3339 with UTC offset. When the logged event occurred.                                                                                                              |
 | `updated_at`  | string         | no       | RFC 3339 with UTC offset. When this entry was created/edited. **Never synthesize this if the report doesn't distinguish it from `datetime`** — omit rather than guess. |
-| `category`    | string         | yes      | `maintenance`, `inspection`, `incident`, or `event` (open vocab, `x-` prefix for others).                                                                              |
+| `category`    | string         | yes      | `maintenance`, `inspection`, `incident`, `event`, or `change_of_use` (v2.1) (open vocab, `x-` prefix for others).                                                      |
 | `description` | string         | yes      | Near-verbatim account. See § Free-text preservation.                                                                                                                   |
 | `author`      | string         | no       |                                                                                                                                                                        |
 | `severity`    | string         | no       | Recommended: `low`, `medium`, `high`, `critical`.                                                                                                                      |

@@ -18,6 +18,7 @@ import GridColorPickerEditor from '~/components/DataGrid/cells/GridColorPickerEd
 import GridComboEditor from '~/components/DataGrid/cells/GridComboEditor.vue';
 import GridDeleteCell from '~/components/DataGrid/cells/GridDeleteCell.vue';
 import GridFormattedCell from '~/components/DataGrid/cells/GridFormattedCell.vue';
+import GridHeaderCell from '~/components/DataGrid/cells/GridHeaderCell.vue';
 import GridNumberEditor from '~/components/DataGrid/cells/GridNumberEditor.vue';
 import GridSelectButtonCell from '~/components/DataGrid/cells/GridSelectButtonCell.vue';
 import GridSelectCell from '~/components/DataGrid/cells/GridSelectCell.vue';
@@ -124,6 +125,10 @@ export function useWellGridColumns(options: UseWellGridColumnsOptions) {
 
   const uiStore = useUiStore();
   const { locale } = useI18n();
+
+  // Created during setup so the template captures the app context
+  // (i18n, PrimeVue) needed by the InfoPopover it renders.
+  const infoHeaderTemplate = VGridVueTemplate(GridHeaderCell);
 
   const gridEditors = computed(() => {
     const editors: Editors = {
@@ -282,6 +287,7 @@ export function useWellGridColumns(options: UseWellGridColumnsOptions) {
           kind.cellProperties?.(col) ??
           (kind.numeric ? () => ({ class: 'num' }) : undefined),
         cellTemplate: kind.cellTemplate?.(col),
+        ...(col.info && { info: col.info, columnTemplate: infoHeaderTemplate }),
       };
     });
 

@@ -36,6 +36,7 @@ export const RENDER_LABELS: RenderLabelPack = {
       wellCase: { pt: 'Revestimento', en: 'Casing' },
       wellScreen: { pt: 'Filtro', en: 'Screen' },
       reduction: { pt: 'Redução', en: 'Reduction' },
+      centralizer: { pt: 'Centralizador', en: 'Centralizer' },
       cementPad: { pt: 'Laje de cimento', en: 'Cement pad' },
       conflict: { pt: 'Conflito', en: 'Conflict' },
     },
@@ -62,6 +63,11 @@ export const RENDER_LABELS: RenderLabelPack = {
       slot: { pt: 'Ranhura:', en: 'Slot:' },
     },
     reduction: { title: { pt: 'REDUÇÃO', en: 'REDUCTION' } },
+    centralizer: {
+      title: { pt: 'CENTRALIZADOR', en: 'CENTRALIZER' },
+      depth: { pt: 'Profundidade:', en: 'Depth:' },
+      spacing: { pt: 'Espaçamento:', en: 'Spacing:' },
+    },
     conflict: { title: { pt: 'CONFLITO', en: 'CONFLICT' } },
     fracture: {
       title: { pt: 'FRATURA', en: 'FRACTURE' },
@@ -114,6 +120,7 @@ function resolveTooltipLabels(locale: 'en' | 'pt'): TooltipLabels {
     wellCase: resolveGroup(t.wellCase, locale),
     wellScreen: resolveGroup(t.wellScreen, locale),
     reduction: resolveGroup(t.reduction, locale),
+    centralizer: resolveGroup(t.centralizer, locale),
     conflict: resolveGroup(t.conflict, locale),
     fracture: resolveGroup(t.fracture, locale),
     cementPad: resolveGroup(t.cementPad, locale),
@@ -184,6 +191,7 @@ export const DEFAULT_WELL_THEME: WellTheme = {
   wellCase: { fill: '#ffffff', stroke: '#303030', strokeWidth: 2 },
   wellScreen: { stroke: '#303030', strokeWidth: 2 },
   reduction: { fill: '#ffffff', stroke: '#303030', strokeWidth: 2 },
+  centralizer: { fill: 'none', stroke: '#303030', strokeWidth: 1.4 },
   conflict: { stroke: '#e52117', strokeWidth: 4 },
   unitLabels: {
     geologicFill: '#f0f0f0',
@@ -277,6 +285,7 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
   construction: {
     cementPad: { widthMultiplier: 0.9, thicknessMultiplier: 1.3 },
     surfaceCase: { diameterPaddingRatio: 0.1 },
+    centralizer: { markerHalfHeight: 4 },
   },
   tooltipLabels: resolveTooltipLabels('pt'),
   labels: {
@@ -347,6 +356,7 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
       wellCase: 'Revestimento',
       wellScreen: 'Filtro',
       reduction: 'Redução',
+      centralizer: 'Centralizador',
       cementPad: 'Laje de cimento',
       conflict: 'Conflito',
     },
@@ -386,6 +396,7 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
   construction: {
     cementPad: { widthMultiplier: 0.9, thicknessMultiplier: 1.3 },
     surfaceCase: { diameterPaddingRatio: 0.1 },
+    centralizer: { markerHalfHeight: 4 },
   },
   tooltipLabels: resolveTooltipLabels('pt'),
   labels: {
@@ -453,6 +464,7 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
       wellCase: 'Revestimento',
       wellScreen: 'Filtro',
       reduction: 'Redução',
+      centralizer: 'Centralizador',
       cementPad: 'Laje de cimento',
       conflict: 'Conflito',
     },

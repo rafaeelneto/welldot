@@ -21,6 +21,9 @@ const viewport = useViewport();
 
 useSharedProfileLoader();
 
+const { showStartupTip } = useStartupTips();
+onMounted(() => showStartupTip());
+
 const isMobile = computed(() => viewport.isLessThan('lg'));
 const mobileView = ref<'profile' | 'data'>('data');
 const activeTabKey = ref<string>('0');

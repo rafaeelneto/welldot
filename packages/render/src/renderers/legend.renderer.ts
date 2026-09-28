@@ -31,6 +31,7 @@ type LegendItem =
         | 'wellCase'
         | 'wellScreen'
         | 'reduction'
+        | 'centralizer'
         | 'cementPad'
         | 'conflict';
     };
@@ -66,6 +67,7 @@ export function drawWellLegend(
   const hasWellCase = wellCases.length > 0;
   const hasWellScreen = wellScreens.length > 0;
   const hasReduction = reductions.length > 0;
+  const hasCentralizer = (profile.centralizers ?? []).length > 0;
   const hasCementPad = !!profile.cement_pad?.thickness;
   const hasConflict =
     mergeConflicts(
@@ -165,6 +167,12 @@ export function drawWellLegend(
       kind: 'construction',
       label: cfg.labels.reduction,
       subKind: 'reduction',
+    });
+  if (hasCentralizer)
+    items.push({
+      kind: 'construction',
+      label: cfg.labels.centralizer,
+      subKind: 'centralizer',
     });
   if (hasConflict)
     items.push({
@@ -313,6 +321,40 @@ export function drawWellLegend(
         .attr('y2', rowSymY + rh / 2)
         .attr('stroke', theme.surfaceCase.stroke)
         .attr('stroke-width', 2);
+    } else if (item.subKind === 'centralizer') {
+      // Pipe walls with a bow on each side, matching the profile marker.
+      const pipeW = rw * 0.4;
+      const pipeL = cx + (rw - pipeW) / 2;
+      const pipeR = pipeL + pipeW;
+      const y1 = rowSymY - rh / 2;
+      const y2 = rowSymY + rh / 2;
+      const bowH = rh * 0.3;
+      for (const x of [pipeL, pipeR]) {
+        symG
+          .append('line')
+          .attr('class', cls.constructionRect)
+          .attr('x1', x)
+          .attr('x2', x)
+          .attr('y1', y1)
+          .attr('y2', y2)
+          .attr('stroke', theme.wellCase.stroke)
+          .attr('stroke-width', theme.legend.itemStrokeWidth);
+      }
+      for (const [from, to] of [
+        [pipeL, cx],
+        [pipeR, cx + rw],
+      ] as const) {
+        symG
+          .append('polyline')
+          .attr('class', cls.constructionRect)
+          .attr(
+            'points',
+            `${from},${rowSymY - bowH} ${to},${rowSymY} ${from},${rowSymY + bowH}`,
+          )
+          .attr('fill', theme.centralizer.fill)
+          .attr('stroke', theme.centralizer.stroke)
+          .attr('stroke-width', theme.centralizer.strokeWidth);
+      }
     } else if (item.subKind === 'reduction') {
       const topW = rw * 0.5;
       const y1 = rowSymY - rh / 2;

@@ -224,6 +224,7 @@
   },
   "editor": {
     "well": "Poço",
+    "fieldInfo": "Mais informações",
     "save": "Salvar",
     "edit": "Editar",
     "saveAs": "Salvar Como",
@@ -362,6 +363,7 @@
       "metadataFields": {
         "name": "Nome",
         "wellType": "Tipo",
+        "wellPurpose": "Finalidade",
         "driller": "Perfurador",
         "constructionDate": "Data de Construção",
         "latitude": "Latitude",
@@ -407,7 +409,8 @@
       "fit": "Ajustar"
     },
     "canvas": {
-      "empty": "Nenhum dado de poço ainda"
+      "empty": "Nenhum dado de poço ainda",
+      "reload": "Recarregar visualização"
     },
     "construction": {
       "tag": "Construtivo · Poço",
@@ -461,6 +464,7 @@
         "to": "Até",
         "diameter": "Diâm.",
         "type": "Tipo / Material",
+        "typeInfo": "Descrição livre do material do revestimento, ex.: PVC, PVC geomecânico, aço carbono, aço inox.",
         "addRow": "Adicionar revestimento"
       },
       "reduction": {
@@ -472,6 +476,24 @@
         "diamTo": "Diâm. Até",
         "type": "Tipo",
         "addRow": "Adicionar redução"
+      },
+      "centralizer": {
+        "title": "Centralizadores",
+        "tag": "CENTRALIZADORES",
+        "from": "De",
+        "to": "Até",
+        "spacing": "Espaçamento",
+        "type": "Tipo",
+        "diameter": "Diâmetro",
+        "description": "Descrição",
+        "addRow": "Adicionar centralizadores",
+        "hint": "Uma linha por intervalo. Use a mesma profundidade em De e Até para um único centralizador; deixe o espaçamento vazio se desconhecido.",
+        "types": {
+          "springBow": "Mola (spring bow)",
+          "rigid": "Rígido",
+          "semiRigid": "Semirrígido",
+          "polymer": "Polimérico"
+        }
       },
       "wellScreen": {
         "title": "Filtro",
@@ -489,12 +511,12 @@
         "from": "De",
         "to": "Até",
         "diameter": "Diâm.",
-        "type": "Tipo",
+        "type": "Função",
         "description": "Material/Descrição",
         "addRow": "Adicionar intervalo",
         "typeOptions": {
           "gravelPack": "Pré-filtro",
-          "seal": "Cimentação"
+          "seal": "Vedação"
         }
       }
     },
@@ -536,10 +558,21 @@
       "generalInfo": "Informações Gerais",
       "location": "Localização",
       "observations": "Observações",
-      "name": "Nome",
+      "name": "Nome do Poço",
       "driller": "Perfurador",
       "constructionDate": "Data de Construção",
       "wellType": "Tipo de Poço",
+      "wellTypeInfo": "Indica o tipo de estrutura do poço quanto ao aspecto construtivo (ex.: tubular, cacimba/escavado, horizontal, galeria de infiltração). Não se refere ao método de perfuração nem ao uso do poço: para isso, use Finalidade do Poço. Artesiano é uma condição hidráulica, detectada a partir dos níveis d'água.",
+      "wellPurpose": "Finalidade do Poço",
+      "wellPurposeEmpty": "Nenhuma finalidade selecionada",
+      "wellPurposeAdd": "Adicionar finalidade",
+      "wellPurposeEdit": "Editar",
+      "wellPurposeRemove": "Remover finalidade",
+      "artesianDeprecated": {
+        "message": "\"Artesiano\" está obsoleto como tipo de poço desde o .well v2.1 — é uma condição hidráulica, não um método construtivo. Escolha o método construtivo; a condição de artesiano jorrante é registrada como nível estático negativo nos eventos hidrodinâmicos.",
+        "action": "Alterar para tubular"
+      },
+      "flowingArtesian": "Artesiano jorrante — último nível estático acima do terreno",
       "coordinates": "Coordenadas",
       "coordinatesLabel": "Formato de Coordenadas",
       "dd": "DD",
@@ -558,10 +591,20 @@
       "metadata": "Metadados",
       "wellTypes": {
         "tubular": "Tubular",
-        "artesian": "Artesiano",
+        "artesian": "Artesiano (obsoleto)",
         "handDug": "Cacimba / poço escavado",
         "horizontal": "Horizontal",
         "infiltrationGallery": "Galeria de infiltração"
+      },
+      "wellPurposes": {
+        "production": "Produção / captação",
+        "monitoring": "Poço de monitoramento",
+        "piezometer": "Piezômetro",
+        "waterLevelIndicator": "INA — indicador de nível d'água",
+        "observation": "Poço de observação",
+        "exploration": "Pesquisa / exploratório",
+        "injection": "Injeção / recarga",
+        "dewatering": "Rebaixamento"
       },
       "wellIds": {
         "title": "Identificadores do Poço",
@@ -571,9 +614,22 @@
         "id": "ID",
         "idPlaceholder": "ex. SP-0042819",
         "primary": "Principal",
+        "primaryTooltip": "Identificador principal — o ID canônico deste poço",
+        "setPrimaryTooltip": "Marcar como identificador principal",
         "addRow": "Adicionar identificador",
         "delete": "Remover identificador",
-        "empty": "Nenhum identificador cadastrado"
+        "empty": "Nenhum identificador cadastrado",
+        "info": {
+          "label": "Sobre os identificadores do poço",
+          "title": "O que são os identificadores do poço?",
+          "what": "Outros códigos que este mesmo poço possui em bancos de dados e cadastros externos. Servem para compatibilizar o arquivo .well com esses sistemas, permitindo cruzar e relacionar o poço entre diferentes fontes.",
+          "examplesIntro": "Exemplos:",
+          "exampleGrant": "Número da outorga de direito de uso emitida pelo órgão gestor",
+          "exampleSiagas": "Código de identificação no SIAGAS",
+          "exampleCompany": "Código interno usado por uma empresa, concessionária ou perfuradora",
+          "fields": "Autoridade é o nome do cadastro ou instituição que emitiu o código (escolha uma sugestão ou digite outra). ID é o código exatamente como emitido; mantenha zeros à esquerda e separadores (ex. SP-0042819).",
+          "primary": "Use o botão de seleção para marcar o identificador principal. Se nenhum for marcado, o primeiro é considerado o principal. Cada par autoridade + ID deve ser único."
+        }
       }
     },
     "summary": {
@@ -622,6 +678,17 @@
         "from": "De",
         "to": "Até"
       },
+      "centralizer": {
+        "title": "Centralizadores",
+        "tag": "CENTRALIZADORES",
+        "type": "Tipo",
+        "diameter": "Diâm.",
+        "spacing": "Espaçamento",
+        "from": "De",
+        "to": "Até",
+        "count": "Qtd.",
+        "total": "Total de centralizadores"
+      },
       "holeFill": {
         "title": "Espaço Anular",
         "tag": "CIMENTAÇÃO · PRÉ-FILTRO",
@@ -630,7 +697,7 @@
         "from": "De",
         "to": "Até",
         "volume": "Volume",
-        "groupSeal": "Selo",
+        "groupSeal": "Vedação",
         "groupGravelPack": "Pré-filtro",
         "groupTotal": "{group} · volume total"
       },
@@ -780,6 +847,15 @@
       "validation": {
         "missing": "Adicione {fields} para salvar este evento"
       }
+    }
+  },
+  "tips": {
+    "dontShowAgain": "Não mostrar novamente",
+    "gotIt": "Entendi",
+    "units": {
+      "title": "Unidades personalizáveis",
+      "body": "Você pode alternar as unidades de comprimento (m/ft) e de diâmetro (mm/pol) nas Configurações.",
+      "action": "Abrir configurações"
     }
   }
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HydrodynamicEvent } from '@welldot/core';
+import AppChip from '~/components/AppChip.vue';
 import EventCard from './hydrodynamicEvents/EventCard.vue';
 import EventDialog from './hydrodynamicEvents/EventDialog.vue';
 
@@ -254,16 +255,13 @@ function toggleTypeFilter(type: string) {
             <!-- toolbar -->
             <div class="flex items-start justify-between gap-3 flex-wrap">
               <div class="flex flex-wrap gap-1.5">
-                <button
+                <AppChip
                   v-for="opt in typeOptions"
                   :key="opt.value"
-                  class="filter-chip"
-                  :class="{ active: activeTypeFilter === opt.value }"
-                  type="button"
+                  :label="opt.label"
+                  :active="activeTypeFilter === opt.value"
                   @click="toggleTypeFilter(opt.value)"
-                >
-                  {{ opt.label }}
-                </button>
+                />
               </div>
               <Button
                 unstyled
@@ -389,39 +387,6 @@ function toggleTypeFilter(type: string) {
 
 .transmissivity-value {
   font-size: 18px;
-}
-
-/* ── Filter chips ─────────────────────────────────────────────────────────── */
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--color-surface-200);
-  background: var(--color-surface-50);
-  color: var(--color-content-300);
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-.filter-chip:hover {
-  background: var(--color-surface-100);
-  color: var(--color-content-100);
-  border-color: var(--color-surface-300);
-}
-
-.filter-chip.active {
-  background: var(--color-primary-50);
-  color: var(--color-primary-600);
-  border-color: var(--color-primary-200);
 }
 
 /* ── Add button ───────────────────────────────────────────────────────────── */

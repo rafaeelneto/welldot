@@ -9,8 +9,10 @@ export const useUiStore = defineStore(
     const lengthUnit = ref<LengthUnits>('m');
     const diameterUnit = ref<DiameterUnits>('mm');
     const coordinateFormat = ref<CoordinateFormat>('DD');
+    // Ids of startup tips the user chose not to see again.
+    const dismissedTips = ref<string[]>([]);
 
-    return { lengthUnit, diameterUnit, coordinateFormat };
+    return { lengthUnit, diameterUnit, coordinateFormat, dismissedTips };
   },
   {
     persist: { key: 'welldot_ui' },

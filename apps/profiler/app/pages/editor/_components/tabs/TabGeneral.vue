@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import AppChip from '~/components/AppChip.vue';
+import FormField from '~/components/FormField.vue';
+
 const { t } = useI18n();
 const profileStore = useProfileStore();
 
@@ -66,12 +69,52 @@ function setPrimary(index: number) {
 
 // ─── Well type Select ─────────────────────────────────────────────────────────
 
-const wellTypeOptions = computed(() =>
-  WELL_TYPE_VALUES.map(value => ({
+// Deprecated values (e.g. `artesian`) are never offered, but stay visible as
+// an option while the loaded well still uses one, so the Select shows it.
+const wellTypeOptions = computed(() => {
+  const current = profileStore.well.well_type;
+  const values: string[] = [...WELL_TYPE_VALUES];
+  if (current && isDeprecatedWellType(current)) values.push(current);
+  return values.map(value => ({
     label: resolveWellTypeLabel(value, t),
     value,
-  })),
+  }));
+});
+
+const hasDeprecatedWellType = computed(() =>
+  isDeprecatedWellType(profileStore.well.well_type),
 );
+
+// ─── Well purpose checkboxes ──────────────────────────────────────────────────
+
+const wellPurposeOptions = computed(() => {
+  // Keep non-canonical values (e.g. `x-` prefixed) from loaded files visible.
+  const extra = (profileStore.well.well_purpose ?? []).filter(
+    v => !(WELL_PURPOSE_VALUES as readonly string[]).includes(v),
+  );
+  return [...WELL_PURPOSE_VALUES, ...extra].map(value => ({
+    label: resolveWellPurposeLabel(value, t),
+    value,
+  }));
+});
+
+const wellPurpose = computed({
+  get: () => profileStore.well.well_purpose ?? [],
+  set: (value: string[]) =>
+    (profileStore.well.well_purpose = value.length ? value : undefined),
+});
+
+const selectedWellPurposes = computed(() =>
+  wellPurposeOptions.value.filter(option =>
+    wellPurpose.value.includes(option.value),
+  ),
+);
+
+const wellPurposePopover = ref();
+
+function removeWellPurpose(value: string) {
+  wellPurpose.value = wellPurpose.value.filter(v => v !== value);
+}
 </script>
 
 <template>
@@ -113,8 +156,11 @@ const wellTypeOptions = computed(() =>
       </div>
 
       <!-- Well Type (half-width) -->
-      <div class="grid grid-cols-2 gap-4">
-        <FormField :label="t('editor.general.wellType')">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <FormField
+          :label="t('editor.general.wellType')"
+          :info="t('editor.general.wellTypeInfo')"
+        >
           <Select
             v-model="profileStore.well.well_type"
             :options="wellTypeOptions"
@@ -125,16 +171,112 @@ const wellTypeOptions = computed(() =>
           />
         </FormField>
       </div>
+
+      <!-- Well Purpose -->
+      <FormField :label="t('editor.general.wellPurpose')">
+        <div class="flex flex-wrap items-center gap-2 pt-1">
+          <AppChip
+            v-for="option in selectedWellPurposes"
+            :key="option.value"
+            :label="option.label"
+            removable
+            :remove-label="t('editor.general.wellPurposeRemove')"
+            @remove="removeWellPurpose(option.value)"
+          />
+          <span
+            v-if="!selectedWellPurposes.length"
+            class="text-sm text-content-400 italic"
+          >
+            {{ t('editor.general.wellPurposeEmpty') }}
+          </span>
+          <Button
+            :label="
+              selectedWellPurposes.length
+                ? t('editor.general.wellPurposeEdit')
+                : t('editor.general.wellPurposeAdd')
+            "
+            severity="secondary"
+            size="small"
+            text
+            @click="wellPurposePopover?.toggle($event)"
+          >
+            <template #icon>
+              <Icon
+                :name="
+                  selectedWellPurposes.length ? 'ph:pencil-simple' : 'ph:plus'
+                "
+                class="size-3.5"
+              />
+            </template>
+          </Button>
+        </div>
+      </FormField>
+
+      <Popover ref="wellPurposePopover">
+        <div class="flex flex-col gap-2.5 p-1 min-w-60">
+          <label
+            v-for="option in wellPurposeOptions"
+            :key="option.value"
+            class="flex items-center gap-2.5 text-sm text-content-0 cursor-pointer"
+          >
+            <Checkbox v-model="wellPurpose" :value="option.value" />
+            {{ option.label }}
+          </label>
+        </div>
+      </Popover>
+
+      <Message v-if="hasDeprecatedWellType" severity="warn" size="small">
+        <div class="flex flex-col items-start gap-2">
+          <span>{{ t('editor.general.artesianDeprecated.message') }}</span>
+          <Button
+            :label="t('editor.general.artesianDeprecated.action')"
+            severity="warn"
+            size="small"
+            outlined
+            @click="profileStore.well.well_type = 'tubular'"
+          />
+        </div>
+      </Message>
+
+      <Tag
+        v-if="profileStore.flowingArtesian"
+        severity="info"
+        class="self-start"
+        :value="t('editor.general.flowingArtesian')"
+      />
     </section>
 
     <!-- ── Section: Well Identifiers ────────────────────────────────────── -->
     <section class="flex flex-col gap-5">
       <div class="flex items-baseline justify-between">
-        <h3
-          class="font-serif text-[22px] font-medium tracking-[-0.015em] text-content-0 m-0"
-        >
-          {{ t('editor.general.wellIds.title') }}
-        </h3>
+        <div class="flex items-center gap-1.5">
+          <h3
+            class="font-serif text-[22px] font-medium tracking-[-0.015em] text-content-0 m-0"
+          >
+            {{ t('editor.general.wellIds.title') }}
+          </h3>
+          <InfoPopover
+            size="md"
+            :label="t('editor.general.wellIds.info.label')"
+          >
+            <div class="flex flex-col gap-2.5">
+              <p class="m-0 font-semibold text-content-0">
+                {{ t('editor.general.wellIds.info.title') }}
+              </p>
+              <p class="m-0">{{ t('editor.general.wellIds.info.what') }}</p>
+              <p class="m-0">
+                {{ t('editor.general.wellIds.info.examplesIntro') }}
+              </p>
+              <ul class="m-0 pl-4 list-disc flex flex-col gap-1">
+                <li>{{ t('editor.general.wellIds.info.exampleGrant') }}</li>
+                <li>{{ t('editor.general.wellIds.info.exampleSiagas') }}</li>
+                <li>{{ t('editor.general.wellIds.info.exampleCompany') }}</li>
+              </ul>
+              <p class="m-0">{{ t('editor.general.wellIds.info.fields') }}</p>
+              <p class="m-0">{{ t('editor.general.wellIds.info.primary') }}</p>
+            </div>
+          </InfoPopover>
+        </div>
         <span
           class="font-mono text-[10px] tracking-[0.08em] uppercase text-content-500"
         >
@@ -149,8 +291,14 @@ const wellTypeOptions = computed(() =>
           class="flex items-center gap-2"
         >
           <RadioButton
+            v-tooltip.top="
+              primaryIndex === index
+                ? t('editor.general.wellIds.primaryTooltip')
+                : t('editor.general.wellIds.setPrimaryTooltip')
+            "
             :model-value="primaryIndex"
             :value="index"
+            :aria-label="t('editor.general.wellIds.setPrimaryTooltip')"
             :pt="{ root: 'cursor-pointer' }"
             @click="setPrimary(index)"
           />
@@ -169,12 +317,15 @@ const wellTypeOptions = computed(() =>
             />
           </div>
           <Button
-            icon="ph:trash"
             severity="secondary"
             text
             :aria-label="t('editor.general.wellIds.delete')"
             @click="deleteWellId(index)"
-          />
+          >
+            <template #icon>
+              <Icon name="ph:trash" />
+            </template>
+          </Button>
         </div>
       </div>
 

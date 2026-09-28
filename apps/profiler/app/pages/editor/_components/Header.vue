@@ -114,6 +114,15 @@ const shareVisibilityStore = useShareVisibilityStore();
 
 // ── Settings dialog ─────────────────────────────────────────────────
 const settingsVisible = ref(false);
+const bus = useBus();
+let _offOpenSettings: (() => void) | undefined;
+
+onMounted(() => {
+  _offOpenSettings = bus.on('ui:open-settings', () => {
+    settingsVisible.value = true;
+  });
+});
+onBeforeUnmount(() => _offOpenSettings?.());
 
 // ── Export PDF dialog ────────────────────────────────────────────────
 const exportPdfVisible = ref(false);
@@ -320,6 +329,7 @@ const viewOptions = computed(() => [
       </Button>
       <Button
         :aria-label="t('editor.settings.title')"
+        data-tip="settings"
         unstyled
         :pt="actionBtnPt"
         @click="settingsVisible = true"
@@ -379,6 +389,7 @@ const viewOptions = computed(() => [
 
       <Button
         :aria-label="t('editor.toolsMenu.title')"
+        data-tip="settings-mobile"
         unstyled
         :pt="iconBtnPt"
         @click="toolsMenuVisible = true"

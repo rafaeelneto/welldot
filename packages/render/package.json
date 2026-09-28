@@ -1,6 +1,6 @@
 {
   "name": "@welldot/render",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "D3-based SVG visualization library for rendering geological well profiles",
   "license": "Apache-2.0",
   "keywords": [

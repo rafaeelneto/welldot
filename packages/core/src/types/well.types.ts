@@ -100,6 +100,26 @@ export type SurfaceCase = {
   diameter: number;
 };
 
+/**
+ * Centralizers clamped to a casing or screen string over a depth interval.
+ * `from === to` denotes a single centralizer. Positions are derived from
+ * `spacing`; the count is never stored.
+ */
+export type Centralizer = {
+  /** Start depth in meters from ground level. */
+  from: number;
+  /** End depth in meters from ground level. */
+  to: number;
+  /** Spacing between consecutive centralizers in meters. May be omitted when unknown. */
+  spacing?: number;
+  /** Centralizer type. Recommended: `spring_bow`, `rigid`, `semi_rigid`, `polymer`. Can be free-text. */
+  type: string;
+  /** As-built outer diameter in millimeters. */
+  diameter?: number;
+  /** Free-text description. */
+  description?: string;
+};
+
 /** Concrete pad installed at ground level (depth 0) around the wellhead. All dimensions in **meters**. */
 export type CementPad = {
   /** Free text description of the pad, typically its material (e.g. `concrete`) but may also describe its shape (e.g. `circular`) or both. */
@@ -332,8 +352,10 @@ export type Well = {
   profiles?: string[];
 
   // Metadata
-  /** Classification of the well (e.g. `tubular`, `artesian`, `hand_dug`). */
+  /** Construction method of the well (e.g. `tubular`, `hand_dug`, `horizontal`). `artesian` is deprecated since v2.1. */
   well_type?: string;
+  /** Intended use(s) of the well (e.g. `production`, `monitoring`, `piezometer`). Since v2.1. */
+  well_purpose?: string[];
   /** Well name or local identifier. */
   name?: string;
   /** Name of the drilling company or individual. */
@@ -360,6 +382,8 @@ export type Well = {
   well_screen: WellScreen[];
   surface_case: SurfaceCase[];
   hole_fill: HoleFill[];
+  /** Since v2.1. */
+  centralizers?: Centralizer[];
   cement_pad?: CementPad;
 
   // Geologic
@@ -388,6 +412,7 @@ export type Constructive = {
   well_screen: WellScreen[];
   surface_case: SurfaceCase[];
   hole_fill: HoleFill[];
+  centralizers?: Centralizer[];
   cement_pad?: CementPad;
 };
 

@@ -26,11 +26,13 @@ import {
   calculateSpecificCapacity,
   calculateUnitDrawdown,
   calculateWellLoss,
+  getCentralizerDepths,
   getConstructivePropertySummary,
   getLatestAquiferAnalysisField,
   getLatestStaticLevel,
   getProfileDiamValues,
   getProfileLastItemsDepths,
+  isFlowingArtesian,
 } from './profile.utils';
 
 // ─── Factories ────────────────────────────────────────────────────────────────
@@ -892,5 +894,80 @@ describe('getLatestAquiferAnalysisField', () => {
       'transmissivity',
     );
     expect(result).toBe(50);
+  });
+});
+
+// ─── isFlowingArtesian ────────────────────────────────────────────────────────
+
+describe('isFlowingArtesian', () => {
+  it('returns false when there is no static level', () => {
+    expect(isFlowingArtesian(emptyWell())).toBe(false);
+  });
+
+  it('returns true when the latest static level is negative (above ground)', () => {
+    const well: Well = {
+      ...emptyWell(),
+      hydrodynamic_events: [makeSpotMeasurement('2024-01-01T00:00:00Z', -1.2)],
+    };
+    expect(isFlowingArtesian(well)).toBe(true);
+  });
+
+  it('uses the most recent level, not any past one', () => {
+    const well: Well = {
+      ...emptyWell(),
+      hydrodynamic_events: [
+        makeSpotMeasurement('2020-01-01T00:00:00Z', -0.5),
+        makeSpotMeasurement('2024-01-01T00:00:00Z', 3),
+      ],
+    };
+    expect(isFlowingArtesian(well)).toBe(false);
+  });
+
+  it('returns false for a level exactly at ground', () => {
+    const well: Well = {
+      ...emptyWell(),
+      hydrodynamic_events: [makeSpotMeasurement('2024-01-01T00:00:00Z', 0)],
+    };
+    expect(isFlowingArtesian(well)).toBe(false);
+  });
+});
+
+// ─── getCentralizerDepths ─────────────────────────────────────────────────────
+
+describe('getCentralizerDepths', () => {
+  it('returns a single depth when from === to', () => {
+    expect(getCentralizerDepths({ from: 12, to: 12, type: 'rigid' })).toEqual([
+      12,
+    ]);
+  });
+
+  it('expands an interval by spacing, inclusive of both ends', () => {
+    expect(
+      getCentralizerDepths({ from: 6, to: 30, spacing: 6, type: 'rigid' }),
+    ).toEqual([6, 12, 18, 24, 30]);
+  });
+
+  it('stops before exceeding `to` when spacing does not divide evenly', () => {
+    expect(
+      getCentralizerDepths({ from: 0, to: 10, spacing: 4, type: 'rigid' }),
+    ).toEqual([0, 4, 8]);
+  });
+
+  it('returns only the endpoints when spacing is unknown', () => {
+    expect(getCentralizerDepths({ from: 10, to: 50, type: 'rigid' })).toEqual([
+      10, 50,
+    ]);
+  });
+
+  it('absorbs floating-point drift', () => {
+    expect(
+      getCentralizerDepths({ from: 0, to: 0.9, spacing: 0.3, type: 'rigid' }),
+    ).toEqual([0, 0.3, 0.6, 0.9]);
+  });
+
+  it('tolerates inverted from/to', () => {
+    expect(
+      getCentralizerDepths({ from: 12, to: 0, spacing: 6, type: 'rigid' }),
+    ).toEqual([0, 6, 12]);
   });
 });

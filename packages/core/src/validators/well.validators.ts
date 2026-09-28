@@ -92,6 +92,15 @@ export const SurfaceCaseSchema = z.object({
   diameter: z.number(),
 });
 
+export const CentralizerSchema = z.object({
+  from: z.number(),
+  to: z.number(),
+  spacing: z.number().positive().optional(),
+  type: z.string(),
+  diameter: z.number().optional(),
+  description: z.string().optional(),
+});
+
 export const CementPadSchema = z.object({
   type: z.string(),
   width: z.number(),
@@ -281,6 +290,7 @@ export const WellSchema = z
       )
       .optional(),
     well_type: z.string().optional(),
+    well_purpose: z.array(z.string()).optional(),
     name: z.string().optional(),
     well_driller: z.string().optional(),
     construction_date: z
@@ -298,6 +308,7 @@ export const WellSchema = z
     well_screen: z.array(WellScreenSchema),
     surface_case: z.array(SurfaceCaseSchema),
     hole_fill: z.array(HoleFillSchema),
+    centralizers: z.array(CentralizerSchema).optional(),
     cement_pad: CementPadSchema.optional(),
     lithology: z.array(LithologySchema),
     fractures: z.array(FractureSchema),

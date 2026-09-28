@@ -409,6 +409,12 @@ const MyPreset = definePreset(Aura, {
         color: '{content.950}',
       },
     },
+    radiobutton: {
+      root: {
+        borderColor: '{content.600}',
+        hoverBorderColor: '{content.400}',
+      },
+    },
     datepicker: {
       panel: {
         borderRadius: '0.75rem',
@@ -1000,6 +1006,37 @@ const MyPreset = definePreset(Aura, {
           },
         },
       },
+    },
+    tooltip: {
+      root: {
+        padding: '0.375rem 0.625rem',
+        borderRadius: '0.5rem',
+      },
+      colorScheme: {
+        light: {
+          root: {
+            background: '{surface.0}',
+            color: '{content.300}',
+            shadow:
+              '0 8px 32px -4px rgba(14,30,51,0.14), 0 1px 6px -1px rgba(14,30,51,0.07)',
+          },
+        },
+        dark: {
+          root: {
+            background: '{surface.100}',
+            color: '{content.300}',
+            shadow:
+              '0 8px 32px -4px rgba(0,0,0,0.45), 0 1px 6px -1px rgba(0,0,0,0.28)',
+          },
+        },
+      },
+      css: ({ dt }) => `
+        .p-tooltip-text {
+          font-size: 0.8125rem;
+          line-height: 1.4;
+          border: 1px solid ${dt('surface.200')};
+        }
+      `,
     },
     accordion: {
       colorScheme: {

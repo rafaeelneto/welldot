@@ -366,6 +366,80 @@ revogr-edit .well-cell-texture-select .p-select-label {
   padding: 0 4px;
 }
 
+/* ── Combo editor (free text + suggestions) ──────────────────────────────── */
+
+revogr-edit .well-cell-combo {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface-0);
+  box-shadow: inset 0 0 0 1.5px var(--color-focus-ring);
+}
+
+revogr-edit .well-cell-combo-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 8px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-content-0);
+}
+
+revogr-edit .well-cell-combo-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-content-500);
+}
+
+.well-combo-panel {
+  position: fixed;
+  z-index: 1100;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--p-select-list-padding, 0.25rem);
+  list-style: none;
+  background: var(--p-select-overlay-background, var(--color-surface-0));
+  border: 1px solid
+    var(--p-select-overlay-border-color, var(--color-surface-200));
+  border-radius: var(--p-select-overlay-border-radius, 0.75rem);
+  box-shadow: var(--p-select-overlay-shadow);
+  color: var(--p-select-overlay-color, var(--color-content-0));
+}
+
+.well-combo-option {
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: var(--p-select-option-border-radius, 0.25rem);
+  color: var(--p-select-option-color, var(--color-content-0));
+}
+
+.well-combo-option.is-active {
+  background: var(--p-select-option-focus-background, var(--color-surface-100));
+  color: var(--p-select-option-focus-color, var(--color-content-0));
+}
+
+.well-combo-option.is-selected {
+  background: var(--p-select-option-selected-background);
+  color: var(--p-select-option-selected-color);
+}
+
+.well-combo-option.is-selected.is-active {
+  background: var(--p-select-option-selected-focus-background);
+  color: var(--p-select-option-selected-focus-color);
+}
+
 /* ── Color editor trigger ─────────────────────────────────────────────────── */
 
 revogr-edit .well-cell-color-trigger {

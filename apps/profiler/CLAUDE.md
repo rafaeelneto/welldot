@@ -13,6 +13,7 @@
 - **PWA:** `@vite-pwa/nuxt` (auto-update, disabled in dev)
 - **Fonts:** Space Grotesk, IBM Plex Serif, JetBrains Mono (via `@nuxt/fonts`)
 - **Icons:** Phosphor (`ph:`) via `@nuxt/icon` — **preferred**. Heroicons (`heroicons:`) remain as secondary usange when there is no phosphor good icon or is explicit said. Custom SVG icons in `app/assets/icons/` (prefix `welldot:`)
+- **Onboarding tips:** `driver.js` — startup tips that highlight a UI element (`app/composables/useStartupTips.ts`)
 - **Deploy:** Cloudflare Workers (Nitro `cloudflare-module` preset, static assets binding); preview via `wrangler dev`
 
 ## Directory layout
@@ -66,6 +67,7 @@ pnpm lint       # eslint
 - Breakpoints are managed by `nuxt-viewport`; prefer `useViewport()` over raw media queries.
 - Locale strings live in `i18n/locales/*.json`; use `useI18n().t('key')` in components.
 - The `EventBus` in `core/EventBus/` is the preferred pattern for cross-component communication not suited to Pinia.
+- **Startup tips:** the editor shows one non-dismissed tip per load (`useStartupTips().showStartupTip()` in `pages/editor/index.vue`). To add a tip: append an entry to the `tips` array in `useStartupTips.ts`, put a matching `data-tip="…"` attribute on the target element, and add `tips.<name>.*` keys to both locales. Dismissed tip ids persist in `uiStore.dismissedTips`; popover styling lives under `.welldot-tip` in `main.css`.
 
 ## Server routes & scheduled tasks
 

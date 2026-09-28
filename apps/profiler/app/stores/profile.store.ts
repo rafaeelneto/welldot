@@ -7,6 +7,7 @@ import {
   getLatestStaticLevel,
   getProfileDiamValues,
   getProfileLastItemsDepths,
+  isFlowingArtesian,
 } from '@welldot/utils';
 import type { Draft } from 'immer';
 import { defineStore } from 'pinia';
@@ -207,6 +208,9 @@ export const useProfileStore = defineStore(
     // Hydrodynamic derived values
     const latestStaticLevel = computed(() =>
       _well.value ? getLatestStaticLevel(_well.value) : undefined,
+    );
+    const flowingArtesian = computed(() =>
+      _well.value ? isFlowingArtesian(_well.value) : false,
     );
     const latestTransmissivity = computed(() =>
       _well.value
@@ -455,6 +459,7 @@ export const useProfileStore = defineStore(
 
       // ── Measurements: hydrodynamic
       latestStaticLevel,
+      flowingArtesian,
       latestTransmissivity,
       latestSpecificCapacity,
 

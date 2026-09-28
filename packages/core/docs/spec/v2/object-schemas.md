@@ -1,4 +1,4 @@
-# `.well` File Format Specification — Version 2.0: Object Schemas
+# `.well` File Format Specification — Version 2.1: Object Schemas
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [interoperability.md](./interoperability.md)
 
@@ -89,6 +89,26 @@ Material placed in the annular space between casing and borehole wall.
 | `type`        | string | yes      | Either `gravel_pack` or `seal`.                      |
 | `diameter`    | number | yes      | Outer diameter of the filled annulus in millimeters. |
 | `description` | string | yes      | Material description (e.g. grain size, material).    |
+
+---
+
+### `Centralizer` — `centralizers[]` _(since v2.1)_
+
+Centralizers clamped to a casing or screen string to keep it concentric in the borehole, so the gravel pack and annular seal have uniform thickness. Each entry describes a depth interval over which centralizers are installed at a regular spacing, which is how drilling reports usually give them.
+
+| Field         | Type   | Required | Description                                                                                                   |
+| ------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------- |
+| `from`        | number | yes      | Start depth in meters (depth of the first centralizer).                                                       |
+| `to`          | number | yes      | End depth in meters (depth of the last centralizer). `from === to` denotes a single centralizer.              |
+| `spacing`     | number | no       | Spacing between consecutive centralizers in meters. Must be positive. Omit when the spacing is unknown.       |
+| `type`        | string | yes      | Centralizer type. Recommended: `spring_bow`, `rigid`, `semi_rigid`, `polymer`. Non-canonical values use `x-`. |
+| `diameter`    | number | no       | As-built outer diameter in millimeters.                                                                       |
+| `description` | string | no       | Free-text description (e.g. material, manufacturer).                                                          |
+
+- The array is **optional**. v2.0 documents without it remain valid.
+- Individual positions are derived from `from`, `to`, and `spacing` (`from`, `from + spacing`, … up to `to`). The count is derived and MUST NOT be stored.
+- Each entry SHOULD fall within a `well_case` or `well_screen` interval. Validators MUST NOT reject documents that violate this.
+- Centralizers do not contribute to the calculated well depth.
 
 ---
 
@@ -232,13 +252,13 @@ Only `id`, `type`, and `datetime` are required. All others are optional for all 
 
 ### `spot_measurement`
 
-| Field                    | Type            | Required | Description                                                                                                                               |
-| ------------------------ | --------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `static_level`           | number          | yes      | Depth to water surface from ground level, in meters.                                                                                      |
-| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                    |
-| `measurement_method`     | string          | no       | Recommended: `electric_probe`, `pressure_transducer`, `air_line`, `tape`.                                                                 |
-| `steps`                  | `PumpingStep[]` | no       | At most one step. For an informal brief pump observation during the visit — not a controlled test. Use `constant_rate` for a formal test. |
-| `recovery`               | `RecoveryPhase` | no       | Recovery after the optional pumping step.                                                                                                 |
+| Field                    | Type            | Required | Description                                                                                                                                   |
+| ------------------------ | --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `static_level`           | number          | yes      | Depth to water surface from ground level, in meters. Negative when the level is above ground (flowing artesian). See § Level sign convention. |
+| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                        |
+| `measurement_method`     | string          | no       | Recommended: `electric_probe`, `pressure_transducer`, `air_line`, `tape`.                                                                     |
+| `steps`                  | `PumpingStep[]` | no       | At most one step. For an informal brief pump observation during the visit — not a controlled test. Use `constant_rate` for a formal test.     |
+| `recovery`               | `RecoveryPhase` | no       | Recovery after the optional pumping step.                                                                                                     |
 
 ---
 
@@ -393,12 +413,13 @@ These timestamps may differ substantially: a maintenance intervention `datetime`
 
 ### Categories
 
-| `category`    | Portuguese (BR) | Description                                                                                                                                       |
-| ------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `maintenance` | Manutenção      | Physical intervention: pump replacement, casing repair, cleaning, redevelopment.                                                                  |
-| `inspection`  | Inspeção        | Site visit without physical alteration: visual survey, camera inspection, sample collection.                                                      |
-| `incident`    | Incidente       | Unplanned event: partial collapse, contamination, prolonged drought, vandalism.                                                                   |
-| `event`       | Evento          | Generic milestone: construction completion, commissioning, deactivation, reactivation, ownership transfer, rehabilitation, data-integrity repair. |
+| `category`      | Portuguese (BR) | Description                                                                                                                                       |
+| --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maintenance`   | Manutenção      | Physical intervention: pump replacement, casing repair, cleaning, redevelopment.                                                                  |
+| `inspection`    | Inspeção        | Site visit without physical alteration: visual survey, camera inspection, sample collection.                                                      |
+| `incident`      | Incidente       | Unplanned event: partial collapse, contamination, prolonged drought, vandalism.                                                                   |
+| `event`         | Evento          | Generic milestone: construction completion, commissioning, deactivation, reactivation, ownership transfer, rehabilitation, data-integrity repair. |
+| `change_of_use` | Mudança de uso  | _(since v2.1)_ The well's purpose changed (e.g. production → monitoring). Update `well_purpose` to the new use and log the change here.           |
 
 Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -449,6 +470,7 @@ The `uri` field is a reference, not a guarantee. URLs may become unreachable ove
   "@context": "https://welldot.org/context/v2.jsonld",
   "version": 2,
   "well_type": "tubular",
+  "well_purpose": ["production"],
   "name": "Poço PP-01",
   "well_driller": "Perfuradora XYZ",
   "construction_date": "2006-03-10",
@@ -501,6 +523,15 @@ The `uri` field is a reference, not a guarantee. URLs may become unreachable ove
       "type": "seal",
       "diameter": 250,
       "description": "Cimento"
+    }
+  ],
+  "centralizers": [
+    {
+      "from": 6,
+      "to": 54,
+      "spacing": 12,
+      "type": "spring_bow",
+      "diameter": 245
     }
   ],
   "cement_pad": {

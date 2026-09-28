@@ -7,6 +7,7 @@ import type {
   BoreHole,
   Cave,
   CementPad,
+  Centralizer,
   Fracture,
   HoleFill,
   Lithology,
@@ -131,6 +132,15 @@ export const populateTooltips = (
               </span>
               <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(d.type)}</span>
           `,
+    centralizer: (_: unknown, d: Centralizer & { depth: number }) => `
+          <span class="${customClasses.tooltip.title}">${labels.centralizer.title}</span>
+          <span class="${customClasses.tooltip.primaryInfo}"><strong>${labels.centralizer.depth}</strong> ${esc(formatLength(d.depth, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>
+          ${d.from !== d.to ? `<span class="${customClasses.tooltip.secondaryInfo}">${labels.common.from} ${esc(formatLength(d.from, units.length, locale))} ${esc(getLengthUnit(units.length))} ${labels.common.to} ${esc(formatLength(d.to, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>` : ''}
+          ${d.spacing ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.centralizer.spacing}</strong> ${esc(formatLength(d.spacing, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>` : ''}
+          <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(d.type)}</span>
+          ${d.diameter ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.diameter}</strong> ${esc(formatDiameter(d.diameter, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}</span>` : ''}
+          ${d.description ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.description}</strong> ${esc(d.description)}</span>` : ''}
+        `,
     conflict: (_: unknown, d: { from: number; to: number }) => `
           <span class="${customClasses.tooltip.title}">${labels.conflict.title}</span>
           <span class="${customClasses.tooltip.primaryInfo}">${labels.common.from} ${esc(formatLength(d.from, units.length, locale))} ${esc(getLengthUnit(units.length))} ${labels.common.to} ${esc(formatLength(d.to, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>

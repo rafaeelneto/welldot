@@ -1628,3 +1628,91 @@ describe('redactWell', () => {
     expect(result.history_logs).toEqual([]);
   });
 });
+
+// ─── v2.1 additions ───────────────────────────────────────────────────────────
+
+describe('v2.1 — centralizers and well_purpose', () => {
+  const V21_DOC = {
+    version: 2,
+    well_type: 'tubular',
+    well_purpose: ['production', 'monitoring'],
+    bore_hole: [{ from: 0, to: 60, diameter: 250 }],
+    well_case: [{ from: 0, to: 40, type: 'pvc', diameter: 168.3 }],
+    reduction: [],
+    well_screen: [],
+    surface_case: [],
+    hole_fill: [],
+    centralizers: [
+      { from: 6, to: 36, spacing: 6, type: 'spring_bow', diameter: 240 },
+      { from: 39, to: 39, type: 'rigid' },
+    ],
+    lithology: [],
+    fractures: [],
+    caves: [],
+  };
+
+  it('parseWell accepts centralizers and well_purpose', () => {
+    const well = parseWell(JSON.stringify(V21_DOC));
+    expect(well.centralizers).toEqual(V21_DOC.centralizers);
+    expect(well.well_purpose).toEqual(['production', 'monitoring']);
+  });
+
+  it('parseWell accepts an interval without spacing (unknown spacing)', () => {
+    const doc = {
+      ...V21_DOC,
+      centralizers: [{ from: 10, to: 50, type: 'x-custom' }],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).not.toThrow();
+  });
+
+  it('parseWell rejects non-positive spacing', () => {
+    const doc = {
+      ...V21_DOC,
+      centralizers: [{ from: 10, to: 50, spacing: 0, type: 'rigid' }],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects a non-array well_purpose', () => {
+    const doc = { ...V21_DOC, well_purpose: 'monitoring' };
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('v2.0 documents without the new fields still parse', () => {
+    const { centralizers: _c, well_purpose: _p, ...v20 } = V21_DOC;
+    const well = parseWell(JSON.stringify(v20));
+    expect(well.centralizers).toBeUndefined();
+    expect(well.well_purpose).toBeUndefined();
+  });
+
+  it('round-trips through serializeWell → deserializeWell', () => {
+    const well = deserializeWell(JSON.stringify(V21_DOC))!;
+    const again = deserializeWell(serializeWell(well))!;
+    expect(again.centralizers).toEqual(V21_DOC.centralizers);
+    expect(again.well_purpose).toEqual(V21_DOC.well_purpose);
+  });
+
+  it('centralizers do not extend the calculated well_depth', () => {
+    const doc = {
+      ...V21_DOC,
+      bore_hole: [{ from: 0, to: 30, diameter: 250 }],
+      well_case: [],
+      centralizers: [{ from: 0, to: 90, spacing: 6, type: 'rigid' }],
+    };
+    expect(deserializeWell(JSON.stringify(doc))!.well_depth).toBe(30);
+  });
+
+  it('redactWell removes well_purpose with general and centralizers with constructive', () => {
+    const well = deserializeWell(JSON.stringify(V21_DOC))!;
+    const visibility: SectionVisibility = {
+      general: false,
+      constructive: false,
+      geology: true,
+      hydrodynamic: true,
+      history: true,
+    };
+    const result = redactWell(well, visibility);
+    expect(result.well_purpose).toBeUndefined();
+    expect(result.centralizers).toBeUndefined();
+  });
+});

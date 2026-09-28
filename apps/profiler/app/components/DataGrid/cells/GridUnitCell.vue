@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { DiameterUnits } from '@welldot/core';
+
 const props = defineProps<{
   value?: unknown;
   unitType: 'length' | 'diameter';
@@ -6,6 +8,13 @@ const props = defineProps<{
 
 const { unit, toDisplay } = useUnitDisplay(props.unitType);
 const { formatNumber } = useNumberFormat();
+const { locale } = useI18n();
+
+const suffix = computed(() =>
+  props.unitType === 'diameter'
+    ? resolveDiameterUnitLabel(unit.value as DiameterUnits, locale.value)
+    : unit.value,
+);
 
 const display = computed((): string => {
   const raw = props.value;
@@ -14,7 +23,7 @@ const display = computed((): string => {
   if (isNaN(canonical)) return '—';
   return formatNumber(toDisplay(canonical), {
     maximumFractionDigits: 4,
-    suffix: unit.value,
+    suffix: suffix.value,
   });
 });
 </script>

@@ -34,6 +34,8 @@ src/
 | `calculateWellLoss(jacobC, flowRate)`                              | Well head loss via Jacob (m)                                          |
 | `calculateHydraulicConductivity(transmissivity, aquiferThickness)` | Hydraulic conductivity K (m/h)                                        |
 | `getLatestStaticLevel(well)`                                       | Most recent static water level from hydrodynamic events               |
+| `isFlowingArtesian(well)`                                          | Latest static level is above ground (v2.1 artesian detection)         |
+| `getCentralizerDepths(centralizer)`                                | Individual centralizer depths from interval + spacing                 |
 | `getLatestAquiferAnalysisField(well, field)`                       | Most recent value of a named field from aquifer_analysis              |
 | `formatNumber(value, options)`                                     | Locale-aware number display formatting (rounding, separators, suffix) |
 

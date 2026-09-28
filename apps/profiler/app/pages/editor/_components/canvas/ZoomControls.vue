@@ -13,6 +13,8 @@ defineEmits<{
   'zoom-out': [];
   /** Parent should call `wellRenderer.resetZoom()`. */
   fit: [];
+  /** Parent should tear down and rebuild the renderer, then redraw. */
+  reload: [];
 }>();
 
 const { t } = useI18n();
@@ -59,5 +61,17 @@ const buttonPt =
     <span class="font-mono text-[10px] text-content-400 px-2 tabular-nums">{{
       scaleLabel
     }}</span>
+    <Button
+      v-tooltip.top="t('editor.canvas.reload')"
+      unstyled
+      :disabled="disabled"
+      :aria-label="t('editor.canvas.reload')"
+      :pt="{ root: buttonPt }"
+      @click="$emit('reload')"
+    >
+      <template #icon>
+        <Icon name="ph:arrow-clockwise" class="size-3" />
+      </template>
+    </Button>
   </div>
 </template>

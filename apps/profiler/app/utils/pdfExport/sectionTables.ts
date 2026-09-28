@@ -422,9 +422,63 @@ function buildWellScreenSection(
   });
 }
 
+function buildCentralizerSection(
+  well: Well,
+  options: PdfExportOptions,
+  t: PdfTranslate,
+): Content | null {
+  const items = well.centralizers ?? [];
+  if (items.length === 0) return null;
+
+  const { formatLength, formatDiameter, diameterUnit, lengthUnit } =
+    createPdfFormatters(options);
+  const body: TableCell[][] = [
+    [
+      headerCell(t('editor.construction.centralizer.type')),
+      headerCell(
+        `${t('editor.construction.centralizer.diameter')} (${resolveDiameterUnitLabel(diameterUnit, options.locale)})`,
+        true,
+      ),
+      headerCell(
+        `${t('editor.construction.centralizer.spacing')} (${lengthUnit})`,
+        true,
+      ),
+      headerCell(
+        `${t('editor.construction.centralizer.from')} (${lengthUnit})`,
+        true,
+      ),
+      headerCell(
+        `${t('editor.construction.centralizer.to')} (${lengthUnit})`,
+        true,
+      ),
+    ],
+  ];
+
+  for (const item of items) {
+    body.push([
+      item.description ? `${item.type} — ${item.description}` : item.type,
+      rightCell(item.diameter != null ? formatDiameter(item.diameter) : '—'),
+      rightCell(item.spacing != null ? formatLength(item.spacing) : '—'),
+      rightCell(formatLength(item.from)),
+      rightCell(formatLength(item.to)),
+    ]);
+  }
+
+  return withTableTitle(t('editor.construction.centralizer.title'), {
+    layout: 'lightHorizontalLines',
+    table: {
+      widths: ['*', 'auto', 'auto', 'auto', 'auto'],
+      headerRows: 1,
+      dontBreakRows: true,
+      body,
+    },
+  });
+}
+
 /**
  * Builds the per-feature summary tables (cement pad, bore hole, surface
- * casing, hole fill w/ gravel-pack volume, casing, reduction, screen), each
+ * casing, hole fill w/ gravel-pack volume, casing, reduction, screen,
+ * centralizers), each
  * omitted when its corresponding `well.*` array/field is empty.
  */
 export function buildSectionTables(
@@ -450,6 +504,7 @@ export function buildSectionTables(
     buildWellCaseSection(well, options, t),
     buildReductionSection(well, options, t),
     buildWellScreenSection(well, options, t),
+    buildCentralizerSection(well, options, t),
   ];
 
   return sections.filter((section): section is Content => section !== null);
