@@ -6,6 +6,8 @@ export type WellGridColumnBase = {
   prop: string;
   /** Pre-translated header label */
   label: string;
+  /** Pre-translated help text, shown in an info popover next to the header label */
+  info?: string;
   /** Column width in px (default 150) */
   size?: number;
   /** Prevent editing */

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Popover from 'primevue/popover';
-import { SketchPicker } from 'vue-color';
+import { SketchPicker, tinycolor } from 'vue-color';
 import 'vue-color/style.css';
 
 const props = defineProps<{
@@ -12,9 +12,14 @@ const props = defineProps<{
 const triggerRef = ref<HTMLElement | null>(null);
 const popoverRef = ref<InstanceType<typeof Popover> | null>(null);
 
-const localValue = ref(
-  typeof props.val === 'string' && props.val ? props.val : '#cccccc',
-);
+// vue-color echoes back the format of the value it was given (and can drift
+// to HSV objects), so normalize everything to `#rrggbb` on the way in and out.
+function toHex(value: unknown): string {
+  const color = tinycolor(value as string);
+  return color.isValid() ? color.toHexString() : '#cccccc';
+}
+
+const localValue = ref(toHex(props.val));
 
 onMounted(() => {
   nextTick(() => {
@@ -30,9 +35,10 @@ onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown, true);
 });
 
-function onChange(value: string) {
-  localValue.value = value;
-  props.save(value, true);
+function onChange(value: unknown) {
+  const hex = toHex(value);
+  localValue.value = hex;
+  props.save(hex, true);
 }
 
 function onHide() {

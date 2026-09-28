@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Attachment, HistoryLogEntry } from '@welldot/core';
 import { useConfirm } from 'primevue/useconfirm';
+import AppChip from '~/components/AppChip.vue';
 import AttachmentDialog from './historyLog/AttachmentDialog.vue';
 import LogEntryDialog from './historyLog/LogEntryDialog.vue';
 
@@ -252,17 +253,14 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
 
     <!-- ── Category filter chips ──────────────────────────────────────────── -->
     <div class="flex flex-wrap gap-2">
-      <button
+      <AppChip
         v-for="opt in categoryOptions"
         :key="opt.value"
-        class="filter-chip"
-        :class="{ active: activeCategory === opt.value }"
-        type="button"
+        :label="opt.label"
+        :icon="opt.icon"
+        :active="activeCategory === opt.value"
         @click="toggleCategory(opt.value)"
-      >
-        <Icon :name="opt.icon" class="size-3.5" />
-        {{ opt.label }}
-      </button>
+      />
     </div>
 
     <!-- ── Empty state ────────────────────────────────────────────────────── -->
@@ -551,37 +549,6 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
   box-shadow: 0 0 0 3px
     color-mix(in srgb, var(--color-primary-500) 25%, transparent);
   border-color: var(--color-primary-500);
-}
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--color-surface-200);
-  background: var(--color-surface-50);
-  color: var(--color-content-300);
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-.filter-chip:hover {
-  background: var(--color-surface-100);
-  color: var(--color-content-100);
-  border-color: var(--color-surface-300);
-}
-
-.filter-chip.active {
-  background: var(--color-primary-50);
-  color: var(--color-primary-600);
-  border-color: var(--color-primary-200);
 }
 
 .show-more-btn {

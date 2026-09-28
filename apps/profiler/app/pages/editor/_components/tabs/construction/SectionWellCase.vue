@@ -27,6 +27,7 @@ const wellCaseColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'type',
     label: t('editor.construction.wellCase.type'),
+    info: t('editor.construction.wellCase.typeInfo'),
     type: 'text',
     stretch: true,
     minSize: 200,

@@ -12,4 +12,8 @@ type ThemeEvents = {
   'theme:changed': { mode: 'light' | 'dark' };
 };
 
-export type AppEvents = NavigationEvents & WellEvents & ThemeEvents;
+type UiEvents = {
+  'ui:open-settings': undefined;
+};
+
+export type AppEvents = NavigationEvents & WellEvents & ThemeEvents & UiEvents;

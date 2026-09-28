@@ -224,6 +224,7 @@
   },
   "editor": {
     "well": "Poço",
+    "fieldInfo": "Mais informações",
     "save": "Salvar",
     "edit": "Editar",
     "saveAs": "Salvar Como",
@@ -408,7 +409,8 @@
       "fit": "Ajustar"
     },
     "canvas": {
-      "empty": "Nenhum dado de poço ainda"
+      "empty": "Nenhum dado de poço ainda",
+      "reload": "Recarregar visualização"
     },
     "construction": {
       "tag": "Construtivo · Poço",
@@ -462,6 +464,7 @@
         "to": "Até",
         "diameter": "Diâm.",
         "type": "Tipo / Material",
+        "typeInfo": "Descrição livre do material do revestimento, ex.: PVC, PVC geomecânico, aço carbono, aço inox.",
         "addRow": "Adicionar revestimento"
       },
       "reduction": {
@@ -508,12 +511,12 @@
         "from": "De",
         "to": "Até",
         "diameter": "Diâm.",
-        "type": "Tipo",
+        "type": "Função",
         "description": "Material/Descrição",
         "addRow": "Adicionar intervalo",
         "typeOptions": {
           "gravelPack": "Pré-filtro",
-          "seal": "Cimentação"
+          "seal": "Vedação"
         }
       }
     },
@@ -559,7 +562,12 @@
       "driller": "Perfurador",
       "constructionDate": "Data de Construção",
       "wellType": "Tipo de Poço",
+      "wellTypeInfo": "Indica o tipo de estrutura do poço quanto ao aspecto construtivo (ex.: tubular, cacimba/escavado, horizontal, galeria de infiltração). Não se refere ao método de perfuração nem ao uso do poço: para isso, use Finalidade do Poço. Artesiano é uma condição hidráulica, detectada a partir dos níveis d'água.",
       "wellPurpose": "Finalidade do Poço",
+      "wellPurposeEmpty": "Nenhuma finalidade selecionada",
+      "wellPurposeAdd": "Adicionar finalidade",
+      "wellPurposeEdit": "Editar",
+      "wellPurposeRemove": "Remover finalidade",
       "artesianDeprecated": {
         "message": "\"Artesiano\" está obsoleto como tipo de poço desde o .well v2.1 — é uma condição hidráulica, não um método construtivo. Escolha o método construtivo; a condição de artesiano jorrante é registrada como nível estático negativo nos eventos hidrodinâmicos.",
         "action": "Alterar para tubular"
@@ -606,9 +614,22 @@
         "id": "ID",
         "idPlaceholder": "ex. SP-0042819",
         "primary": "Principal",
+        "primaryTooltip": "Identificador principal — o ID canônico deste poço",
+        "setPrimaryTooltip": "Marcar como identificador principal",
         "addRow": "Adicionar identificador",
         "delete": "Remover identificador",
-        "empty": "Nenhum identificador cadastrado"
+        "empty": "Nenhum identificador cadastrado",
+        "info": {
+          "label": "Sobre os identificadores do poço",
+          "title": "O que são os identificadores do poço?",
+          "what": "Outros códigos que este mesmo poço possui em bancos de dados e cadastros externos. Servem para compatibilizar o arquivo .well com esses sistemas, permitindo cruzar e relacionar o poço entre diferentes fontes.",
+          "examplesIntro": "Exemplos:",
+          "exampleGrant": "Número da outorga de direito de uso emitida pelo órgão gestor",
+          "exampleSiagas": "Código de identificação no SIAGAS",
+          "exampleCompany": "Código interno usado por uma empresa, concessionária ou perfuradora",
+          "fields": "Autoridade é o nome do cadastro ou instituição que emitiu o código (escolha uma sugestão ou digite outra). ID é o código exatamente como emitido; mantenha zeros à esquerda e separadores (ex. SP-0042819).",
+          "primary": "Use o botão de seleção para marcar o identificador principal. Se nenhum for marcado, o primeiro é considerado o principal. Cada par autoridade + ID deve ser único."
+        }
       }
     },
     "summary": {
@@ -676,7 +697,7 @@
         "from": "De",
         "to": "Até",
         "volume": "Volume",
-        "groupSeal": "Selo",
+        "groupSeal": "Vedação",
         "groupGravelPack": "Pré-filtro",
         "groupTotal": "{group} · volume total"
       },
@@ -826,6 +847,15 @@
       "validation": {
         "missing": "Adicione {fields} para salvar este evento"
       }
+    }
+  },
+  "tips": {
+    "dontShowAgain": "Não mostrar novamente",
+    "gotIt": "Entendi",
+    "units": {
+      "title": "Unidades personalizáveis",
+      "body": "Você pode alternar as unidades de comprimento (m/ft) e de diâmetro (mm/pol) nas Configurações.",
+      "action": "Abrir configurações"
     }
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Location } from '@welldot/core';
+import FormField from './FormField.vue';
 
 const { t } = useI18n();
 const uiStore = useUiStore();

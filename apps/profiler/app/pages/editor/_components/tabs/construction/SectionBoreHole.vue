@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { WellGridColumn } from '~/components/DataGrid/types';
+import FormField from '~/components/FormField.vue';
 import { calculatedWellDepth } from '~/utils/wellDepth';
 
 const { t } = useI18n();

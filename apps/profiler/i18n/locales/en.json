@@ -224,6 +224,7 @@
   },
   "editor": {
     "well": "Well",
+    "fieldInfo": "More information",
     "save": "Save",
     "edit": "Edit",
     "saveAs": "Save As",
@@ -408,7 +409,8 @@
       "fit": "Fit"
     },
     "canvas": {
-      "empty": "No well data yet"
+      "empty": "No well data yet",
+      "reload": "Reload visualization"
     },
     "construction": {
       "tag": "Construction · Well",
@@ -462,6 +464,7 @@
         "to": "To",
         "diameter": "Diam.",
         "type": "Type / Material",
+        "typeInfo": "Free-text description of the casing material, e.g. PVC, geomechanical PVC, steel, stainless steel.",
         "addRow": "Add casing"
       },
       "reduction": {
@@ -508,7 +511,7 @@
         "from": "From",
         "to": "To",
         "diameter": "Diam.",
-        "type": "Type",
+        "type": "Function",
         "description": "Material/Description",
         "addRow": "Add fill interval",
         "typeOptions": {
@@ -559,7 +562,12 @@
       "driller": "Driller",
       "constructionDate": "Construction Date",
       "wellType": "Well Type",
+      "wellTypeInfo": "Indicates the type of structure the well is, according to its construction (e.g. tubular, hand dug, horizontal, infiltration gallery). It is not the drilling method, nor what the well is used for: use Well Purpose for that. Artesian is a hydraulic condition, detected from the water levels.",
       "wellPurpose": "Well Purpose",
+      "wellPurposeEmpty": "No purpose selected",
+      "wellPurposeAdd": "Add purpose",
+      "wellPurposeEdit": "Edit",
+      "wellPurposeRemove": "Remove purpose",
       "artesianDeprecated": {
         "message": "\"Artesian\" is deprecated as a well type since .well v2.1 — it is a hydraulic condition, not a construction method. Pick the construction method instead; a flowing artesian condition is recorded as a negative static level in the hydrodynamic events.",
         "action": "Change to tubular"
@@ -606,9 +614,22 @@
         "id": "ID",
         "idPlaceholder": "e.g. SP-0042819",
         "primary": "Primary",
+        "primaryTooltip": "Primary identifier — the canonical ID for this well",
+        "setPrimaryTooltip": "Mark as the primary identifier",
         "addRow": "Add identifier",
         "delete": "Delete identifier",
-        "empty": "No identifiers yet"
+        "empty": "No identifiers yet",
+        "info": {
+          "label": "About well identifiers",
+          "title": "What are well identifiers?",
+          "what": "Other codes this same well has in external databases and registries. They make the .well file compatible with those systems, so the well can be cross-referenced and matched across different sources.",
+          "examplesIntro": "Examples:",
+          "exampleGrant": "Water-use permit (outorga) number issued by the water resources agency",
+          "exampleSiagas": "SIAGAS identification code",
+          "exampleCompany": "An internal code used by a company, utility or driller",
+          "fields": "Authority is the name of the registry or institution that issued the code (pick a suggestion or type your own). ID is the code exactly as issued; keep leading zeros and separators (e.g. SP-0042819).",
+          "primary": "Use the radio button to mark the main identifier. If none is marked, the first one is treated as the main one. Each authority + ID pair must be unique."
+        }
       }
     },
     "summary": {
@@ -826,6 +847,15 @@
       "validation": {
         "missing": "Add {fields} to save this event"
       }
+    }
+  },
+  "tips": {
+    "dontShowAgain": "Don't show again",
+    "gotIt": "Got it",
+    "units": {
+      "title": "Customizable units",
+      "body": "You can switch length (m/ft) and diameter (mm/in) units in Settings.",
+      "action": "Open settings"
     }
   }
 }
