@@ -1,9 +1,20 @@
 <script setup lang="ts">
 import type { Well } from '@welldot/core';
 import type { WellGridColumn } from '~/components/DataGrid/types';
+import { materialOptions } from '~/utils/materialOptions';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+
+const reductionTypeOptions = computed(() =>
+  materialOptions(t, [
+    'pvc',
+    'geomechanicalPvc',
+    'carbonSteel',
+    'galvanizedSteel',
+    'stainlessSteel',
+  ]),
+);
 
 const reductionColumns = computed<WellGridColumn[]>(() => [
   {
@@ -33,7 +44,10 @@ const reductionColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'type',
     label: t('editor.construction.reduction.type'),
-    type: 'text',
+    info: t('editor.construction.reduction.typeInfo'),
+    infoHighlight: t('editor.construction.reduction.typeFreeText'),
+    type: 'combo',
+    options: reductionTypeOptions.value,
     stretch: true,
     minSize: 200,
   },

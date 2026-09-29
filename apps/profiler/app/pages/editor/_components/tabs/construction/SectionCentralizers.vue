@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import type { Centralizer, Well } from '@welldot/core';
 import type { WellGridColumn } from '~/components/DataGrid/types';
+import { materialOptions } from '~/utils/materialOptions';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
 
-const typeOptions = computed(() =>
-  CENTRALIZER_TYPE_VALUES.map(value => ({
+// Spec-recommended centralizer kinds (stored as keys) followed by common
+// materials (stored as their label).
+const typeOptions = computed(() => [
+  ...CENTRALIZER_TYPE_VALUES.map(value => ({
     label: resolveCentralizerTypeLabel(value, t),
     value,
   })),
-);
+  ...materialOptions(t, ['carbonSteel', 'galvanizedSteel', 'stainlessSteel']),
+]);
 
 const centralizerColumns = computed<WellGridColumn[]>(() => [
   {
@@ -34,6 +38,8 @@ const centralizerColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'type',
     label: t('editor.construction.centralizer.type'),
+    info: t('editor.construction.centralizer.typeInfo'),
+    infoHighlight: t('editor.construction.centralizer.typeFreeText'),
     type: 'combo',
     options: typeOptions.value,
     size: 170,
@@ -47,6 +53,7 @@ const centralizerColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'description',
     label: t('editor.construction.centralizer.description'),
+    info: t('editor.construction.centralizer.descriptionInfo'),
     type: 'text',
     stretch: true,
     minSize: 180,

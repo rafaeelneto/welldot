@@ -436,6 +436,8 @@
         "to": "To",
         "diameter": "Diam.",
         "drillingMethod": "Method",
+        "drillingMethodInfo": "Drilling method used to open this bore hole interval. Pick one of the suggestions — rotary, percussion, cable tool, auger or air hammer.",
+        "drillingMethodFreeText": "This field is free text: if the method is not in the list, just type it (e.g. reverse circulation, sonic, jetting) and it will be saved as-is.",
         "drillingMethodOptions": {
           "rotary": "Rotary",
           "percussion": "Percussion",
@@ -464,7 +466,8 @@
         "to": "To",
         "diameter": "Diam.",
         "type": "Type / Material",
-        "typeInfo": "Free-text description of the casing material, e.g. PVC, geomechanical PVC, steel, stainless steel.",
+        "typeInfo": "Material of the casing that lines the well and holds the bore hole walls, e.g. PVC, geomechanical PVC, carbon steel or stainless steel.",
+        "typeFreeText": "This field is free text: if the material is not in the list, just type it (e.g. HDPE, blank steel pipe) and it will be saved as-is.",
         "addRow": "Add casing"
       },
       "reduction": {
@@ -475,6 +478,8 @@
         "diamFrom": "Diam. From",
         "diamTo": "Diam. To",
         "type": "Type",
+        "typeInfo": "Material or shape of the reducer that connects the two diameters, e.g. PVC, geomechanical PVC, carbon steel, conical or stepped.",
+        "typeFreeText": "This field is free text: if the material is not in the list, just type it (e.g. conical, stepped) and it will be saved as-is.",
         "addRow": "Add reduction"
       },
       "centralizer": {
@@ -484,8 +489,11 @@
         "to": "To",
         "spacing": "Spacing",
         "type": "Type",
+        "typeInfo": "Kind or material of the centralizers clamped to the casing to keep it centered in the bore hole, e.g. spring bow, rigid, polymer, carbon steel or stainless steel.",
+        "typeFreeText": "This field is free text: if the type or material is not in the list, just type it and it will be saved as-is.",
         "diameter": "Diameter",
         "description": "Description",
+        "descriptionInfo": "Optional notes about these centralizers, such as manufacturer, model, material or how they were installed.",
         "addRow": "Add centralizers",
         "hint": "One row per interval. Use the same depth in From and To for a single centralizer; leave spacing empty if unknown.",
         "types": {
@@ -503,6 +511,8 @@
         "diameter": "Diam.",
         "screenSlot": "Slot (mm)",
         "type": "Type",
+        "typeInfo": "Material (or construction) of the screen that lets water into the well, e.g. PVC, geomechanical PVC, carbon steel or stainless steel.",
+        "typeFreeText": "This field is free text: if the material is not in the list, just type it (e.g. wire wound stainless steel, bridge slot) and it will be saved as-is.",
         "addRow": "Add screen"
       },
       "holeFill": {
@@ -512,12 +522,22 @@
         "to": "To",
         "diameter": "Diam.",
         "type": "Function",
+        "typeInfo": "Role of the material in the annular space between casing and bore hole wall: gravel pack is the filter gravel around the screens; seal is the cement or bentonite that isolates the annulus against contamination.",
         "description": "Material/Description",
+        "descriptionInfo": "Material actually used in this interval, e.g. grain size of the gravel (1–2 mm quartz gravel) or seal material (cement grout, bentonite pellets).",
         "addRow": "Add fill interval",
         "typeOptions": {
           "gravelPack": "Gravel Pack",
           "seal": "Seal"
         }
+      },
+      "materials": {
+        "pvc": "PVC",
+        "geomechanicalPvc": "Geomechanical PVC",
+        "carbonSteel": "Carbon Steel",
+        "galvanizedSteel": "Galvanized Steel",
+        "stainlessSteel": "Stainless Steel",
+        "fiberglass": "Fiberglass"
       }
     },
     "geological": {

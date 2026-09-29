@@ -436,6 +436,8 @@
         "to": "Até",
         "diameter": "Diâm.",
         "drillingMethod": "Método",
+        "drillingMethodInfo": "Método de perfuração usado para abrir este intervalo do furo. Escolha uma das sugestões — rotativo, percussão, percussão a cabo, trado ou martelo pneumático.",
+        "drillingMethodFreeText": "Este campo é livre: se o método não estiver na lista, basta digitá-lo (ex.: circulação reversa, sônico, jateamento) e ele será salvo como escrito.",
         "drillingMethodOptions": {
           "rotary": "Rotativo",
           "percussion": "Percussão",
@@ -464,7 +466,8 @@
         "to": "Até",
         "diameter": "Diâm.",
         "type": "Tipo / Material",
-        "typeInfo": "Descrição livre do material do revestimento, ex.: PVC, PVC geomecânico, aço carbono, aço inox.",
+        "typeInfo": "Material do revestimento que reveste o poço e sustenta as paredes do furo, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
+        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo (ex.: PEAD, tubo de aço liso) e ele será salvo como escrito.",
         "addRow": "Adicionar revestimento"
       },
       "reduction": {
@@ -475,6 +478,8 @@
         "diamFrom": "Diâm. De",
         "diamTo": "Diâm. Até",
         "type": "Tipo",
+        "typeInfo": "Material ou formato da redução que faz a transição entre os dois diâmetros, ex.: PVC, PVC geomecânico, aço carbono, cônica ou escalonada.",
+        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo (ex.: cônica, escalonada) e ele será salvo como escrito.",
         "addRow": "Adicionar redução"
       },
       "centralizer": {
@@ -484,8 +489,11 @@
         "to": "Até",
         "spacing": "Espaçamento",
         "type": "Tipo",
+        "typeInfo": "Tipo ou material dos centralizadores fixados ao revestimento para mantê-lo centrado no furo, ex.: mola (spring bow), rígido, polimérico, aço carbono ou aço inox.",
+        "typeFreeText": "Este campo é livre: se o tipo ou material não estiver na lista, basta digitá-lo e ele será salvo como escrito.",
         "diameter": "Diâmetro",
         "description": "Descrição",
+        "descriptionInfo": "Observações opcionais sobre estes centralizadores, como fabricante, modelo, material ou forma de instalação.",
         "addRow": "Adicionar centralizadores",
         "hint": "Uma linha por intervalo. Use a mesma profundidade em De e Até para um único centralizador; deixe o espaçamento vazio se desconhecido.",
         "types": {
@@ -503,6 +511,8 @@
         "diameter": "Diâm.",
         "screenSlot": "Slot (mm)",
         "type": "Tipo",
+        "typeInfo": "Material (ou tipo construtivo) do filtro por onde a água entra no poço, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
+        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo (ex.: aço inox espiralado, ponte/bridge slot) e ele será salvo como escrito.",
         "addRow": "Adicionar filtro"
       },
       "holeFill": {
@@ -512,12 +522,22 @@
         "to": "Até",
         "diameter": "Diâm.",
         "type": "Função",
+        "typeInfo": "Função do material no espaço anular entre o revestimento e a parede do furo: pré-filtro é o cascalho filtrante ao redor dos filtros; vedação é o cimento ou bentonita que isola o anular contra contaminação.",
         "description": "Material/Descrição",
+        "descriptionInfo": "Material efetivamente usado neste intervalo, ex.: granulometria do pré-filtro (cascalho quartzoso 1–2 mm) ou material da vedação (calda de cimento, pellets de bentonita).",
         "addRow": "Adicionar intervalo",
         "typeOptions": {
           "gravelPack": "Pré-filtro",
           "seal": "Vedação"
         }
+      },
+      "materials": {
+        "pvc": "PVC",
+        "geomechanicalPvc": "PVC Geomecânico",
+        "carbonSteel": "Aço Carbono",
+        "galvanizedSteel": "Aço Galvanizado",
+        "stainlessSteel": "Aço Inox",
+        "fiberglass": "Fibra de Vidro"
       }
     },
     "geological": {

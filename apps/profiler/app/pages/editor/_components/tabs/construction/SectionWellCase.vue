@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { Well } from '@welldot/core';
 import type { WellGridColumn } from '~/components/DataGrid/types';
+import { materialOptions } from '~/utils/materialOptions';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+
+const wellCaseTypeOptions = computed(() => materialOptions(t));
 
 const wellCaseColumns = computed<WellGridColumn[]>(() => [
   {
@@ -28,7 +31,9 @@ const wellCaseColumns = computed<WellGridColumn[]>(() => [
     prop: 'type',
     label: t('editor.construction.wellCase.type'),
     info: t('editor.construction.wellCase.typeInfo'),
-    type: 'text',
+    infoHighlight: t('editor.construction.wellCase.typeFreeText'),
+    type: 'combo',
+    options: wellCaseTypeOptions.value,
     stretch: true,
     minSize: 200,
   },

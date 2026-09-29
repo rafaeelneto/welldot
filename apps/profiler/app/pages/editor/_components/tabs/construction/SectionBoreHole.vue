@@ -56,6 +56,8 @@ const boreHoleColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'drilling_method',
     label: t('editor.construction.boreHole.drillingMethod'),
+    info: t('editor.construction.boreHole.drillingMethodInfo'),
+    infoHighlight: t('editor.construction.boreHole.drillingMethodFreeText'),
     type: 'combo',
     options: drillingMethodOptions.value,
     stretch: true,

@@ -287,7 +287,11 @@ export function useWellGridColumns(options: UseWellGridColumnsOptions) {
           kind.cellProperties?.(col) ??
           (kind.numeric ? () => ({ class: 'num' }) : undefined),
         cellTemplate: kind.cellTemplate?.(col),
-        ...(col.info && { info: col.info, columnTemplate: infoHeaderTemplate }),
+        ...(col.info && {
+          info: col.info,
+          infoHighlight: col.infoHighlight,
+          columnTemplate: infoHeaderTemplate,
+        }),
       };
     });
 

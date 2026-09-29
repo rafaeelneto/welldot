@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { WellGridColumn } from '~/components/DataGrid/types';
+import { materialOptions } from '~/utils/materialOptions';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+
+const screenTypeOptions = computed(() => materialOptions(t));
 
 const wellScreenColumns = computed<WellGridColumn[]>(() => [
   {
@@ -32,7 +35,10 @@ const wellScreenColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'type',
     label: t('editor.construction.wellScreen.type'),
-    type: 'text',
+    info: t('editor.construction.wellScreen.typeInfo'),
+    infoHighlight: t('editor.construction.wellScreen.typeFreeText'),
+    type: 'combo',
+    options: screenTypeOptions.value,
     stretch: true,
     minSize: 200,
   },

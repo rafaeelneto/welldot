@@ -8,6 +8,8 @@ export type WellGridColumnBase = {
   label: string;
   /** Pre-translated help text, shown in an info popover next to the header label */
   info?: string;
+  /** Pre-translated note rendered as a highlighted callout below `info` */
+  infoHighlight?: string;
   /** Column width in px (default 150) */
   size?: number;
   /** Prevent editing */
