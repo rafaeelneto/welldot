@@ -31,7 +31,7 @@ const togglePt = {
 };
 
 // Shared by the topbar and drawer "coming soon" markers.
-const soonPillClass =
+const previewPillClass =
   'text-xs font-semibold uppercase tracking-wider px-1.5 py-0.5 ' +
   'rounded-full bg-surface-100 text-content-400';
 
@@ -64,14 +64,15 @@ const localeBtnClass =
           >
             {{ t('nav.editor') }}
           </NuxtLink>
-          <span
+          <NuxtLink
             v-tooltip.bottom="t('nav.managerTooltip')"
-            class="flex items-center gap-2 text-content-500 font-medium cursor-not-allowed select-none"
-            aria-disabled="true"
+            to="https://manager.welldot.org/"
+            target="_blank"
+            class="flex items-center gap-2 text-content-400 hover:text-content-0 font-medium transition-colors no-underline"
           >
             {{ t('nav.manager') }}
-            <span :class="soonPillClass">{{ t('nav.comingSoon') }}</span>
-          </span>
+            <span :class="previewPillClass">{{ t('nav.preview') }}</span>
+          </NuxtLink>
           <NuxtLink
             to="https://github.com/rafaeelneto/welldot"
             target="_blank"
@@ -168,17 +169,18 @@ const localeBtnClass =
           <Icon name="heroicons:pencil-square" class="size-4 shrink-0" />
           {{ t('nav.editor') }}
         </NuxtLink>
-        <div
-          v-tooltip.top="t('nav.managerTooltip')"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-400 cursor-not-allowed select-none"
-          aria-disabled="true"
+        <NuxtLink
+          to="https://manager.welldot.org/"
+          target="_blank"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-200 hover:text-content-0 hover:bg-surface-100 transition-colors no-underline"
+          @click="drawerOpen = false"
         >
           <Icon name="heroicons:squares-2x2" class="size-4 shrink-0" />
           {{ t('nav.manager') }}
-          <span :class="[soonPillClass, 'ml-auto']">{{
-            t('nav.comingSoon')
+          <span :class="[previewPillClass, 'ml-auto']">{{
+            t('nav.preview')
           }}</span>
-        </div>
+        </NuxtLink>
         <NuxtLink
           to="https://github.com/rafaeelneto/welldot"
           target="_blank"
