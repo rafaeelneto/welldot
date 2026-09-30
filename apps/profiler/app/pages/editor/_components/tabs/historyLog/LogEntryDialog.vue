@@ -111,7 +111,7 @@ function saveEntry() {
     :style="{ width: '100vw', maxWidth: '36rem' }"
   >
     <div class="flex flex-col gap-4 pt-2">
-      <FormField :label="t('editor.historyLog.logs.fields.category')">
+      <LabeledField :label="t('editor.historyLog.logs.fields.category')">
         <div class="flex flex-wrap gap-2">
           <label
             v-for="opt in categoryOptions"
@@ -130,9 +130,9 @@ function saveEntry() {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </FormField>
+      </LabeledField>
 
-      <FormField :label="t('editor.historyLog.logs.fields.datetime')">
+      <LabeledField :label="t('editor.historyLog.logs.fields.datetime')">
         <DatePicker
           v-model="form.datetime"
           show-time
@@ -142,22 +142,22 @@ function saveEntry() {
           class="w-full"
           :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
         />
-      </FormField>
+      </LabeledField>
 
-      <FormField :label="t('editor.historyLog.logs.fields.description')">
+      <LabeledField :label="t('editor.historyLog.logs.fields.description')">
         <Textarea
           v-model="form.description"
           :rows="5"
           class="w-full font-mono text-sm"
         />
-      </FormField>
+      </LabeledField>
 
-      <FormField :label="t('editor.historyLog.logs.fields.author')">
+      <LabeledField :label="t('editor.historyLog.logs.fields.author')">
         <InputText v-model="form.author" class="w-full" />
-      </FormField>
+      </LabeledField>
 
       <!-- ── Attachments ────────────────────────────────────────────────── -->
-      <FormField :label="t('editor.historyLog.logs.fields.attachments')">
+      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
         <div class="flex flex-col gap-2">
           <div
             v-for="att in form.attachments"
@@ -234,9 +234,9 @@ function saveEntry() {
             {{ t('editor.historyLog.logs.addAttachment') }}
           </button>
         </div>
-      </FormField>
+      </LabeledField>
 
-      <FormField :label="t('editor.historyLog.logs.fields.severity')">
+      <LabeledField :label="t('editor.historyLog.logs.fields.severity')">
         <div class="flex flex-wrap gap-2">
           <label
             v-for="opt in severityOptions"
@@ -254,7 +254,7 @@ function saveEntry() {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </FormField>
+      </LabeledField>
     </div>
 
     <template #footer>

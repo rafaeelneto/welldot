@@ -87,7 +87,7 @@ const cementPadTypeOptions = computed(() => [
     </div>
 
     <template v-if="hasCementPad">
-      <FormField :label="t('editor.construction.wellhead.type')">
+      <LabeledField :label="t('editor.construction.wellhead.type')">
         <Select
           v-model="profileStore.well.cement_pad!.type"
           :options="cementPadTypeOptions"
@@ -95,10 +95,10 @@ const cementPadTypeOptions = computed(() => [
           option-value="value"
           class="w-full"
         />
-      </FormField>
+      </LabeledField>
 
       <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-        <FormField :label="widthLabel">
+        <LabeledField :label="widthLabel">
           <UnitInput
             v-model="profileStore.well.cement_pad!.width"
             unit-type="length"
@@ -106,8 +106,8 @@ const cementPadTypeOptions = computed(() => [
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </FormField>
-        <FormField :label="lengthLabel">
+        </LabeledField>
+        <LabeledField :label="lengthLabel">
           <UnitInput
             v-model="profileStore.well.cement_pad!.length"
             unit-type="length"
@@ -115,11 +115,11 @@ const cementPadTypeOptions = computed(() => [
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </FormField>
+        </LabeledField>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
-        <FormField :label="thicknessLabel">
+        <LabeledField :label="thicknessLabel">
           <UnitInput
             v-model="profileStore.well.cement_pad!.thickness"
             unit-type="length"
@@ -127,7 +127,7 @@ const cementPadTypeOptions = computed(() => [
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </FormField>
+        </LabeledField>
       </div>
     </template>
   </section>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { WellGridColumn } from '~/components/DataGrid/types';
-import FormField from '~/components/FormField.vue';
 import { calculatedWellDepth } from '~/utils/wellDepth';
 
 const { t } = useI18n();
@@ -120,7 +119,7 @@ function syncWellDepth() {
       @change="updateBoreHole"
       @reorder="reorderBoreHole"
     />
-    <FormField :label="t('editor.construction.boreHole.wellDepth')">
+    <LabeledField :label="t('editor.construction.boreHole.wellDepth')">
       <UnitInput
         unit-type="length"
         :model-value="profileStore.well.well_depth ?? null"
@@ -147,6 +146,6 @@ function syncWellDepth() {
           @click="syncWellDepth"
         />
       </div>
-    </FormField>
+    </LabeledField>
   </section>
 </template>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AppChip from '~/components/AppChip.vue';
-import FormField from '~/components/FormField.vue';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -135,16 +134,16 @@ function removeWellPurpose(value: string) {
       </div>
 
       <!-- Name -->
-      <FormField :label="t('editor.general.name')">
+      <LabeledField :label="t('editor.general.name')">
         <InputText v-model="profileStore.well.name" class="w-full" />
-      </FormField>
+      </LabeledField>
 
       <!-- Driller + Construction Date -->
       <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-        <FormField :label="t('editor.general.driller')">
+        <LabeledField :label="t('editor.general.driller')">
           <InputText v-model="profileStore.well.well_driller" class="w-full" />
-        </FormField>
-        <FormField :label="t('editor.general.constructionDate')">
+        </LabeledField>
+        <LabeledField :label="t('editor.general.constructionDate')">
           <DatePicker
             v-model="constructionDate"
             show-button-bar
@@ -152,12 +151,12 @@ function removeWellPurpose(value: string) {
             class="w-full"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
-        </FormField>
+        </LabeledField>
       </div>
 
       <!-- Well Type (half-width) -->
       <div class="grid sm:grid-cols-2 gap-4">
-        <FormField
+        <LabeledField
           :label="t('editor.general.wellType')"
           :info="t('editor.general.wellTypeInfo')"
         >
@@ -169,11 +168,11 @@ function removeWellPurpose(value: string) {
             :placeholder="t('editor.general.wellType')"
             class="w-full"
           />
-        </FormField>
+        </LabeledField>
       </div>
 
       <!-- Well Purpose -->
-      <FormField :label="t('editor.general.wellPurpose')">
+      <LabeledField :label="t('editor.general.wellPurpose')">
         <div class="flex flex-wrap items-center gap-2 pt-1">
           <AppChip
             v-for="option in selectedWellPurposes"
@@ -210,7 +209,7 @@ function removeWellPurpose(value: string) {
             </template>
           </Button>
         </div>
-      </FormField>
+      </LabeledField>
 
       <Popover ref="wellPurposePopover">
         <div class="flex flex-col gap-2.5 p-1 min-w-60">
@@ -386,13 +385,13 @@ function removeWellPurpose(value: string) {
         </span>
       </div>
 
-      <FormField :label="t('editor.general.observationsLabel')">
+      <LabeledField :label="t('editor.general.observationsLabel')">
         <Textarea
           v-model="profileStore.well.obs"
           class="w-full font-mono text-sm"
           :rows="5"
         />
-      </FormField>
+      </LabeledField>
     </section>
   </div>
 </template>

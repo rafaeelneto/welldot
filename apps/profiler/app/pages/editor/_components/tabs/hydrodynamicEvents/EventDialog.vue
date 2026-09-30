@@ -459,7 +459,7 @@ function reorderRecoveryReading(from: number, to: number) {
   >
     <div class="flex flex-col gap-5 pt-2">
       <!-- Event type selector -->
-      <FormField :label="t('editor.hydrodynamicEvents.fields.type')">
+      <LabeledField :label="t('editor.hydrodynamicEvents.fields.type')">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <label
             v-for="opt in typeOptions"
@@ -478,10 +478,10 @@ function reorderRecoveryReading(from: number, to: number) {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </FormField>
+      </LabeledField>
 
       <!-- Date / time -->
-      <FormField :label="t('editor.hydrodynamicEvents.fields.datetime')">
+      <LabeledField :label="t('editor.hydrodynamicEvents.fields.datetime')">
         <DatePicker
           v-model="form.datetime"
           show-time
@@ -491,28 +491,28 @@ function reorderRecoveryReading(from: number, to: number) {
           class="w-full"
           :pt="{ pcInput: { root: { class: 'font-mono text-sm w-full' } } }"
         />
-      </FormField>
+      </LabeledField>
 
       <!-- Operator / Equipment -->
       <div class="grid grid-cols-2 gap-3">
-        <FormField :label="t('editor.hydrodynamicEvents.fields.operator')">
+        <LabeledField :label="t('editor.hydrodynamicEvents.fields.operator')">
           <InputText v-model="form.operator" class="w-full" />
-        </FormField>
-        <FormField :label="t('editor.hydrodynamicEvents.fields.equipment')">
+        </LabeledField>
+        <LabeledField :label="t('editor.hydrodynamicEvents.fields.equipment')">
           <InputText v-model="form.equipment" class="w-full" />
-        </FormField>
+        </LabeledField>
       </div>
 
       <!-- Static level (spot / constant_rate / step_drawdown) -->
       <div v-if="showStaticLevel" class="grid grid-cols-2 gap-3">
-        <FormField :label="t('editor.hydrodynamicEvents.fields.staticLevel')">
+        <LabeledField :label="t('editor.hydrodynamicEvents.fields.staticLevel')">
           <InputNumber
             v-model="form.staticLevel"
             :max-fraction-digits="3"
             class="w-full"
           />
-        </FormField>
-        <FormField
+        </LabeledField>
+        <LabeledField
           :label="t('editor.hydrodynamicEvents.fields.staticLevelPrecision')"
         >
           <InputNumber
@@ -520,11 +520,11 @@ function reorderRecoveryReading(from: number, to: number) {
             :max-fraction-digits="3"
             class="w-full"
           />
-        </FormField>
+        </LabeledField>
       </div>
 
       <!-- Measurement method (spot_measurement) -->
-      <FormField
+      <LabeledField
         v-if="showMeasurementMethod"
         :label="t('editor.hydrodynamicEvents.fields.measurementMethod')"
       >
@@ -536,18 +536,18 @@ function reorderRecoveryReading(from: number, to: number) {
           show-clear
           class="w-full"
         />
-      </FormField>
+      </LabeledField>
 
       <!-- Recovery only: estimated preceding params -->
       <div v-if="showRecoveryOnly" class="grid grid-cols-2 gap-3">
-        <FormField :label="t('editor.hydrodynamicEvents.fields.pumpingRate')">
+        <LabeledField :label="t('editor.hydrodynamicEvents.fields.pumpingRate')">
           <InputNumber
             v-model="form.pumpingRate"
             :max-fraction-digits="2"
             class="w-full"
           />
-        </FormField>
-        <FormField
+        </LabeledField>
+        <LabeledField
           :label="t('editor.hydrodynamicEvents.fields.pumpingDuration')"
         >
           <InputNumber
@@ -555,7 +555,7 @@ function reorderRecoveryReading(from: number, to: number) {
             :max-fraction-digits="1"
             class="w-full"
           />
-        </FormField>
+        </LabeledField>
       </div>
 
       <!-- Pumping steps -->
@@ -567,7 +567,7 @@ function reorderRecoveryReading(from: number, to: number) {
             {{ t('editor.hydrodynamicEvents.fields.steps') }}
           </span>
           <div class="flex items-center gap-3">
-            <FormField
+            <LabeledField
               :label="t('editor.hydrodynamicEvents.fields.stepsDepthPrecision')"
               class="mb-0 flex-row items-center"
             >
@@ -577,7 +577,7 @@ function reorderRecoveryReading(from: number, to: number) {
                 :max-fraction-digits="3"
                 class="precision-input"
               />
-            </FormField>
+            </LabeledField>
             <Button
               outlined
               size="small"
@@ -749,13 +749,13 @@ function reorderRecoveryReading(from: number, to: number) {
       </div>
 
       <!-- Notes -->
-      <FormField :label="t('editor.hydrodynamicEvents.fields.notes')">
+      <LabeledField :label="t('editor.hydrodynamicEvents.fields.notes')">
         <Textarea
           v-model="form.notes"
           :rows="3"
           class="w-full font-mono text-sm"
         />
-      </FormField>
+      </LabeledField>
     </div>
 
     <template #footer>

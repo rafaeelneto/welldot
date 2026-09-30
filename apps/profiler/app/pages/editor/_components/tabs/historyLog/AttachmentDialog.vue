@@ -78,19 +78,19 @@ function save() {
     :style="{ width: '28rem' }"
   >
     <div class="flex flex-col gap-4 pt-2">
-      <FormField :label="t('editor.historyLog.logs.fields.attachmentUrl')">
+      <LabeledField :label="t('editor.historyLog.logs.fields.attachmentUrl')">
         <InputText
           v-model="form.url"
           class="w-full font-mono text-sm"
           placeholder="https://"
         />
-      </FormField>
+      </LabeledField>
 
-      <FormField :label="t('editor.historyLog.logs.fields.attachmentFilename')">
+      <LabeledField :label="t('editor.historyLog.logs.fields.attachmentFilename')">
         <InputText v-model="form.filename" class="w-full" />
-      </FormField>
+      </LabeledField>
 
-      <FormField
+      <LabeledField
         :label="t('editor.historyLog.logs.fields.attachmentMediaType')"
       >
         <Select
@@ -100,7 +100,7 @@ function save() {
           option-value="value"
           class="w-full"
         />
-      </FormField>
+      </LabeledField>
     </div>
 
     <template #footer>

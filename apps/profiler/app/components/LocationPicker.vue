@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import FormField from './FormField.vue';
-
 const { t } = useI18n();
 const uiStore = useUiStore();
 
@@ -75,7 +73,7 @@ const elevationLabel = computed(
 
 <template>
   <div class="flex flex-col gap-5">
-    <FormField :label="t('editor.general.coordinatesLabel')">
+    <LabeledField :label="t('editor.general.coordinatesLabel')">
       <div class="flex items-center">
         <SelectButton
           v-model="uiStore.coordinateFormat"
@@ -95,10 +93,10 @@ const elevationLabel = computed(
           size="small"
         />
       </div>
-    </FormField>
+    </LabeledField>
 
     <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-      <FormField :label="t('editor.general.latitude')">
+      <LabeledField :label="t('editor.general.latitude')">
         <InputText
           v-model="rawLat"
           class="w-full font-mono"
@@ -106,9 +104,9 @@ const elevationLabel = computed(
           @blur="commitLat"
           @keydown.enter="commitLat"
         />
-      </FormField>
+      </LabeledField>
 
-      <FormField :label="t('editor.general.longitude')">
+      <LabeledField :label="t('editor.general.longitude')">
         <InputText
           v-model="rawLng"
           class="w-full font-mono"
@@ -116,16 +114,16 @@ const elevationLabel = computed(
           @blur="commitLng"
           @keydown.enter="commitLng"
         />
-      </FormField>
+      </LabeledField>
 
-      <FormField :label="elevationLabel">
+      <LabeledField :label="elevationLabel">
         <UnitInput
           v-model="elevation"
           unit-type="length"
           class="w-full"
           :max-fraction-digits="3"
         />
-      </FormField>
+      </LabeledField>
     </div>
 
     <div class="flex flex-col gap-1">
