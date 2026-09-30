@@ -15,8 +15,8 @@
   "nav": {
     "editor": "Editor",
     "manager": "Manager",
-    "comingSoon": "Soon",
-    "managerTooltip": "Well manager — coming soon",
+    "preview": "Preview",
+    "managerTooltip": "Well manager — preview release",
     "github": "GitHub",
     "openEditor": "Open editor",
     "openEditorMobile": "Editor",
