@@ -21,6 +21,7 @@ import {
 } from '@welldot/core';
 import {
   formatNumber,
+  getCurrentPump,
   getProfileDiamValues,
   getProfileLastItemsDepths,
 } from '@welldot/utils';
@@ -52,6 +53,7 @@ import { drawFractures } from './renderers/fractures.renderer';
 import { drawHighlights } from './renderers/highlights.renderer';
 import { drawWellLegend } from './renderers/legend.renderer';
 import { drawLithology } from './renderers/lithology.renderer';
+import { drawPump } from './renderers/pump.renderer';
 import { drawUnitLabels } from './renderers/unit-labels.renderer';
 import { asSvgElement } from './utils/d3.utils';
 import { buildSvgStyleBlock } from './utils/render.styles';
@@ -216,6 +218,7 @@ export class WellRenderer {
     construction.append('g').attr('class', this.classes.wellCase.group);
     construction.append('g').attr('class', this.classes.wellScreen.group);
     construction.append('g').attr('class', this.classes.reduction.group);
+    construction.append('g').attr('class', this.classes.pump.group);
     construction.append('g').attr('class', this.classes.centralizer.group);
     construction.append('g').attr('class', this.classes.conflict.group);
     construction
@@ -380,6 +383,7 @@ export class WellRenderer {
     const wellScreenGroup = svg.select(`.${this.classes.wellScreen.group}`);
     const reductionGroup = svg.select(`.${this.classes.reduction.group}`);
     const centralizerGroup = svg.select(`.${this.classes.centralizer.group}`);
+    const pumpGroup = svg.select(`.${this.classes.pump.group}`);
     const conflictGroup = svg.select(`.${this.classes.conflict.group}`);
     const constructionLabelsGroup = svg.select(
       `.${this.classes.constructionLabels.group}`,
@@ -508,6 +512,7 @@ export class WellRenderer {
       wellScreenGroup,
       reductionGroup,
       centralizerGroup,
+      pumpGroup,
       conflictGroup,
       highlightsGeologicGroup,
       highlightsConstructionGroup,
@@ -540,6 +545,7 @@ export class WellRenderer {
     };
 
     const inDepth = filterByDepth(depthFrom, depthTo);
+    const currentPump = getCurrentPump(profile as Well);
     const filteredConstruction = {
       ...constructionData,
       bore_hole: constructionData.bore_hole.filter(inDepth),
@@ -628,6 +634,7 @@ export class WellRenderer {
           ) ?? [],
         caves: profile.caves?.filter(inDepth) ?? [],
       });
+      drawPump(zoomedCtx, currentPump);
       drawCentralizers(zoomedCtx, filteredConstruction);
       drawConstructionLabels(zoomedCtx, {
         well_case: constructionData.well_case.filter(inDepth),
@@ -657,6 +664,7 @@ export class WellRenderer {
         ) ?? [],
       );
       drawConstructive(ctx, filteredConstruction);
+      drawPump(ctx, currentPump);
       drawCentralizers(ctx, filteredConstruction);
       drawConstructionLabels(ctx, {
         well_case: filteredConstruction.well_case,

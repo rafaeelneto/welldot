@@ -59,6 +59,10 @@ export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     group: 'centralizer',
     item: 'centralizer-marker',
   },
+  pump: {
+    group: 'pump',
+    item: 'pump-item',
+  },
   reduction: {
     group: 'reduction',
     item: 'reduction-poly',

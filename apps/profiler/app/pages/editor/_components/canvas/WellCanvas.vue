@@ -85,7 +85,11 @@ async function initRenderer() {
   const renderer = new WellRenderer(
     [{ selector: `#${svgId}`, width, height, margins: MARGINS }],
     {
-      units: { length: uiStore.lengthUnit, diameter: uiStore.diameterUnit },
+      units: {
+        length: uiStore.lengthUnit,
+        diameter: uiStore.diameterUnit,
+        power: uiStore.powerUnit,
+      },
       locale: locale.value as 'en' | 'pt',
       renderConfig: applyRenderLocale(
         INTERACTIVE_RENDER_CONFIG,
@@ -112,7 +116,11 @@ function redraw() {
   const profile = well.value;
   if (!profile || isWellEmpty(profile)) return;
   wellRenderer.draw(profile, {
-    units: { length: uiStore.lengthUnit, diameter: uiStore.diameterUnit },
+    units: {
+      length: uiStore.lengthUnit,
+      diameter: uiStore.diameterUnit,
+      power: uiStore.powerUnit,
+    },
     locale: locale.value as 'en' | 'pt',
   });
 }
@@ -146,8 +154,13 @@ async function reload() {
 watch(well, redraw);
 // Unit changes do a full reinit (same path as the reload button), not just
 // redraw(), so anything the constructor's `units` option seeds is rebuilt too.
-watch([() => uiStore.lengthUnit, () => uiStore.diameterUnit], () =>
-  reinitAndRedraw(),
+watch(
+  [
+    () => uiStore.lengthUnit,
+    () => uiStore.diameterUnit,
+    () => uiStore.powerUnit,
+  ],
+  () => reinitAndRedraw(),
 );
 // Locale changes need a full reinit, not just redraw() — renderConfig's
 // translated strings (construction labels, tooltip text, legend, type words)

@@ -107,6 +107,19 @@ const makeLabels = (): TooltipLabels => ({
     depth: 'Profundidade:',
     spacing: 'Espaçamento:',
   },
+  pump: {
+    title: 'BOMBA',
+    intakeDepth: 'Profundidade do crivo:',
+    model: 'Modelo:',
+    power: 'Potência:',
+    riser: 'Edutor:',
+    type_submersible: 'Bomba submersa',
+    type_vertical_turbine: 'Bomba de eixo vertical',
+    type_jet: 'Bomba injetora',
+    type_progressive_cavity: 'Bomba helicoidal',
+    type_hand_pump: 'Bomba manual',
+    type_compressor_airlift: 'Compressor (air-lift)',
+  },
   conflict: { title: 'CONFLITO' },
   fracture: {
     title: 'FRATURA',
@@ -150,6 +163,7 @@ const makeClasses = (): ComponentsClassNames => ({
   wellScreen: { group: '', rect: '' },
   reduction: { group: '', item: '' },
   centralizer: { group: '', item: '' },
+  pump: { group: '', item: '' },
   conflict: { group: '', rect: '' },
   unitLabels: { group: '', geoRect: '', aqRect: '', text: '' },
   legend: {
@@ -672,9 +686,10 @@ describe('populateTooltips', () => {
     'fracture',
     'cementPad',
     'cave',
+    'pump',
   ];
 
-  it('tooltipConfig=undefined → all 10 keys present as real tips (no show/hide)', () => {
+  it('tooltipConfig=undefined → all 11 keys present as real tips (no show/hide)', () => {
     const tooltips = populateTooltips(
       makeSvg(),
       makeClasses(),
@@ -689,7 +704,7 @@ describe('populateTooltips', () => {
     });
   });
 
-  it('tooltipConfig=false → all 10 are noop objects with show/hide', () => {
+  it('tooltipConfig=false → all 11 are noop objects with show/hide', () => {
     const tooltips = populateTooltips(
       makeSvg(),
       makeClasses(),

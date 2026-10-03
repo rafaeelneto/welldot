@@ -511,6 +511,45 @@
                   "notes": {
                     "type": "string"
                   },
+                  "corrects": {
+                    "type": "string"
+                  },
+                  "attachments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "uri": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "media_type": {
+                          "type": "string"
+                        },
+                        "document_type": {
+                          "type": "string"
+                        },
+                        "filename": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "sha256": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uri",
+                        "media_type"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
                   "static_level": {
                     "type": "number"
                   },
@@ -616,6 +655,12 @@
                   "notes": {
                     "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/notes"
                   },
+                  "corrects": {
+                    "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/corrects"
+                  },
+                  "attachments": {
+                    "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments"
+                  },
                   "static_level": {
                     "type": "number"
                   },
@@ -666,6 +711,12 @@
                   "notes": {
                     "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/notes"
                   },
+                  "corrects": {
+                    "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/corrects"
+                  },
+                  "attachments": {
+                    "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments"
+                  },
                   "static_level": {
                     "type": "number"
                   },
@@ -715,6 +766,12 @@
                   "notes": {
                     "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/notes"
                   },
+                  "corrects": {
+                    "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/corrects"
+                  },
+                  "attachments": {
+                    "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments"
+                  },
                   "steps": {
                     "type": "array",
                     "items": {
@@ -757,6 +814,12 @@
                   },
                   "notes": {
                     "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/notes"
+                  },
+                  "corrects": {
+                    "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/corrects"
+                  },
+                  "attachments": {
+                    "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments"
                   },
                   "pumping_rate": {
                     "type": "number"
@@ -801,6 +864,12 @@
               },
               "notes": {
                 "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/notes"
+              },
+              "corrects": {
+                "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/corrects"
+              },
+              "attachments": {
+                "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments"
               }
             },
             "required": [
@@ -896,6 +965,12 @@
           },
           "notes": {
             "type": "string"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments/items"
+            }
           }
         },
         "required": [
@@ -937,34 +1012,7 @@
           "attachments": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "uri": {
-                  "type": "string",
-                  "format": "uri"
-                },
-                "media_type": {
-                  "type": "string"
-                },
-                "filename": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "sha256": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "id",
-                "uri",
-                "media_type"
-              ],
-              "additionalProperties": false
+              "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments/items"
             }
           }
         },
@@ -973,6 +1021,121 @@
           "datetime",
           "category",
           "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments/items"
+      }
+    },
+    "pump_installations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "installed_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "removed_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "type": {
+            "type": "string"
+          },
+          "power_source": {
+            "type": "string"
+          },
+          "manufacturer": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "serial": {
+            "type": "string"
+          },
+          "intake_depth": {
+            "type": "number",
+            "minimum": 0
+          },
+          "rated_flow_rate": {
+            "type": "number",
+            "minimum": 0
+          },
+          "rated_head": {
+            "type": "number",
+            "minimum": 0
+          },
+          "rated_power": {
+            "type": "number",
+            "minimum": 0
+          },
+          "stages": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "riser_diameter": {
+            "type": "number",
+            "minimum": 0
+          },
+          "riser_material": {
+            "type": "string"
+          },
+          "check_valve": {
+            "type": "boolean"
+          },
+          "electrical": {
+            "type": "object",
+            "properties": {
+              "voltage": {
+                "type": "number",
+                "minimum": 0
+              },
+              "phases": {
+                "type": "number",
+                "enum": [
+                  1,
+                  3
+                ]
+              },
+              "cable_section": {
+                "type": "number",
+                "minimum": 0
+              },
+              "cable_length": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          },
+          "notes": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments/items"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "installed_at",
+          "type"
         ],
         "additionalProperties": false
       }

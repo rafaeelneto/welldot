@@ -16,10 +16,12 @@ TypeScript types, Zod validators, and serialization utilities for the `.well` op
 - **Hydrodynamic events** — append-only ledger of static level readings, pumping tests (constant-rate, step-drawdown, airlift), and recovery phases
 - **Aquifer analysis** — interpreted parameter sets: transmissivity, specific capacity, storativity, and Jacob loss coefficients
 - **Operational history** — timestamped log of maintenance, inspections, and incidents with HTTPS attachment references
+- **Pump installations** — installation history of the well's pumps: nameplate data, intake depth, riser and electrical data (v2.3)
+- **Attachments** — HTTPS-referenced files typed by `document_type`: a root-level `attachments` array for general files about the well (e.g. the drilling report), plus per-record attachments on pumps, events, analyses and log entries. The root array does not collect the per-record ones (v2.3)
 
 The format is designed for three use cases: visualization of technical well profiles, registration with regulatory bodies, and hydrogeological research.
 
-See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.1) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
+See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.3) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
 
 ## Installation
 
@@ -101,7 +103,9 @@ All types are exported as TypeScript type-only exports (zero runtime cost).
 | `RecoveryOnlyEvent`     | Recovery measurements without drawdown data                                     |
 | `HydrodynamicEvent`     | Discriminated union of all event types + x- custom events                       |
 | `AquiferAnalysis`       | An interpreted set of aquifer parameters                                        |
-| `Attachment`            | An HTTPS-referenced file attached to a history log entry                        |
+| `Attachment`            | An HTTPS-referenced document, typed by `document_type` (common type since v2.3) |
+| `PumpInstallation`      | One installation of a pump in the well (v2.3)                                   |
+| `PumpElectrical`        | Electrical data of a pump installation (v2.3)                                   |
 | `HistoryLogEntry`       | One entry in the operational history log                                        |
 | `Units`                 | `{ length: 'm' \| 'ft'; diameter: 'mm' \| 'inches' }`                           |
 | `LengthUnits`           | `'m' \| 'ft'`                                                                   |
@@ -144,6 +148,8 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 | `HydrodynamicEventSchema`     | `HydrodynamicEvent` (discriminated union + x- passthrough)              |
 | `AquiferAnalysisSchema`       | `AquiferAnalysis`                                                       |
 | `AttachmentSchema`            | `Attachment`                                                            |
+| `PumpInstallationSchema`      | `PumpInstallation`                                                      |
+| `PumpElectricalSchema`        | `PumpElectrical`                                                        |
 | `HistoryLogEntrySchema`       | `HistoryLogEntry`                                                       |
 
 ### Functions

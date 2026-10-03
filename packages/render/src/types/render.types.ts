@@ -101,6 +101,14 @@ export type ConstructionTheme = {
   wellScreen: { stroke: string; strokeWidth: number };
   reduction: { fill: string; stroke: string; strokeWidth: number };
   centralizer: { fill: string; stroke: string; strokeWidth: number };
+  /** Current pump body and its riser pipe (`.well` v2.3 `pump_installations`). */
+  pump: {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+    riserStroke: string;
+    riserStrokeWidth: number;
+  };
   conflict: { stroke: string; strokeWidth: number };
 };
 export type LabelsTheme = {
@@ -236,6 +244,10 @@ export type ComponentsClassNames = {
     group: string;
     item: string;
   };
+  pump: {
+    group: string;
+    item: string;
+  };
   conflict: {
     group: string;
     rect: string;
@@ -276,6 +288,7 @@ export type TooltipKey =
   | 'wellScreen'
   | 'reduction'
   | 'centralizer'
+  | 'pump'
   | 'conflict'
   | 'fracture'
   | 'cementPad'
@@ -310,6 +323,19 @@ export type TooltipLabels<T = string> = {
   wellScreen: { title: T; slot: T };
   reduction: { title: T };
   centralizer: { title: T; depth: T; spacing: T };
+  pump: {
+    title: T;
+    intakeDepth: T;
+    model: T;
+    power: T;
+    riser: T;
+    type_submersible: T;
+    type_vertical_turbine: T;
+    type_jet: T;
+    type_progressive_cavity: T;
+    type_hand_pump: T;
+    type_compressor_airlift: T;
+  };
   conflict: { title: T };
   fracture: {
     title: T;
@@ -405,6 +431,17 @@ export type RenderConfig = {
       /** Half the marker height in pixels (constant regardless of zoom). */
       markerHalfHeight: number;
     };
+    /** Current pump + riser layer (`.well` v2.3 `pump_installations`). */
+    pump: {
+      /** Whether the current pump is drawn. */
+      active: boolean;
+      /** Pump body height in pixels (constant regardless of zoom); the body ends at `intake_depth`. */
+      bodyHeight: number;
+      /** Pump body width as a fraction of the casing/screen diameter at the intake. */
+      bodyWidthRatio: number;
+      /** Riser width as a fraction of the casing diameter, used when `riser_diameter` is absent. */
+      riserWidthRatio: number;
+    };
   };
   textures?: TexturesConfig;
   constructionLabels: {
@@ -490,6 +527,7 @@ export type LegendRenderConfig = {
     wellScreen: string;
     reduction: string;
     centralizer: string;
+    pump: string;
     cementPad: string;
     conflict: string;
   };
@@ -531,6 +569,7 @@ export type DrawGroups = {
   wellScreenGroup: SvgSelection;
   reductionGroup: SvgSelection;
   centralizerGroup: SvgSelection;
+  pumpGroup: SvgSelection;
   conflictGroup: SvgSelection;
   highlightsGeologicGroup: SvgSelection;
   highlightsConstructionGroup: SvgSelection;

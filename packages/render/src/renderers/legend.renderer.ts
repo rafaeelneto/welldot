@@ -2,6 +2,7 @@ import * as d3module from 'd3';
 import { defu } from 'defu';
 
 import { Well } from '@welldot/core';
+import { getCurrentPump } from '@welldot/utils';
 import {
   ComponentsClassNames,
   LegendRenderConfig,
@@ -32,6 +33,7 @@ type LegendItem =
         | 'wellScreen'
         | 'reduction'
         | 'centralizer'
+        | 'pump'
         | 'cementPad'
         | 'conflict';
     };
@@ -68,6 +70,7 @@ export function drawWellLegend(
   const hasWellScreen = wellScreens.length > 0;
   const hasReduction = reductions.length > 0;
   const hasCentralizer = (profile.centralizers ?? []).length > 0;
+  const hasPump = getCurrentPump(profile)?.intake_depth !== undefined;
   const hasCementPad = !!profile.cement_pad?.thickness;
   const hasConflict =
     mergeConflicts(
@@ -173,6 +176,12 @@ export function drawWellLegend(
       kind: 'construction',
       label: cfg.labels.centralizer,
       subKind: 'centralizer',
+    });
+  if (hasPump)
+    items.push({
+      kind: 'construction',
+      label: cfg.labels.pump,
+      subKind: 'pump',
     });
   if (hasConflict)
     items.push({
@@ -355,6 +364,35 @@ export function drawWellLegend(
           .attr('stroke', theme.centralizer.stroke)
           .attr('stroke-width', theme.centralizer.strokeWidth);
       }
+    } else if (item.subKind === 'pump') {
+      // Riser from the top, pump body at the bottom — matching the profile layer.
+      const y1 = rowSymY - rh / 2;
+      const y2 = rowSymY + rh / 2;
+      const midX = cx + rw / 2;
+      const riserHalf = rw * 0.12;
+      const bodyHalf = rw * 0.28;
+      const bodyTop = y1 + rh * 0.4;
+      for (const x of [midX - riserHalf, midX + riserHalf]) {
+        symG
+          .append('line')
+          .attr('class', cls.constructionRect)
+          .attr('x1', x)
+          .attr('x2', x)
+          .attr('y1', y1)
+          .attr('y2', bodyTop)
+          .attr('stroke', theme.pump.riserStroke)
+          .attr('stroke-width', theme.pump.riserStrokeWidth);
+      }
+      symG
+        .append('path')
+        .attr('class', cls.constructionRect)
+        .attr(
+          'd',
+          `M${midX - bodyHalf},${bodyTop}H${midX + bodyHalf}V${y2}H${midX - bodyHalf}Z`,
+        )
+        .attr('fill', theme.pump.fill)
+        .attr('stroke', theme.pump.stroke)
+        .attr('stroke-width', theme.pump.strokeWidth);
     } else if (item.subKind === 'reduction') {
       const topW = rw * 0.5;
       const y1 = rowSymY - rh / 2;

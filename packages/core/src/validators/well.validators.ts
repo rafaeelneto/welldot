@@ -22,6 +22,18 @@ const rfc3339 = () =>
     .string()
     .regex(RFC3339_WITH_OFFSET, 'datetime must be RFC 3339 with UTC offset');
 
+// ─── Common schemas ───────────────────────────────────────────────────────────
+
+export const AttachmentSchema = z.object({
+  id: z.string(),
+  uri: z.string().url(),
+  media_type: z.string(),
+  document_type: z.string().optional(),
+  filename: z.string().optional(),
+  description: z.string().optional(),
+  sha256: z.string().optional(),
+});
+
 // ─── Location schemas ─────────────────────────────────────────────────────────
 
 export const WellIdSchema = z.object({
@@ -170,6 +182,8 @@ export const HydrodynamicEventBaseSchema = z.object({
   operator: z.string().optional(),
   equipment: z.string().optional(),
   notes: z.string().optional(),
+  corrects: z.string().optional(),
+  attachments: z.array(AttachmentSchema).optional(),
 });
 
 export const SpotMeasurementEventSchema = HydrodynamicEventBaseSchema.extend({
@@ -222,15 +236,6 @@ export const HydrodynamicEventSchema = z
 
 // ─── Aquifer analysis + history log schemas ───────────────────────────────────
 
-export const AttachmentSchema = z.object({
-  id: z.string(),
-  uri: z.string().url(),
-  media_type: z.string(),
-  filename: z.string().optional(),
-  description: z.string().optional(),
-  sha256: z.string().optional(),
-});
-
 export const HistoryLogEntrySchema = z.object({
   id: z.string(),
   datetime: rfc3339(),
@@ -267,6 +272,39 @@ export const AquiferAnalysisSchema = z.object({
   jacob_c: z.number().optional(),
   well_efficiency_pct: z.number().optional(),
   notes: z.string().optional(),
+  attachments: z.array(AttachmentSchema).optional(),
+});
+
+// ─── Operational schemas ──────────────────────────────────────────────────────
+
+export const PumpElectricalSchema = z.object({
+  voltage: z.number().nonnegative().optional(),
+  phases: z.union([z.literal(1), z.literal(3)]).optional(),
+  cable_section: z.number().nonnegative().optional(),
+  cable_length: z.number().nonnegative().optional(),
+});
+
+export const PumpInstallationSchema = z.object({
+  id: z.string(),
+  installed_at: rfc3339(),
+  removed_at: rfc3339().optional(),
+  type: z.string(),
+  power_source: z.string().optional(),
+  manufacturer: z.string().optional(),
+  model: z.string().optional(),
+  serial: z.string().optional(),
+  intake_depth: z.number().nonnegative().optional(),
+  rated_flow_rate: z.number().nonnegative().optional(),
+  rated_head: z.number().nonnegative().optional(),
+  rated_power: z.number().nonnegative().optional(),
+  stages: z.number().int().positive().optional(),
+  riser_diameter: z.number().nonnegative().optional(),
+  riser_material: z.string().optional(),
+  check_valve: z.boolean().optional(),
+  electrical: PumpElectricalSchema.optional(),
+  notes: z.string().optional(),
+  updated_at: rfc3339().optional(),
+  attachments: z.array(AttachmentSchema).optional(),
 });
 
 // ─── Well schema ──────────────────────────────────────────────────────────────
@@ -316,6 +354,8 @@ export const WellSchema = z
     hydrodynamic_events: z.array(HydrodynamicEventSchema).optional(),
     aquifer_analysis: z.array(AquiferAnalysisSchema).optional(),
     history_logs: z.array(HistoryLogEntrySchema).optional(),
+    attachments: z.array(AttachmentSchema).optional(),
+    pump_installations: z.array(PumpInstallationSchema).optional(),
   })
   .passthrough();
 

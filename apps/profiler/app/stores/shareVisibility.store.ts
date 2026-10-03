@@ -11,6 +11,7 @@ export const useShareVisibilityStore = defineStore(
       geology: true,
       hydrodynamic: true,
       history: true,
+      operation: true,
     });
 
     const visibleCount = computed(
@@ -27,6 +28,17 @@ export const useShareVisibilityStore = defineStore(
     return { visibility, visibleCount, hasHidden, setVisible };
   },
   {
-    persist: { key: 'welldot_share_visibility' },
+    persist: {
+      key: 'welldot_share_visibility',
+      // Sections added after the state was first persisted (e.g. `operation`,
+      // .well v2.3) default to visible instead of being silently hidden.
+      afterHydrate(ctx) {
+        const stored = ctx.store.visibility as Partial<SectionVisibility>;
+        for (const key of SECTION_KEYS) {
+          if (typeof stored[key] !== 'boolean')
+            ctx.store.visibility[key] = true;
+        }
+      },
+    },
   },
 );

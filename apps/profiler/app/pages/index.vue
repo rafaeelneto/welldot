@@ -201,7 +201,7 @@ const toolCards = computed(() =>
             class="flex flex-wrap gap-5.5 pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
           >
             <span
-              ><b class="text-content-0 font-medium">v2.0</b>
+              ><b class="text-content-0 font-medium">v2.3</b>
               {{ t('hero.badgeSpec') }}</span
             >
             <span

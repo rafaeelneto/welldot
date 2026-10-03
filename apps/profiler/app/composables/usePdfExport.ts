@@ -104,6 +104,8 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
         endInfo: resolveInfoItems(pdfExportStore.endInfo),
         lengthUnit: uiStore.lengthUnit,
         diameterUnit: uiStore.diameterUnit,
+        flowUnit: uiStore.flowUnit,
+        powerUnit: uiStore.powerUnit,
         coordinateFormat: uiStore.coordinateFormat,
         locale: locale.value,
         baseUrl,
@@ -121,7 +123,11 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
         breakPages: options.breakPages,
         scale: options.scale,
         firstPageAvailableHeight,
-        units: { length: options.lengthUnit, diameter: options.diameterUnit },
+        units: {
+          length: options.lengthUnit,
+          diameter: options.diameterUnit,
+          power: options.powerUnit,
+        },
         locale: options.locale,
       });
       if (token !== renderToken) return null;
@@ -190,6 +196,8 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
         visibility: shareVisibilityStore.visibility,
         lengthUnit: uiStore.lengthUnit,
         diameterUnit: uiStore.diameterUnit,
+        flowUnit: uiStore.flowUnit,
+        powerUnit: uiStore.powerUnit,
         coordinateFormat: uiStore.coordinateFormat,
       }),
       () => {

@@ -1,4 +1,4 @@
-# `.well` File Format Specification — Version 2.1: Interoperability
+# `.well` File Format Specification — Version 2.3: Interoperability
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md)
 
@@ -21,7 +21,7 @@ A `.well` file MAY include `"@context": "https://welldot.org/context/v2.jsonld"`
 
 ### Context publication plan
 
-The canonical context is staged across four phases. Each phase publishes a real, fetchable document at the canonical URL — at no phase is the URL a placeholder.
+The canonical context is staged across six phases (0–5). Each phase publishes a real, fetchable document at the canonical URL — at no phase is the URL a placeholder.
 
 **Phase 0 — Reservation (v2.0 ratification)**
 
@@ -58,6 +58,10 @@ Adds mappings for `lithology`, `fractures`, `caves`, `texture`, `texture.code`, 
 **Phase 4 — Hydrodynamic & analysis (v2.1)**
 
 Adds mappings for `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquifer_analysis`, `history_logs`, and supporting types (`PumpingStep`, `LevelReading`, `RecoveryPhase`, `Attachment`). Maps event readings to O&M's `OM_Observation` pattern and time-series to TimeseriesML where alignment is verified. This phase ships alongside the v2.1 spec revision.
+
+**Phase 5 — Operational blocks (v2.3)**
+
+Adds mappings for `attachments`, `Attachment.document_type`, `pump_installations`, `PumpInstallation` and `PumpElectrical` fields, and `hydrodynamic_events[].corrects`. `corrects` maps to a retraction relation between two observation records; attachments alias to `schema:MediaObject` (`uri` → `schema:contentUrl`, `media_type` → `schema:encodingFormat`, `sha256` → `schema:sha256`). Units bind to QUDT (`unit:KiloW`, `unit:V`, `unit:MilliM2`). This phase ships alongside the v2.3 spec revision.
 
 ### Versioning and stability
 
@@ -115,27 +119,30 @@ A `.well` `Lithology` array corresponds to a GWML2 **`GW_GeologyLogCoverage`**, 
 
 The mapping below is **informative, not normative**. Class names in italics are verified against published GWML2 documentation (the OGC 16-032r2 specification, the _Hydrogeology Journal_ and _Open Geospatial Data, Software and Standards_ papers, and the OGC Hydrology DWG wiki). Class names marked with `?` are **approximate** — they describe the GWML2 module a `.well` construct belongs to but the exact class name was not verified at the time of writing this draft. Implementers building converters should verify these against the authoritative XSDs at `http://schemas.opengis.net/gwml/2.2/` before relying on them.
 
-| `.well` construct           | GWML2 module           | Class / property                                                   |
-| --------------------------- | ---------------------- | ------------------------------------------------------------------ |
-| Well (top-level)            | GWML2-Well             | _`GW_Well`_ (specializes `O&M:SF_SamplingCurve`)                   |
-| `well_id[]`                 | GWML2-Well             | `GW_Well` identifier property (?)                                  |
-| `location`                  | GWML2-Well             | `GW_Well` shape / position property (?)                            |
-| `bore_hole[]`               | GWML2-WellConstruction | `Borehole` (?)                                                     |
-| `well_case[]`               | GWML2-WellConstruction | `Casing` (?)                                                       |
-| `surface_case[]`            | GWML2-WellConstruction | `Casing` with surface depth range (?)                              |
-| `well_screen[]`             | GWML2-WellConstruction | `Screen` (?)                                                       |
-| `reduction[]`               | GWML2-WellConstruction | No direct equivalent — casing transition                           |
-| `hole_fill[]`               | GWML2-WellConstruction | Annular fill / gravel pack / seal (?)                              |
-| `cement_pad`                | GWML2-WellConstruction | No direct equivalent — wellhead furniture                          |
-| `centralizers[]`            | GWML2-WellConstruction | No verified equivalent — casing accessory (?)                      |
-| `well_purpose[]`            | GWML2-Well             | `GW_Well` purpose / use property (?)                               |
-| `lithology[]`               | GWML2-Well             | _`GW_GeologyLogCoverage`_ (realizes `CV_DiscreteCoverage`)         |
-| `lithology[].geologic_unit` | GWML2-Main             | _`GW_HydrogeologicalUnit`_ (specializes GeoSciML `GeologicUnit`)   |
-| `fractures[]`               | GWML2-Well             | Fracture log interval (?)                                          |
-| `caves[]`                   | GWML2-Well             | Void / cavity log interval (?)                                     |
-| `hydrodynamic_events[]`     | GWML2-AquiferTest      | `GW_AquiferTest` (?) plus `OM_Observation` series via TimeseriesML |
-| `aquifer_analysis[]`        | GWML2-AquiferTest      | Aquifer test result properties (?)                                 |
-| `history_logs[]`            | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
+| `.well` construct                | GWML2 module           | Class / property                                                   |
+| -------------------------------- | ---------------------- | ------------------------------------------------------------------ |
+| Well (top-level)                 | GWML2-Well             | _`GW_Well`_ (specializes `O&M:SF_SamplingCurve`)                   |
+| `well_id[]`                      | GWML2-Well             | `GW_Well` identifier property (?)                                  |
+| `location`                       | GWML2-Well             | `GW_Well` shape / position property (?)                            |
+| `bore_hole[]`                    | GWML2-WellConstruction | `Borehole` (?)                                                     |
+| `well_case[]`                    | GWML2-WellConstruction | `Casing` (?)                                                       |
+| `surface_case[]`                 | GWML2-WellConstruction | `Casing` with surface depth range (?)                              |
+| `well_screen[]`                  | GWML2-WellConstruction | `Screen` (?)                                                       |
+| `reduction[]`                    | GWML2-WellConstruction | No direct equivalent — casing transition                           |
+| `hole_fill[]`                    | GWML2-WellConstruction | Annular fill / gravel pack / seal (?)                              |
+| `cement_pad`                     | GWML2-WellConstruction | No direct equivalent — wellhead furniture                          |
+| `centralizers[]`                 | GWML2-WellConstruction | No verified equivalent — casing accessory (?)                      |
+| `well_purpose[]`                 | GWML2-Well             | `GW_Well` purpose / use property (?)                               |
+| `lithology[]`                    | GWML2-Well             | _`GW_GeologyLogCoverage`_ (realizes `CV_DiscreteCoverage`)         |
+| `lithology[].geologic_unit`      | GWML2-Main             | _`GW_HydrogeologicalUnit`_ (specializes GeoSciML `GeologicUnit`)   |
+| `fractures[]`                    | GWML2-Well             | Fracture log interval (?)                                          |
+| `caves[]`                        | GWML2-Well             | Void / cavity log interval (?)                                     |
+| `hydrodynamic_events[]`          | GWML2-AquiferTest      | `GW_AquiferTest` (?) plus `OM_Observation` series via TimeseriesML |
+| `aquifer_analysis[]`             | GWML2-AquiferTest      | Aquifer test result properties (?)                                 |
+| `history_logs[]`                 | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
+| `pump_installations[]`           | GWML2-WellConstruction | Pump / wellhead equipment (?) — pending check against the XSD      |
+| `attachments[]` (root)           | n/a                    | No direct equivalent — documents referenced by URL                 |
+| `hydrodynamic_events[].corrects` | n/a                    | No direct equivalent — ledger correction outside GWML2 scope       |
 
 A complete, normative mapping will be published as a separate document once the GWML2 XSDs have been read directly and each verified class name and property path has been confirmed. Until then, this table is a structural guide and not a conversion specification.
 
@@ -176,4 +183,4 @@ The schema is generated from the Zod validators in `@welldot/core` to prevent dr
 
 ---
 
-_Draft — `.well` Format Specification v2.0_
+_`.well` Format Specification v2.3_

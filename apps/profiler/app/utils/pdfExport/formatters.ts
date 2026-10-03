@@ -1,6 +1,14 @@
-import { metersToFeet, mmToInches } from '@welldot/core';
+import {
+  flowFromCanonical,
+  metersToFeet,
+  mmToInches,
+  powerFromCanonical,
+} from '@welldot/core';
 import { formatNumber } from '@welldot/utils';
-import { resolveDiameterUnitLabel } from '~/utils/unitLabel';
+import {
+  resolveDiameterUnitLabel,
+  resolveFlowUnitLabel,
+} from '~/utils/unitLabel';
 import type { PdfExportOptions } from './types';
 
 export interface PdfFormatters {
@@ -16,6 +24,14 @@ export interface PdfFormatters {
     _volumeM3: number | null | undefined,
     _fractionDigits?: number,
   ): string;
+  formatFlow(
+    _value: number | null | undefined,
+    _fractionDigits?: number,
+  ): string;
+  formatPower(
+    _value: number | null | undefined,
+    _fractionDigits?: number,
+  ): string;
   lengthUnit: PdfExportOptions['lengthUnit'];
   diameterUnit: PdfExportOptions['diameterUnit'];
 }
@@ -25,9 +41,14 @@ export interface PdfFormatters {
  * `pdfExport` builder functions, which must not depend on Vue/Pinia context.
  */
 export function createPdfFormatters(
-  options: Pick<PdfExportOptions, 'lengthUnit' | 'diameterUnit' | 'locale'>,
+  options: Pick<
+    PdfExportOptions,
+    'lengthUnit' | 'diameterUnit' | 'locale' | 'flowUnit' | 'powerUnit'
+  >,
 ): PdfFormatters {
   const { lengthUnit, diameterUnit, locale } = options;
+  const flowUnit = options.flowUnit ?? 'm3/h';
+  const powerUnit = options.powerUnit ?? 'kW';
 
   function formatLength(
     value: number | null | undefined,
@@ -64,10 +85,34 @@ export function createPdfFormatters(
     return formatNumber(volumeM3, { fractionDigits, suffix: 'm³' });
   }
 
+  function formatFlow(
+    value: number | null | undefined,
+    fractionDigits = 1,
+  ): string {
+    if (value == null) return '—';
+    return formatNumber(flowFromCanonical(value, flowUnit), {
+      fractionDigits,
+      suffix: resolveFlowUnitLabel(flowUnit),
+    });
+  }
+
+  function formatPower(
+    value: number | null | undefined,
+    fractionDigits = 2,
+  ): string {
+    if (value == null) return '—';
+    return formatNumber(powerFromCanonical(value, powerUnit), {
+      maximumFractionDigits: fractionDigits,
+      suffix: powerUnit,
+    });
+  }
+
   return {
     formatLength,
     formatDiameter,
     formatVolume,
+    formatFlow,
+    formatPower,
     lengthUnit,
     diameterUnit,
   };

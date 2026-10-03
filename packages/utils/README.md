@@ -69,7 +69,14 @@ Derived from pumping-test data. The three marked functions throw `RangeError` ra
 
 | Function                                     | Returns                                                                                                                                                  |
 | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getLatestStaticLevel(well)`                 | Static water level (m) from the most recent hydrodynamic event carrying one, compared by UTC datetime. `undefined` if none.                              |
+| `getLatestStaticLevel(well)`                 | Static water level (m) from the most recent non-retracted hydrodynamic event carrying one, compared by UTC datetime. `undefined` if none.                |
+| `getRetractedEventIds(well)`                 | Ids of hydrodynamic events retracted by another event's `corrects` (v2.3 ledger corrections).                                                            |
+| `getEffectiveHydrodynamicEvents(well)`       | Hydrodynamic events that count for derivations — every event not retracted by `corrects`.                                                                |
+| `getCurrentPump(well)`                       | The `pump_installations` entry without `removed_at` (latest installed if several). `undefined` if none.                                                  |
+| `getLatestPumpingDynamicLevel(well)`         | Most recent water level (m) measured during pumping, falling back to a newer `aquifer_analysis[].dynamic_level`. Airlift and retracted events ignored.   |
+| `calculateSubmergence(well)`                 | `intake_depth − dynamic_level` (m) of the current pump. Negative when the intake is above the water level.                                               |
+| `getPumpServiceTime(well, serial, now?)`     | Total time in service (min) of installations sharing a `serial`; open installations count up to `now`.                                                   |
+| `getPumpInstallationWarnings(well)`          | v2.3 pump warnings: intake below the well bottom or inside a screen, several open installations, `removed_at` not after `installed_at`.                  |
 | `isFlowingArtesian(well)`                    | Whether the most recent static level is above ground (negative). The v2.1 way to detect a flowing artesian well.                                         |
 | `getCentralizerDepths(centralizer)`          | Individual centralizer depths (m) from `from`, `to`, and `spacing`. Only the endpoints when spacing is unknown.                                          |
 | `getLatestAquiferAnalysisField(well, field)` | Value of `field` from the most recent `aquifer_analysis` entry that defines it. `undefined` if none.                                                     |

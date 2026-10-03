@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import type { HydrodynamicEvent } from '@welldot/core';
+import type { Attachment, HydrodynamicEvent } from '@welldot/core';
+import { getRetractedEventIds } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import EventStats from './EventStats.vue';
 
 const props = defineProps<{ event: HydrodynamicEvent }>();
@@ -10,6 +12,20 @@ const { t } = useI18n();
 const profileStore = useProfileStore();
 const confirm = useConfirm();
 const { eventTypeLabel, eventTypeSeverity } = useHydrodynamicEventTypes();
+
+/** Retracted by a later event's `corrects` — kept, but excluded from derivations. */
+const isRetracted = computed(() =>
+  getRetractedEventIds(profileStore.well).has(props.event.id),
+);
+
+function setAttachments(list: Attachment[]) {
+  profileStore.updateWell(draft => {
+    assignAttachments(
+      draft.hydrodynamic_events?.find(e => e.id === props.event.id),
+      list,
+    );
+  });
+}
 
 function deleteEvent() {
   confirm.require({
@@ -33,13 +49,27 @@ function deleteEvent() {
 </script>
 
 <template>
-  <div class="event-card">
+  <div class="event-card" :class="{ 'opacity-60': isRetracted }">
     <!-- card header -->
     <div class="flex items-center gap-2 flex-wrap">
       <Tag
         :value="eventTypeLabel(event.type)"
         :severity="eventTypeSeverity(event.type)"
         class="text-[11px] font-mono tracking-wide"
+      />
+      <Tag
+        v-if="isRetracted"
+        v-tooltip.top="t('editor.hydrodynamicEvents.retractedInfo')"
+        :value="t('editor.hydrodynamicEvents.retracted')"
+        severity="secondary"
+        class="text-[11px]"
+      />
+      <Tag
+        v-if="event.corrects"
+        v-tooltip.top="t('editor.hydrodynamicEvents.correctionInfo')"
+        :value="t('editor.hydrodynamicEvents.correction')"
+        severity="info"
+        class="text-[11px]"
       />
       <span class="ml-auto font-mono text-xs text-content-300">
         {{ formatDate(event.datetime, 'dd MMM yyyy') }}
@@ -116,6 +146,13 @@ function deleteEvent() {
     >
       {{ event.notes }}
     </p>
+
+    <AttachmentField
+      :model-value="event.attachments"
+      context="event"
+      confirm-delete
+      @update:model-value="setAttachments"
+    />
   </div>
 </template>
 

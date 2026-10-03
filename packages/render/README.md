@@ -36,6 +36,7 @@ Call `prepareSvg()` once after mounting the SVG element, then call `draw(profile
 
 - **Lithology column** — geological layers with FGDC standard texture patterns and custom fill colors
 - **Construction** — borehole, well casings, diameter reductions, well screens, hole fills (gravel pack / cement seal), centralizers (`.well` v2.1 — bow markers in the annulus at each derived position; size via `renderConfig.construction.centralizer.markerHalfHeight`, colors via `theme.centralizer`, tooltip key `centralizer`), and cement pad
+- **Current pump** (`.well` v2.3 `pump_installations`) — the installation without `removed_at` (via `getCurrentPump` from `@welldot/utils`), drawn as a riser pipe from the surface and a pump body ending at `intake_depth`. The riser uses `riser_diameter`, falling back to `riserWidthRatio` × casing diameter. Configure via `renderConfig.construction.pump` (`active`, `bodyHeight` px, `bodyWidthRatio`, `riserWidthRatio`), colors via `theme.pump` (`fill`, `stroke`, `strokeWidth`, `riserStroke`, `riserStrokeWidth`), tooltip key `pump` (rated power shown in `units.power`: `kW`, `cv` or `hp`), legend label `legend.labels.pump`. Earlier installations are not drawn
 - **Fractures** — individual and swarm fractures with dip angles and water-intake indicators
 - **Caves** — cavity zones with wavy geological contact lines
 - **Labels** — depth annotations, lithology descriptions, and geologic / aquifer unit strips

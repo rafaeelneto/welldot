@@ -1,6 +1,6 @@
 {
   "name": "@welldot/core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "description": "TypeScript types, Zod validators, and serialization utilities for the .well open format — a JSON standard for water well data.",
   "keywords": [

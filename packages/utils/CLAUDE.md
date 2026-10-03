@@ -19,25 +19,31 @@ src/
 
 ## Key exports
 
-| Function                                                           | Purpose                                                               |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| `getProfileLastItemsDepths(well)`                                  | Max depth per component array (lithology, fractures, bore_hole, etc.) |
-| `getProfileDiamValues(constructive)`                               | All diameter values in a constructive section                         |
-| `getConstructivePropertySummary(data, prop)`                       | Extract a named property from all constructive component arrays       |
-| `calculateCylindricVolume(diameter, height)`                       | Cylinder volume (m³) from diameter (mm) and height (m)                |
-| `calculateHoleFillSegmentVolume(fill, well)`                       | Net annular volume (m³) of a single hole_fill segment                 |
-| `calculateHoleFillVolume(type, well)`                              | Total net volume (m³) of all hole_fill segments of a given type       |
-| `calculateDrawdown(readingDepth, staticLevel)`                     | Drawdown s at a level reading (m)                                     |
-| `calculateSpecificCapacity(flowRate, drawdown)`                    | Specific capacity Q/s (m²/h)                                          |
-| `calculateUnitDrawdown(drawdown, flowRate)`                        | Unit drawdown s/Q (h/m²)                                              |
-| `calculateFormationLoss(jacobB, flowRate)`                         | Formation head loss via Jacob (m)                                     |
-| `calculateWellLoss(jacobC, flowRate)`                              | Well head loss via Jacob (m)                                          |
-| `calculateHydraulicConductivity(transmissivity, aquiferThickness)` | Hydraulic conductivity K (m/h)                                        |
-| `getLatestStaticLevel(well)`                                       | Most recent static water level from hydrodynamic events               |
-| `isFlowingArtesian(well)`                                          | Latest static level is above ground (v2.1 artesian detection)         |
-| `getCentralizerDepths(centralizer)`                                | Individual centralizer depths from interval + spacing                 |
-| `getLatestAquiferAnalysisField(well, field)`                       | Most recent value of a named field from aquifer_analysis              |
-| `formatNumber(value, options)`                                     | Locale-aware number display formatting (rounding, separators, suffix) |
+| Function                                                              | Purpose                                                               |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `getProfileLastItemsDepths(well)`                                     | Max depth per component array (lithology, fractures, bore_hole, etc.) |
+| `getProfileDiamValues(constructive)`                                  | All diameter values in a constructive section                         |
+| `getConstructivePropertySummary(data, prop)`                          | Extract a named property from all constructive component arrays       |
+| `calculateCylindricVolume(diameter, height)`                          | Cylinder volume (m³) from diameter (mm) and height (m)                |
+| `calculateHoleFillSegmentVolume(fill, well)`                          | Net annular volume (m³) of a single hole_fill segment                 |
+| `calculateHoleFillVolume(type, well)`                                 | Total net volume (m³) of all hole_fill segments of a given type       |
+| `calculateDrawdown(readingDepth, staticLevel)`                        | Drawdown s at a level reading (m)                                     |
+| `calculateSpecificCapacity(flowRate, drawdown)`                       | Specific capacity Q/s (m²/h)                                          |
+| `calculateUnitDrawdown(drawdown, flowRate)`                           | Unit drawdown s/Q (h/m²)                                              |
+| `calculateFormationLoss(jacobB, flowRate)`                            | Formation head loss via Jacob (m)                                     |
+| `calculateWellLoss(jacobC, flowRate)`                                 | Well head loss via Jacob (m)                                          |
+| `calculateHydraulicConductivity(transmissivity, aquiferThickness)`    | Hydraulic conductivity K (m/h)                                        |
+| `getLatestStaticLevel(well)`                                          | Most recent static water level from non-retracted hydrodynamic events |
+| `getRetractedEventIds(well)` / `getEffectiveHydrodynamicEvents(well)` | v2.3 ledger corrections: events retracted via `corrects` / the rest   |
+| `getCurrentPump(well)`                                                | Open `pump_installations` entry (v2.3)                                |
+| `getLatestPumpingDynamicLevel(well)`                                  | Latest dynamic level during pumping (events, then aquifer_analysis)   |
+| `calculateSubmergence(well)`                                          | Current pump `intake_depth − dynamic_level` (m)                       |
+| `getPumpServiceTime(well, serial, now?)`                              | Minutes in service across installations with the same serial          |
+| `getPumpInstallationWarnings(well)`                                   | v2.3 pump_installations validation warnings (codes + ids)             |
+| `isFlowingArtesian(well)`                                             | Latest static level is above ground (v2.1 artesian detection)         |
+| `getCentralizerDepths(centralizer)`                                   | Individual centralizer depths from interval + spacing                 |
+| `getLatestAquiferAnalysisField(well, field)`                          | Most recent value of a named field from aquifer_analysis              |
+| `formatNumber(value, options)`                                        | Locale-aware number display formatting (rounding, separators, suffix) |
 
 All profile-analysis functions operate on `Well` / `Constructive` types from `@welldot/core`. `formatNumber` is a pure display-formatting helper (no `.well` types involved) shared by `@welldot/render` and the apps so depth/diameter values are never shown as raw, unrounded floats. No side effects, no state.
 

@@ -1,5 +1,4 @@
 import type { HydrodynamicEvent, Well } from '@welldot/core';
-import { formatNumber } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { lastReading, stepRate } from '~/utils/hydrodynamicEvent';
 import { createPdfFormatters } from './formatters';
@@ -20,10 +19,6 @@ function eventTypeLabel(type: string, t: PdfTranslate): string {
   return KNOWN_EVENT_TYPES.includes(type)
     ? t(`editor.hydrodynamicEvents.eventTypes.${type}`)
     : type;
-}
-
-function formatRate(value: number | null | undefined): string {
-  return formatNumber(value, { fractionDigits: 1, suffix: 'm³/h' });
 }
 
 /** The type/date header line — short and height-bounded, so it's safe to bind to the section title. */
@@ -47,7 +42,7 @@ function buildEventStats(
   options: PdfExportOptions,
   t: PdfTranslate,
 ): Content[] {
-  const { formatLength } = createPdfFormatters(options);
+  const { formatLength, formatFlow } = createPdfFormatters(options);
   const ev = event as unknown as Record<string, unknown>;
   const staticLevel =
     typeof ev.static_level === 'number' ? ev.static_level : null;
@@ -74,7 +69,7 @@ function buildEventStats(
   if (rate != null) {
     fields.push({
       label: t('editor.hydrodynamicEvents.stats.flowRate'),
-      value: formatRate(rate),
+      value: formatFlow(rate),
     });
   }
   if (operator) {

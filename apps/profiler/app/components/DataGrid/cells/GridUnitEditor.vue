@@ -3,7 +3,7 @@ const props = defineProps<{
   val?: unknown;
   save: (value: any, preventFocus?: boolean) => void;
   close: (focusNext?: boolean) => void;
-  unitType: 'length' | 'diameter';
+  unitType: 'length' | 'diameter' | 'flow' | 'power';
 }>();
 
 const { toDisplay, toCanonical } = useUnitDisplay(props.unitType);

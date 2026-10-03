@@ -1,6 +1,42 @@
-# `.well` File Format Specification — Version 2.1: Object Schemas
+# `.well` File Format Specification — Version 2.3: Object Schemas
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [interoperability.md](./interoperability.md)
+
+---
+
+## Common Types _(since v2.3)_
+
+### `Attachment`
+
+The `.well` format is not a file container. Attachments are referenced by URL. Since v2.3, `Attachment` is a common type used in several places.
+
+| Field           | Type   | Required | Description                                                                                |
+| --------------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
+| `id`            | string | yes      | Unique within its owning `attachments` array. UUID v4 recommended.                         |
+| `uri`           | string | yes      | Full HTTPS URL. Relative paths are not permitted.                                          |
+| `media_type`    | string | yes      | MIME type (e.g. `image/jpeg`, `application/pdf`).                                          |
+| `document_type` | string | no       | What the document is. See format-reference.md § `Attachment.document_type`. _(since v2.3)_ |
+| `filename`      | string | no       | Original filename for display.                                                             |
+| `description`   | string | no       | Caption or content description.                                                            |
+| `sha256`        | string | no       | SHA-256 hash of the file in lowercase hex. Consumers SHOULD validate after download.       |
+
+#### Where attachments are allowed
+
+| Location                            | Purpose                                                                     |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| Root `attachments[]`                | Documents about the well as a whole, not tied to any record. _(since v2.3)_ |
+| `history_logs[].attachments`        | Supporting documents or photos of a log entry.                              |
+| `pump_installations[].attachments`  | Pump curves, invoices, photos. _(since v2.3)_                               |
+| `hydrodynamic_events[].attachments` | Field sheets, logger exports. _(since v2.3)_                                |
+| `aquifer_analysis[].attachments`    | Interpretation reports. _(since v2.3)_                                      |
+
+An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `pump_installations`, `hydrodynamic_events` or `aquifer_analysis` entries.
+
+`Attachment.id` is unique within its owning array: the root `attachments[]`, or the `attachments` array of one record. The same id may appear under different records.
+
+#### URL resolvability
+
+The `uri` field is a reference, not a guarantee. URLs may become unreachable over time; consumers MUST handle fetch failures gracefully and MUST NOT treat them as file-format errors. When `sha256` is present, consumers that successfully fetch the attachment MUST validate the hash and MUST reject content that fails validation. Producers SHOULD include `sha256` for any attachment intended for long-term preservation.
 
 ---
 
@@ -238,15 +274,26 @@ The `type` field accepts any string. Non-canonical values SHOULD use the `x-` pr
 
 Only `id`, `type`, and `datetime` are required. All others are optional for all types.
 
-| Field       | Type    | Required | Description                                                                                                   |
-| ----------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------- |
-| `id`        | string  | yes      | Unique within `hydrodynamic_events`. UUID v4 recommended.                                                     |
-| `type`      | string  | yes      | Event type.                                                                                                   |
-| `datetime`  | string  | yes      | RFC 3339 datetime with mandatory UTC offset (e.g. `"2006-03-14T08:00:00-03:00"`). See § Datetime Conventions. |
-| `sequence`  | integer | no       | Tiebreaker for events sharing the same instant. Lower values sort first.                                      |
-| `operator`  | string  | no       | Person or company conducting the measurement or test.                                                         |
-| `equipment` | string  | no       | Equipment description.                                                                                        |
-| `notes`     | string  | no       | Free-text observations.                                                                                       |
+| Field         | Type           | Required | Description                                                                                                   |
+| ------------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+| `id`          | string         | yes      | Unique within `hydrodynamic_events`. UUID v4 recommended.                                                     |
+| `type`        | string         | yes      | Event type.                                                                                                   |
+| `datetime`    | string         | yes      | RFC 3339 datetime with mandatory UTC offset (e.g. `"2006-03-14T08:00:00-03:00"`). See § Datetime Conventions. |
+| `sequence`    | integer        | no       | Tiebreaker for events sharing the same instant. Lower values sort first.                                      |
+| `operator`    | string         | no       | Person or company conducting the measurement or test.                                                         |
+| `equipment`   | string         | no       | Equipment description.                                                                                        |
+| `notes`       | string         | no       | Free-text observations.                                                                                       |
+| `corrects`    | string         | no       | `hydrodynamic_events[].id` of the event this one retracts. See below. _(since v2.3)_                          |
+| `attachments` | `Attachment[]` | no       | Field sheets, logger exports. See § Attachment. _(since v2.3)_                                                |
+
+### Corrections _(since v2.3)_
+
+`hydrodynamic_events` is a ledger: an erroneous event is never edited in place. The correction is a new event whose `corrects` holds the id of the retracted event.
+
+- A retracted event stays in the file but is excluded from every derivation (current static level, analyses, charts).
+- Chains are allowed (C corrects B, which corrected A); only the last uncorrected entry counts.
+- A `corrects` cycle is malformed and emits a warning. A `corrects` value that does not resolve is a dangling reference.
+- An `aquifer_analysis` whose `source_event_ids` or `static_level_source_id` points to a retracted event emits a warning naming both ids.
 
 ---
 
@@ -341,32 +388,33 @@ Static level is not reliably measurable during air-lift and SHOULD be omitted.
 
 An array of interpreted aquifer parameter sets. Multiple entries may coexist, representing different methods or analysts.
 
-| Field                     | Type     | Required | Description                                                                                                                                                                                                                                                                     |
-| ------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                      | string   | yes      | Unique within `aquifer_analysis`.                                                                                                                                                                                                                                               |
-| `datetime`                | string   | yes      | RFC 3339 datetime with mandatory UTC offset.                                                                                                                                                                                                                                    |
-| `analyst`                 | string   | no       | Name of the hydrogeologist.                                                                                                                                                                                                                                                     |
-| `source_event_ids`        | string[] | yes      | IDs of source `hydrodynamic_events` from this same file. See § Cross-reference and Uniqueness Rules.                                                                                                                                                                            |
-| `method`                  | string   | no       | See vocabulary below.                                                                                                                                                                                                                                                           |
-| `static_level`            | number   | no       | Static level used as reference, in meters.                                                                                                                                                                                                                                      |
-| `static_level_precision`  | number   | no       | One-sigma precision of `static_level`.                                                                                                                                                                                                                                          |
-| `static_level_source_id`  | string   | no       | ID of the event from which `static_level` was taken.                                                                                                                                                                                                                            |
-| `dynamic_level`           | number   | no       | Stabilized dynamic level in meters.                                                                                                                                                                                                                                             |
-| `dynamic_level_precision` | number   | no       | One-sigma precision of `dynamic_level`.                                                                                                                                                                                                                                         |
-| `flow_rate`               | number   | no       | Flow rate associated with `dynamic_level`, in m³/h.                                                                                                                                                                                                                             |
-| `flow_rate_precision`     | number   | no       | One-sigma precision of `flow_rate`.                                                                                                                                                                                                                                             |
-| `max_flow_rate`           | number   | no       | Maximum recommended sustained extraction rate in m³/h, as judged by the analyst from the source events. This is an interpretive recommendation, not the test rate. Distinct from `flow_rate`, which is the rate actually applied during the test that produced `dynamic_level`. |
-| `max_flow_rate_precision` | number   | no       | One-sigma precision of `max_flow_rate` in m³/h.                                                                                                                                                                                                                                 |
-| `max_flow_rate_basis`     | string   | no       | Free-text justification: safety factor applied, regulatory framework referenced (e.g. `"80% of test rate per ANA practice"`, `"limited by available drawdown to top of screen"`), or assumptions about long-term recharge.                                                      |
-| `specific_capacity`       | number   | no       | `Q/s` in m³/h per m (i.e. m²/h).                                                                                                                                                                                                                                                |
-| `transmissivity`          | number   | no       | Aquifer transmissivity `T` in m²/s.                                                                                                                                                                                                                                             |
-| `storativity`             | number   | no       | Dimensionless storativity `S`.                                                                                                                                                                                                                                                  |
-| `hydraulic_conductivity`  | number   | no       | Hydraulic conductivity `K` in m/s. Requires `aquifer_thickness`.                                                                                                                                                                                                                |
-| `aquifer_thickness`       | number   | no       | Saturated aquifer thickness in meters.                                                                                                                                                                                                                                          |
-| `jacob_b`                 | number   | no       | Formation loss coefficient from Jacob's equation.                                                                                                                                                                                                                               |
-| `jacob_c`                 | number   | no       | Well loss coefficient from Jacob's equation.                                                                                                                                                                                                                                    |
-| `well_efficiency_pct`     | number   | no       | Well efficiency as a percentage.                                                                                                                                                                                                                                                |
-| `notes`                   | string   | no       | Methodology notes, assumptions, data quality remarks.                                                                                                                                                                                                                           |
+| Field                     | Type           | Required | Description                                                                                                                                                                                                                                                                     |
+| ------------------------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                      | string         | yes      | Unique within `aquifer_analysis`.                                                                                                                                                                                                                                               |
+| `datetime`                | string         | yes      | RFC 3339 datetime with mandatory UTC offset.                                                                                                                                                                                                                                    |
+| `analyst`                 | string         | no       | Name of the hydrogeologist.                                                                                                                                                                                                                                                     |
+| `source_event_ids`        | string[]       | yes      | IDs of source `hydrodynamic_events` from this same file. See § Cross-reference and Uniqueness Rules.                                                                                                                                                                            |
+| `method`                  | string         | no       | See vocabulary below.                                                                                                                                                                                                                                                           |
+| `static_level`            | number         | no       | Static level used as reference, in meters.                                                                                                                                                                                                                                      |
+| `static_level_precision`  | number         | no       | One-sigma precision of `static_level`.                                                                                                                                                                                                                                          |
+| `static_level_source_id`  | string         | no       | ID of the event from which `static_level` was taken.                                                                                                                                                                                                                            |
+| `dynamic_level`           | number         | no       | Stabilized dynamic level in meters.                                                                                                                                                                                                                                             |
+| `dynamic_level_precision` | number         | no       | One-sigma precision of `dynamic_level`.                                                                                                                                                                                                                                         |
+| `flow_rate`               | number         | no       | Flow rate associated with `dynamic_level`, in m³/h.                                                                                                                                                                                                                             |
+| `flow_rate_precision`     | number         | no       | One-sigma precision of `flow_rate`.                                                                                                                                                                                                                                             |
+| `max_flow_rate`           | number         | no       | Maximum recommended sustained extraction rate in m³/h, as judged by the analyst from the source events. This is an interpretive recommendation, not the test rate. Distinct from `flow_rate`, which is the rate actually applied during the test that produced `dynamic_level`. |
+| `max_flow_rate_precision` | number         | no       | One-sigma precision of `max_flow_rate` in m³/h.                                                                                                                                                                                                                                 |
+| `max_flow_rate_basis`     | string         | no       | Free-text justification: safety factor applied, regulatory framework referenced (e.g. `"80% of test rate per ANA practice"`, `"limited by available drawdown to top of screen"`), or assumptions about long-term recharge.                                                      |
+| `specific_capacity`       | number         | no       | `Q/s` in m³/h per m (i.e. m²/h).                                                                                                                                                                                                                                                |
+| `transmissivity`          | number         | no       | Aquifer transmissivity `T` in m²/s.                                                                                                                                                                                                                                             |
+| `storativity`             | number         | no       | Dimensionless storativity `S`.                                                                                                                                                                                                                                                  |
+| `hydraulic_conductivity`  | number         | no       | Hydraulic conductivity `K` in m/s. Requires `aquifer_thickness`.                                                                                                                                                                                                                |
+| `aquifer_thickness`       | number         | no       | Saturated aquifer thickness in meters.                                                                                                                                                                                                                                          |
+| `jacob_b`                 | number         | no       | Formation loss coefficient from Jacob's equation.                                                                                                                                                                                                                               |
+| `jacob_c`                 | number         | no       | Well loss coefficient from Jacob's equation.                                                                                                                                                                                                                                    |
+| `well_efficiency_pct`     | number         | no       | Well efficiency as a percentage.                                                                                                                                                                                                                                                |
+| `attachments`             | `Attachment[]` | no       | Interpretation reports. See § Attachment. _(since v2.3)_                                                                                                                                                                                                                        |
+| `notes`                   | string         | no       | Methodology notes, assumptions, data quality remarks.                                                                                                                                                                                                                           |
 
 ### `method` — Recommended values
 
@@ -392,11 +440,15 @@ The following values are **never stored**. Applications compute them on demand.
 
 ## Querying Current State
 
-**Current static level (NE):** Filter all events where `static_level` is present, sort by `datetime` descending (UTC-normalized), take the first result.
+**Current static level (NE):** Exclude retracted events (§ Corrections), filter the remaining events where `static_level` is present, sort by `datetime` descending (UTC-normalized), take the first result.
 
 **Current specific capacity:** Find the most recent `aquifer_analysis` with `specific_capacity` present.
 
 **Current transmissivity:** Find the most recent `aquifer_analysis` with `transmissivity` present.
+
+**Recommended maximum flow:** Read the most recent `aquifer_analysis[].max_flow_rate`, with `max_flow_rate_basis` and `max_flow_rate_precision`.
+
+**Current pump:** The `pump_installations` entry without `removed_at`. See § `pump_installations[]`.
 
 ---
 
@@ -434,7 +486,7 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 | `description` | string         | yes      | Free-text account: work performed, findings, or incident narrative.                                                                                                                                                      |
 | `author`      | string         | no       | Person or company responsible for the record.                                                                                                                                                                            |
 | `severity`    | string         | no       | Recommended: `low`, `medium`, `high`, `critical`.                                                                                                                                                                        |
-| `attachments` | `Attachment[]` | no       | Supporting documents or photos.                                                                                                                                                                                          |
+| `attachments` | `Attachment[]` | no       | Supporting documents or photos. See § Attachment.                                                                                                                                                                        |
 
 ### `updated_at` semantics
 
@@ -443,22 +495,70 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 - When a producer modifies only the `id` (e.g. during duplicate-resolution), it SHOULD NOT update `updated_at`, since the substantive content of the entry has not changed.
 - The `updated_at` field is not retroactive: parsers reading a v1 or early-v2.0 file without `updated_at` MUST NOT synthesize one.
 
-### `Attachment`
+`Attachment` is a common type since v2.3; see § Common Types — `Attachment`.
 
-The `.well` format is not a file container. Attachments are referenced by URL.
+---
 
-| Field         | Type   | Required | Description                                                                          |
-| ------------- | ------ | -------- | ------------------------------------------------------------------------------------ |
-| `id`          | string | yes      | Unique within the parent log entry's `attachments` array.                            |
-| `uri`         | string | yes      | Full HTTPS URL. Relative paths are not permitted.                                    |
-| `media_type`  | string | yes      | MIME type (e.g. `image/jpeg`, `application/pdf`).                                    |
-| `filename`    | string | no       | Original filename for display.                                                       |
-| `description` | string | no       | Caption or content description.                                                      |
-| `sha256`      | string | no       | SHA-256 hash of the file in lowercase hex. Consumers SHOULD validate after download. |
+## `pump_installations[]` _(since v2.3)_
 
-### URL resolvability
+An installation block: each entry is one installation of a pump in the well, present from `installed_at` until `removed_at`. Entries are edited in place, and `updated_at` records the last edit. The current pump and its submergence are derived, never stored.
 
-The `uri` field is a reference, not a guarantee. URLs may become unreachable over time; consumers MUST handle fetch failures gracefully and MUST NOT treat them as file-format errors. When `sha256` is present, consumers that successfully fetch the attachment MUST validate the hash and MUST reject content that fails validation. Producers SHOULD include `sha256` for any attachment intended for long-term preservation.
+- `removed_at` earlier than or equal to `installed_at` is malformed and emits a warning.
+- Each entry is one installation, not one piece of equipment. A unit pulled and reinstalled gets a new entry with the same `serial`.
+- Overlapping open installations emit a warning, not an error. Standby pumps exist.
+
+### `PumpInstallation`
+
+| Field             | Type             | Required | Unit | Description                                                  |
+| ----------------- | ---------------- | -------- | ---- | ------------------------------------------------------------ |
+| `id`              | string           | yes      |      | Unique within `pump_installations`. UUID v4 recommended.     |
+| `installed_at`    | string (instant) | yes      |      | RFC 3339 instant when the pump entered service in this well. |
+| `removed_at`      | string (instant) | no       |      | When it left. Absent means currently installed.              |
+| `type`            | string           | yes      |      | See format-reference.md § `pump_installations[].type`.       |
+| `power_source`    | string           | no       |      | `grid`, `solar`, `diesel`, `hybrid`, `x-…`                   |
+| `manufacturer`    | string           | no       |      |                                                              |
+| `model`           | string           | no       |      |                                                              |
+| `serial`          | string           | no       |      | Links reinstallations of the same unit.                      |
+| `intake_depth`    | number           | no       | m    | Depth of the pump intake (crivo), from ground level.         |
+| `rated_flow_rate` | number           | no       | m³/h | Nameplate duty-point flow.                                   |
+| `rated_head`      | number           | no       | m    | Nameplate duty-point head.                                   |
+| `rated_power`     | number           | no       | kW   | Motor power.                                                 |
+| `stages`          | integer          | no       |      | Number of stages.                                            |
+| `riser_diameter`  | number           | no       | mm   | Riser pipe (edutor), as-built outer diameter.                |
+| `riser_material`  | string           | no       |      | Same vocabulary as `well_case.type`.                         |
+| `check_valve`     | boolean          | no       |      | Whether a check valve is installed.                          |
+| `electrical`      | `PumpElectrical` | no       |      | See below.                                                   |
+| `notes`           | string           | no       |      |                                                              |
+| `updated_at`      | string (instant) | no       |      | Last edit of this record.                                    |
+| `attachments`     | `Attachment[]`   | no       |      | Pump curves, invoices, photos. See § Attachment.             |
+
+### `PumpElectrical`
+
+All fields optional.
+
+| Field           | Type    | Unit       |
+| --------------- | ------- | ---------- |
+| `voltage`       | number  | V          |
+| `phases`        | integer | `1` or `3` |
+| `cable_section` | number  | mm²        |
+| `cable_length`  | number  | m          |
+
+### Validation (warnings, never rejection)
+
+- `intake_depth` greater than `well_depth`, or below the bottom of the deepest `bore_hole` interval.
+- `intake_depth` inside a `well_screen` interval.
+- More than one entry without `removed_at`.
+- `removed_at` earlier than or equal to `installed_at`.
+
+### Derived values
+
+- **Current pump:** the entry without `removed_at`; if all are removed, none.
+- **Submergence:** `intake_depth − dynamic_level`, using the most recent applicable reading during pumping. A negative value means the intake is above the water level.
+- **Time in service per unit:** sum of installation durations sharing a `serial`.
+
+### Rendering
+
+Renderers draw the current pump ending at `intake_depth` and its riser from the surface. Earlier installations are not drawn by default.
 
 ---
 
@@ -651,6 +751,58 @@ The `uri` field is a reference, not a guarantee. URLs may become unreachable ove
     }
   ],
 
+  "attachments": [
+    {
+      "id": "c1d2e3f4-a5b6-7890-cdef-123456789abc",
+      "uri": "https://files.wellmanager.example.com/wells/pp-01/relatorio-perfuracao.pdf",
+      "media_type": "application/pdf",
+      "document_type": "drilling_report",
+      "filename": "relatorio-perfuracao.pdf"
+    }
+  ],
+
+  "pump_installations": [
+    {
+      "id": "e1f2a3b4-c5d6-7890-efab-234567890abc",
+      "installed_at": "2006-03-20T10:00:00-03:00",
+      "removed_at": "2018-06-12T09:30:00-03:00",
+      "type": "submersible",
+      "power_source": "grid",
+      "rated_power": 11.0,
+      "intake_depth": 52
+    },
+    {
+      "id": "f2a3b4c5-d6e7-8901-fabc-345678901bcd",
+      "installed_at": "2018-06-12T15:00:00-03:00",
+      "updated_at": "2024-03-15T11:42:00-03:00",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Schneider",
+      "model": "ME-25",
+      "intake_depth": 54,
+      "rated_power": 7.36,
+      "riser_diameter": 114.3,
+      "riser_material": "galvanized_steel",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 380,
+        "phases": 3,
+        "cable_section": 10,
+        "cable_length": 70
+      },
+      "attachments": [
+        {
+          "id": "b8c9d0e1-f2a3-4567-bcde-678901234567",
+          "uri": "https://files.wellmanager.example.com/wells/pp-01/attachments/nota-fiscal-bomba-2018.pdf",
+          "media_type": "application/pdf",
+          "document_type": "invoice",
+          "filename": "nota-fiscal-bomba-2018.pdf",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+
   "history_logs": [
     {
       "id": "d0e1f2a3-b4c5-6789-defa-890123456789",
@@ -673,6 +825,7 @@ The `uri` field is a reference, not a guarantee. URLs may become unreachable ove
           "id": "b8c9d0e1-f2a3-4567-bcde-678901234567",
           "uri": "https://files.wellmanager.example.com/wells/pp-01/attachments/nota-fiscal-bomba-2018.pdf",
           "media_type": "application/pdf",
+          "document_type": "invoice",
           "filename": "nota-fiscal-bomba-2018.pdf",
           "description": "Purchase invoice for replacement pump",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -685,4 +838,4 @@ The `uri` field is a reference, not a guarantee. URLs may become unreachable ove
 
 ---
 
-_Draft — `.well` Format Specification v2.0_
+_`.well` Format Specification v2.3_

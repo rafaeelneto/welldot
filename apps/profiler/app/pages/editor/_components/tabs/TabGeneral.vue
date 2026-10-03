@@ -1,8 +1,20 @@
 <script setup lang="ts">
+import type { Attachment } from '@welldot/core';
 import AppChip from '~/components/AppChip.vue';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+
+/**
+ * Root `attachments` (.well v2.3): general files about the well as a whole,
+ * e.g. the drilling report. They never aggregate the attachments of pumps,
+ * events or log entries, which stay on their own records.
+ */
+const generalAttachments = computed<Attachment[] | undefined>({
+  get: () => profileStore.well.attachments,
+  set: list => profileStore.updateWell(draft => assignAttachments(draft, list)),
+});
 
 const constructionDate = computed({
   get: () =>
@@ -390,6 +402,18 @@ function removeWellPurpose(value: string) {
           v-model="profileStore.well.obs"
           class="w-full font-mono text-sm"
           :rows="5"
+        />
+      </LabeledField>
+
+      <LabeledField
+        :label="t('editor.general.attachments')"
+        :info="t('editor.general.attachmentsInfo')"
+      >
+        <AttachmentField
+          v-model="generalAttachments"
+          context="root"
+          confirm-delete
+          :visible-count="Infinity"
         />
       </LabeledField>
     </section>

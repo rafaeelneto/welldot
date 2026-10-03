@@ -117,8 +117,8 @@ Accepted conversions (only when original unit is explicit in the document):
 - SIRGAS 2000 UTM → WGS84 decimal: convert precisely or ask the user
 
 Use empty arrays (`[]`) for array fields the document has nothing for. **Omit** `cement_pad`,
-`location`, `well_id`, `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquifer_analysis`, and
-`history_logs` entirely rather than emitting empty placeholders.
+`location`, `well_id`, `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquifer_analysis`,
+`history_logs`, `attachments`, and `pump_installations` entirely rather than emitting empty placeholders.
 
 ---
 
@@ -261,7 +261,23 @@ record was made/edited — **NEVER synthesize this** if the report doesn't disti
 `datetime`; omit instead), `category` (maintenance/inspection/incident/event, open vocab),
 `description` (near-verbatim), `author`, `severity` (low/medium/high/critical), `attachments`
 (only if the report references an actual retrievable URL — `Attachment`: `id`, `uri` (https,
-required), `media_type` (required), `filename`, `description`, `sha256`).
+required), `media_type` (required), `document_type`, `filename`, `description`, `sha256`).
+
+### `pump_installations` (v2.3)
+
+Only when the report describes the installed pump. Each entry: `id`, `installed_at` (RFC 3339 with
+offset, required), `removed_at`, `type` (submersible/vertical_turbine/jet/progressive_cavity/hand_pump/
+compressor_airlift — solar is a `power_source`, never a `type`), `power_source` (grid/solar/diesel/
+hybrid), `manufacturer`, `model`, `serial`, `intake_depth` (m), `rated_flow_rate` (m³/h), `rated_head`
+(m), `rated_power` (**kW** — convert cv/hp), `stages`, `riser_diameter` (mm), `riser_material`,
+`check_valve`, `electrical` (`voltage` V, `phases` 1|3, `cable_section` mm², `cable_length` m). A pump
+mentioned only as test equipment belongs in the event's `equipment` field, not here.
+
+### `attachments` (v2.3)
+
+Root-level documents about the whole well (drilling report, as-built drawing, registry record) —
+only when the report references actual retrievable HTTPS URLs. Same `Attachment` shape, with
+`document_type`.
 
 ### Top-level v2 structure
 
@@ -300,7 +316,8 @@ debris, or partial backfill reduced the depth; SIAGAS-style records with a separ
    7b. `well_type` is not `artesian`; `well_purpose`, if present, is an array; `centralizers[].spacing`, if
    present, is > 0 and came from the report (never derived from a count); water levels above ground are
    negative
-8. Every `hydrodynamic_events[]`, `aquifer_analysis[]`, `history_logs[]` `datetime` (and `updated_at`) is
+8. Every `hydrodynamic_events[]`, `aquifer_analysis[]`, `history_logs[]` `datetime` (and `updated_at`),
+   and every `pump_installations[]` `installed_at` / `removed_at`, is
    RFC 3339 **with a UTC offset** — reject and fix any naked `YYYY-MM-DDTHH:MM:SS` or bare date used
    where an instant is required (only `construction_date` is a bare calendar date)
 9. `hydrodynamic_events[].steps` cardinality matches its `type`: `spot_measurement` 0–1,
