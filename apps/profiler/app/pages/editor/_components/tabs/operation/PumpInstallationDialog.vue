@@ -374,49 +374,61 @@ function save() {
           <Icon name="ph:lightning-duotone" class="size-4" />
           {{ t('editor.operation.pump.fields.electrical') }}
         </button>
-        <div
-          v-if="showElectrical"
-          class="grid grid-cols-2 sm:grid-cols-4 gap-4"
-        >
-          <LabeledField :label="t('editor.operation.pump.fields.voltage')">
-            <WellInputNumber
-              v-model="form.voltage"
-              :min="0"
-              suffix=" V"
-              class="w-full"
-              :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
-            />
-          </LabeledField>
-          <LabeledField :label="t('editor.operation.pump.fields.phases')">
-            <SelectButton
-              v-model="form.phases"
-              :options="phaseOptions"
-              option-label="label"
-              option-value="value"
-              size="small"
-            />
-          </LabeledField>
-          <LabeledField :label="t('editor.operation.pump.fields.cableSection')">
-            <WellInputNumber
-              v-model="form.cableSection"
-              :min="0"
-              :max-fraction-digits="2"
-              suffix=" mm²"
-              class="w-full"
-              :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
-            />
-          </LabeledField>
-          <LabeledField :label="t('editor.operation.pump.fields.cableLength')">
-            <UnitInput
-              v-model="form.cableLength"
-              unit-type="length"
-              :min="0"
-              :suffix="` ${lengthUnit}`"
-              class="w-full"
-              :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
-            />
-          </LabeledField>
-        </div>
+        <template v-if="showElectrical">
+          <div class="grid grid-cols-2 gap-4">
+            <LabeledField :label="t('editor.operation.pump.fields.voltage')">
+              <WellInputNumber
+                v-model="form.voltage"
+                :min="0"
+                suffix=" V"
+                class="w-full"
+                :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
+              />
+            </LabeledField>
+            <LabeledField :label="t('editor.operation.pump.fields.phases')">
+              <SelectButton
+                v-model="form.phases"
+                :options="phaseOptions"
+                class="w-auto h-8 gap-0!"
+                :pt="{
+                  pcToggleButton: {
+                    root: 'font-mono text-xs h-7 p-0 border-none bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1',
+                    content: 'px-2 py-0 rounded-full',
+                  },
+                }"
+                option-label="label"
+                option-value="value"
+                size="small"
+              />
+            </LabeledField>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <LabeledField
+              :label="t('editor.operation.pump.fields.cableSection')"
+            >
+              <WellInputNumber
+                v-model="form.cableSection"
+                :min="0"
+                :max-fraction-digits="2"
+                suffix=" mm²"
+                class="w-full"
+                :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
+              />
+            </LabeledField>
+            <LabeledField
+              :label="t('editor.operation.pump.fields.cableLength')"
+            >
+              <UnitInput
+                v-model="form.cableLength"
+                unit-type="length"
+                :min="0"
+                :suffix="` ${lengthUnit}`"
+                class="w-full"
+                :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
+              />
+            </LabeledField>
+          </div>
+        </template>
       </div>
 
       <LabeledField :label="t('editor.operation.pump.fields.notes')">
