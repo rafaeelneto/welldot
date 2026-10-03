@@ -24,7 +24,9 @@ src/
 
 ## Key domain concepts
 
-- **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata.
+- **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata, the event/analysis/log blocks, and (since v2.3) root `attachments` and `pump_installations`.
+- **Block kinds** (v2.3) — `hydrodynamic_events` is a ledger (corrected via `corrects`, never edited); `history_logs` is a mutable record; `pump_installations` is an installation block (`installed_at`/`removed_at`). Derivations that honor these rules (current pump, retracted events) live in `@welldot/utils`.
+- **New top-level blocks** must be mapped explicitly in `decodeV2Well`, `serializeWell` (which whitelists fields) and `redactWell`.
 - **`Profile`** — backward-compat alias for `Well`; used in the legacy Next.js app.
 - All depth values are **meters from ground level** (0 = surface, increasing downward).
 - All diameter values are **millimeters**.
@@ -78,7 +80,7 @@ Update when:
 
 - A new known limitation is recognized.
 - A design principle is revised during the ratification process.
-- The "Changes from v1" section gains a new entry (e.g. v2.1 additions).
+- A minor revision ships: add a "Changes in v2.x" section at the top (latest first), with additions, clarifications and deprecations (see v2.3, v2.1).
 
 ### `docs/spec/v2/format-reference.md`
 
@@ -96,7 +98,7 @@ What to update: the relevant field table, the field-to-unit binding list if the 
 
 Update when:
 
-- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `Centralizer`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, or any `hydrodynamic_events` event type).
+- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `Centralizer`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, `PumpInstallation`, `PumpElectrical`, or any `hydrodynamic_events` event type).
 - A new event type is added to `hydrodynamic_events`.
 - The Complete Example JSON no longer validates against the current types.
 
@@ -104,7 +106,7 @@ What to update: the field table for the changed type and the Complete Example JS
 
 ### `docs/schema/v2/well.schema.json`
 
-Regenerate (do not hand-edit) after any change to `src/validators/well.validators.ts`. Generation command (once `zod-to-json-schema` is wired into the build):
+Regenerate (do not hand-edit) after any change to `src/validators/well.validators.ts`. CI (`publish-core.yml`) fails when the committed schema is stale:
 
 ```bash
 pnpm generate:schema

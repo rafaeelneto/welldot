@@ -18,13 +18,14 @@ type RawJSON = Record<string, unknown>;
 const WELL_FORMAT_VERSION = 2;
 const INCHES_TO_MM = 25.4;
 
-/** Fixed display order for the 5 redactable sections of a well. */
+/** Fixed display order for the 6 redactable sections of a well. */
 export const SECTION_KEYS: readonly SectionKey[] = [
   'general',
   'constructive',
   'geology',
   'hydrodynamic',
   'history',
+  'operation',
 ];
 
 const EMPTY_WELL: Well = {
@@ -209,6 +210,12 @@ function decodeV2Well(raw: RawJSON): Well {
     ...(raw.history_logs !== undefined && {
       history_logs: raw.history_logs as Well['history_logs'],
     }),
+    ...(raw.attachments !== undefined && {
+      attachments: raw.attachments as Well['attachments'],
+    }),
+    ...(raw.pump_installations !== undefined && {
+      pump_installations: raw.pump_installations as Well['pump_installations'],
+    }),
   };
   return mergeWell(decoded, raw) as Well;
 }
@@ -311,6 +318,10 @@ export function serializeWell(well: Well): string {
       aquifer_analysis: well.aquifer_analysis,
     }),
     ...(well.history_logs !== undefined && { history_logs: well.history_logs }),
+    ...(well.attachments !== undefined && { attachments: well.attachments }),
+    ...(well.pump_installations !== undefined && {
+      pump_installations: well.pump_installations,
+    }),
   };
 
   return JSON.stringify(payload);
@@ -348,7 +359,7 @@ export function isWellEmpty(well: Well | null | undefined): boolean {
  * carried over unchanged. Never mutates `well`.
  *
  * @param well - The well profile to redact.
- * @param visibility - Which of the 5 sections ({@link SECTION_KEYS}) to keep.
+ * @param visibility - Which of the 6 sections ({@link SECTION_KEYS}) to keep.
  * @returns A new {@link Well} with hidden sections emptied.
  */
 export function redactWell(well: Well, visibility: SectionVisibility): Well {
@@ -363,6 +374,7 @@ export function redactWell(well: Well, visibility: SectionVisibility): Well {
     delete redacted.well_driller;
     delete redacted.construction_date;
     delete redacted.obs;
+    delete redacted.attachments;
     delete redacted.lat;
     delete redacted.lng;
     delete redacted.elevation;
@@ -393,6 +405,10 @@ export function redactWell(well: Well, visibility: SectionVisibility): Well {
 
   if (!visibility.history) {
     redacted.history_logs = [];
+  }
+
+  if (!visibility.operation) {
+    delete redacted.pump_installations;
   }
 
   return redacted;

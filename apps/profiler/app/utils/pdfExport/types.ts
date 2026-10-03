@@ -1,4 +1,9 @@
-import type { DiameterUnits, LengthUnits } from '@welldot/core';
+import type {
+  DiameterUnits,
+  FlowUnits,
+  LengthUnits,
+  PowerUnits,
+} from '@welldot/core';
 import type { CoordinateFormat } from '~/stores/ui.store';
 
 /** `useI18n().t`, narrowed to what the pure `pdfExport` builders need. */
@@ -20,6 +25,10 @@ export interface PdfExportOptions {
   endInfo: ResolvedInfoItem[];
   lengthUnit: LengthUnits;
   diameterUnit: DiameterUnits;
+  /** Display unit for flow rates. Defaults to `m3/h`. */
+  flowUnit?: FlowUnits;
+  /** Display unit for power. Defaults to `kW`. */
+  powerUnit?: PowerUnits;
   coordinateFormat: CoordinateFormat;
   /** Active app locale (`useI18n().locale.value`) — drives the diameter unit symbol (`in.`/`"`) and the embedded profile SVG's language. */
   locale: string;

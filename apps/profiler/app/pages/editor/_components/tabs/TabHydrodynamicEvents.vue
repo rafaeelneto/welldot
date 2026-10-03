@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { HydrodynamicEvent } from '@welldot/core';
+import { getRetractedEventIds } from '@welldot/utils';
 import AppChip from '~/components/AppChip.vue';
 import EventCard from './hydrodynamicEvents/EventCard.vue';
 import EventDialog from './hydrodynamicEvents/EventDialog.vue';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+const { toFlow, flowUnit, toSpecificCapacity, specificCapacityUnit } =
+  useUnitFormat();
 const { typeOptions } = useHydrodynamicEventTypes();
 const eventDialogRef =
   useTemplateRef<InstanceType<typeof EventDialog>>('eventDialogRef');
@@ -39,8 +42,11 @@ const currentState = computed(() => {
     (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
   );
 
+  // Events retracted by a later `corrects` never count (.well v2.3 ledger rule).
+  const retracted = getRetractedEventIds(profileStore.well);
   const neEvent = events.find(
     e =>
+      !retracted.has(e.id) &&
       'static_level' in e &&
       (e as Record<string, unknown>).static_level != null,
   );
@@ -148,8 +154,11 @@ function toggleTypeFilter(type: string) {
           }}</span>
           <template v-if="currentState.specificCapacity">
             <div class="stat-value">
-              {{ currentState.specificCapacity.value.toFixed(1)
-              }}<span class="stat-unit">m²/h</span>
+              {{
+                toSpecificCapacity(currentState.specificCapacity.value).toFixed(
+                  1,
+                )
+              }}<span class="stat-unit">{{ specificCapacityUnit }}</span>
             </div>
             <span v-if="currentState.specificCapacity.method" class="stat-sub">
               {{ methodLabel(currentState.specificCapacity.method) }}
@@ -198,8 +207,11 @@ function toggleTypeFilter(type: string) {
             t('editor.hydrodynamicEvents.currentState.flowRate')
           }}</span>
           <div class="stat-value">
-            {{ currentState.flowRate.value.toFixed(0)
-            }}<span class="stat-unit">m³/h</span>
+            {{
+              toFlow(currentState.flowRate.value).toFixed(
+                flowUnit === 'm³/h' ? 0 : 1,
+              )
+            }}<span class="stat-unit">{{ flowUnit }}</span>
           </div>
         </div>
       </div>

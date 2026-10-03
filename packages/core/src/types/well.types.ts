@@ -1,3 +1,32 @@
+// ─── Common types ─────────────────────────────────────────────────────────────
+
+/**
+ * A document attached to the well or to one of its records. Since v2.3 it is
+ * a common type, allowed at the root (`attachments`) and on `history_logs`,
+ * `pump_installations`, `hydrodynamic_events` and `aquifer_analysis` entries.
+ */
+export type Attachment = {
+  /** Unique within its owning `attachments` array. UUID v4 recommended. */
+  id: string;
+  /** Full HTTPS URL. Relative paths are not permitted. */
+  uri: string;
+  /** MIME type (e.g. `application/pdf`, `image/jpeg`). */
+  media_type: string;
+  /**
+   * What the document is. Since v2.3. Recommended: `drilling_report`,
+   * `as_built_drawing`, `registry_record`, `photo`, `permit_document`,
+   * `condition_evidence`, `pump_curve`, `field_sheet`, `test_report`,
+   * `lab_report`, `invoice`. Non-canonical values SHOULD use the `x-` prefix.
+   */
+  document_type?: string;
+  /** Original filename for display. */
+  filename?: string;
+  /** Caption or content description. */
+  description?: string;
+  /** SHA-256 of the file, lowercase hex. */
+  sha256?: string;
+};
+
 // ─── Location objects ─────────────────────────────────────────────────────────
 
 export type WellId = {
@@ -234,6 +263,13 @@ export type HydrodynamicEventBase = {
   equipment?: string;
   /** Free-text observations. */
   notes?: string;
+  /**
+   * `hydrodynamic_events[].id` of the event this one retracts. Since v2.3.
+   * A retracted event stays in the file but is excluded from every derivation.
+   */
+  corrects?: string;
+  /** Field sheets, logger exports. Since v2.3. */
+  attachments?: Attachment[];
 };
 
 export type SpotMeasurementEvent = HydrodynamicEventBase & {
@@ -312,19 +348,68 @@ export type AquiferAnalysis = {
   jacob_c?: number;
   well_efficiency_pct?: number;
   notes?: string;
+  /** Interpretation reports. Since v2.3. */
+  attachments?: Attachment[];
+};
+
+// ─── Operational objects ──────────────────────────────────────────────────────
+
+/** Electrical data of a pump installation. All fields optional. Since v2.3. */
+export type PumpElectrical = {
+  /** Supply voltage in volts. */
+  voltage?: number;
+  /** Number of phases: `1` or `3`. */
+  phases?: 1 | 3;
+  /** Power cable cross-section in mm². */
+  cable_section?: number;
+  /** Power cable length in meters. */
+  cable_length?: number;
+};
+
+/**
+ * One installation of a pump in the well (installation pattern). A unit pulled
+ * and reinstalled gets a new entry with the same `serial`. The current pump is
+ * the entry without `removed_at`. Since v2.3.
+ */
+export type PumpInstallation = {
+  /** Unique within `pump_installations`. UUID v4 recommended. */
+  id: string;
+  /** RFC 3339 instant when the pump entered service in this well. */
+  installed_at: string;
+  /** RFC 3339 instant when it left. Absent means currently installed. */
+  removed_at?: string;
+  /** Pump type. Recommended: `submersible`, `vertical_turbine`, `jet`, `progressive_cavity`, `hand_pump`, `compressor_airlift`. */
+  type: string;
+  /** Power source. Recommended: `grid`, `solar`, `diesel`, `hybrid`. */
+  power_source?: string;
+  manufacturer?: string;
+  model?: string;
+  /** Serial number. Links reinstallations of the same unit. */
+  serial?: string;
+  /** Depth of the pump intake in meters from ground level. */
+  intake_depth?: number;
+  /** Nameplate duty-point flow in m³/h. */
+  rated_flow_rate?: number;
+  /** Nameplate duty-point head in meters. */
+  rated_head?: number;
+  /** Motor power in kW. */
+  rated_power?: number;
+  /** Number of stages. */
+  stages?: number;
+  /** Riser pipe as-built outer diameter in millimeters. */
+  riser_diameter?: number;
+  /** Riser pipe material. Same vocabulary as `well_case.type`. */
+  riser_material?: string;
+  check_valve?: boolean;
+  electrical?: PumpElectrical;
+  notes?: string;
+  /** RFC 3339 instant of the last edit of this record. */
+  updated_at?: string;
+  /** Pump curves, invoices, photos. */
+  attachments?: Attachment[];
 };
 
 // ─── History log objects ──────────────────────────────────────────────────────
-
-export type Attachment = {
-  id: string;
-  /** Full HTTPS URL. Relative paths are not permitted. */
-  uri: string;
-  media_type: string;
-  filename?: string;
-  description?: string;
-  sha256?: string;
-};
 
 export type HistoryLogEntry = {
   id: string;
@@ -395,6 +480,12 @@ export type Well = {
   hydrodynamic_events?: HydrodynamicEvent[];
   aquifer_analysis?: AquiferAnalysis[];
   history_logs?: HistoryLogEntry[];
+
+  // v2.3 operational blocks
+  /** Documents about the well as a whole, not tied to any record. Since v2.3. */
+  attachments?: Attachment[];
+  /** Pump installation history. Since v2.3. */
+  pump_installations?: PumpInstallation[];
 };
 
 /** Geologic section of a well (lithology, fractures, caves). */
@@ -422,7 +513,8 @@ export type SectionKey =
   | 'constructive'
   | 'geology'
   | 'hydrodynamic'
-  | 'history';
+  | 'history'
+  | 'operation';
 
 /** Per-section visibility, keyed by `SectionKey`. `true` = included. */
 export type SectionVisibility = Record<SectionKey, boolean>;

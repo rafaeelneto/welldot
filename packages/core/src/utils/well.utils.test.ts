@@ -1516,6 +1516,7 @@ describe('redactWell', () => {
     geology: true,
     hydrodynamic: true,
     history: true,
+    operation: true,
   };
 
   function fullV2Well(): Well {
@@ -1710,9 +1711,226 @@ describe('v2.1 — centralizers and well_purpose', () => {
       geology: true,
       hydrodynamic: true,
       history: true,
+      operation: true,
     };
     const result = redactWell(well, visibility);
     expect(result.well_purpose).toBeUndefined();
     expect(result.centralizers).toBeUndefined();
+  });
+});
+
+// ─── v2.3 additions ───────────────────────────────────────────────────────────
+
+describe('v2.3 — attachments and pump_installations', () => {
+  const V23_DOC = {
+    version: 2,
+    well_type: 'tubular',
+    bore_hole: [{ from: 0, to: 80, diameter: 250 }],
+    well_case: [{ from: 0, to: 50, type: 'pvc', diameter: 168.3 }],
+    reduction: [],
+    well_screen: [],
+    surface_case: [],
+    hole_fill: [],
+    lithology: [],
+    fractures: [],
+    caves: [],
+    attachments: [
+      {
+        id: 'att-1',
+        uri: 'https://files.example.org/pp01/relatorio-perfuracao.pdf',
+        media_type: 'application/pdf',
+        document_type: 'drilling_report',
+      },
+    ],
+    pump_installations: [
+      {
+        id: 'pump-01',
+        installed_at: '2020-03-01T10:00:00-03:00',
+        removed_at: '2024-11-18T15:00:00-03:00',
+        type: 'submersible',
+        serial: 'SN-1',
+        intake_depth: 55,
+      },
+      {
+        id: 'pump-02',
+        installed_at: '2024-11-18T16:00:00-03:00',
+        type: 'submersible',
+        power_source: 'grid',
+        intake_depth: 60,
+        rated_flow_rate: 15,
+        rated_power: 5.5,
+        stages: 8,
+        riser_diameter: 60.3,
+        riser_material: 'galvanized_steel',
+        check_valve: true,
+        electrical: { voltage: 380, phases: 3, cable_section: 6 },
+        attachments: [
+          {
+            id: 'att-1',
+            uri: 'https://files.example.org/pp01/curva.pdf',
+            media_type: 'application/pdf',
+            document_type: 'pump_curve',
+          },
+        ],
+      },
+    ],
+    hydrodynamic_events: [
+      {
+        id: 'ev-1',
+        type: 'spot_measurement',
+        datetime: '2025-01-10T09:00:00-03:00',
+        static_level: 12.3,
+      },
+      {
+        id: 'ev-2',
+        type: 'spot_measurement',
+        datetime: '2025-01-10T09:00:00-03:00',
+        static_level: 13.2,
+        corrects: 'ev-1',
+        attachments: [
+          {
+            id: 'att-1',
+            uri: 'https://files.example.org/pp01/ficha.jpg',
+            media_type: 'image/jpeg',
+            document_type: 'field_sheet',
+          },
+        ],
+      },
+    ],
+    aquifer_analysis: [
+      {
+        id: 'aa-1',
+        datetime: '2025-01-12T09:00:00-03:00',
+        source_event_ids: ['ev-2'],
+        attachments: [
+          {
+            id: 'att-1',
+            uri: 'https://files.example.org/pp01/teste.pdf',
+            media_type: 'application/pdf',
+            document_type: 'test_report',
+          },
+        ],
+      },
+    ],
+  };
+
+  it('parseWell accepts root attachments, pump_installations, corrects and nested attachments', () => {
+    const well = parseWell(JSON.stringify(V23_DOC));
+    expect(well.attachments).toEqual(V23_DOC.attachments);
+    expect(well.pump_installations).toEqual(V23_DOC.pump_installations);
+    expect(well.hydrodynamic_events?.[1]).toMatchObject({
+      corrects: 'ev-1',
+      attachments: V23_DOC.hydrodynamic_events[1].attachments,
+    });
+    expect(well.aquifer_analysis?.[0].attachments).toEqual(
+      V23_DOC.aquifer_analysis[0].attachments,
+    );
+  });
+
+  it('parseWell rejects a pump without installed_at', () => {
+    const doc = {
+      ...V23_DOC,
+      pump_installations: [{ id: 'p', type: 'submersible' }],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects an installed_at without UTC offset', () => {
+    const doc = {
+      ...V23_DOC,
+      pump_installations: [
+        { id: 'p', type: 'jet', installed_at: '2024-01-01T10:00:00' },
+      ],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects electrical.phases other than 1 or 3', () => {
+    const doc = {
+      ...V23_DOC,
+      pump_installations: [
+        {
+          id: 'p',
+          type: 'submersible',
+          installed_at: '2024-01-01T10:00:00Z',
+          electrical: { phases: 2 },
+        },
+      ],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects an attachment without media_type', () => {
+    const doc = {
+      ...V23_DOC,
+      attachments: [{ id: 'a', uri: 'https://example.org/x.pdf' }],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('v2.1 documents without the new blocks still parse', () => {
+    const {
+      attachments: _a,
+      pump_installations: _p,
+      hydrodynamic_events: _h,
+      aquifer_analysis: _aa,
+      ...v21
+    } = V23_DOC;
+    const well = parseWell(JSON.stringify(v21));
+    expect(well.attachments).toBeUndefined();
+    expect(well.pump_installations).toBeUndefined();
+  });
+
+  it('round-trips through serializeWell → deserializeWell', () => {
+    const well = deserializeWell(JSON.stringify(V23_DOC))!;
+    const again = deserializeWell(serializeWell(well))!;
+    expect(again.attachments).toEqual(V23_DOC.attachments);
+    expect(again.pump_installations).toEqual(V23_DOC.pump_installations);
+    expect(again.hydrodynamic_events).toEqual(V23_DOC.hydrodynamic_events);
+    expect(again.aquifer_analysis).toEqual(V23_DOC.aquifer_analysis);
+  });
+
+  it('pump intake_depth does not extend the calculated well_depth', () => {
+    const doc = {
+      ...V23_DOC,
+      pump_installations: [
+        {
+          id: 'p',
+          type: 'submersible',
+          installed_at: '2024-01-01T10:00:00Z',
+          intake_depth: 200,
+        },
+      ],
+    };
+    expect(deserializeWell(JSON.stringify(doc))!.well_depth).toBe(80);
+  });
+
+  it('redactWell removes pump_installations with operation', () => {
+    const well = deserializeWell(JSON.stringify(V23_DOC))!;
+    const result = redactWell(well, {
+      general: true,
+      constructive: true,
+      geology: true,
+      hydrodynamic: true,
+      history: true,
+      operation: false,
+    });
+    expect(result.pump_installations).toBeUndefined();
+    expect(result.attachments).toEqual(V23_DOC.attachments);
+    expect(result.hydrodynamic_events).toEqual(well.hydrodynamic_events);
+  });
+
+  it('redactWell removes root attachments with general', () => {
+    const well = deserializeWell(JSON.stringify(V23_DOC))!;
+    const result = redactWell(well, {
+      general: false,
+      constructive: true,
+      geology: true,
+      hydrodynamic: true,
+      history: true,
+      operation: true,
+    });
+    expect(result.attachments).toBeUndefined();
+    expect(result.pump_installations).toEqual(well.pump_installations);
   });
 });

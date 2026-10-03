@@ -1,5 +1,19 @@
 <script setup lang="ts">
 import type { Attachment } from '@welldot/core';
+import {
+  DOCUMENT_TYPE_SUGGESTIONS,
+  DOCUMENT_TYPE_VALUES,
+  resolveDocumentTypeLabel,
+  type DocumentTypeContext,
+} from '~/utils/documentType';
+
+const props = withDefaults(
+  defineProps<{
+    /** Where the attachment lives — orders the suggested `document_type`s first. */
+    context?: DocumentTypeContext;
+  }>(),
+  { context: 'history' },
+);
 
 /** The attachment being edited. `null` means "adding a new one". */
 const model = defineModel<Attachment | null>({ default: null });
@@ -9,29 +23,60 @@ const emit = defineEmits<{ save: [attachment: Attachment] }>();
 
 const { t } = useI18n();
 
-const mediaTypeOptions = [
+const mediaTypeOptions = computed(() => [
   { label: 'PDF', value: 'application/pdf' },
   { label: 'JPEG', value: 'image/jpeg' },
   { label: 'PNG', value: 'image/png' },
   { label: 'Word', value: 'application/msword' },
-  { label: 'Other', value: 'application/octet-stream' },
-];
+  {
+    label: t('editor.attachments.mediaTypeOther'),
+    value: 'application/octet-stream',
+  },
+]);
+
+/**
+ * Suggested values for this context first, then the rest of the vocabulary.
+ * A non-canonical value already on the attachment is kept as an option so
+ * editing never silently drops it.
+ */
+const documentTypeOptions = computed(() => {
+  const suggested: readonly string[] = DOCUMENT_TYPE_SUGGESTIONS[props.context];
+  const ordered = [
+    ...suggested,
+    ...DOCUMENT_TYPE_VALUES.filter(v => !suggested.includes(v)),
+  ];
+  const current = model.value?.document_type;
+  if (current && !ordered.includes(current)) ordered.push(current);
+  return ordered.map(value => ({
+    value,
+    label: resolveDocumentTypeLabel(value, t),
+  }));
+});
 
 /** Local copy — edits never reach the bound value until Save. */
 const form = reactive({
   url: '',
   filename: '',
   mediaType: 'application/pdf',
+  documentType: null as string | null,
+  description: '',
 });
 
-watch(visible, open => {
-  if (open) seedForm(model.value);
-});
+// `immediate` so a dialog mounted already open (behind `v-if`) still seeds.
+watch(
+  visible,
+  open => {
+    if (open) seedForm(model.value);
+  },
+  { immediate: true },
+);
 
 function seedForm(attachment: Attachment | null) {
   form.url = attachment?.uri ?? '';
   form.filename = attachment?.filename ?? '';
   form.mediaType = attachment?.media_type ?? 'application/pdf';
+  form.documentType = attachment?.document_type ?? null;
+  form.description = attachment?.description ?? '';
 }
 
 /**
@@ -47,14 +92,15 @@ function save() {
   const patch = {
     uri,
     media_type: form.mediaType,
+    document_type: form.documentType || undefined,
     filename: form.filename.trim() || undefined,
+    description: form.description.trim() || undefined,
   };
   const current = model.value;
 
   const next: Attachment = current
     ? {
-        id: current.id,
-        description: current.description,
+        ...current,
         sha256: current.uri === uri ? current.sha256 : undefined,
         ...patch,
       }
@@ -86,7 +132,24 @@ function save() {
         />
       </LabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.attachmentFilename')">
+      <LabeledField
+        :label="t('editor.attachments.documentType')"
+        :info="t('editor.attachments.documentTypeInfo')"
+      >
+        <Select
+          v-model="form.documentType"
+          :options="documentTypeOptions"
+          option-label="label"
+          option-value="value"
+          :placeholder="t('editor.attachments.documentTypePlaceholder')"
+          show-clear
+          class="w-full"
+        />
+      </LabeledField>
+
+      <LabeledField
+        :label="t('editor.historyLog.logs.fields.attachmentFilename')"
+      >
         <InputText v-model="form.filename" class="w-full" />
       </LabeledField>
 
@@ -100,6 +163,10 @@ function save() {
           option-value="value"
           class="w-full"
         />
+      </LabeledField>
+
+      <LabeledField :label="t('editor.attachments.description')">
+        <Textarea v-model="form.description" :rows="2" class="w-full text-sm" />
       </LabeledField>
     </div>
 

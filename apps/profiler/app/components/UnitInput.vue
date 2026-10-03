@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import {
-  metersToFeet,
-  feetToMeters,
-  mmToInches,
-  inchesToMm,
-} from '@welldot/core';
+import type { DisplayUnitType } from '~/composables/useUnitDisplay';
 
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
   modelValue?: number | null;
-  unitType: 'length' | 'diameter';
+  unitType: DisplayUnitType;
   min?: number;
   max?: number;
   step?: number;
@@ -21,19 +16,7 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
-const uiStore = useUiStore();
-
-function toDisplay(v: number): number {
-  if (props.unitType === 'length')
-    return uiStore.lengthUnit === 'ft' ? metersToFeet(v) : v;
-  return uiStore.diameterUnit === 'inches' ? mmToInches(v) : v;
-}
-
-function toCanonical(v: number): number {
-  if (props.unitType === 'length')
-    return uiStore.lengthUnit === 'ft' ? feetToMeters(v) : v;
-  return uiStore.diameterUnit === 'inches' ? inchesToMm(v) : v;
-}
+const { toDisplay, toCanonical } = useUnitDisplay(props.unitType);
 
 const displayValue = computed(() =>
   props.modelValue != null ? toDisplay(props.modelValue) : null,

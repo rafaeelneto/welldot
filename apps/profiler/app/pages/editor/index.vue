@@ -7,6 +7,7 @@ import TabGeological from './_components/tabs/TabGeological.vue';
 import TabSummary from './_components/tabs/TabSummary.vue';
 import TabHistoryLog from './_components/tabs/TabHistoryLog.vue';
 import TabHydrodynamicEvents from './_components/tabs/TabHydrodynamicEvents.vue';
+import TabOperation from './_components/tabs/TabOperation.vue';
 
 definePageMeta({ layout: 'editor' });
 
@@ -67,6 +68,11 @@ const tabs = computed<
     label: t('editor.tabs.hydrodynamicEvents'),
     shortLabel: t('editor.tabs.hydro'),
   },
+  {
+    value: '6',
+    label: t('editor.tabs.operation'),
+    shortLabel: t('editor.tabs.operation'),
+  },
 ]);
 </script>
 
@@ -122,6 +128,7 @@ const tabs = computed<
           <TabPanel value="3"><TabSummary /></TabPanel>
           <TabPanel value="4"><TabHistoryLog /></TabPanel>
           <TabPanel value="5"><TabHydrodynamicEvents /></TabPanel>
+          <TabPanel value="6"><TabOperation /></TabPanel>
         </TabPanels>
       </Tabs>
     </div>

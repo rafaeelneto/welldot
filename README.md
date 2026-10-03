@@ -124,6 +124,8 @@ The format captures:
 | Hydrodynamic events | `hydrodynamic_events[]`                                                                    | Pumping tests, static readings, airlift, and recovery phases with time-series                  |
 | Aquifer analysis    | `aquifer_analysis[]`                                                                       | Interpreted transmissivity, specific capacity, storativity, Jacob coefficients                 |
 | Operational history | `history_logs[]`                                                                           | Timestamped log of maintenance, inspections, and incidents                                     |
+| Pump installations  | `pump_installations[]`                                                                     | Pump history with nameplate, intake depth, riser and electrical data (v2.3)                    |
+| General attachments | `attachments[]`                                                                            | Root-level files about the well as a whole, e.g. the drilling report (v2.3)                    |
 
 All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`packages/core/docs/spec/v2/`](packages/core/docs/spec/v2/).
 
@@ -225,9 +227,17 @@ The following were delivered in `.well` v2.0 (shipped in `@welldot/core` v0.2.0)
 - **Structured location** — `location` object with explicit CRS, elevation datum, and one-sigma precision fields
 - **Registry identifiers** — `well_id[]` array linking a well to multiple national and institutional registries
 
+The v2.3 revision (shipped in `@welldot/core` v0.4.0) adds the first operational blocks:
+
+- **Pump installations** — installation history with nameplate, intake depth, riser and electrical data; the current pump is drawn on the profile
+- **Attachments** — a root-level `attachments` array for general files about the well (e.g. the drilling report), plus `document_type` and per-record attachments on pumps, hydrodynamic events and aquifer analyses. The root array does not collect the per-record attachments
+- **Ledger corrections** — `hydrodynamic_events[].corrects` retracts an erroneous event without editing it
+
 ### `.well` format — future versions
 
-- **Water quality** — physico-chemical and microbiological parameters tied to sampling date and depth interval (reserved for v3)
+- **Permits, meters, production and operating regime** — the remaining operational blocks (drafted for a later v2 revision)
+
+- **Water quality** — physico-chemical and microbiological parameters tied to sampling date and depth interval (drafted as a `water_samples` block for a later v2 revision)
 - **Geophysical logs** — downhole resistivity, gamma ray, and caliper surveys (reserved for v3)
 - **Multi-well linking** — observation well references for storativity determination (reserved for v3)
 

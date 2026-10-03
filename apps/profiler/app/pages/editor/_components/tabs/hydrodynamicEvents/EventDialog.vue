@@ -5,12 +5,15 @@ import {
   RecoveryOnlyEventSchema,
   SpotMeasurementEventSchema,
   StepDrawdownEventSchema,
+  type Attachment,
   type HydrodynamicEvent,
 } from '@welldot/core';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import type { WellGridColumn } from '~/components/DataGrid/types';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+const { flowUnit } = useUnitFormat();
 const { typeOptions, measurementMethodOptions } = useHydrodynamicEventTypes();
 
 // ─── Form types ───────────────────────────────────────────────────────────────
@@ -51,6 +54,29 @@ function blankStep(): FormStep {
 
 const visible = ref(false);
 const editingId = ref<string | null>(null);
+/** The event being edited, kept so fields the form does not cover survive. */
+const editingOriginal = ref<HydrodynamicEvent | null>(null);
+
+/**
+ * Members the form owns and rebuilds on save. Everything else on the edited
+ * event (`sequence`, `corrects`, `x-` members, …) is carried over untouched.
+ */
+const FORM_MANAGED_KEYS = new Set([
+  'id',
+  'type',
+  'datetime',
+  'operator',
+  'equipment',
+  'notes',
+  'static_level',
+  'static_level_precision',
+  'measurement_method',
+  'steps',
+  'recovery',
+  'pumping_rate',
+  'pumping_duration',
+  'attachments',
+]);
 const expandedSteps = ref<string[]>([]);
 
 const form = reactive<{
@@ -68,6 +94,7 @@ const form = reactive<{
   stepsDepthPrecision: number | null;
   hasRecovery: boolean;
   recoveryReadings: FormReading[];
+  attachments: Attachment[];
 }>({
   type: 'spot_measurement',
   datetime: null,
@@ -83,6 +110,7 @@ const form = reactive<{
   stepsDepthPrecision: null,
   hasRecovery: false,
   recoveryReadings: [],
+  attachments: [],
 });
 
 const showStaticLevel = computed(() =>
@@ -140,6 +168,7 @@ function resetForm() {
   form.stepsDepthPrecision = null;
   form.hasRecovery = false;
   form.recoveryReadings = [];
+  form.attachments = [];
 }
 
 function openAdd() {
@@ -147,12 +176,15 @@ function openAdd() {
   form.steps = [blankStep()];
   expandedSteps.value = form.steps.map(s => s.id);
   editingId.value = null;
+  editingOriginal.value = null;
   visible.value = true;
 }
 
 function openEdit(event: HydrodynamicEvent) {
   resetForm();
   editingId.value = event.id;
+  editingOriginal.value = event;
+  form.attachments = (event.attachments ?? []).map(a => ({ ...a }));
   form.type = event.type;
   form.datetime = new Date(event.datetime);
   form.operator = event.operator ?? '';
@@ -250,13 +282,22 @@ function buildRecovery() {
 
 function buildEventPayload(): Record<string, unknown> {
   const datetimeStr = form.datetime ? form.datetime.toISOString() : '';
+  const preserved = Object.fromEntries(
+    Object.entries(editingOriginal.value ?? {}).filter(
+      ([key]) => !FORM_MANAGED_KEYS.has(key),
+    ),
+  );
   const common: Record<string, unknown> = {
+    ...preserved,
     id: editingId.value ?? crypto.randomUUID(),
     type: form.type,
     datetime: datetimeStr,
     ...(form.operator.trim() && { operator: form.operator.trim() }),
     ...(form.equipment.trim() && { equipment: form.equipment.trim() }),
     ...(form.notes.trim() && { notes: form.notes.trim() }),
+    ...(form.attachments.length > 0 && {
+      attachments: form.attachments.map(a => ({ ...a })),
+    }),
   };
 
   const steps = buildSteps();
@@ -505,7 +546,9 @@ function reorderRecoveryReading(from: number, to: number) {
 
       <!-- Static level (spot / constant_rate / step_drawdown) -->
       <div v-if="showStaticLevel" class="grid grid-cols-2 gap-3">
-        <LabeledField :label="t('editor.hydrodynamicEvents.fields.staticLevel')">
+        <LabeledField
+          :label="t('editor.hydrodynamicEvents.fields.staticLevel')"
+        >
           <InputNumber
             v-model="form.staticLevel"
             :max-fraction-digits="3"
@@ -540,9 +583,17 @@ function reorderRecoveryReading(from: number, to: number) {
 
       <!-- Recovery only: estimated preceding params -->
       <div v-if="showRecoveryOnly" class="grid grid-cols-2 gap-3">
-        <LabeledField :label="t('editor.hydrodynamicEvents.fields.pumpingRate')">
-          <InputNumber
+        <LabeledField
+          :label="
+            t('editor.hydrodynamicEvents.fields.pumpingRate', {
+              unit: flowUnit,
+            })
+          "
+        >
+          <UnitInput
             v-model="form.pumpingRate"
+            unit-type="flow"
+            :min="0"
             :max-fraction-digits="2"
             class="w-full"
           />
@@ -630,11 +681,15 @@ function reorderRecoveryReading(from: number, to: number) {
                     @mousedown.stop
                   >
                     <span class="text-xs text-content-400 whitespace-nowrap">{{
-                      t('editor.hydrodynamicEvents.fields.rate')
+                      t('editor.hydrodynamicEvents.fields.rate', {
+                        unit: flowUnit,
+                      })
                     }}</span>
-                    <InputNumber
+                    <UnitInput
                       v-model="step.rate"
-                      placeholder="m³/h"
+                      unit-type="flow"
+                      :min="0"
+                      :placeholder="flowUnit"
                       :max-fraction-digits="2"
                       fluid
                       class="w-22"
@@ -755,6 +810,11 @@ function reorderRecoveryReading(from: number, to: number) {
           :rows="3"
           class="w-full font-mono text-sm"
         />
+      </LabeledField>
+
+      <!-- Attachments -->
+      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+        <AttachmentField v-model="form.attachments" context="event" />
       </LabeledField>
     </div>
 

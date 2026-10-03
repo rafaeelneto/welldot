@@ -27,6 +27,7 @@ src/
     fractures.renderer.ts
     caves.renderer.ts
     centralizers.renderer.ts        ← .well v2.1 centralizer markers (redrawn on zoom)
+    pump.renderer.ts                ← .well v2.3 current pump + riser (paths only, redrawn on zoom)
     highlights.renderer.ts
     legend.renderer.ts
     unit-labels.renderer.ts

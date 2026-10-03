@@ -3,7 +3,7 @@ import type { DiameterUnits } from '@welldot/core';
 
 const props = defineProps<{
   value?: unknown;
-  unitType: 'length' | 'diameter';
+  unitType: 'length' | 'diameter' | 'flow' | 'power';
 }>();
 
 const { unit, toDisplay } = useUnitDisplay(props.unitType);

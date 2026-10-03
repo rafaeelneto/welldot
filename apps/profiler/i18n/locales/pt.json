@@ -5,6 +5,7 @@
     "featureList": [
       "Crie, visualize e exporte perfis geológicos e construtivos de poços",
       "Formato de arquivo .well aberto e versionado",
+      "Histórico de instalações de bomba e anexos gerais (.well v2.3)",
       "Gratuito e de código aberto"
     ]
   },
@@ -29,7 +30,7 @@
   },
   "footer": {
     "version": "welldot · v1.0.0",
-    "spec": ".well spec v2.0",
+    "spec": ".well spec v2.3",
     "license": "Aberto · Apache 2.0"
   },
   "hero": {
@@ -51,7 +52,7 @@
     "headline1": "Um JSON.",
     "headlineEm": "Três",
     "headline2": "propósitos.",
-    "intro": "Hoje, dados de poços vivem em PDFs que não se conversam entre si. O arquivo {well} é um formato simples e versionado para mudar isso — um único JSON que descreve o poço por inteiro, da construção e geologia aos testes de bombeamento e ao histórico de manutenção, pensado como {standard}.",
+    "intro": "Hoje, dados de poços vivem em PDFs que não se conversam entre si. O arquivo {well} é um formato simples e versionado para mudar isso — um único JSON que descreve o poço por inteiro, da construção e geologia aos testes de bombeamento, às bombas instaladas e ao histórico de manutenção, pensado como {standard}.",
     "standard": "padrão internacional",
     "props": [
       {
@@ -81,8 +82,8 @@
       },
       {
         "num": "§ 1.6",
-        "title": "Histórico operacional",
-        "body": "Um log datado de manutenções, inspeções e incidentes, com anexos, que acompanha o poço ao longo de sua vida útil."
+        "title": "Operação e histórico",
+        "body": "Instalações de bomba com dados de placa, profundidade do crivo, edutor e parte elétrica, documentos tipados e um log datado de manutenções e incidentes que acompanha o poço ao longo de sua vida útil."
       }
     ]
   },
@@ -145,7 +146,7 @@
     "headline1": "O",
     "headlineEm": "futuro",
     "headline2": ".",
-    "intro": "A v2 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero e histórico operacional. A especificação evolui de forma aberta para abraçar o que ainda vem pela frente.",
+    "intro": "A v2.3 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero, instalações de bomba, anexos gerais e histórico operacional. A especificação evolui de forma aberta para abraçar o que ainda vem pela frente.",
     "props": [
       {
         "num": "§ 4.1",
@@ -159,8 +160,8 @@
       },
       {
         "num": "§ 4.3",
-        "title": "Metadados estendidos",
-        "body": "Outorga, proprietário, regime de uso, referências cadastrais e vínculos com bases regulatórias."
+        "title": "Outorga e produção",
+        "body": "Outorgas e suas condicionantes, hidrômetros, volumes produzidos e regime de operação — os próximos blocos operacionais."
       },
       {
         "num": "§ 4.4",
@@ -249,7 +250,9 @@
       "units": {
         "title": "Unidades",
         "length": "Comprimento",
-        "diameter": "Diâmetro"
+        "diameter": "Diâmetro",
+        "flow": "Vazão",
+        "power": "Potência"
       },
       "coordinates": {
         "title": "Coordenadas",
@@ -272,7 +275,8 @@
       "historyLog": "Histórico",
       "hydrodynamicEvents": "Hidrodinâmica",
       "hydro": "Hidro",
-      "inDevelopment": "Em dev"
+      "inDevelopment": "Em dev",
+      "operation": "Operação"
     },
     "status": {
       "saved": "Salvo",
@@ -330,7 +334,8 @@
         "constructive": "Construção",
         "geology": "Geologia",
         "hydrodynamic": "Testes de bombeamento",
-        "history": "Histórico"
+        "history": "Histórico",
+        "operation": "Bomba"
       }
     },
     "exportPdfDialog": {
@@ -650,7 +655,9 @@
           "fields": "Autoridade é o nome do cadastro ou instituição que emitiu o código (escolha uma sugestão ou digite outra). ID é o código exatamente como emitido; mantenha zeros à esquerda e separadores (ex. SP-0042819).",
           "primary": "Use o botão de seleção para marcar o identificador principal. Se nenhum for marcado, o primeiro é considerado o principal. Cada par autoridade + ID deve ser único."
         }
-      }
+      },
+      "attachments": "Anexos gerais",
+      "attachmentsInfo": "Arquivos sobre o poço como um todo, como o relatório de perfuração ou o perfil as-built. Anexos de bombas, testes e do histórico ficam no próprio registro."
     },
     "summary": {
       "tag": "Visão geral · Volumes",
@@ -825,12 +832,12 @@
         "staticLevel": "NE (m)",
         "staticLevelPrecision": "±Prec. NE",
         "measurementMethod": "Método de medição",
-        "pumpingRate": "Vazão estimada (m³/h)",
+        "pumpingRate": "Vazão estimada ({unit})",
         "pumpingDuration": "Duração estimada (min)",
         "steps": "Degraus de Bombeamento",
         "recovery": "Recuperação",
         "includeRecovery": "Incluir fase de recuperação",
-        "rate": "Vazão (m³/h)",
+        "rate": "Vazão ({unit})",
         "ratePrecision": "±Prec.",
         "duration": "Duração (min)",
         "durationDerivedHint": "Calculado a partir das leituras (tempo decorrido máximo)",
@@ -861,11 +868,100 @@
       "addReading": "Adicionar leitura",
       "manageReadings": "Gerenciar",
       "readingsDialog": {
-        "stepTitle": "Leituras — Degrau {n} ({rate} m³/h)",
+        "stepTitle": "Leituras — Degrau {n} ({rate} {unit})",
         "recoveryTitle": "Leituras — Recuperação"
       },
       "validation": {
         "missing": "Adicione {fields} para salvar este evento"
+      },
+      "retracted": "Retificado",
+      "retractedInfo": "Um evento posterior corrige este. Ele permanece no arquivo, mas não conta mais.",
+      "correction": "Correção",
+      "correctionInfo": "Este evento corrige um anterior."
+    },
+    "attachments": {
+      "documentType": "Tipo de documento",
+      "documentTypeInfo": "O que é o documento (.well v2.3). Opcional — deixe vazio se não tiver certeza.",
+      "documentTypePlaceholder": "Não informado",
+      "description": "Descrição",
+      "mediaTypeOther": "Outro",
+      "documentTypes": {
+        "drilling_report": "Relatório de perfuração",
+        "as_built_drawing": "Perfil construtivo as-built",
+        "registry_record": "Ficha cadastral",
+        "photo": "Fotografia",
+        "permit_document": "Portaria / outorga",
+        "condition_evidence": "Comprovante de condicionante",
+        "pump_curve": "Curva da bomba",
+        "field_sheet": "Planilha de campo",
+        "test_report": "Relatório de teste de bombeamento",
+        "lab_report": "Laudo laboratorial",
+        "invoice": "Nota fiscal"
+      }
+    },
+    "operation": {
+      "pumpTypes": {
+        "submersible": "Bomba submersa",
+        "vertical_turbine": "Bomba de eixo vertical",
+        "jet": "Bomba injetora",
+        "progressive_cavity": "Bomba helicoidal",
+        "hand_pump": "Bomba manual",
+        "compressor_airlift": "Compressor (air-lift)"
+      },
+      "powerSources": {
+        "grid": "Rede elétrica",
+        "solar": "Solar",
+        "diesel": "Diesel",
+        "hybrid": "Híbrido"
+      },
+      "pump": {
+        "title": "Instalações de bomba",
+        "intro": "Um registro por instalação. Uma bomba retirada e reinstalada ganha um novo registro com o mesmo número de série. A bomba atual é a que não tem data de retirada.",
+        "add": "Adicionar instalação",
+        "edit": "Editar instalação",
+        "deleteConfirm": "Excluir esta instalação de bomba?",
+        "empty": "Nenhuma instalação de bomba registrada.",
+        "current": "Atual",
+        "removed": "Retirada",
+        "submergence": "Submergência",
+        "submergenceInfo": "Profundidade do crivo menos o nível dinâmico mais recente.",
+        "submergenceNegative": "O crivo está acima do nível dinâmico mais recente.",
+        "fields": {
+          "type": "Tipo de bomba",
+          "typeInfo": "Solar é fonte de energia, não tipo de bomba. Texto livre é permitido.",
+          "powerSource": "Fonte de energia",
+          "installedAt": "Instalada em",
+          "removedAt": "Retirada em",
+          "removedAtInfo": "Deixe vazio enquanto a bomba estiver instalada.",
+          "manufacturer": "Fabricante",
+          "model": "Modelo",
+          "serial": "Número de série",
+          "serialInfo": "Liga reinstalações da mesma unidade.",
+          "intakeDepth": "Profundidade do crivo",
+          "intakeDepthInfo": "Profundidade da entrada da bomba a partir do terreno. O perfil desenha a bomba terminando aqui.",
+          "ratedFlowRate": "Vazão nominal",
+          "ratedHead": "Altura manométrica",
+          "ratedPower": "Potência",
+          "ratedPowerInfo": "Armazenada em kW; exibida na unidade escolhida nas Configurações. 1 cv = 0,7355 kW · 1 hp = 0,7457 kW.",
+          "stages": "Estágios",
+          "checkValve": "Válvula de retenção",
+          "riser": "Edutor",
+          "riserDiameter": "Diâmetro do edutor",
+          "riserDiameterInfo": "Diâmetro externo real do tubo edutor.",
+          "riserMaterial": "Material do edutor",
+          "electrical": "Elétrica",
+          "voltage": "Tensão",
+          "phases": "Fases",
+          "cableSection": "Seção do cabo",
+          "cableLength": "Comprimento do cabo",
+          "notes": "Observações"
+        },
+        "warnings": {
+          "intake_below_well_bottom": "O crivo está abaixo do fundo do poço.",
+          "intake_in_screen": "O crivo está dentro de um intervalo de filtro.",
+          "multiple_open_installations": "Mais de uma instalação está sem data de retirada.",
+          "removed_before_installed": "A data de retirada deve ser posterior à de instalação."
+        }
       }
     }
   },

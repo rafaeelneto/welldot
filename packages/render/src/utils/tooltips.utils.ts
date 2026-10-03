@@ -11,12 +11,14 @@ import type {
   Fracture,
   HoleFill,
   Lithology,
+  PumpInstallation,
   Reduction,
   SurfaceCase,
   Units,
   WellCase,
   WellScreen,
 } from '@welldot/core';
+import { powerFromCanonical } from '@welldot/core';
 import { formatNumber } from '@welldot/utils';
 import type {
   ComponentsClassNames,
@@ -141,6 +143,19 @@ export const populateTooltips = (
           ${d.diameter ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.diameter}</strong> ${esc(formatDiameter(d.diameter, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}</span>` : ''}
           ${d.description ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.description}</strong> ${esc(d.description)}</span>` : ''}
         `,
+    pump: (_: unknown, d: PumpInstallation) => {
+      const typeLabel =
+        (labels.pump as Record<string, string>)[`type_${d.type}`] ?? d.type;
+      const model = [d.manufacturer, d.model].filter(Boolean).join(' ');
+      return `
+          <span class="${customClasses.tooltip.title}">${labels.pump.title}</span>
+          <span class="${customClasses.tooltip.primaryInfo}">${esc(typeLabel)}</span>
+          ${d.intake_depth !== undefined ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.pump.intakeDepth}</strong> ${esc(formatLength(d.intake_depth, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>` : ''}
+          ${model ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.pump.model}</strong> ${esc(model)}</span>` : ''}
+          ${d.rated_power !== undefined ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.pump.power}</strong> ${esc(formatNumber(powerFromCanonical(d.rated_power, units.power ?? 'kW'), { maximumFractionDigits: 2, locale }))} ${esc(units.power ?? 'kW')}</span>` : ''}
+          ${d.riser_diameter !== undefined ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.pump.riser}</strong> ${esc(formatDiameter(d.riser_diameter, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}${d.riser_material ? ` · ${esc(d.riser_material)}` : ''}</span>` : ''}
+        `;
+    },
     conflict: (_: unknown, d: { from: number; to: number }) => `
           <span class="${customClasses.tooltip.title}">${labels.conflict.title}</span>
           <span class="${customClasses.tooltip.primaryInfo}">${labels.common.from} ${esc(formatLength(d.from, units.length, locale))} ${esc(getLengthUnit(units.length))} ${labels.common.to} ${esc(formatLength(d.to, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>

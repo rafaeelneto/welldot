@@ -1,4 +1,4 @@
-import type { DiameterUnits, LengthUnits } from '@welldot/core';
+import type { Units } from '@welldot/core';
 import type {
   DeepPartial,
   RenderableWell,
@@ -62,7 +62,7 @@ export interface BuildSvgProfilesOptions {
   scale: number;
   /** Height budget already used by heading info / "before" metadata on the first page. */
   firstPageAvailableHeight?: number;
-  units: { length: LengthUnits; diameter: DiameterUnits };
+  units: Units;
   /** Active app locale — resolves renderer-drawn text and the diameter unit symbol. Anything other than `'en'` is treated as `'pt'`. */
   locale: string;
 }

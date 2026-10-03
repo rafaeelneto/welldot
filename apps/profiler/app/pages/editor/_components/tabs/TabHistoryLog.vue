@@ -2,7 +2,7 @@
 import type { Attachment, HistoryLogEntry } from '@welldot/core';
 import { useConfirm } from 'primevue/useconfirm';
 import AppChip from '~/components/AppChip.vue';
-import AttachmentDialog from './historyLog/AttachmentDialog.vue';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import LogEntryDialog from './historyLog/LogEntryDialog.vue';
 
 const { t } = useI18n();
@@ -16,23 +16,12 @@ const {
   severityLabel,
   severityToChip,
 } = useHistoryLogCategories();
-const {
-  attachmentIcon,
-  attachmentLabel,
-  copiedAttachmentId,
-  copyAttachmentPath,
-} = useAttachmentDisplay();
 
 // ─── Dialog bindings — the dialogs edit a copy and hand it back on save ──────
 
 /** Entry passed to the entry dialog; null opens it in "add" mode. */
 const entryDraft = ref<HistoryLogEntry | null>(null);
 const entryDialogVisible = ref(false);
-
-/** Attachment passed to the file dialog, plus the entry it belongs to. */
-const attachmentDraft = ref<Attachment | null>(null);
-const attachmentDialogVisible = ref(false);
-const attachmentTargetEntryId = ref<string>('');
 
 function addEntry() {
   entryDraft.value = null;
@@ -42,18 +31,6 @@ function addEntry() {
 function editEntry(entry: HistoryLogEntry) {
   entryDraft.value = entry;
   entryDialogVisible.value = true;
-}
-
-function addAttachment(entryId: string) {
-  attachmentTargetEntryId.value = entryId;
-  attachmentDraft.value = null;
-  attachmentDialogVisible.value = true;
-}
-
-function editAttachment(entryId: string, attachment: Attachment) {
-  attachmentTargetEntryId.value = entryId;
-  attachmentDraft.value = attachment;
-  attachmentDialogVisible.value = true;
 }
 
 // ─── Filter / search ──────────────────────────────────────────────────────────
@@ -105,26 +82,6 @@ function isDescriptionExpanded(id: string) {
   return expandedDescriptions.value.has(id);
 }
 
-// ─── Attachment expand ────────────────────────────────────────────────────────
-
-const VISIBLE_ATTACHMENTS = 3;
-const expandedAttachments = ref(new Set<string>());
-
-function toggleAttachments(id: string) {
-  if (expandedAttachments.value.has(id)) {
-    expandedAttachments.value.delete(id);
-  } else {
-    expandedAttachments.value.add(id);
-  }
-  expandedAttachments.value = new Set(expandedAttachments.value);
-}
-
-function visibleAttachments(entry: HistoryLogEntry): Attachment[] {
-  const list = entry.attachments ?? [];
-  if (expandedAttachments.value.has(entry.id)) return list;
-  return list.slice(0, VISIBLE_ATTACHMENTS);
-}
-
 // ─── Entries ──────────────────────────────────────────────────────────────────
 
 /** Receives the edited entry back from the dialog and persists it. */
@@ -157,40 +114,12 @@ function deleteEntry(id: string) {
 
 // ─── Attachments on saved entries ─────────────────────────────────────────────
 
-function upsertStoredAttachment(attachment: Attachment) {
+function setAttachments(entryId: string, list: Attachment[]) {
   profileStore.updateWell(draft => {
-    const entry = draft.history_logs?.find(
-      e => e.id === attachmentTargetEntryId.value,
+    assignAttachments(
+      draft.history_logs?.find(e => e.id === entryId),
+      list,
     );
-    if (!entry) return;
-    if (!entry.attachments) entry.attachments = [];
-
-    const idx = entry.attachments.findIndex(a => a.id === attachment.id);
-    if (idx === -1) entry.attachments.push(attachment);
-    else entry.attachments[idx] = attachment;
-  });
-}
-
-function deleteAttachment(entryId: string, attachmentId: string) {
-  confirm.require({
-    icon: 'ph:warning-duotone',
-    header: t('editor.historyLog.logs.deleteAttachment'),
-    message: t('editor.historyLog.logs.deleteAttachment'),
-    acceptLabel: t('editor.confirmClear.accept'),
-    rejectLabel: t('editor.confirmClear.reject'),
-    acceptProps: { severity: 'danger' },
-    rejectProps: { text: true, severity: 'secondary' },
-    defaultFocus: 'reject',
-    accept: () => {
-      profileStore.updateWell(draft => {
-        const entry = draft.history_logs?.find(e => e.id === entryId);
-        if (entry) {
-          entry.attachments = entry.attachments?.filter(
-            a => a.id !== attachmentId,
-          );
-        }
-      });
-    },
   });
 }
 
@@ -350,104 +279,13 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
             </button>
           </div>
 
-          <!-- ── attachments section ────────────────────────────────────── -->
-          <div class="flex flex-col gap-2">
-            <!-- label row -->
-            <div class="flex items-center gap-2">
-              <span
-                class="font-mono text-[10px] tracking-[0.08em] uppercase text-content-400"
-              >
-                {{
-                  t('editor.historyLog.logs.attachments', {
-                    n: (entry.attachments ?? []).length,
-                  })
-                }}
-              </span>
-              <button
-                class="add-attachment-btn"
-                type="button"
-                @click="addAttachment(entry.id)"
-              >
-                <Icon name="ph:plus" class="size-3" />
-                {{ t('editor.historyLog.logs.addAttachment') }}
-              </button>
-            </div>
-
-            <!-- thumbnail strip -->
-            <div
-              v-if="(entry.attachments ?? []).length"
-              class="flex flex-wrap gap-2"
-            >
-              <div
-                v-for="att in visibleAttachments(entry)"
-                :key="att.id"
-                class="attachment-thumb"
-              >
-                <Icon
-                  :name="attachmentIcon(att.media_type)"
-                  class="size-5 text-content-300 shrink-0"
-                />
-                <span
-                  class="font-mono text-[10px] text-content-300 truncate flex-1 min-w-0"
-                  :title="att.uri"
-                >
-                  {{ attachmentLabel(att) }}
-                </span>
-                <div class="flex items-center gap-1 shrink-0">
-                  <button
-                    class="thumb-action"
-                    type="button"
-                    :aria-label="t('editor.historyLog.logs.copyPath')"
-                    :title="
-                      copiedAttachmentId === att.id
-                        ? t('editor.historyLog.logs.copied')
-                        : t('editor.historyLog.logs.copyPath')
-                    "
-                    @click="copyAttachmentPath(att)"
-                  >
-                    <Icon
-                      :name="
-                        copiedAttachmentId === att.id
-                          ? 'ph:check-bold'
-                          : 'ph:copy-duotone'
-                      "
-                      class="size-3"
-                    />
-                  </button>
-                  <button
-                    class="thumb-action"
-                    type="button"
-                    :aria-label="t('editor.historyLog.logs.editAttachment')"
-                    @click="editAttachment(entry.id, att)"
-                  >
-                    <Icon name="ph:pencil-simple-duotone" class="size-3" />
-                  </button>
-                  <button
-                    class="thumb-action thumb-action--danger"
-                    type="button"
-                    :aria-label="t('editor.historyLog.logs.deleteAttachment')"
-                    @click="deleteAttachment(entry.id, att.id)"
-                  >
-                    <Icon name="ph:trash-duotone" class="size-3" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- overflow / show more -->
-              <button
-                v-if="(entry.attachments ?? []).length > VISIBLE_ATTACHMENTS"
-                class="attachment-overflow-btn"
-                type="button"
-                @click="toggleAttachments(entry.id)"
-              >
-                <span v-if="!expandedAttachments.has(entry.id)">
-                  +{{ (entry.attachments?.length ?? 0) - VISIBLE_ATTACHMENTS }}
-                  {{ t('editor.historyLog.logs.showMore') }}
-                </span>
-                <span v-else>{{ t('editor.historyLog.logs.showLess') }}</span>
-              </button>
-            </div>
-          </div>
+          <!-- ── attachments ─────────────────────────────────────────────── -->
+          <AttachmentField
+            :model-value="entry.attachments"
+            context="history"
+            confirm-delete
+            @update:model-value="setAttachments(entry.id, $event)"
+          />
 
           <!-- ── footer row: author + actions ───────────────────────────── -->
           <div class="flex items-center gap-2 pt-1 border-t border-surface-100">
@@ -502,12 +340,6 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
     v-model="entryDraft"
     v-model:visible="entryDialogVisible"
     @save="upsertEntry"
-  />
-  <AttachmentDialog
-    v-if="attachmentDialogVisible"
-    v-model="attachmentDraft"
-    v-model:visible="attachmentDialogVisible"
-    @save="upsertStoredAttachment"
   />
 </template>
 
@@ -567,90 +399,5 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
 .show-more-btn:hover {
   color: var(--color-primary-600);
   text-decoration: underline;
-}
-
-.add-attachment-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px dashed var(--color-surface-300);
-  background: transparent;
-  color: var(--color-content-400);
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-.add-attachment-btn:hover {
-  background: var(--color-surface-50);
-  color: var(--color-content-200);
-  border-color: var(--color-surface-400);
-}
-
-.attachment-thumb {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--color-surface-200);
-  background: var(--color-surface-50);
-  max-width: 200px;
-  min-width: 120px;
-}
-
-.thumb-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 2px;
-  border-radius: 4px;
-  color: var(--color-content-400);
-  cursor: pointer;
-  transition:
-    color 100ms ease,
-    background 100ms ease;
-}
-
-.thumb-action:hover {
-  background: var(--color-surface-100);
-  color: var(--color-content-100);
-}
-
-.thumb-action--danger:hover {
-  background: color-mix(in srgb, var(--color-error-500) 10%, transparent);
-  color: var(--color-error-500);
-}
-
-.attachment-overflow-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px dashed var(--color-surface-300);
-  background: transparent;
-  color: var(--color-content-400);
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease;
-}
-
-.attachment-overflow-btn:hover {
-  background: var(--color-surface-50);
-  color: var(--color-primary-500);
 }
 </style>

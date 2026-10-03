@@ -17,7 +17,7 @@ export type WellGridColumnBase = {
   /** Override the RevoGrid editor key */
   editor?: string;
   /** Unit-aware column — auto-converts to/from canonical units (m ↔ ft, mm ↔ inches) */
-  unitType?: 'length' | 'diameter';
+  unitType?: 'length' | 'diameter' | 'flow' | 'power';
   /** Display-only formatter — bypasses the editor */
   formatter?: (value: unknown, row: Record<string, unknown>) => string;
   pin?: 'colPinStart' | 'colPinEnd';

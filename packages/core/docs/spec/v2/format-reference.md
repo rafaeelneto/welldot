@@ -1,4 +1,4 @@
-# `.well` File Format Specification — Version 2.1: Format Reference
+# `.well` File Format Specification — Version 2.3: Format Reference
 
 **See also:** [overview.md](./overview.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md)
 
@@ -16,6 +16,7 @@
 
   "name": "...",
   "well_type": "...",
+  "well_purpose": [ ... ],
   "well_driller": "...",
   "construction_date": "YYYY-MM-DD",
   "obs": "...",
@@ -28,6 +29,7 @@
   "well_screen": [ ... ],
   "surface_case": [ ... ],
   "hole_fill": [ ... ],
+  "centralizers": [ ... ],
   "cement_pad": { ... },
 
   "lithology": [ ... ],
@@ -36,7 +38,10 @@
 
   "hydrodynamic_events": [ ... ],
   "aquifer_analysis": [ ... ],
-  "history_logs": [ ... ]
+  "history_logs": [ ... ],
+
+  "attachments": [ ... ],
+  "pump_installations": [ ... ]
 }
 ```
 
@@ -49,7 +54,9 @@
 | `1`     | Initial release — constructive and geologic data only                                                                                                                                                                                                                 |
 | `2`     | Adds location, well_id (array), profiles, texture object, hydrodynamic_events, aquifer_analysis, history_logs, optional @context, \*\_precision fields, and extensibility conventions. Tightens unit semantics: all values are canonical SI, no per-file declaration. |
 
-Minor revisions (`2.1`, …) are additive and do not change the `version` integer: a v2.1 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
+Minor revisions (`2.1`, `2.3`, …) are additive and do not change the `version` integer: a v2.3 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
+
+The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `hydrodynamic_events[].corrects` and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
 
 ### Parser version handling
 
@@ -60,7 +67,7 @@ The `version` field is an integer and must always be present.
 - Either parser encountering an unrecognized integer version MUST reject the file with a clear error.
 - A file without a `version` field SHOULD be rejected. Parsers MAY emit a warning and attempt to read the file as v1 if all required v1 fields are present and no v2-specific blocks are detected, but this fallback behavior is implementation-specific and not guaranteed by the spec.
 
-Files with `version: 1` MUST NOT contain any v2-only blocks (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, `profiles`, `well_id` as array, `location` object, `@context`). A v1 file containing such fields is malformed.
+Files with `version: 1` MUST NOT contain any v2-only blocks (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, `attachments`, `pump_installations`, `profiles`, `well_id` as array, `location` object, `@context`). A v1 file containing such fields is malformed.
 
 ---
 
@@ -144,13 +151,47 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 | `well_purpose` | string[]        | no       | Intended use(s) of the well. See § well_purpose.                 |
 | `centralizers` | `Centralizer[]` | no       | Casing/screen centralizers. See object-schemas.md § Centralizer. |
 
+### v2.3 additions
+
+| Field                | Type                 | Required | Description                                                                                      |
+| -------------------- | -------------------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `attachments`        | `Attachment[]`       | no       | Documents about the well as a whole, not tied to any record. See object-schemas.md § Attachment. |
+| `pump_installations` | `PumpInstallation[]` | no       | Pump installation history (installation block). See object-schemas.md § `pump_installations[]`.  |
+
+### Block kinds _(since v2.3)_
+
+Every top-level array is one of three kinds. The kind decides how records are corrected.
+
+| Kind           | Blocks                | Correction                                                                               | Edit tracking                           |
+| -------------- | --------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
+| Ledger         | `hydrodynamic_events` | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
+| Mutable record | `history_logs`        | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Installation   | `pump_installations`  | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+
+Constructive and geologic arrays describe the well as built and are edited in place. `aquifer_analysis` entries are interpretations: a new interpretation is a new entry, and earlier ones coexist.
+
+**Ledger corrections.** A ledger entry referenced by any `corrects` field is excluded from every derivation but stays in the file. Chains are allowed (C corrects B, which corrected A); only the last uncorrected entry counts. A `corrects` cycle is malformed and emits a warning. An `aquifer_analysis` whose `source_event_ids` or `static_level_source_id` points to a retracted event emits a warning naming both ids.
+
+**Installation pattern.** Installation blocks describe equipment present in the well for a period, with `installed_at` (required) and `removed_at` (absent means currently installed).
+
+- `removed_at` earlier than or equal to `installed_at` is malformed and emits a warning.
+- Each entry is one installation, not one piece of equipment. A unit pulled and reinstalled gets a new entry with the same `serial`.
+- Overlapping open installations in the same block emit a warning, not an error.
+
+### Naming rules _(since v2.3)_
+
+- No unit in a field name. Units are bound by the field-to-unit table (§ Units).
+- `flow_rate` is the canonical name for a volumetric rate; nameplate values use the `rated_` prefix (`rated_flow_rate`, `rated_head`, `rated_power`).
+- `from` / `to` are reserved for depth intervals in meters. Time intervals use `period_start` / `period_end`.
+- References to another array end in `_id` (single) or `_ids` (array), plus the relationship field `corrects`.
+
 ---
 
 ## Datetime Conventions
 
 The `.well` format distinguishes two kinds of temporal values:
 
-**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` only. Interpreted as the local civil date at the well site. The well site's timezone is not stored separately; calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
+**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, in future operational blocks, for legal documents (permit issue and validity dates, condition deadlines). Interpreted as the local civil date at the well site. The well site's timezone is not stored separately; calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
 
 **Instants** — RFC 3339 datetime strings with a mandatory UTC offset (e.g. `2006-03-14T08:00:00-03:00` or `2006-03-14T11:00:00Z`). Used for all event, analysis, and log timestamps:
 
@@ -158,6 +199,9 @@ The `.well` format distinguishes two kinds of temporal values:
 - `aquifer_analysis[].datetime`
 - `history_logs[].datetime`
 - `history_logs[].updated_at`
+- `pump_installations[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
+
+Validity and deadline checks compare calendar dates, never UTC instants.
 
 A datetime without an offset (naked `YYYY-MM-DDTHH:MM:SS`) is malformed and parsers MUST reject it. Time zone abbreviations (`EST`, `BRT`) are not RFC 3339 and MUST NOT be used.
 
@@ -201,6 +245,48 @@ Non-canonical values SHOULD use the `x-` prefix (e.g. `x-radial_collector`).
 | `exploration`           | Pesquisa / exploratório         | Investigation or test well                                       |
 | `injection`             | Injeção / recarga               | Managed aquifer recharge or injection                            |
 | `dewatering`            | Rebaixamento                    | Construction or mining dewatering                                |
+
+---
+
+## `pump_installations[].type` — Recommended values _(since v2.3)_
+
+| Value                | Portuguese (BR)        | Description                                       |
+| -------------------- | ---------------------- | ------------------------------------------------- |
+| `submersible`        | Bomba submersa         | Electric submersible pump.                        |
+| `vertical_turbine`   | Bomba de eixo vertical | Surface motor with line shaft.                    |
+| `jet`                | Bomba injetora         | Surface jet pump.                                 |
+| `progressive_cavity` | Bomba helicoidal       | Progressive cavity pump, common with solar power. |
+| `hand_pump`          | Bomba manual           |                                                   |
+| `compressor_airlift` | Compressor (air-lift)  | Permanent airlift production.                     |
+
+Solar is a `power_source`, never a `type`. Non-canonical values SHOULD use the `x-` prefix.
+
+## `pump_installations[].power_source` — Recommended values _(since v2.3)_
+
+| Value    | Portuguese (BR)      |
+| -------- | -------------------- |
+| `grid`   | Rede elétrica        |
+| `solar`  | Solar (fotovoltaico) |
+| `diesel` | Gerador a diesel     |
+| `hybrid` | Híbrido              |
+
+## `Attachment.document_type` — Recommended values _(since v2.3)_
+
+| Value                | Portuguese (BR)                             | Typical location                      |
+| -------------------- | ------------------------------------------- | ------------------------------------- |
+| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                                  |
+| `as_built_drawing`   | Perfil construtivo as-built                 | Root                                  |
+| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                                  |
+| `photo`              | Fotografia                                  | Any                                   |
+| `permit_document`    | Portaria / certificado de outorga           | Reserved for a future `permits` block |
+| `condition_evidence` | Comprovante de cumprimento de condicionante | `history_logs`                        |
+| `pump_curve`         | Curva da bomba                              | `pump_installations`                  |
+| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events`                 |
+| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`                    |
+| `lab_report`         | Laudo laboratorial                          | Reserved for water quality            |
+| `invoice`            | Nota fiscal                                 | Any                                   |
+
+The vocabulary is open; non-canonical values SHOULD use the `x-` prefix.
 
 ---
 
@@ -305,6 +391,9 @@ All numeric values in a `.well` file are in **SI**. The format does not encode u
 | Diameter                 | millimeter               | `mm`   | number                                   |
 | Volumetric flow rate     | cubic meter per hour     | `m3/h` | number                                   |
 | Elapsed time, duration   | minute                   | `min`  | number                                   |
+| Power                    | kilowatt                 | `kW`   | number                                   |
+| Voltage                  | volt                     | `V`    | number                                   |
+| Cross-sectional area     | square millimeter        | `mm2`  | number                                   |
 | Transmissivity           | square meter per second  | `m2/s` | number                                   |
 | Hydraulic conductivity   | meter per second         | `m/s`  | number                                   |
 | Pressure                 | kilopascal               | `kPa`  | number                                   |
@@ -338,6 +427,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `aquifer_analysis[].dynamic_level`, `dynamic_level_precision`
 - `aquifer_analysis[].aquifer_thickness`
 - `location.elevation`, `location.properties.elevation_precision`
+- `pump_installations[].intake_depth`, `rated_head`, `electrical.cable_length` _(since v2.3)_
 
 **Millimeter (`mm`)** — all diameters and slot openings:
 
@@ -348,12 +438,14 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `surface_case[].diameter`
 - `hole_fill[].diameter`
 - `centralizers[].diameter`
+- `pump_installations[].riser_diameter` _(since v2.3)_
 
 **Cubic meter per hour (`m3/h`)** — all volumetric flow rates:
 
 - `PumpingStep.rate`, `rate_precision`
 - `aquifer_analysis[].flow_rate`, `flow_rate_precision`
 - `recovery_only.pumping_rate`
+- `pump_installations[].rated_flow_rate` _(since v2.3)_
 
 **Minute (`min`)** — all elapsed times and durations:
 
@@ -373,6 +465,18 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 
 - `LevelReading.pressure`
 
+**Kilowatt (`kW`)** — power _(since v2.3)_:
+
+- `pump_installations[].rated_power`
+
+**Volt (`V`)** — voltage _(since v2.3)_:
+
+- `pump_installations[].electrical.voltage`
+
+**Square millimeter (`mm2`)** — cross-sectional area _(since v2.3)_:
+
+- `pump_installations[].electrical.cable_section`
+
 **Degree (`deg`)** — angles and geographic coordinates:
 
 - `fractures[].azimuth`, `fractures[].dip`
@@ -385,10 +489,11 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `aquifer_analysis[].well_efficiency_pct` (percentage, 0–100)
 - `aquifer_analysis[].specific_capacity` (derived ratio in m³/h per m, i.e. `m2/h`)
 - Lithology `color` (CSS hex string)
+- `pump_installations[].stages`, `electrical.phases` (counts)
 
 ### Level sign convention
 
-Depths are measured from ground level (0) and increase downward. Water levels above ground level are therefore **negative**. This applies to `static_level`, `LevelReading.depth`, and `aquifer_analysis[].static_level` / `dynamic_level`. A negative static level is how a flowing artesian condition is recorded (see § `well_type`). This convention was implicit in v2.0 and is made explicit in v2.1 without changing semantics.
+Depths are measured from ground level (0) and increase downward. Water levels above ground level are therefore **negative**. This applies to `static_level`, `LevelReading.depth`, and `aquifer_analysis[].static_level` / `dynamic_level`. A negative static level is how a flowing artesian condition is recorded (see § `well_type`). This convention was implicit in v2.0 and is made explicit in v2.1 without changing semantics. It does not apply to `pump_installations[].intake_depth`, which is an equipment depth and is always positive.
 
 ### Diameter and the as-built convention
 
@@ -404,7 +509,7 @@ An interchange format with configurable units multiplies the number of valid enc
 
 Producers receiving non-SI source data (imperial drilling reports, US gpm flow measurements, inch casing designations, slot-number screens) MUST convert to SI before writing. Consumers presenting the data to users in non-SI units MUST convert on read.
 
-Conversion utilities for the common transformations are provided in `@welldot/core` under the `units` module — m ↔ ft, mm ↔ in, m³/h ↔ L/s, m³/h ↔ US gpm, m²/s ↔ m²/d, DD ↔ DMS, slot-number ↔ mm, and similar.
+Conversion utilities for the common transformations are provided in `@welldot/core` under the `units` module — m ↔ ft, mm ↔ in, m³/h ↔ L/s, m³/h ↔ US gpm, m²/s ↔ m²/d, DD ↔ DMS, slot-number ↔ mm, cv/hp ↔ kW, L ↔ m³, and similar.
 
 ---
 
@@ -491,7 +596,8 @@ Each ID-bearing array maintains its **own uniqueness scope**. The ID namespaces 
 - `hydrodynamic_events[].id` — unique within `hydrodynamic_events`
 - `aquifer_analysis[].id` — unique within `aquifer_analysis`
 - `history_logs[].id` — unique within `history_logs`
-- `history_logs[].attachments[].id` — unique within the attachments array of the same log entry
+- `pump_installations[].id` — unique within `pump_installations` _(since v2.3)_
+- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis`). The same id may appear under different records.
 - `well_id[]` — uniqueness is on the composite key `(authority, id)`, not on `id` alone
 
 An ID value MAY repeat across different arrays without conflict (e.g. an event and an analysis MAY both use the ID `"001"`), though distinct values are recommended for clarity.
@@ -504,6 +610,9 @@ The following fields hold references to IDs in other arrays:
 | ------------------------------------------- | -------------------------- | ---------------- |
 | `aquifer_analysis[].source_event_ids[]`     | `hydrodynamic_events[].id` | Same file only   |
 | `aquifer_analysis[].static_level_source_id` | `hydrodynamic_events[].id` | Same file only   |
+| `hydrodynamic_events[].corrects`            | `hydrodynamic_events[].id` | Same file only   |
+
+Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `pump_installations`, `hydrodynamic_events` or `aquifer_analysis` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
 
 Cross-file references are not supported in v2.
 
@@ -565,4 +674,4 @@ All precision fields are optional. When omitted, the measurement value carries n
 
 ---
 
-_Draft — `.well` Format Specification v2.0_
+_`.well` Format Specification v2.3_

@@ -1,4 +1,4 @@
-# `.well` Format Specification — Quick Reference (v2.1)
+# `.well` Format Specification — Quick Reference (v2.3)
 
 **Extension:** `.well` | **Encoding:** UTF-8 | **Base format:** JSON
 **MIME type:** `application/vnd.well+json`
@@ -51,7 +51,9 @@ This is a condensed reference for extraction. The normative source is
 
   "lithology": [...], "fractures": [...], "caves": [...],
 
-  "hydrodynamic_events": [...], "aquifer_analysis": [...], "history_logs": [...]
+  "hydrodynamic_events": [...], "aquifer_analysis": [...], "history_logs": [...],
+
+  "attachments": [...], "pump_installations": [...]
 }
 ```
 
@@ -421,14 +423,46 @@ Mutable chronological record of interventions/inspections/incidents — distinct
 | `severity`    | string         | no       | Recommended: `low`, `medium`, `high`, `critical`.                                                                                                                      |
 | `attachments` | `Attachment[]` | no       |                                                                                                                                                                        |
 
-### `Attachment`
+### `Attachment` (common type since v2.3)
 
-| Field                               | Type   | Required | Notes                                                                                                          |
-| ----------------------------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------- |
-| `id`                                | string | yes      | Unique within the entry's `attachments`.                                                                       |
-| `uri`                               | string | yes      | Full HTTPS URL — never a relative path. Only include if the report actually references a retrievable file/URL. |
-| `media_type`                        | string | yes      | MIME type.                                                                                                     |
-| `filename`, `description`, `sha256` | string | no       |                                                                                                                |
+Allowed at the root (`attachments[]`, documents about the whole well) and on `history_logs`,
+`pump_installations`, `hydrodynamic_events` and `aquifer_analysis` entries.
+
+| Field                               | Type   | Required | Notes                                                                                                                                                                                                    |
+| ----------------------------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                                | string | yes      | Unique within its owning `attachments` array.                                                                                                                                                            |
+| `uri`                               | string | yes      | Full HTTPS URL — never a relative path. Only include if the report actually references a retrievable file/URL.                                                                                           |
+| `media_type`                        | string | yes      | MIME type.                                                                                                                                                                                               |
+| `document_type`                     | string | no       | (v2.3) `drilling_report`, `as_built_drawing`, `registry_record`, `photo`, `permit_document`, `condition_evidence`, `pump_curve`, `field_sheet`, `test_report`, `lab_report`, `invoice`; `x-` for others. |
+| `filename`, `description`, `sha256` | string | no       |                                                                                                                                                                                                          |
+
+---
+
+## `pump_installations[]` (v2.3, optional — omit entirely if the report has no pump data)
+
+One entry per installation of a pump. The current pump is the entry without `removed_at`.
+
+| Field                                | Type    | Required | Notes                                                                                                                                                           |
+| ------------------------------------ | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                                 | string  | yes      | Unique within `pump_installations`.                                                                                                                             |
+| `installed_at`                       | string  | yes      | RFC 3339 instant with UTC offset. If the report gives only a date, use `T00:00:00` with the site's offset.                                                      |
+| `removed_at`                         | string  | no       | RFC 3339 instant. Absent = currently installed.                                                                                                                 |
+| `type`                               | string  | yes      | `submersible`, `vertical_turbine`, `jet`, `progressive_cavity`, `hand_pump`, `compressor_airlift` (`x-` for others). Solar is a `power_source`, never a `type`. |
+| `power_source`                       | string  | no       | `grid`, `solar`, `diesel`, `hybrid`.                                                                                                                            |
+| `manufacturer`, `model`, `serial`    | string  | no       |                                                                                                                                                                 |
+| `intake_depth`                       | number  | no       | m from ground level (crivo / profundidade da bomba).                                                                                                            |
+| `rated_flow_rate`                    | number  | no       | m³/h (nameplate).                                                                                                                                               |
+| `rated_head`                         | number  | no       | m (nameplate).                                                                                                                                                  |
+| `rated_power`                        | number  | no       | **kW** — convert cv × 0.7355, hp × 0.7457.                                                                                                                      |
+| `stages`                             | integer | no       |                                                                                                                                                                 |
+| `riser_diameter`                     | number  | no       | mm, as-built outer diameter of the riser (edutor).                                                                                                              |
+| `riser_material`                     | string  | no       | Same vocabulary as `well_case.type`.                                                                                                                            |
+| `check_valve`                        | boolean | no       |                                                                                                                                                                 |
+| `electrical`                         | object  | no       | `voltage` (V), `phases` (1 or 3), `cable_section` (mm²), `cable_length` (m).                                                                                    |
+| `notes`, `updated_at`, `attachments` |         | no       |                                                                                                                                                                 |
+
+`hydrodynamic_events[]` entries may also carry `attachments` and `corrects` (id of an event this one
+retracts); `aquifer_analysis[]` entries may carry `attachments` (v2.3).
 
 ---
 

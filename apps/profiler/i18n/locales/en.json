@@ -5,6 +5,7 @@
     "featureList": [
       "Create, visualize, and export geological and construction well profiles",
       "Open, versioned .well JSON file format",
+      "Pump installation history and general attachments (.well v2.3)",
       "Free and open source"
     ]
   },
@@ -29,7 +30,7 @@
   },
   "footer": {
     "version": "welldot · v1.0.0",
-    "spec": ".well spec v2.0",
+    "spec": ".well spec v2.3",
     "license": "Open · Apache 2.0"
   },
   "hero": {
@@ -51,7 +52,7 @@
     "headline1": "One JSON.",
     "headlineEm": "Three",
     "headline2": "purposes.",
-    "intro": "Today, well data lives in PDFs that don't talk to each other. The {well} file is a simple, versioned format to change that — a single JSON that fully describes a well, from construction and geology to pump tests and maintenance history, designed as an {standard}.",
+    "intro": "Today, well data lives in PDFs that don't talk to each other. The {well} file is a simple, versioned format to change that — a single JSON that fully describes a well, from construction and geology to pump tests, installed pumps and maintenance history, designed as an {standard}.",
     "standard": "international standard",
     "props": [
       {
@@ -81,8 +82,8 @@
       },
       {
         "num": "§ 1.6",
-        "title": "Operational history",
-        "body": "A dated log of maintenance, inspections, and incidents, with attachments, that follows the well through its working life."
+        "title": "Operation & history",
+        "body": "Pump installations with nameplate, intake depth, riser and electrical data, typed documents, and a dated log of maintenance and incidents that follows the well through its working life."
       }
     ]
   },
@@ -145,7 +146,7 @@
     "headline1": "The",
     "headlineEm": "future",
     "headline2": ".",
-    "intro": "v2 covers geological, construction, and hydrodynamic profiles — pump tests, aquifer analysis, and operational history. The specification evolves openly to embrace what's still ahead.",
+    "intro": "v2.3 covers geological, construction, and hydrodynamic profiles — pump tests, aquifer analysis, pump installations, general attachments, and operational history. The specification evolves openly to embrace what's still ahead.",
     "props": [
       {
         "num": "§ 4.1",
@@ -159,8 +160,8 @@
       },
       {
         "num": "§ 4.3",
-        "title": "Extended metadata",
-        "body": "Water rights, owner, usage regime, cadastral references, and links to regulatory databases."
+        "title": "Permits & production",
+        "body": "Water-use permits and their conditions, meters, produced volumes, and operating regime — the next operational blocks."
       },
       {
         "num": "§ 4.4",
@@ -249,7 +250,9 @@
       "units": {
         "title": "Units",
         "length": "Length",
-        "diameter": "Diameter"
+        "diameter": "Diameter",
+        "flow": "Flow rate",
+        "power": "Power"
       },
       "coordinates": {
         "title": "Coordinates",
@@ -272,7 +275,8 @@
       "historyLog": "History",
       "hydrodynamicEvents": "Hydrodynamic",
       "hydro": "Hydro",
-      "inDevelopment": "In dev"
+      "inDevelopment": "In dev",
+      "operation": "Operation"
     },
     "status": {
       "saved": "Saved",
@@ -330,7 +334,8 @@
         "constructive": "Construction",
         "geology": "Geology",
         "hydrodynamic": "Pumping tests",
-        "history": "History"
+        "history": "History",
+        "operation": "Pump"
       }
     },
     "exportPdfDialog": {
@@ -650,7 +655,9 @@
           "fields": "Authority is the name of the registry or institution that issued the code (pick a suggestion or type your own). ID is the code exactly as issued; keep leading zeros and separators (e.g. SP-0042819).",
           "primary": "Use the radio button to mark the main identifier. If none is marked, the first one is treated as the main one. Each authority + ID pair must be unique."
         }
-      }
+      },
+      "attachments": "General attachments",
+      "attachmentsInfo": "Files about the well as a whole, such as the drilling report or an as-built drawing. Attachments of pumps, tests and history entries stay on their own records."
     },
     "summary": {
       "tag": "Overview · Volumes",
@@ -825,12 +832,12 @@
         "staticLevel": "SWL (m)",
         "staticLevelPrecision": "±Prec. SWL",
         "measurementMethod": "Measurement method",
-        "pumpingRate": "Estimated rate (m³/h)",
+        "pumpingRate": "Estimated rate ({unit})",
         "pumpingDuration": "Estimated duration (min)",
         "steps": "Pumping Steps",
         "recovery": "Recovery",
         "includeRecovery": "Include recovery phase",
-        "rate": "Rate (m³/h)",
+        "rate": "Rate ({unit})",
         "ratePrecision": "±Prec.",
         "duration": "Duration (min)",
         "durationDerivedHint": "Calculated from readings (max elapsed time)",
@@ -861,11 +868,100 @@
       "addReading": "Add reading",
       "manageReadings": "Manage",
       "readingsDialog": {
-        "stepTitle": "Readings — Step {n} ({rate} m³/h)",
+        "stepTitle": "Readings — Step {n} ({rate} {unit})",
         "recoveryTitle": "Readings — Recovery"
       },
       "validation": {
         "missing": "Add {fields} to save this event"
+      },
+      "retracted": "Retracted",
+      "retractedInfo": "A later event corrects this one. It stays in the file but no longer counts.",
+      "correction": "Correction",
+      "correctionInfo": "This event corrects an earlier one."
+    },
+    "attachments": {
+      "documentType": "Document type",
+      "documentTypeInfo": "What the document is (.well v2.3). Optional — leave empty when unsure.",
+      "documentTypePlaceholder": "Not specified",
+      "description": "Description",
+      "mediaTypeOther": "Other",
+      "documentTypes": {
+        "drilling_report": "Drilling report",
+        "as_built_drawing": "As-built drawing",
+        "registry_record": "Registry record",
+        "photo": "Photo",
+        "permit_document": "Permit document",
+        "condition_evidence": "Condition evidence",
+        "pump_curve": "Pump curve",
+        "field_sheet": "Field sheet",
+        "test_report": "Pumping test report",
+        "lab_report": "Lab report",
+        "invoice": "Invoice"
+      }
+    },
+    "operation": {
+      "pumpTypes": {
+        "submersible": "Submersible pump",
+        "vertical_turbine": "Vertical turbine pump",
+        "jet": "Jet pump",
+        "progressive_cavity": "Progressive cavity pump",
+        "hand_pump": "Hand pump",
+        "compressor_airlift": "Compressor (air-lift)"
+      },
+      "powerSources": {
+        "grid": "Grid",
+        "solar": "Solar",
+        "diesel": "Diesel",
+        "hybrid": "Hybrid"
+      },
+      "pump": {
+        "title": "Pump installations",
+        "intro": "One entry per installation. A pump pulled and reinstalled gets a new entry with the same serial number. The current pump is the one without a removal date.",
+        "add": "Add installation",
+        "edit": "Edit installation",
+        "deleteConfirm": "Delete this pump installation?",
+        "empty": "No pump installation recorded yet.",
+        "current": "Current",
+        "removed": "Removed",
+        "submergence": "Submergence",
+        "submergenceInfo": "Intake depth minus the latest dynamic level.",
+        "submergenceNegative": "The intake is above the latest dynamic level.",
+        "fields": {
+          "type": "Pump type",
+          "typeInfo": "Solar is a power source, not a pump type. Free text is allowed.",
+          "powerSource": "Power source",
+          "installedAt": "Installed at",
+          "removedAt": "Removed at",
+          "removedAtInfo": "Leave empty while the pump is installed.",
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "serial": "Serial number",
+          "serialInfo": "Links reinstallations of the same unit.",
+          "intakeDepth": "Intake depth",
+          "intakeDepthInfo": "Depth of the pump intake from ground level. The profile draws the pump ending here.",
+          "ratedFlowRate": "Rated flow",
+          "ratedHead": "Rated head",
+          "ratedPower": "Rated power",
+          "ratedPowerInfo": "Stored in kW; shown in the unit chosen in Settings. 1 cv = 0.7355 kW · 1 hp = 0.7457 kW.",
+          "stages": "Stages",
+          "checkValve": "Check valve",
+          "riser": "Riser",
+          "riserDiameter": "Riser diameter",
+          "riserDiameterInfo": "As-built outer diameter of the riser pipe.",
+          "riserMaterial": "Riser material",
+          "electrical": "Electrical",
+          "voltage": "Voltage",
+          "phases": "Phases",
+          "cableSection": "Cable section",
+          "cableLength": "Cable length",
+          "notes": "Notes"
+        },
+        "warnings": {
+          "intake_below_well_bottom": "The intake is deeper than the well.",
+          "intake_in_screen": "The intake sits inside a screen interval.",
+          "multiple_open_installations": "More than one installation has no removal date.",
+          "removed_before_installed": "The removal date must be after the installation date."
+        }
       }
     }
   },

@@ -22,11 +22,18 @@
 app/                      ← srcDir
   app.vue                 ← root component
   pages/
-    index.vue             ← landing page (only page so far)
+    index.vue             ← landing page
+    editor/               ← editor; tabs in _components/tabs/ (General, Construction,
+                             Geological, Summary, History, Hydrodynamic, Operation)
+                             Operation (.well v2.3) = pump_installations; root `attachments`
+                             (general files) live in the General tab below Observations
   layouts/
     landing.vue           ← layout for the landing page
   components/
     landing/              ← landing-page components (HeroVisual, WellJsonViewer, etc.)
+    attachments/          ← AttachmentField (strip + add/edit dialog, `v-model` of the list) and
+                             AttachmentDialog. Saved records write back with `assignAttachments`
+                             (utils/attachments.ts) inside `profileStore.updateWell`
   composables/
     useBus.ts             ← typed event bus composable (wraps EventBus)
   core/

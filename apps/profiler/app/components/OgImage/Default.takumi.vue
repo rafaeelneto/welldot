@@ -107,7 +107,7 @@ const LOGO_DATA_URI = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAY
     >
       <div style="display: flex">
         <span style="color: #0d1218; font-weight: 500; margin-right: 6px"
-          >v2.0</span
+          >v2.3</span
         >
         <span>{{ badgeSpec || 'spec' }}</span>
       </div>
