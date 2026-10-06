@@ -4,6 +4,8 @@ import {
   getCurrentWellStatusEntry,
   getExceedances,
   getOperationWarnings,
+  getOverduePermitHistory,
+  getPermitIdentifier,
   getPermitStatus,
   getPermitWarnings,
   getPumpInstallationWarnings,
@@ -76,9 +78,17 @@ export function useWellAlerts() {
     const permit = getSummaryPermit(well, today);
     if (permit) {
       const status = getPermitStatus(well, permit, today);
-      const number = permit.number;
+      const number = getPermitIdentifier(permit) ?? permit.authority;
       const until = permit.valid_until;
-      if (status === 'expired' && until) {
+      if (status === 'suspended' || status === 'revoked') {
+        out.push({
+          key: 'permit-halted',
+          severity: 'danger',
+          icon: 'ph:prohibit-duotone',
+          message: t(`editor.summary.alerts.permit_${status}`, { number }),
+          tab: EDITOR_TAB.permits,
+        });
+      } else if (status === 'expired' && until) {
         out.push({
           key: 'permit-expired',
           severity: 'danger',
@@ -139,6 +149,31 @@ export function useWellAlerts() {
           });
         }
       }
+    }
+
+    // ── Permit administrative steps past due ──
+    for (const p of well.permits ?? []) {
+      const status = getPermitStatus(well, p, today);
+      if (
+        status === 'superseded' ||
+        status === 'denied' ||
+        status === 'withdrawn'
+      ) {
+        continue;
+      }
+      const overdue = getOverduePermitHistory(p, today);
+      if (!overdue.length) continue;
+      out.push({
+        key: `permit-history-${p.id}`,
+        severity: 'warn',
+        icon: 'ph:clock-countdown-duotone',
+        message: t('editor.summary.alerts.permitStepsOverdue', {
+          number: getPermitIdentifier(p) ?? p.authority,
+          n: overdue.length,
+          description: overdue[0]!.description,
+        }),
+        tab: EDITOR_TAB.permits,
+      });
     }
 
     // ── Operation vs. grant ──

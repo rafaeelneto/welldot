@@ -477,15 +477,14 @@ These timestamps may differ substantially: a maintenance intervention `datetime`
 
 ### Categories
 
-| `category`         | Portuguese (BR)              | Description                                                                                                                                                                    |
-| ------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `maintenance`      | Manutenção                   | Physical intervention or service task: pump replacement, casing repair, cleaning, redevelopment, meter calibration. Carries the category-specific fields below _(since v2.3)_. |
-| `inspection`       | Inspeção                     | Site visit without physical alteration: visual survey, camera inspection, sample collection.                                                                                   |
-| `incident`         | Incidente                    | Unplanned event: partial collapse, contamination, prolonged drought, vandalism.                                                                                                |
-| `event`            | Evento                       | Generic milestone: construction completion, commissioning, deactivation, reactivation, ownership transfer, rehabilitation, data-integrity repair.                              |
-| `change_of_use`    | Mudança de uso               | _(since v2.1)_ The well's purpose changed (e.g. production → monitoring). Update `well_purpose` to the new use and log the change here.                                        |
-| `status_change`    | Mudança de situação          | _(since v2.3)_ The well's operating status changed (e.g. active → inactive). Carries the category-specific fields below.                                                       |
-| `permit_condition` | Cumprimento de condicionante | _(since v2.3)_ A permit condition deadline was fulfilled. Carries the category-specific fields below.                                                                          |
+| `category`      | Portuguese (BR)     | Description                                                                                                                                                                    |
+| --------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `maintenance`   | Manutenção          | Physical intervention or service task: pump replacement, casing repair, cleaning, redevelopment, meter calibration. Carries the category-specific fields below _(since v2.3)_. |
+| `inspection`    | Inspeção            | Site visit without physical alteration: visual survey, camera inspection, sample collection.                                                                                   |
+| `incident`      | Incidente           | Unplanned event: partial collapse, contamination, prolonged drought, vandalism.                                                                                                |
+| `event`         | Evento              | Generic milestone: construction completion, commissioning, deactivation, reactivation, ownership transfer, rehabilitation, data-integrity repair.                              |
+| `change_of_use` | Mudança de uso      | _(since v2.1)_ The well's purpose changed (e.g. production → monitoring). Update `well_purpose` to the new use and log the change here.                                        |
+| `status_change` | Mudança de situação | _(since v2.3)_ The well's operating status changed (e.g. active → inactive). Carries the category-specific fields below.                                                       |
 
 Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -513,7 +512,9 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
 ### Category-specific fields _(since v2.3)_
 
-Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. They are optional in the schema: a missing required category field (e.g. `maintenance_type` on a `maintenance` entry) surfaces as a warning, never a rejection. `event_id` and `sample_id` are shared by `maintenance` and `permit_condition`.
+Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. They are optional in the schema: a missing required category field (e.g. `maintenance_type` on a `maintenance` entry) surfaces as a warning, never a rejection.
+
+Permit condition fulfillment is not a log category: it is recorded on the condition itself (see § `permits[]` — Condition fulfillment).
 
 #### `maintenance`
 
@@ -544,18 +545,6 @@ A maintenance entry records that the task was done. Measured values belong in th
 The current status is the `status` of the `status_change` entry with the latest `datetime`. With no such entry, the status is unknown. `status` is a closed vocabulary: the `x-` extension mechanism does not apply, and a file carrying any other value is rejected.
 
 Any non-`status_change` entry dated after a `decommissioned` or `abandoned` status emits a warning. A stopped well is recorded with a `status_change`, never with an `operating_regime` entry whose `flow_rate` is `0`.
-
-#### `permit_condition`
-
-| Field          | Type          | Required | Description                                                                       |
-| -------------- | ------------- | -------- | --------------------------------------------------------------------------------- |
-| `permit_id`    | string        | yes      | `permits[].id`.                                                                   |
-| `condition_id` | string        | yes      | `permits[].conditions[].id` within that permit.                                   |
-| `due_date`     | string (date) | no       | Calendar date of the deadline this entry fulfills. Absent for undated conditions. |
-| `event_id`     | string        | no       | `hydrodynamic_events[].id` that satisfied the obligation, when applicable.        |
-| `sample_id`    | string        | no       | `water_samples[].id` that satisfied the obligation, when applicable.              |
-
-The entry's `datetime` is when the obligation was fulfilled, for example when a report was filed. Each entry fulfills one deadline. A `water_quality_analysis` condition is fulfilled by pointing to the sample with `sample_id`. Proof of submission goes in `attachments` with `document_type: "condition_evidence"`. See § `permits[]` — Condition fulfillment.
 
 ---
 
@@ -624,34 +613,69 @@ Renderers draw the current pump ending at `intake_depth` and its riser from the 
 
 ## `permits[]` _(since v2.3)_
 
-A mutable record block: each entry transcribes one legal instrument governing abstraction from the well (outorga, dispensa, cadastro). Entries are edited in place, and `updated_at` records the last edit. The attached document is authoritative. Permit status and condition deadlines are always derived, never stored.
+A mutable record block: each entry transcribes one legal instrument governing abstraction from the well (outorga, dispensa, cadastro), from its request on. Entries are edited in place, and `updated_at` records the last edit. The attached document is authoritative. The administrative `status` set by the authority is stored; the validity status and condition deadlines are always derived, never stored.
 
 ### `Permit`
 
-| Field                  | Type                | Required | Unit | Description                                                                  |
-| ---------------------- | ------------------- | -------- | ---- | ---------------------------------------------------------------------------- |
-| `id`                   | string              | yes      |      | Unique within `permits`. UUID v4 recommended.                                |
-| `type`                 | string              | yes      |      | See format-reference.md § `permits[].type`.                                  |
-| `authority`            | string              | yes      |      | Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`. |
-| `number`               | string              | yes      |      | Portaria or process number, preserved verbatim.                              |
-| `issued_at`            | string (date)       | no       |      | Issue date.                                                                  |
-| `valid_from`           | string (date)       | no       |      | Absent means valid from `issued_at`.                                         |
-| `valid_until`          | string (date)       | no       |      | Absent means no fixed expiry.                                                |
-| `renewal_requested_at` | string (date)       | no       |      | Date a renewal request was filed.                                            |
-| `water_use`            | string[]            | no       |      | See format-reference.md § `permits[].water_use`.                             |
-| `flow_rate`            | number              | no       | m³/h | Maximum granted flow.                                                        |
-| `daily_operating_time` | number              | no       | h    | Maximum granted daily operating time, 0–24.                                  |
-| `volume_limits`        | `VolumeLimit[]`     | no       |      | Only volumes stated in the document.                                         |
-| `monthly_schedule`     | `MonthlyGrant[]`    | no       |      | Month-by-month grant.                                                        |
-| `conditions`           | `PermitCondition[]` | no       |      | Obligations (condicionantes).                                                |
-| `supersedes`           | string              | no       |      | `permits[].id` of the instrument this one legally replaces.                  |
-| `notes`                | string              | no       |      |                                                                              |
-| `updated_at`           | string (instant)    | no       |      | Last edit of this record.                                                    |
-| `attachments`          | `Attachment[]`      | no       |      | The legal document. See § Attachment.                                        |
+| Field                  | Type                   | Required | Unit | Description                                                                  |
+| ---------------------- | ---------------------- | -------- | ---- | ---------------------------------------------------------------------------- |
+| `id`                   | string                 | yes      |      | Unique within `permits`. UUID v4 recommended.                                |
+| `type`                 | string                 | yes      |      | See format-reference.md § `permits[].type`.                                  |
+| `authority`            | string                 | yes      |      | Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`. |
+| `identifier`           | string                 | no       |      | Identifier of the granted instrument (portaria, license code), verbatim.     |
+| `request_identifier`   | string                 | no       |      | Identifier of the request or administrative process (protocolo), verbatim.   |
+| `status`               | string (enum)          | no       |      | Administrative status. Closed vocabulary, see below. Absent means `granted`. |
+| `issued_at`            | string (date)          | no       |      | Issue date.                                                                  |
+| `valid_from`           | string (date)          | no       |      | Absent means valid from `issued_at`.                                         |
+| `valid_until`          | string (date)          | no       |      | Absent means no fixed expiry.                                                |
+| `renewal_requested_at` | string (date)          | no       |      | Date a renewal request was filed.                                            |
+| `water_use`            | string[]               | no       |      | See format-reference.md § `permits[].water_use`.                             |
+| `flow_rate`            | number                 | no       | m³/h | Maximum granted flow.                                                        |
+| `daily_operating_time` | number                 | no       | h    | Maximum granted daily operating time, 0–24.                                  |
+| `volume_limits`        | `VolumeLimit[]`        | no       |      | Only volumes stated in the document.                                         |
+| `monthly_schedule`     | `MonthlyGrant[]`       | no       |      | Month-by-month grant.                                                        |
+| `conditions`           | `PermitCondition[]`    | no       |      | Obligations (condicionantes).                                                |
+| `history`              | `PermitHistoryEntry[]` | no       |      | Administrative steps: filing, process, notifications, fees.                  |
+| `supersedes`           | string                 | no       |      | `permits[].id` of the instrument this one legally replaces.                  |
+| `notes`                | string                 | no       |      |                                                                              |
+| `updated_at`           | string (instant)       | no       |      | Last edit of this record.                                                    |
+| `attachments`          | `Attachment[]`         | no       |      | The legal document. See § Attachment.                                        |
 
 `water_use` describes what the abstracted water is for. It is distinct from the top-level `well_purpose`, which describes the well's role.
 
 A renewal is not a permit type: it is a new permit of the same type whose `supersedes` points to the previous one. `supersedes` expresses legal succession between two valid instruments and is not a correction mechanism.
+
+Identifiers are free strings preserved verbatim, because agencies use diverse formats (numbers, letters, slashes). A permit that has only been requested has no `identifier` yet: it is identified by `request_identifier`. At least one of the two SHOULD be present.
+
+#### Administrative status
+
+`status` records what the authority decided, which dates alone cannot express. It is a closed vocabulary: the `x-` extension mechanism does not apply, and a file carrying any other value is rejected.
+
+| Value       | Portuguese (BR) | Semantics                                                       |
+| ----------- | --------------- | --------------------------------------------------------------- |
+| `requested` | Requerida       | Filed and awaiting a decision. No grant yet.                    |
+| `granted`   | Concedida       | Issued. The validity status is derived from the dates. Default. |
+| `suspended` | Suspensa        | Temporarily halted by the authority.                            |
+| `revoked`   | Revogada        | Cancelled by the authority.                                     |
+| `denied`    | Indeferida      | The request was refused.                                        |
+| `withdrawn` | Desistida       | The request or permit was given up by the holder.               |
+
+The change itself (notice of suspension, decision) is recorded as a `history` step, with the document attached.
+
+### `PermitHistoryEntry`
+
+| Field         | Type             | Required | Description                                                                         |
+| ------------- | ---------------- | -------- | ----------------------------------------------------------------------------------- |
+| `id`          | string           | yes      | Unique within the permit's `history`. UUID v4 recommended.                          |
+| `date`        | string (date)    | yes      | When the step happened.                                                             |
+| `type`        | string           | no       | See format-reference.md § `permits[].history[].type`.                               |
+| `description` | string           | yes      | What happened: protocol, dispatch, notice, fee, inspection, decision.               |
+| `done`        | boolean          | no       | For actionable steps (fee paid, notification answered). Absent means informational. |
+| `due_date`    | string (date)    | no       | Date by which an actionable step must be done.                                      |
+| `updated_at`  | string (instant) | no       | Last edit of this record.                                                           |
+| `attachments` | `Attachment[]`   | no       | Notices, receipts, protocols. See § Attachment.                                     |
+
+A step whose `due_date` has passed and that is not `done` is past due. Applications SHOULD surface it.
 
 ### `VolumeLimit`
 
@@ -675,16 +699,18 @@ When `monthly_schedule` is present, a month absent from it has no abstraction gr
 
 ### `PermitCondition`
 
-| Field         | Type              | Required | Description                                                      |
-| ------------- | ----------------- | -------- | ---------------------------------------------------------------- |
-| `id`          | string            | yes      | Unique within the permit's `conditions` array.                   |
-| `description` | string            | yes      | Text of the condition as written in the document.                |
-| `category`    | string            | no       | See format-reference.md § `permits[].conditions[].category`.     |
-| `first_due`   | string (date)     | no       | Explicit date of the first deadline.                             |
-| `due_after`   | string (duration) | no       | First deadline relative to the permit's start date, e.g. `P90D`. |
-| `recurrence`  | string (duration) | no       | Interval between deadlines, e.g. `P6M`. Absent means one-time.   |
-| `last_due`    | string (date)     | no       | No deadline is generated after this date.                        |
-| `occurrences` | integer           | no       | Maximum number of deadlines, counting the first.                 |
+| Field          | Type                     | Required | Description                                                      |
+| -------------- | ------------------------ | -------- | ---------------------------------------------------------------- |
+| `id`           | string                   | yes      | Unique within the permit's `conditions` array.                   |
+| `description`  | string                   | yes      | Text of the condition as written in the document.                |
+| `category`     | string                   | no       | See format-reference.md § `permits[].conditions[].category`.     |
+| `first_due`    | string (date)            | no       | Explicit date of the first deadline.                             |
+| `due_after`    | string (duration)        | no       | First deadline relative to the permit's start date, e.g. `P90D`. |
+| `recurrence`   | string (duration)        | no       | Interval between deadlines, e.g. `P6M`. Absent means one-time.   |
+| `last_due`     | string (date)            | no       | No deadline is generated after this date.                        |
+| `occurrences`  | integer                  | no       | Maximum number of deadlines, counting the first.                 |
+| `responsible`  | string                   | no       | Person or team accountable for meeting the obligation.           |
+| `fulfillments` | `ConditionFulfillment[]` | no       | Deadlines met. See § Condition fulfillment.                      |
 
 `first_due` and `due_after` are mutually exclusive; a condition carrying both is malformed and `first_due` wins. A condition with neither is undated: it is valid and is displayed, but generates no deadlines. Durations follow § Common Types — Date duration.
 
@@ -697,6 +723,7 @@ Applications generate a condition's deadlines as follows.
 3. **Deadline n** (n = 0, 1, 2 …) = anchor + n × `recurrence`, always computed from the anchor, never from the previous deadline. Years and months are added first; when the resulting day does not exist in the target month, that month's last day is used. Weeks and days are then added. Without `recurrence`, only n = 0 exists.
 4. **Stop** when any limit is reached: `occurrences` deadlines generated; the date passes `last_due`; or the date passes the permit's effective end.
 5. **Effective end** of the permit: if another permit supersedes it, the day before the successor's start date; otherwise `valid_until`; while the status is `active_pending_renewal`, there is no end. With no end, applications generate deadlines up to a horizon of their choice.
+6. **Administrative status**: a `requested`, `denied` or `withdrawn` permit generates no deadlines. A `suspended` or `revoked` permit generates none after today; those already due remain.
 
 Computing every deadline from the anchor prevents drift: a monthly obligation anchored on 31 January falls on 28 or 29 February and back on 31 March.
 
@@ -711,25 +738,42 @@ Computing every deadline from the anchor prevents drift: a monthly obligation an
 
 ### Condition fulfillment
 
-Fulfillment is recorded as a `history_logs` entry with category `permit_condition` (see § `history_logs[]` — Category-specific fields). Each entry fulfills one deadline, identified by `permit_id`, `condition_id` and `due_date`.
+Fulfillment is recorded in the condition's `fulfillments`. Each entry fulfills one deadline, identified by its `due_date`.
+
+#### `ConditionFulfillment`
+
+| Field         | Type             | Required | Description                                                                        |
+| ------------- | ---------------- | -------- | ---------------------------------------------------------------------------------- |
+| `id`          | string           | yes      | Unique within the condition's `fulfillments`. UUID v4 recommended.                 |
+| `datetime`    | string (instant) | yes      | When the obligation was fulfilled, e.g. when a report was filed.                   |
+| `due_date`    | string (date)    | no       | The deadline fulfilled. Absent for undated conditions.                             |
+| `description` | string           | no       |                                                                                    |
+| `author`      | string           | no       | Who fulfilled the obligation.                                                      |
+| `event_id`    | string           | no       | `hydrodynamic_events[].id` that satisfied the obligation, when applicable.         |
+| `sample_id`   | string           | no       | `water_samples[].id` that satisfied the obligation, when applicable.               |
+| `updated_at`  | string (instant) | no       | Last edit of this record.                                                          |
+| `attachments` | `Attachment[]`   | no       | Proof of submission, with `document_type: "condition_evidence"`. See § Attachment. |
+
+A `water_quality_analysis` condition is fulfilled by pointing to the sample with `sample_id`.
 
 Derived status of each deadline, evaluated on the local civil date at the well site:
 
-- **fulfilled** — a `permit_condition` entry matches it. **Fulfilled late** when that entry's local date (the date part of its `datetime`, in the offset it carries) is after `due_date`.
+- **fulfilled** — a fulfillment has its `due_date`. **Fulfilled late** when that fulfillment's local date (the date part of its `datetime`, in the offset it carries) is after `due_date`.
 - **upcoming** — no match and today is on or before `due_date`.
 - **overdue** — no match and today is after `due_date`.
 
-An undated condition is fulfilled by an entry without `due_date`. A `permit_condition` entry whose `due_date` matches no generated deadline, or whose `permit_id` / `condition_id` does not resolve, emits a warning. Conditions belong to their permit: when a permit is superseded, its deadlines stop at its effective end and the successor's conditions take over.
+An undated condition is fulfilled by an entry without `due_date`. A fulfillment whose `due_date` matches no generated deadline, a fulfillment without `due_date` on a dated condition, or an `event_id` / `sample_id` that does not resolve emits a warning. Conditions belong to their permit: when a permit is superseded, its deadlines stop at its effective end and the successor's conditions take over.
 
 ### Permit status (derived)
 
 Evaluated on the local civil date at the well site, in order:
 
-1. Another permit `supersedes` it → `superseded`.
-2. Today is before its start date → `pending`.
-3. `valid_until` is absent, or today is on or before it → `active`.
-4. `renewal_requested_at` is present and on or before `valid_until` → `active_pending_renewal`.
-5. Otherwise → `expired`.
+1. A stored `status` other than `granted` → that value (`requested`, `suspended`, `revoked`, `denied`, `withdrawn`).
+2. Another permit `supersedes` it → `superseded`.
+3. Today is before its start date → `not_yet_valid`.
+4. `valid_until` is absent, or today is on or before it → `active`.
+5. `renewal_requested_at` is present and on or before `valid_until` → `active_pending_renewal`.
+6. Otherwise → `expired`.
 
 The lead time a renewal request requires varies by jurisdiction; it is evaluated by applications or regulatory profiles, not by the format.
 
@@ -737,11 +781,13 @@ The lead time a renewal request requires varies by jurisdiction; it is evaluated
 
 - `valid_until` earlier than the start date.
 - A `supersedes` cycle, or a `supersedes` reference that does not resolve.
-- Two non-superseded permits of the same `type` with overlapping validity.
+- Two granted, non-superseded permits of the same `type` with overlapping validity.
 - A `daily_operating_time` outside 0–24, on the permit or in `monthly_schedule`.
 - A `monthly_schedule` value above the permit's top-level maximum.
-- A duplicate `month`, `volume_limits` period or condition `id` within one permit.
+- A duplicate `month`, `volume_limits` period, condition `id`, `history` `id` or fulfillment `id` within one permit.
 - A condition with both `first_due` and `due_after`.
+- A permit with neither `identifier` nor `request_identifier`, or a granted permit without `identifier`.
+- A condition fulfillment that matches no deadline, or whose `event_id` / `sample_id` does not resolve.
 
 A collective grant covering several wells is repeated in each well's file until cross-file references arrive in v3.
 
@@ -1128,7 +1174,9 @@ A ledger of water samples, each with its field and laboratory results. The full 
       "id": "9a8b7c6d-5e4f-3210-abcd-0123456789ab",
       "type": "abstraction_permit",
       "authority": "SEMAS-PA",
-      "number": "1234/2025",
+      "identifier": "1234/2025",
+      "request_identifier": "2024/0099-PRT",
+      "status": "granted",
       "issued_at": "2025-02-10",
       "valid_until": "2029-02-10",
       "water_use": ["human_supply"],
@@ -1140,7 +1188,17 @@ A ledger of water samples, each with its field and laboratory results. The full 
           "id": "c1",
           "description": "Instalar hidrômetro na saída do poço",
           "category": "meter_installation",
-          "due_after": "P90D"
+          "due_after": "P90D",
+          "responsible": "Equipe de operação",
+          "fulfillments": [
+            {
+              "id": "e2f3a4b5-c6d7-8901-efab-23456789abcd",
+              "datetime": "2025-04-02T10:00:00-03:00",
+              "due_date": "2025-05-11",
+              "description": "Hidrômetro instalado e comunicado ao órgão.",
+              "author": "Equipe de operação"
+            }
+          ]
         },
         {
           "id": "c2",
@@ -1154,7 +1212,38 @@ A ledger of water samples, each with its field and laboratory results. The full 
           "description": "Análise anual de qualidade da água",
           "category": "water_quality_analysis",
           "first_due": "2026-09-30",
-          "recurrence": "P1Y"
+          "recurrence": "P1Y",
+          "fulfillments": [
+            {
+              "id": "b5c6d7e8-f9a0-1234-bcde-56789abcdef0",
+              "datetime": "2026-09-22T16:00:00-03:00",
+              "due_date": "2026-09-30",
+              "description": "Laudo LD-4471/26 protocolado no órgão gestor.",
+              "sample_id": "ws-2026-09-a"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": "h-01",
+          "date": "2024-11-04",
+          "type": "filing",
+          "description": "Requerimento de outorga protocolado."
+        },
+        {
+          "id": "h-02",
+          "date": "2024-12-02",
+          "type": "fee",
+          "description": "Taxa de análise do requerimento.",
+          "due_date": "2024-12-20",
+          "done": true
+        },
+        {
+          "id": "h-03",
+          "date": "2025-02-10",
+          "type": "decision",
+          "description": "Portaria 1234/2025 publicada."
         }
       ],
       "attachments": [
@@ -1418,15 +1507,6 @@ A ledger of water samples, each with its field and laboratory results. The full 
       ]
     },
     {
-      "id": "e2f3a4b5-c6d7-8901-efab-23456789abcd",
-      "datetime": "2025-04-02T10:00:00-03:00",
-      "category": "permit_condition",
-      "description": "Hidrômetro instalado e comunicado ao órgão.",
-      "permit_id": "9a8b7c6d-5e4f-3210-abcd-0123456789ab",
-      "condition_id": "c1",
-      "due_date": "2025-05-11"
-    },
-    {
       "id": "f3a4b5c6-d7e8-9012-fabc-3456789abcde",
       "datetime": "2026-04-10T14:00:00-03:00",
       "category": "maintenance",
@@ -1444,16 +1524,6 @@ A ledger of water samples, each with its field and laboratory results. The full 
       "event_id": "e5f6a7b8-c9d0-1234-efab-567890123456",
       "description": "Coleta de baixa vazão com duplicata de campo; nível medido antes da coleta.",
       "author": "Field team A"
-    },
-    {
-      "id": "b5c6d7e8-f9a0-1234-bcde-56789abcdef0",
-      "datetime": "2026-09-22T16:00:00-03:00",
-      "category": "permit_condition",
-      "description": "Laudo LD-4471/26 protocolado no órgão gestor.",
-      "permit_id": "9a8b7c6d-5e4f-3210-abcd-0123456789ab",
-      "condition_id": "c3",
-      "due_date": "2026-09-30",
-      "sample_id": "ws-2026-09-a"
     }
   ]
 }

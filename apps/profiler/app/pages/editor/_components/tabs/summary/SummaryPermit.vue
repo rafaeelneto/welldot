@@ -14,6 +14,7 @@ const MAX_DEADLINES = 3;
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+const permitView = usePermitView();
 const { formatFlow } = useUnitFormat();
 const { formatNumber } = useNumberFormat();
 
@@ -87,8 +88,11 @@ const deadlines = computed(() => {
       <div class="flex flex-col gap-0.5">
         <span class="text-sm font-medium text-content-0">
           {{ resolvePermitTypeLabel(permit.type, t) }}
-          <span class="font-mono font-normal text-content-300">
-            · {{ permit.number }}
+          <span
+            v-if="permit.identifier ?? permit.request_identifier"
+            class="font-mono font-normal text-content-300"
+          >
+            · {{ permit.identifier ?? permit.request_identifier }}
           </span>
         </span>
         <span class="text-xs text-content-400">
@@ -170,6 +174,19 @@ const deadlines = computed(() => {
         </span>
       </div>
     </template>
+    <Button
+      v-if="permit"
+      severity="secondary"
+      text
+      size="small"
+      class="self-start"
+      :label="t('editor.operation.permit.view.open')"
+      @click="permitView.open(permit.id)"
+    >
+      <template #icon>
+        <Icon name="ph:eye-duotone" />
+      </template>
+    </Button>
     <SummaryEmpty v-else :text="t('editor.summary.permit.empty')" />
   </SummaryCard>
 </template>

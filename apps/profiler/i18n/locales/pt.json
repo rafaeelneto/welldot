@@ -857,6 +857,9 @@
         "permitExpired": "Outorga {number} vencida em {date}.",
         "permitPendingRenewal": "Outorga {number} vencida em {date}; renovação em análise.",
         "permitExpiring": "Outorga {number} vence em {date} ({n} dias).",
+        "permit_suspended": "Outorga {number} suspensa.",
+        "permit_revoked": "Outorga {number} revogada.",
+        "permitStepsOverdue": "Outorga {number}: {n} etapa(s) administrativa(s) vencida(s) — {description}",
         "conditionOverdue": "Condicionante atrasada desde {date}: {description}",
         "conditionOverdueMany": "{n} prazos atrasados desde {date}: {description}",
         "waterExceedances": "{n} parâmetro(s) fora dos limites de {set} na amostra de {date}.",
@@ -891,7 +894,6 @@
           "inspection": "Inspeção",
           "incident": "Incidente",
           "event": "Evento",
-          "permit_condition": "Condicionante cumprida",
           "status_change": "Mudança de situação"
         },
         "severity": {
@@ -1258,7 +1260,8 @@
         "preliminary_permit": "Outorga prévia",
         "exemption": "Dispensa / uso insignificante",
         "registration": "Cadastro",
-        "dewatering_permit": "Outorga para rebaixamento"
+        "dewatering_permit": "Outorga para rebaixamento",
+        "drilling_permit": "Autorização de perfuração"
       },
       "waterUses": {
         "human_supply": "Abastecimento humano",
@@ -1288,8 +1291,14 @@
         "supersedes": "Substitui {number}",
         "supersededBy": "Substituída por {number}",
         "status": {
+          "requested": "Requerida",
+          "granted": "Concedida",
+          "suspended": "Suspensa",
+          "revoked": "Revogada",
+          "denied": "Indeferida",
+          "withdrawn": "Desistida",
           "superseded": "Substituída",
-          "pending": "Pendente",
+          "not_yet_valid": "Ainda não vigente",
           "active": "Vigente",
           "active_pending_renewal": "Renovação em análise",
           "expired": "Vencida"
@@ -1299,8 +1308,12 @@
           "typeInfo": "Renovação não é um tipo: crie uma nova outorga do mesmo tipo que substitui a anterior.",
           "authority": "Órgão",
           "authorityInfo": "Órgão emissor, ex.: ANA, SEMAS-PA.",
-          "number": "Número",
-          "numberInfo": "Número da portaria ou do processo, como no documento.",
+          "status": "Situação",
+          "statusInfo": "Situação administrativa definida pelo órgão. Mantenha \"Concedida\" para uma outorga emitida: a vigência é então derivada das datas.",
+          "identifier": "Identificação da outorga",
+          "identifierInfo": "Identificação do ato concedido (portaria, código da licença…), como no documento. Vazia enquanto a outorga está apenas requerida.",
+          "requestIdentifier": "Identificação do requerimento",
+          "requestIdentifierInfo": "Protocolo ou número do processo do requerimento, atribuído pelo órgão.",
           "issuedAt": "Emitida em",
           "validFrom": "Válida a partir de",
           "validFromInfo": "Deixe vazio quando vale desde a emissão.",
@@ -1331,6 +1344,8 @@
           "supersedesInfo": "A outorga que esta substitui legalmente (renovação).",
           "notes": "Observações"
         },
+        "grantDetails": "Vigência e concessão",
+        "grantDetailsInfo": "preenchidas quando a outorga for concedida",
         "conditions": {
           "title": "Condicionantes",
           "add": "Adicionar condicionante",
@@ -1338,6 +1353,8 @@
           "description": "Descrição",
           "descriptionInfo": "Texto da condicionante como está no documento.",
           "category": "Categoria",
+          "responsible": "Responsável",
+          "responsibleInfo": "Pessoa ou equipe responsável por cumprir esta condicionante.",
           "deadline": "Primeiro prazo",
           "deadlineModes": {
             "none": "Sem prazo",
@@ -1369,17 +1386,59 @@
           },
           "markFulfilled": "Marcar cumprida",
           "undoFulfilled": "Remover cumprimento",
-          "undoConfirm": "Remover este cumprimento do histórico?",
+          "undoConfirm": "Remover este cumprimento?",
           "remove": "Remover condicionante"
         },
         "fulfill": {
           "title": "Condicionante cumprida",
           "deadline": "Prazo",
           "datetime": "Cumprida em",
+          "author": "Cumprida por",
+          "authorInfo": "Por padrão, o responsável pela condicionante.",
           "description": "Descrição",
           "defaultDescription": "{condition} — cumprida",
-          "info": "Registrado como entrada do histórico. Anexe o comprovante de protocolo como comprovante de condicionante.",
+          "info": "Registrado nos cumprimentos da condicionante. Anexe o comprovante de protocolo como comprovante de condicionante.",
           "sampleInfo": "Amostra de água cuja análise cumpre esta condicionante."
+        },
+        "history": {
+          "title": "Histórico",
+          "info": "Etapas administrativas da outorga: protocolo, andamentos do processo, notificações, taxas, vistorias, decisões.",
+          "add": "Adicionar etapa",
+          "empty": "Nenhuma etapa registrada.",
+          "remove": "Remover etapa",
+          "date": "Data",
+          "type": "Tipo",
+          "description": "Descrição",
+          "done": "Concluída",
+          "dueDate": "Prazo",
+          "dueDateInfo": "Para etapas com ação (taxa a pagar, notificação a responder). Vencida e não concluída gera um alerta.",
+          "dueOn": "Prazo {date}",
+          "overdue": "{n} etapa(s) administrativa(s) com prazo vencido.",
+          "types": {
+            "filing": "Protocolo",
+            "process": "Andamento",
+            "notification": "Notificação",
+            "fee": "Taxa",
+            "inspection": "Vistoria",
+            "decision": "Decisão",
+            "renewal": "Renovação"
+          }
+        },
+        "view": {
+          "open": "Visualizar",
+          "close": "Fechar",
+          "tabs": {
+            "grant": "Outorga",
+            "conditions": "Condicionantes",
+            "history": "Histórico"
+          },
+          "sections": {
+            "grant": "Outorga e concessão",
+            "notes": "Observações e documentos"
+          },
+          "fulfilledCount": "{done}/{total} cumpridos",
+          "conditionFulfilled": "Condicionante cumprida",
+          "timelineEmpty": "Nenhuma etapa ou cumprimento registrado."
         },
         "warnings": {
           "valid_until_before_valid_from": "O vencimento é anterior ao início da vigência.",
@@ -1393,7 +1452,12 @@
           "duplicate_condition_id": "Duas condicionantes têm o mesmo id.",
           "condition_due_conflict": "Uma condicionante tem data fixa e prazo relativo; a data fixa prevalece.",
           "invalid_duration": "Uma condicionante tem duração inválida.",
-          "unmatched_condition_log": "Um cumprimento no histórico não corresponde a nenhum prazo desta outorga."
+          "missing_identifier": "Preencha a identificação da outorga ou do requerimento.",
+          "granted_without_identifier": "Uma outorga concedida está sem identificação.",
+          "duplicate_history_id": "Duas etapas do histórico têm o mesmo id.",
+          "duplicate_fulfillment_id": "Dois cumprimentos de uma condicionante têm o mesmo id.",
+          "unmatched_fulfillment": "Um cumprimento de condicionante não corresponde a nenhum prazo desta outorga.",
+          "fulfillment_reference_unresolved": "Um cumprimento de condicionante aponta para um evento ou amostra inexistente."
         }
       },
       "warnings": {

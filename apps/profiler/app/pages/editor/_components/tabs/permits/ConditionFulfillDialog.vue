@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type {
   Attachment,
-  HistoryLogEntry,
+  ConditionFulfillment,
   Permit,
   PermitCondition,
 } from '@welldot/core';
@@ -10,8 +10,8 @@ import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import { sampleLabel } from '~/utils/waterQualityVocab';
 
 /**
- * Records the fulfillment of one condition deadline as a `history_logs`
- * entry of category `permit_condition` (.well v2.3).
+ * Records the fulfillment of one condition deadline as an entry of the
+ * condition's `fulfillments` (.well v2.3).
  */
 const visible = defineModel<boolean>('visible', { default: false });
 
@@ -22,7 +22,7 @@ const props = defineProps<{
   dueDate?: string;
 }>();
 
-const emit = defineEmits<{ save: [entry: HistoryLogEntry] }>();
+const emit = defineEmits<{ save: [fulfillment: ConditionFulfillment] }>();
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -57,7 +57,7 @@ watch(
     form.description = t('editor.operation.permit.fulfill.defaultDescription', {
       condition: props.condition.description,
     });
-    form.author = '';
+    form.author = props.condition.responsible ?? '';
     form.attachments = [];
     form.sampleId = null;
   },
@@ -71,14 +71,11 @@ const isFormValid = computed(
 function save() {
   if (!isFormValid.value) return;
   const now = new Date().toISOString();
-  const entry: HistoryLogEntry = {
+  const entry: ConditionFulfillment = {
     id: crypto.randomUUID(),
     // Local offset kept: the deadline is judged by the local date written here.
     datetime: formatISO(form.datetime!),
-    category: 'permit_condition',
     description: form.description.trim(),
-    permit_id: props.permit.id,
-    condition_id: props.condition.id,
     ...(props.dueDate && { due_date: props.dueDate }),
     ...(form.author.trim() && { author: form.author.trim() }),
     ...(form.sampleId && { sample_id: form.sampleId }),
@@ -119,7 +116,10 @@ function save() {
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
         </LabeledField>
-        <LabeledField :label="t('editor.historyLog.logs.fields.author')">
+        <LabeledField
+          :label="t('editor.operation.permit.fulfill.author')"
+          :info="t('editor.operation.permit.fulfill.authorInfo')"
+        >
           <InputText v-model="form.author" class="w-full" />
         </LabeledField>
       </div>

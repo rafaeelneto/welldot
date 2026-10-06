@@ -268,9 +268,6 @@ export const HistoryLogEntrySchema = z.object({
   pump_installation_id: z.string().optional(),
   meter_id: z.string().optional(),
   status: WellStatusSchema.optional(),
-  permit_id: z.string().optional(),
-  condition_id: z.string().optional(),
-  due_date: calendarDate().optional(),
   event_id: z.string().optional(),
   sample_id: z.string().optional(),
 });
@@ -347,6 +344,18 @@ export const MonthlyGrantSchema = z.object({
   days: z.number().int().min(0).max(31).optional(),
 });
 
+export const ConditionFulfillmentSchema = z.object({
+  id: z.string(),
+  datetime: rfc3339(),
+  due_date: calendarDate().optional(),
+  description: z.string().optional(),
+  author: z.string().optional(),
+  event_id: z.string().optional(),
+  sample_id: z.string().optional(),
+  updated_at: rfc3339().optional(),
+  attachments: z.array(AttachmentSchema).optional(),
+});
+
 export const PermitConditionSchema = z.object({
   id: z.string(),
   description: z.string(),
@@ -356,13 +365,37 @@ export const PermitConditionSchema = z.object({
   recurrence: dateDuration().optional(),
   last_due: calendarDate().optional(),
   occurrences: z.number().int().positive().optional(),
+  responsible: z.string().optional(),
+  fulfillments: z.array(ConditionFulfillmentSchema).optional(),
+});
+
+export const PermitAdministrativeStatusSchema = z.enum([
+  'requested',
+  'granted',
+  'suspended',
+  'revoked',
+  'denied',
+  'withdrawn',
+]);
+
+export const PermitHistoryEntrySchema = z.object({
+  id: z.string(),
+  date: calendarDate(),
+  type: z.string().optional(),
+  description: z.string(),
+  done: z.boolean().optional(),
+  due_date: calendarDate().optional(),
+  updated_at: rfc3339().optional(),
+  attachments: z.array(AttachmentSchema).optional(),
 });
 
 export const PermitSchema = z.object({
   id: z.string(),
   type: z.string(),
   authority: z.string(),
-  number: z.string(),
+  identifier: z.string().optional(),
+  request_identifier: z.string().optional(),
+  status: PermitAdministrativeStatusSchema.optional(),
   issued_at: calendarDate().optional(),
   valid_from: calendarDate().optional(),
   valid_until: calendarDate().optional(),
@@ -373,6 +406,7 @@ export const PermitSchema = z.object({
   volume_limits: z.array(VolumeLimitSchema).optional(),
   monthly_schedule: z.array(MonthlyGrantSchema).optional(),
   conditions: z.array(PermitConditionSchema).optional(),
+  history: z.array(PermitHistoryEntrySchema).optional(),
   supersedes: z.string().optional(),
   notes: z.string().optional(),
   updated_at: rfc3339().optional(),

@@ -62,7 +62,7 @@
 
 Minor revisions (`2.1`, `2.3`, …) are additive and do not change the `version` integer: a v2.3 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
 
-The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `water_samples`, `hydrodynamic_events[].corrects`, the category-specific fields of `history_logs` (`maintenance`, `status_change`, `permit_condition`, including `sample_id`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
+The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `water_samples`, `hydrodynamic_events[].corrects`, the category-specific fields of `history_logs` (`maintenance`, `status_change`, including `sample_id`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
 
 ### Parser version handling
 
@@ -204,7 +204,7 @@ Constructive and geologic arrays describe the well as built and are edited in pl
 
 The `.well` format distinguishes two kinds of temporal values:
 
-**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, since v2.3, for legal documents: `permits[].issued_at`, `valid_from`, `valid_until`, `renewal_requested_at`; `permits[].conditions[].first_due`, `last_due`; and `history_logs[].due_date`. Interpreted as the local civil date at the well site. The well site's timezone is not stored separately; calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
+**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, since v2.3, for legal documents: `permits[].issued_at`, `valid_from`, `valid_until`, `renewal_requested_at`; `permits[].conditions[].first_due`, `last_due`; `permits[].conditions[].fulfillments[].due_date`; and `permits[].history[].date`, `due_date`. Interpreted as the local civil date at the well site. The well site's timezone is not stored separately; calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
 
 **Instants** — RFC 3339 datetime strings with a mandatory UTC offset (e.g. `2006-03-14T08:00:00-03:00` or `2006-03-14T11:00:00Z`). Used for all event, analysis, and log timestamps:
 
@@ -213,13 +213,13 @@ The `.well` format distinguishes two kinds of temporal values:
 - `history_logs[].datetime`
 - `history_logs[].updated_at`
 - `pump_installations[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
-- `permits[].updated_at` _(since v2.3)_
+- `permits[].updated_at`, `permits[].history[].updated_at`, `permits[].conditions[].fulfillments[].datetime`, `updated_at` _(since v2.3)_
 - `meters[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
 - `production[].datetime` (`meter_reading`); `production[].period_start`, `period_end` (`declared_volume`) _(since v2.3)_
 - `operating_regime[].effective_from`, `updated_at` _(since v2.3)_
 - `water_samples[].datetime`, `laboratory.received_at`, `results[].analyzed_at`, `results[].validation.validated_at` _(since v2.3)_
 
-Validity and deadline checks compare calendar dates, never UTC instants. When an instant must be compared with a calendar date — for example a `permit_condition` log's `datetime` against its `due_date` — the instant's local date is the date part of the string, in the offset it carries. Producers SHOULD therefore write such instants in the well site's local offset.
+Validity and deadline checks compare calendar dates, never UTC instants. When an instant must be compared with a calendar date — for example a condition fulfillment's `datetime` against its `due_date` — the instant's local date is the date part of the string, in the offset it carries. Producers SHOULD therefore write such instants in the well site's local offset.
 
 Relative deadlines and recurrences are ISO 8601 date durations (`P90D`, `P6M`, `P1Y6M`); see object-schemas.md § Date duration.
 
@@ -311,6 +311,7 @@ Solar is a `power_source`, never a `type`. Non-canonical values SHOULD use the `
 | `exemption`          | Dispensa / uso insignificante          | Formal exemption for small users.   |
 | `registration`       | Cadastro (e.g. CNARH)                  | Registration without a grant.       |
 | `dewatering_permit`  | Outorga para rebaixamento              | Mining and construction dewatering. |
+| `drilling_permit`    | Autorização de perfuração              | Authorization to drill the well.    |
 
 `renewal` is not a type: a renewal is a new permit of the same type whose `supersedes` points to the previous one. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -338,6 +339,20 @@ Solar is a `power_source`, never a `type`. Non-canonical values SHOULD use the `
 | `meter_installation`     | Instalação de hidrômetro              |
 | `sanitary_protection`    | Proteção sanitária / laje / perímetro |
 | `renewal_request`        | Pedido de renovação                   |
+
+## `permits[].history[].type` — Recommended values _(since v2.3)_
+
+| Value          | Portuguese (BR)                  |
+| -------------- | -------------------------------- |
+| `filing`       | Protocolo / requerimento         |
+| `process`      | Andamento do processo / despacho |
+| `notification` | Notificação / ofício             |
+| `fee`          | Taxa / emolumento                |
+| `inspection`   | Vistoria                         |
+| `decision`     | Decisão / publicação             |
+| `renewal`      | Renovação                        |
+
+Non-canonical values SHOULD use the `x-` prefix. The administrative `status` of a permit is a closed vocabulary; see object-schemas.md § `permits[]` — Administrative status.
 
 ## `meters[].type` — Recommended values _(since v2.3)_
 
@@ -375,15 +390,14 @@ Recommended values for `sample_type`, `sampling_method`, `sampling_point.type` a
 
 ## `history_logs[].category` — Recommended values
 
-| Value              | Portuguese (BR)              | Category-specific fields                                                                       |
-| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| `maintenance`      | Manutenção                   | `maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`, `sample_id` _(since v2.3)_ |
-| `inspection`       | Inspeção                     | —                                                                                              |
-| `incident`         | Incidente                    | —                                                                                              |
-| `event`            | Evento                       | —                                                                                              |
-| `change_of_use`    | Mudança de uso               | — _(since v2.1)_                                                                               |
-| `status_change`    | Mudança de situação          | `status` _(since v2.3)_                                                                        |
-| `permit_condition` | Cumprimento de condicionante | `permit_id`, `condition_id`, `due_date`, `event_id`, `sample_id` _(since v2.3)_                |
+| Value           | Portuguese (BR)     | Category-specific fields                                                                       |
+| --------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
+| `maintenance`   | Manutenção          | `maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`, `sample_id` _(since v2.3)_ |
+| `inspection`    | Inspeção            | —                                                                                              |
+| `incident`      | Incidente           | —                                                                                              |
+| `event`         | Evento              | —                                                                                              |
+| `change_of_use` | Mudança de uso      | — _(since v2.1)_                                                                               |
+| `status_change` | Mudança de situação | `status` _(since v2.3)_                                                                        |
 
 Descriptions are in object-schemas.md § `history_logs[]`. Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -804,6 +818,8 @@ Each ID-bearing array maintains its **own uniqueness scope**. The ID namespaces 
 - `pump_installations[].id` — unique within `pump_installations` _(since v2.3)_
 - `permits[].id` — unique within `permits` _(since v2.3)_
 - `permits[].conditions[].id` — unique within the `conditions` array of one permit _(since v2.3)_
+- `permits[].conditions[].fulfillments[].id` — unique within the `fulfillments` array of one condition _(since v2.3)_
+- `permits[].history[].id` — unique within the `history` array of one permit _(since v2.3)_
 - `permits[].monthly_schedule[].month` and `permits[].volume_limits[].period` — unique within one permit _(since v2.3)_
 - `meters[].id` — unique within `meters` _(since v2.3)_
 - `production[].id` — unique within `production` _(since v2.3)_
@@ -818,24 +834,24 @@ An ID value MAY repeat across different arrays without conflict (e.g. an event a
 
 The following fields hold references to IDs in other arrays:
 
-| Reference field                                       | Points to                                                      | Resolution scope |
-| ----------------------------------------------------- | -------------------------------------------------------------- | ---------------- |
-| `aquifer_analysis[].source_event_ids[]`               | `hydrodynamic_events[].id`                                     | Same file only   |
-| `aquifer_analysis[].static_level_source_id`           | `hydrodynamic_events[].id`                                     | Same file only   |
-| `hydrodynamic_events[].corrects`                      | `hydrodynamic_events[].id`                                     | Same file only   |
-| `production[].corrects`                               | `production[].id`                                              | Same file only   |
-| `production[].meter_id`                               | `meters[].id`                                                  | Same file only   |
-| `permits[].supersedes`                                | `permits[].id`                                                 | Same file only   |
-| `history_logs[].pump_installation_id`                 | `pump_installations[].id`                                      | Same file only   |
-| `history_logs[].meter_id`                             | `meters[].id`                                                  | Same file only   |
-| `history_logs[].permit_id`                            | `permits[].id`                                                 | Same file only   |
-| `history_logs[].condition_id`                         | `permits[].conditions[].id` within the referenced permit       | Same file only   |
-| `history_logs[].event_id`                             | `hydrodynamic_events[].id` (`maintenance`, `permit_condition`) | Same file only   |
-| `history_logs[].sample_id`                            | `water_samples[].id` (`maintenance`, `permit_condition`)       | Same file only   |
-| `water_samples[].corrects`                            | `water_samples[].id`                                           | Same file only   |
-| `water_samples[].parent_sample_id`                    | `water_samples[].id`                                           | Same file only   |
-| `water_samples[].static_level_event_id`               | `hydrodynamic_events[].id`                                     | Same file only   |
-| `water_samples[].sampling_point.pump_installation_id` | `pump_installations[].id`                                      | Same file only   |
+| Reference field                                       | Points to                                  | Resolution scope |
+| ----------------------------------------------------- | ------------------------------------------ | ---------------- |
+| `aquifer_analysis[].source_event_ids[]`               | `hydrodynamic_events[].id`                 | Same file only   |
+| `aquifer_analysis[].static_level_source_id`           | `hydrodynamic_events[].id`                 | Same file only   |
+| `hydrodynamic_events[].corrects`                      | `hydrodynamic_events[].id`                 | Same file only   |
+| `production[].corrects`                               | `production[].id`                          | Same file only   |
+| `production[].meter_id`                               | `meters[].id`                              | Same file only   |
+| `permits[].supersedes`                                | `permits[].id`                             | Same file only   |
+| `history_logs[].pump_installation_id`                 | `pump_installations[].id`                  | Same file only   |
+| `history_logs[].meter_id`                             | `meters[].id`                              | Same file only   |
+| `history_logs[].event_id`                             | `hydrodynamic_events[].id` (`maintenance`) | Same file only   |
+| `history_logs[].sample_id`                            | `water_samples[].id` (`maintenance`)       | Same file only   |
+| `permits[].conditions[].fulfillments[].event_id`      | `hydrodynamic_events[].id`                 | Same file only   |
+| `permits[].conditions[].fulfillments[].sample_id`     | `water_samples[].id`                       | Same file only   |
+| `water_samples[].corrects`                            | `water_samples[].id`                       | Same file only   |
+| `water_samples[].parent_sample_id`                    | `water_samples[].id`                       | Same file only   |
+| `water_samples[].static_level_event_id`               | `hydrodynamic_events[].id`                 | Same file only   |
+| `water_samples[].sampling_point.pump_installation_id` | `pump_installations[].id`                  | Same file only   |
 
 Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
 

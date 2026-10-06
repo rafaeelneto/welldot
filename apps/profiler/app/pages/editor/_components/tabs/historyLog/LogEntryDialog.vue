@@ -81,31 +81,18 @@ const form = reactive({
   pumpInstallationId: null as string | null,
   meterId: null as string | null,
   eventId: null as string | null,
-  // `maintenance` (water_sampling) and `permit_condition`
+  // `maintenance` (water_sampling)
   sampleId: null as string | null,
   // `status_change`
   status: null as WellStatus | null,
 });
 
-/** Sample link: water sampling tasks and condition fulfillments (.well v2.3). */
+/** Sample link: water sampling tasks (.well v2.3). */
 const showSampleField = computed(
   () =>
     (sampleOptions.value.length || !!form.sampleId) &&
-    ((form.category === 'maintenance' &&
-      (form.maintenanceType === 'water_sampling' || !!form.sampleId)) ||
-      form.category === 'permit_condition'),
-);
-
-/**
- * `permit_condition` entries are created from the Operation › Permits tab,
- * which sets the permit references; offer it here only when editing one.
- */
-const selectableCategories = computed(() =>
-  categoryOptions.value.filter(
-    o =>
-      o.value !== 'permit_condition' ||
-      model.value?.category === 'permit_condition',
-  ),
+    form.category === 'maintenance' &&
+    (form.maintenanceType === 'water_sampling' || !!form.sampleId),
 );
 
 const isFormValid = computed(
@@ -154,8 +141,7 @@ function saveEntry() {
     ...model.value,
     id: model.value?.id ?? crypto.randomUUID(),
     category: form.category,
-    // Keep the local offset: a `permit_condition` deadline is judged by the
-    // local date written in the instant.
+    // Keep the local offset written by the user.
     datetime: formatISO(form.datetime!),
     description: form.description.trim(),
     author: form.author.trim() || undefined,
@@ -170,8 +156,6 @@ function saveEntry() {
     next.pump_installation_id = form.pumpInstallationId || undefined;
     next.meter_id = form.meterId || undefined;
     next.event_id = form.eventId || undefined;
-  }
-  if (next.category === 'maintenance' || next.category === 'permit_condition') {
     next.sample_id = form.sampleId || undefined;
   }
   if (next.category === 'status_change') {
@@ -182,17 +166,10 @@ function saveEntry() {
     delete next.maintenance_type;
     delete next.pump_installation_id;
     delete next.meter_id;
-  }
-  if (next.category !== 'status_change') delete next.status;
-  if (next.category !== 'permit_condition') {
-    delete next.permit_id;
-    delete next.condition_id;
-    delete next.due_date;
-  }
-  if (next.category !== 'maintenance' && next.category !== 'permit_condition') {
     delete next.event_id;
     delete next.sample_id;
   }
+  if (next.category !== 'status_change') delete next.status;
   for (const key of Object.keys(next) as (keyof HistoryLogEntry)[]) {
     if (next[key] === undefined) delete next[key];
   }
@@ -218,7 +195,7 @@ function saveEntry() {
       <LabeledField :label="t('editor.historyLog.logs.fields.category')">
         <div class="flex flex-wrap gap-2">
           <label
-            v-for="opt in selectableCategories"
+            v-for="opt in categoryOptions"
             :key="opt.value"
             :for="`cat-${opt.value}`"
             class="category-radio-option"
@@ -298,7 +275,7 @@ function saveEntry() {
         </LabeledField>
       </div>
 
-      <!-- ── maintenance (water_sampling) / permit_condition: sample link ── -->
+      <!-- ── maintenance (water_sampling): sample link ── -->
       <LabeledField
         v-if="showSampleField"
         :label="t('editor.historyLog.logs.fields.sample')"

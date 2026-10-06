@@ -81,6 +81,11 @@ function setOccurrences(c: PermitCondition, value: number | null) {
   else delete c.occurrences;
 }
 
+function setResponsible(c: PermitCondition, value: string | undefined) {
+  if (value?.trim()) c.responsible = value;
+  else delete c.responsible;
+}
+
 function setCategory(c: PermitCondition, value: string | null) {
   if (value?.trim()) c.category = value.trim();
   else delete c.category;
@@ -186,7 +191,20 @@ function preview(c: PermitCondition): {
             @update:model-value="setCategory(c, $event)"
           />
         </LabeledField>
-        <LabeledField :label="t('editor.operation.permit.conditions.deadline')">
+        <LabeledField
+          :label="t('editor.operation.permit.conditions.responsible')"
+          :info="t('editor.operation.permit.conditions.responsibleInfo')"
+        >
+          <InputText
+            :model-value="c.responsible ?? ''"
+            class="w-full"
+            @update:model-value="setResponsible(c, $event)"
+          />
+        </LabeledField>
+        <LabeledField
+          class="sm:col-span-2"
+          :label="t('editor.operation.permit.conditions.deadline')"
+        >
           <SelectButton
             :model-value="modeOf(c)"
             :options="modeOptions"

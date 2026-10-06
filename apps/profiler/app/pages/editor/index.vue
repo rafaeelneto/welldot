@@ -38,20 +38,29 @@ const profileStore = useProfileStore();
 
 // ─── Active tab ↔ URL hash ────────────────────────────────────────────────────
 // The active tab lives in the URL hash (`/editor#permits`) so a reload keeps
-// it; the default tab (summary) has no hash. Opening or clearing a well goes
-// back to the summary. The hash is written with `history.replaceState` (no
-// router navigation): a hash-only route change would make Nuxt's
-// scrollBehavior look for an element with that id.
+// it; the default tab (summary) has no hash. The permit open in the read-only
+// permit view is appended to the permits tab (`/editor#permits/<id>`).
+// Opening or clearing a well goes back to the summary. The hash is written
+// with `history.replaceState` (no router navigation): a hash-only route change
+// would make Nuxt's scrollBehavior look for an element with that id.
 
 const activeTabKey = ref<EditorTabKey>(EDITOR_TAB.summary);
+const permitView = usePermitView();
 
-function tabFromHash(): EditorTabKey | null {
+function readHash(): { tab: EditorTabKey | null; permitId: string | null } {
   const hash = decodeURIComponent(window.location.hash.slice(1));
-  return isEditorTabKey(hash) ? hash : null;
+  const [tab = '', ...rest] = hash.split('/');
+  if (!isEditorTabKey(tab)) return { tab: null, permitId: null };
+  const permitId =
+    tab === EDITOR_TAB.permits && rest.length ? rest.join('/') : null;
+  return { tab, permitId };
 }
 
-function writeHash(tab: EditorTabKey) {
-  const hash = tab === EDITOR_TAB.summary ? '' : `#${tab}`;
+function writeHash(tab: EditorTabKey, permitId: string | null) {
+  let hash = tab === EDITOR_TAB.summary ? '' : `#${tab}`;
+  if (tab === EDITOR_TAB.permits && permitId) {
+    hash += `/${encodeURIComponent(permitId)}`;
+  }
   if (window.location.hash === hash) return;
   const { pathname, search } = window.location;
   // Keep vue-router's history.state, which it relies on for navigation.
@@ -62,25 +71,39 @@ function writeHash(tab: EditorTabKey) {
   );
 }
 
-function onHashChange() {
-  activeTabKey.value = tabFromHash() ?? EDITOR_TAB.summary;
+function applyHash() {
+  const { tab, permitId } = readHash();
+  activeTabKey.value = tab ?? EDITOR_TAB.summary;
+  permitView.permitId.value = permitId;
 }
 
 onMounted(() => {
   // Read after hydration: the hash never reaches the server render.
-  activeTabKey.value = tabFromHash() ?? EDITOR_TAB.summary;
-  window.addEventListener('hashchange', onHashChange);
+  applyHash();
+  window.addEventListener('hashchange', applyHash);
 });
 
-onBeforeUnmount(() => window.removeEventListener('hashchange', onHashChange));
+onBeforeUnmount(() => window.removeEventListener('hashchange', applyHash));
 
+// Opening a permit from another tab (e.g. the summary) switches to Permits;
+// leaving Permits closes it.
+watch(permitView.permitId, id => {
+  if (id) activeTabKey.value = EDITOR_TAB.permits;
+});
 watch(activeTabKey, tab => {
-  if (import.meta.client) writeHash(tab);
+  if (tab !== EDITOR_TAB.permits) permitView.close();
+});
+
+watch([activeTabKey, permitView.permitId], ([tab, permitId]) => {
+  if (import.meta.client) writeHash(tab, permitId);
 });
 
 watch(
   () => profileStore.wellSession,
-  () => (activeTabKey.value = EDITOR_TAB.summary),
+  () => {
+    permitView.close();
+    activeTabKey.value = EDITOR_TAB.summary;
+  },
 );
 
 const tabs = computed<

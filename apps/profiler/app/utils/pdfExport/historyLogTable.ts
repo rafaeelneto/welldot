@@ -13,7 +13,6 @@ const KNOWN_CATEGORIES = [
   'inspection',
   'incident',
   'event',
-  'permit_condition',
   'status_change',
 ];
 const KNOWN_SEVERITIES = ['low', 'medium', 'high', 'critical'];

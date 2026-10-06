@@ -1941,7 +1941,7 @@ describe('v2.3 — attachments and pump_installations', () => {
 
 // ─── v2.3 — permits ──────────────────────────────────────────────────────────
 
-describe('v2.3 — permits and permit_condition logs', () => {
+describe('v2.3 — permits, history and condition fulfillments', () => {
   const PERMIT_DOC = {
     version: 2,
     well_type: 'tubular',
@@ -1959,7 +1959,9 @@ describe('v2.3 — permits and permit_condition logs', () => {
         id: 'pmt-01',
         type: 'abstraction_permit',
         authority: 'SEMAS-PA',
-        number: '1234/2025',
+        identifier: '1234/2025',
+        request_identifier: 'PRT-2024/0099',
+        status: 'granted',
         issued_at: '2025-02-10',
         valid_until: '2029-02-10',
         water_use: ['human_supply'],
@@ -1973,6 +1975,16 @@ describe('v2.3 — permits and permit_condition logs', () => {
             description: 'Instalar hidrômetro na saída do poço',
             category: 'meter_installation',
             due_after: 'P90D',
+            responsible: 'Equipe de operação',
+            fulfillments: [
+              {
+                id: 'f1',
+                datetime: '2025-04-02T10:00:00-03:00',
+                due_date: '2025-05-11',
+                description: 'Hidrômetro instalado e comunicado ao órgão',
+                author: 'J. Silva',
+              },
+            ],
           },
           {
             id: 'c2',
@@ -1980,6 +1992,22 @@ describe('v2.3 — permits and permit_condition logs', () => {
             category: 'monitoring_report',
             first_due: '2025-07-31',
             recurrence: 'P6M',
+          },
+        ],
+        history: [
+          {
+            id: 'h1',
+            date: '2024-11-04',
+            type: 'filing',
+            description: 'Requerimento protocolado',
+          },
+          {
+            id: 'h2',
+            date: '2024-12-15',
+            type: 'fee',
+            description: 'Taxa de análise',
+            done: true,
+            due_date: '2025-01-15',
           },
         ],
         attachments: [
@@ -1992,17 +2020,6 @@ describe('v2.3 — permits and permit_condition logs', () => {
         ],
       },
     ],
-    history_logs: [
-      {
-        id: 'log-1',
-        datetime: '2025-04-02T10:00:00-03:00',
-        category: 'permit_condition',
-        description: 'Hidrômetro instalado e comunicado ao órgão',
-        permit_id: 'pmt-01',
-        condition_id: 'c1',
-        due_date: '2025-05-11',
-      },
-    ],
   };
 
   const withPermit = (patch: Record<string, unknown>) => ({
@@ -2010,21 +2027,47 @@ describe('v2.3 — permits and permit_condition logs', () => {
     permits: [{ ...PERMIT_DOC.permits[0], ...patch }],
   });
 
-  it('parseWell accepts permits and permit_condition log fields', () => {
+  it('parseWell accepts permits with history and fulfillments', () => {
     const well = parseWell(JSON.stringify(PERMIT_DOC));
     expect(well.permits).toEqual(PERMIT_DOC.permits);
-    expect(well.history_logs).toEqual(PERMIT_DOC.history_logs);
   });
 
-  it('parseWell rejects a permit without authority or number', () => {
+  it('parseWell rejects a permit without authority', () => {
     const { authority: _a, ...noAuthority } = PERMIT_DOC.permits[0];
     expect(() =>
       parseWell(JSON.stringify({ ...PERMIT_DOC, permits: [noAuthority] })),
     ).toThrow();
-    const { number: _n, ...noNumber } = PERMIT_DOC.permits[0];
-    expect(() =>
-      parseWell(JSON.stringify({ ...PERMIT_DOC, permits: [noNumber] })),
-    ).toThrow();
+  });
+
+  it('parseWell accepts a requested permit without identifier', () => {
+    const { identifier: _i, ...requested } = PERMIT_DOC.permits[0];
+    const doc = {
+      ...PERMIT_DOC,
+      permits: [{ ...requested, status: 'requested' }],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).not.toThrow();
+  });
+
+  it('parseWell rejects an unknown administrative status', () => {
+    const doc = withPermit({ status: 'archived' });
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects history and fulfillment dates in the wrong form', () => {
+    const history = withPermit({
+      history: [{ id: 'h', date: '2025-01-01T00:00:00Z', description: 'x' }],
+    });
+    expect(() => parseWell(JSON.stringify(history))).toThrow();
+    const fulfillment = withPermit({
+      conditions: [
+        {
+          id: 'c',
+          description: 'x',
+          fulfillments: [{ id: 'f', datetime: '2025-01-01' }],
+        },
+      ],
+    });
+    expect(() => parseWell(JSON.stringify(fulfillment))).toThrow();
   });
 
   it('parseWell rejects permit dates that are instants', () => {
@@ -2066,7 +2109,6 @@ describe('v2.3 — permits and permit_condition logs', () => {
     const well = deserializeWell(JSON.stringify(PERMIT_DOC))!;
     const again = deserializeWell(serializeWell(well))!;
     expect(again.permits).toEqual(PERMIT_DOC.permits);
-    expect(again.history_logs).toEqual(PERMIT_DOC.history_logs);
   });
 
   it('redactWell removes permits with operation', () => {
@@ -2081,7 +2123,6 @@ describe('v2.3 — permits and permit_condition logs', () => {
       water_quality: true,
     });
     expect(result.permits).toBeUndefined();
-    expect(result.history_logs).toEqual(well.history_logs);
   });
 });
 

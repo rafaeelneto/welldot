@@ -24,7 +24,13 @@ v2.3 additions:
   (outorga, dispensa, cadastro) with validity, granted flow, daily
   operating time, volume limits, monthly schedule and conditions
   (condicionantes) whose deadlines are derived from ISO 8601 date
-  durations; renewals are linked with supersedes
+  durations; renewals are linked with supersedes. Each permit carries
+  its identifier and/or request_identifier (verbatim, any format), a
+  closed administrative status (requested, granted, suspended,
+  revoked, denied, withdrawn), an administrative history (filing,
+  process, notifications, fees, with done/due_date) and, on each
+  condition, a responsible and the fulfillments of its deadlines
+  (datetime, due_date, author, event_id, sample_id)
 - meters (optional Meter[]): totalizer (hidrômetro) installation
   history; device facts only (type, serial, nominal diameter,
   max_reading for rollover)
@@ -35,9 +41,6 @@ v2.3 additions:
 - operating_regime (optional OperatingRegime[]): declared flow rate,
   daily operating time and days per week, each entry in force from
   effective_from
-- history_logs category permit_condition, with permit_id,
-  condition_id, due_date and event_id: fulfillment of a condition
-  deadline
 - history_logs category status_change, with status (active,
   maintenance, inactive, decommissioned, abandoned): the well's
   operating status; current status is unknown without one
@@ -69,8 +72,8 @@ v2.3 additions:
   laboratory.received_at_resolution set to "day" mark an instant
   known only by its date; consumers MUST ignore the time of day
 - history_logs gains sample_id (maintenance with maintenance_type
-  water_sampling; permit_condition, e.g. a water_quality_analysis
-  condition)
+  water_sampling); permit condition fulfillments gain sample_id (e.g.
+  a water_quality_analysis condition)
 
 v2.3 clarifications:
 - Block kinds: every top-level array is a ledger, a mutable record or

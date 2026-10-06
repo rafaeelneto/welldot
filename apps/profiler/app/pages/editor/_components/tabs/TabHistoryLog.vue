@@ -87,27 +87,6 @@ function sampleRef(entry: HistoryLogEntry): string | null {
   return sample ? sampleLabel(sample, t) : entry.sample_id;
 }
 
-// ─── permit_condition references ─────────────────────────────────────────────
-
-/** "Permit 1234/2025 · condition text · due 11/05/2025" for fulfillment logs. */
-function permitConditionRef(entry: HistoryLogEntry): string | null {
-  if (entry.category !== 'permit_condition') return null;
-  const permit = profileStore.well.permits?.find(p => p.id === entry.permit_id);
-  const condition = permit?.conditions?.find(c => c.id === entry.condition_id);
-  return (
-    [
-      permit ? `${permit.authority} ${permit.number}` : entry.permit_id,
-      condition?.description ?? entry.condition_id,
-      entry.due_date
-        ? `${t('editor.operation.permit.fulfill.deadline')} ${formatCalendarDate(entry.due_date)}`
-        : null,
-      sampleRef(entry),
-    ]
-      .filter(Boolean)
-      .join(' · ') || null
-  );
-}
-
 // ─── maintenance / status_change (.well v2.3) ────────────────────────────────
 
 /** "Pump service · Submersible Acme · 01/02/2024 · Constant rate · 03/02/2024". */
@@ -370,13 +349,6 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
 
           <!-- ── description ────────────────────────────────────────────── -->
           <div class="flex flex-col gap-1">
-            <span
-              v-if="permitConditionRef(entry)"
-              class="flex items-center gap-1.5 text-xs text-content-400"
-            >
-              <Icon name="ph:seal-check-duotone" class="size-3.5 shrink-0" />
-              {{ permitConditionRef(entry) }}
-            </span>
             <span
               v-if="maintenanceRef(entry)"
               class="flex items-center gap-1.5 text-xs text-content-400"

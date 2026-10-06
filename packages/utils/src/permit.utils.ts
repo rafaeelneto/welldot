@@ -1,7 +1,8 @@
 import type {
-  HistoryLogEntry,
+  ConditionFulfillment,
   Permit,
   PermitCondition,
+  PermitHistoryEntry,
   Well,
 } from '@welldot/core';
 
@@ -101,11 +102,32 @@ export function todayCalendarDate(now: Date = new Date()): string {
 // ─── Permit status ───────────────────────────────────────────────────────────
 
 export type PermitStatus =
+  | 'requested'
+  | 'suspended'
+  | 'revoked'
+  | 'denied'
+  | 'withdrawn'
   | 'superseded'
-  | 'pending'
+  | 'not_yet_valid'
   | 'active'
   | 'active_pending_renewal'
   | 'expired';
+
+/**
+ * Administrative statuses under which a permit has no deadlines at all: it
+ * was never granted.
+ */
+const NEVER_GRANTED: ReadonlySet<PermitStatus> = new Set([
+  'requested',
+  'denied',
+  'withdrawn',
+]);
+
+/**
+ * Administrative statuses that stop a granted permit on `today`: deadlines
+ * already due remain, later ones are not generated.
+ */
+const HALTED: ReadonlySet<PermitStatus> = new Set(['suspended', 'revoked']);
 
 /** Start date of a permit: `valid_from`, else `issued_at`. */
 export function getPermitStartDate(permit: Permit): string | undefined {
@@ -132,12 +154,14 @@ export function getSuccessorPermit(
  * Derives the status of a permit (.well v2.3), evaluated on `today` (a local
  * calendar date at the well site), in order:
  *
- * 1. Another permit `supersedes` it → `superseded`.
- * 2. `today` is before its start date → `pending`.
- * 3. `valid_until` is absent, or `today` is on or before it → `active`.
- * 4. `renewal_requested_at` is on or before `valid_until` →
+ * 1. A stored administrative `status` other than `granted` (`requested`,
+ *    `suspended`, `revoked`, `denied`, `withdrawn`) is returned as-is.
+ * 2. Another permit `supersedes` it → `superseded`.
+ * 3. `today` is before its start date → `not_yet_valid`.
+ * 4. `valid_until` is absent, or `today` is on or before it → `active`.
+ * 5. `renewal_requested_at` is on or before `valid_until` →
  *    `active_pending_renewal`.
- * 5. Otherwise → `expired`.
+ * 6. Otherwise → `expired`.
  *
  * Returns `undefined` when `permit` is an id that does not resolve.
  */
@@ -148,14 +172,28 @@ export function getPermitStatus(
 ): PermitStatus | undefined {
   const p = findPermit(well, permit);
   if (!p) return undefined;
+  if (p.status && p.status !== 'granted') return p.status;
   if (getSuccessorPermit(well, p)) return 'superseded';
   const start = getPermitStartDate(p);
-  if (start && today < start) return 'pending';
+  if (start && today < start) return 'not_yet_valid';
   if (!p.valid_until || today <= p.valid_until) return 'active';
   if (p.renewal_requested_at && p.renewal_requested_at <= p.valid_until) {
     return 'active_pending_renewal';
   }
   return 'expired';
+}
+
+/** Whether a permit's administrative `status` is `granted` (or absent). */
+export function isPermitGranted(permit: Permit): boolean {
+  return !permit.status || permit.status === 'granted';
+}
+
+/**
+ * Display identifier of a permit: `identifier`, else `request_identifier`,
+ * else `undefined`.
+ */
+export function getPermitIdentifier(permit: Permit): string | undefined {
+  return permit.identifier ?? permit.request_identifier;
 }
 
 /**
@@ -209,7 +247,9 @@ export type ConditionDeadlineOptions = {
  * Generates the deadlines of a permit condition (.well v2.3, normative):
  * deadline n = anchor + n × `recurrence`, always from the anchor. Generation
  * stops at `occurrences`, after `last_due`, after the permit's effective end
- * or, with no end, after `horizon`. Undated conditions yield `[]`.
+ * or, with no end, after `horizon`. A `suspended` or `revoked` permit
+ * generates nothing after `today`; a `requested`, `denied` or `withdrawn` one
+ * generates nothing. Undated conditions yield `[]`.
  */
 export function getConditionDeadlines(
   well: Well,
@@ -221,10 +261,13 @@ export function getConditionDeadlines(
   if (!anchor) return [];
 
   const today = options.today ?? todayCalendarDate();
-  const end =
+  const status = getPermitStatus(well, permit, today)!;
+  if (NEVER_GRANTED.has(status)) return [];
+  let end =
     getPermitEffectiveEnd(well, permit, today) ??
     options.horizon ??
     addDateDuration(today, parseDateDuration(DEFAULT_HORIZON)!);
+  if (HALTED.has(status) && (!end || today < end)) end = today;
   const recurrence = condition.recurrence
     ? parseDateDuration(condition.recurrence)
     : undefined;
@@ -254,31 +297,26 @@ export type ConditionDeadlineState = {
   /** The deadline. Absent for the fulfillment of an undated condition. */
   due_date?: string;
   status: ConditionDeadlineStatus;
-  /** `history_logs[].id` of the `permit_condition` entry that fulfilled it. */
-  log_id?: string;
+  /** `conditions[].fulfillments[].id` of the record that fulfilled it. */
+  fulfillment_id?: string;
 };
 
-/** `history_logs` entries of category `permit_condition` for one condition. */
+/** Fulfillments of a condition, oldest first. */
 export function getConditionFulfillments(
-  well: Well,
-  permitId: string,
-  conditionId: string,
-): HistoryLogEntry[] {
-  return (well.history_logs ?? []).filter(
-    l =>
-      l.category === 'permit_condition' &&
-      l.permit_id === permitId &&
-      l.condition_id === conditionId,
+  condition: PermitCondition,
+): ConditionFulfillment[] {
+  return [...(condition.fulfillments ?? [])].sort(
+    (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime(),
   );
 }
 
 /**
  * Derives the status of each deadline of a condition, on `today`:
- * `fulfilled` (or `fulfilled_late` when the log's local date is after the
- * deadline) when a `permit_condition` log matches it by `permit_id`,
- * `condition_id` and `due_date`; otherwise `upcoming` until the deadline and
- * `overdue` after it. For an undated condition, a log without `due_date`
- * yields a single `fulfilled` entry.
+ * `fulfilled` (or `fulfilled_late` when the fulfillment's local date is after
+ * the deadline) when one of its `fulfillments` has that `due_date`; otherwise
+ * `upcoming` until the deadline and `overdue` after it. For an undated
+ * condition, a fulfillment without `due_date` yields a single `fulfilled`
+ * entry.
  */
 export function getConditionDeadlineStates(
   well: Well,
@@ -287,30 +325,91 @@ export function getConditionDeadlineStates(
   options: ConditionDeadlineOptions = {},
 ): ConditionDeadlineState[] {
   const today = options.today ?? todayCalendarDate();
-  const logs = getConditionFulfillments(well, permit.id, condition.id);
+  const fulfillments = getConditionFulfillments(condition);
 
   if (!getConditionAnchor(permit, condition)) {
-    const log = logs.find(l => !l.due_date);
-    return log ? [{ status: 'fulfilled', log_id: log.id }] : [];
+    const f = fulfillments.find(x => !x.due_date);
+    return f ? [{ status: 'fulfilled', fulfillment_id: f.id }] : [];
   }
 
   return getConditionDeadlines(well, permit, condition, {
     ...options,
     today,
   }).map(due_date => {
-    const log = logs.find(l => l.due_date === due_date);
-    if (log) {
+    const f = fulfillments.find(x => x.due_date === due_date);
+    if (f) {
       return {
         due_date,
         status:
-          instantLocalDate(log.datetime) > due_date
+          instantLocalDate(f.datetime) > due_date
             ? 'fulfilled_late'
             : 'fulfilled',
-        log_id: log.id,
+        fulfillment_id: f.id,
       };
     }
     return { due_date, status: today > due_date ? 'overdue' : 'upcoming' };
   });
+}
+
+// ─── History & timeline ──────────────────────────────────────────────────────
+
+/** `history` of a permit sorted by `date` (stable for equal dates). */
+export function getPermitHistory(permit: Permit): PermitHistoryEntry[] {
+  return [...(permit.history ?? [])].sort((a, b) =>
+    a.date.localeCompare(b.date),
+  );
+}
+
+/**
+ * Steps of `history` whose `due_date` has passed on `today` and that are not
+ * `done`.
+ */
+export function getOverduePermitHistory(
+  permit: Permit,
+  today: string = todayCalendarDate(),
+): PermitHistoryEntry[] {
+  return getPermitHistory(permit).filter(
+    h => h.due_date !== undefined && h.done !== true && h.due_date < today,
+  );
+}
+
+export type PermitTimelineItem =
+  | {
+      kind: 'history';
+      /** Calendar date (YYYY-MM-DD) the item is placed at. */
+      date: string;
+      entry: PermitHistoryEntry;
+    }
+  | {
+      kind: 'fulfillment';
+      /** Local calendar date of the fulfillment instant. */
+      date: string;
+      condition: PermitCondition;
+      fulfillment: ConditionFulfillment;
+    };
+
+/**
+ * Merges a permit's `history` and every condition's `fulfillments` into one
+ * list ordered by local calendar date, newest first. Fulfillments are placed
+ * at the local date of their `datetime`.
+ */
+export function getPermitTimeline(permit: Permit): PermitTimelineItem[] {
+  const items: PermitTimelineItem[] = [
+    ...(permit.history ?? []).map(entry => ({
+      kind: 'history' as const,
+      date: entry.date,
+      entry,
+    })),
+    ...(permit.conditions ?? []).flatMap(condition =>
+      (condition.fulfillments ?? []).map(fulfillment => ({
+        kind: 'fulfillment' as const,
+        date: instantLocalDate(fulfillment.datetime),
+        condition,
+        fulfillment,
+      })),
+    ),
+  ];
+  return items.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 // ─── Validation ──────────────────────────────────────────────────────────────
@@ -327,16 +426,21 @@ export type PermitWarningCode =
   | 'duplicate_condition_id'
   | 'condition_due_conflict'
   | 'invalid_duration'
-  | 'unmatched_condition_log';
+  | 'missing_identifier'
+  | 'granted_without_identifier'
+  | 'duplicate_history_id'
+  | 'duplicate_fulfillment_id'
+  | 'unmatched_fulfillment'
+  | 'fulfillment_reference_unresolved';
 
 export type PermitWarning = {
   code: PermitWarningCode;
-  /** `permits[].id` values the warning refers to (empty for a dangling log). */
+  /** `permits[].id` values the warning refers to. */
   ids: string[];
   /** `conditions[].id`, for condition-level warnings. */
   condition_id?: string;
-  /** `history_logs[].id`, for `unmatched_condition_log`. */
-  log_id?: string;
+  /** `fulfillments[].id`, for fulfillment-level warnings. */
+  fulfillment_id?: string;
 };
 
 function outOfDayRange(hours: number | undefined): boolean {
@@ -348,21 +452,25 @@ function hasDuplicates<T>(values: T[]): boolean {
 }
 
 /**
- * Returns the validation warnings of the `permits` block and of
- * `permit_condition` history logs defined by `.well` v2.3. Warnings never
- * make a file invalid:
+ * Returns the validation warnings of the `permits` block defined by `.well`
+ * v2.3. Warnings never make a file invalid:
  *
  * - `valid_until_before_valid_from` — `valid_until` earlier than the start date.
  * - `supersedes_unresolved` / `supersedes_cycle` — broken succession chain.
- * - `overlapping_validity` — two non-superseded permits of the same `type`
- *   with overlapping validity.
+ * - `overlapping_validity` — two granted, non-superseded permits of the same
+ *   `type` with overlapping validity.
  * - `daily_operating_time_out_of_range` — a permit or monthly value outside 0–24.
  * - `monthly_above_max` — a `monthly_schedule` value above the permit maximum.
- * - `duplicate_month` / `duplicate_volume_period` / `duplicate_condition_id`.
+ * - `duplicate_month` / `duplicate_volume_period` / `duplicate_condition_id` /
+ *   `duplicate_history_id` / `duplicate_fulfillment_id`.
  * - `condition_due_conflict` — a condition with both `first_due` and `due_after`.
  * - `invalid_duration` — a `due_after` or `recurrence` that is not a date duration.
- * - `unmatched_condition_log` — a `permit_condition` log whose permit,
- *   condition or `due_date` matches no generated deadline.
+ * - `missing_identifier` — neither `identifier` nor `request_identifier`.
+ * - `granted_without_identifier` — a granted permit with no `identifier`.
+ * - `unmatched_fulfillment` — a fulfillment whose `due_date` matches no
+ *   generated deadline, or with no `due_date` on a dated condition.
+ * - `fulfillment_reference_unresolved` — a fulfillment `event_id` or
+ *   `sample_id` that resolves to nothing.
  */
 export function getPermitWarnings(
   well: Well,
@@ -372,7 +480,19 @@ export function getPermitWarnings(
   const byId = new Map(permits.map(p => [p.id, p]));
   const warnings: PermitWarning[] = [];
 
+  const eventIds = new Set((well.hydrodynamic_events ?? []).map(e => e.id));
+  const sampleIds = new Set((well.water_samples ?? []).map(s => s.id));
+
   for (const p of permits) {
+    if (!p.identifier && !p.request_identifier) {
+      warnings.push({ code: 'missing_identifier', ids: [p.id] });
+    } else if (isPermitGranted(p) && !p.identifier) {
+      warnings.push({ code: 'granted_without_identifier', ids: [p.id] });
+    }
+    if (hasDuplicates((p.history ?? []).map(h => h.id))) {
+      warnings.push({ code: 'duplicate_history_id', ids: [p.id] });
+    }
+
     const start = getPermitStartDate(p);
     if (start && p.valid_until && p.valid_until < start) {
       warnings.push({ code: 'valid_until_before_valid_from', ids: [p.id] });
@@ -450,11 +570,52 @@ export function getPermitWarnings(
           condition_id: c.id,
         });
       }
+
+      const fulfillments = c.fulfillments ?? [];
+      if (hasDuplicates(fulfillments.map(f => f.id))) {
+        warnings.push({
+          code: 'duplicate_fulfillment_id',
+          ids: [p.id],
+          condition_id: c.id,
+        });
+      }
+      const dated = !!getConditionAnchor(p, c);
+      for (const f of fulfillments) {
+        const matches =
+          f.due_date === undefined
+            ? !dated
+            : dated &&
+              getConditionDeadlines(well, p, c, {
+                today,
+                horizon: f.due_date,
+              }).includes(f.due_date);
+        if (!matches) {
+          warnings.push({
+            code: 'unmatched_fulfillment',
+            ids: [p.id],
+            condition_id: c.id,
+            fulfillment_id: f.id,
+          });
+        }
+        if (
+          (f.event_id !== undefined && !eventIds.has(f.event_id)) ||
+          (f.sample_id !== undefined && !sampleIds.has(f.sample_id))
+        ) {
+          warnings.push({
+            code: 'fulfillment_reference_unresolved',
+            ids: [p.id],
+            condition_id: c.id,
+            fulfillment_id: f.id,
+          });
+        }
+      }
     }
   }
 
-  // Two non-superseded permits of the same type with overlapping validity.
-  const live = permits.filter(p => !getSuccessorPermit(well, p));
+  // Two granted, non-superseded permits of the same type with overlapping validity.
+  const live = permits.filter(
+    p => isPermitGranted(p) && !getSuccessorPermit(well, p),
+  );
   for (let i = 0; i < live.length; i++) {
     for (let j = i + 1; j < live.length; j++) {
       const a = live[i]!;
@@ -467,30 +628,6 @@ export function getPermitWarnings(
       if (aStart <= bEnd && bStart <= aEnd) {
         warnings.push({ code: 'overlapping_validity', ids: [a.id, b.id] });
       }
-    }
-  }
-
-  // permit_condition logs that match no permit, condition or deadline.
-  for (const log of well.history_logs ?? []) {
-    if (log.category !== 'permit_condition') continue;
-    const permit = log.permit_id ? byId.get(log.permit_id) : undefined;
-    const condition = permit?.conditions?.find(c => c.id === log.condition_id);
-    const matches =
-      !!permit &&
-      !!condition &&
-      (log.due_date === undefined
-        ? !getConditionAnchor(permit, condition)
-        : getConditionDeadlines(well, permit, condition, {
-            today,
-            horizon: log.due_date,
-          }).includes(log.due_date));
-    if (!matches) {
-      warnings.push({
-        code: 'unmatched_condition_log',
-        ids: permit ? [permit.id] : [],
-        condition_id: log.condition_id,
-        log_id: log.id,
-      });
     }
   }
 

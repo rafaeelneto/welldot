@@ -266,7 +266,7 @@ Interventions/inspections/incidents distinct from `hydrodynamic_events`. Each en
 `datetime` (RFC 3339 with offset, when it happened), `updated_at` (RFC 3339 with offset, when the
 record was made/edited — **NEVER synthesize this** if the report doesn't distinguish it from
 `datetime`; omit instead), `category` (maintenance/inspection/incident/event/change_of_use/
-status_change/permit_condition, open vocab), `description` (near-verbatim), `author`, `severity`
+status_change, open vocab), `description` (near-verbatim), `author`, `severity`
 (low/medium/high/critical), `attachments` (only if the report references an actual retrievable URL —
 `Attachment`: `id`, `uri` (https, required), `media_type` (required), `document_type`, `filename`,
 `description`, `sha256`).
@@ -285,7 +285,7 @@ Category-specific fields (v2.3) go **only** on entries of their category:
   report's wording maps to none of them, use a plain `event` entry instead) — only when the
   report states the well was put into operation, stopped, sealed or abandoned, with a date. Never
   infer a status from silence: without a `status_change`, the status is unknown.
-- `permit_condition` — see § `permits` below.
+- Permit condition fulfillment is **not** a log category — it goes on the condition (§ `permits`).
 
 ### `pump_installations` (v2.3)
 
@@ -300,10 +300,15 @@ mentioned only as test equipment belongs in the event's `equipment` field, not h
 ### `permits` (v2.3)
 
 Only when the report transcribes a legal instrument (outorga, outorga prévia, dispensa, cadastro
-CNARH). Each entry: `id`, `type` (abstraction_permit/preliminary_permit/exemption/registration/
-dewatering_permit — a renewal is **not** a type: it is a new permit whose `supersedes` is the previous
-permit's `id`), `authority` (issuing body, e.g. `ANA`, `SEMAS-PA`), `number` (portaria/process number,
-verbatim), `issued_at`, `valid_from`, `valid_until`, `renewal_requested_at` (all **calendar dates**
+CNARH, autorização de perfuração). Each entry: `id`, `type` (abstraction_permit/preliminary_permit/exemption/registration/
+dewatering_permit/drilling_permit — a renewal is **not** a type: it is a new permit whose `supersedes` is the previous
+permit's `id`), `authority` (issuing body, e.g. `ANA`, `SEMAS-PA`), `identifier` (portaria/license code of the
+granted instrument, verbatim, any format) and/or `request_identifier` (protocol/process number of
+the request, verbatim) — at least one; a permit only requested has no `identifier`. `status`
+(**closed** enum: `requested`, `granted`, `suspended`, `revoked`, `denied`, `withdrawn`; omit when
+granted, set it only when the report states it), `history[]` (administrative steps the report
+records: `{ id, date (YYYY-MM-DD), type? (filing/process/notification/fee/inspection/decision/
+renewal), description, done?, due_date? }`), `issued_at`, `valid_from`, `valid_until`, `renewal_requested_at` (all **calendar dates**
 `YYYY-MM-DD`, never instants), `water_use[]` (human_supply/industrial/mining/irrigation/livestock/
 commercial), `flow_rate` (m³/h), `daily_operating_time` (hours, 0–24), `volume_limits[]`
 (`{ period: daily|monthly|annual, volume }` in m³ — only volumes **stated** in the document, never
@@ -312,10 +317,12 @@ months absent from it have no abstraction granted), `conditions[]`. Each conditi
 `description` (verbatim), `category` (monitoring_report/water_level_monitoring/production_report/
 water_quality_analysis/meter_installation/sanitary_protection/renewal_request), and its deadline as
 either `first_due` (date) **or** `due_after` (ISO 8601 date duration from the start date, e.g.
-`P90D`), plus `recurrence` (`P6M`, `P1Y`), `last_due`, `occurrences`. Never compute or store the
-deadline dates or the permit status — they are derived. Fulfillments are `history_logs` entries with
-`category: "permit_condition"`, `permit_id`, `condition_id`, `due_date` (plus `sample_id` when a
-`water_quality_analysis` condition was met by a sample) — only if the report records them.
+`P90D`), plus `recurrence` (`P6M`, `P1Y`), `last_due`, `occurrences`, `responsible` (who must meet
+it, if stated). Never compute or store the deadline dates or the validity status — they are
+derived. Fulfillments go in the condition's `fulfillments[]`: `{ id, datetime (RFC 3339 with
+offset), due_date (the deadline met; omit for undated conditions), description?, author?,
+event_id?, sample_id? }` (`sample_id` when a `water_quality_analysis` condition was met by a
+sample) — only if the report records them.
 
 ### `meters` (v2.3)
 

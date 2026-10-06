@@ -3,8 +3,8 @@
 /**
  * A document attached to the well or to one of its records. Since v2.3 it is
  * a common type, allowed at the root (`attachments`) and on `history_logs`,
- * `permits`, `pump_installations`, `hydrodynamic_events` and
- * `aquifer_analysis` entries.
+ * `permits` (and their `history` and condition `fulfillments`),
+ * `pump_installations`, `hydrodynamic_events` and `aquifer_analysis` entries.
  */
 export type Attachment = {
   /** Unique within its owning `attachments` array. UUID v4 recommended. */
@@ -434,10 +434,34 @@ export type MonthlyGrant = {
 };
 
 /**
+ * The record of one condition deadline being met. `due_date` names the
+ * deadline fulfilled (absent for an undated condition); fulfillment is late
+ * when the local date of `datetime` is after it. Since v2.3.
+ */
+export type ConditionFulfillment = {
+  /** Unique within the condition's `fulfillments` array. UUID v4 recommended. */
+  id: string;
+  /** RFC 3339 instant the obligation was met. Its local date is compared to `due_date`. */
+  datetime: string;
+  /** Calendar date (YYYY-MM-DD) of the deadline fulfilled. Absent for undated conditions. */
+  due_date?: string;
+  description?: string;
+  /** Who fulfilled the obligation. */
+  author?: string;
+  /** `hydrodynamic_events[].id` holding the data that satisfied the obligation. */
+  event_id?: string;
+  /** `water_samples[].id` that satisfied the obligation (e.g. a `water_quality_analysis` condition). */
+  sample_id?: string;
+  /** RFC 3339 instant of the last edit of this record. */
+  updated_at?: string;
+  /** Protocols, reports, receipts. */
+  attachments?: Attachment[];
+};
+
+/**
  * An obligation (condicionante) of a permit. Deadlines are derived from
  * `first_due` or `due_after`, `recurrence`, `last_due` and `occurrences`;
- * fulfillment is logged in `history_logs` with category `permit_condition`.
- * Since v2.3.
+ * each deadline met is recorded in `fulfillments`. Since v2.3.
  */
 export type PermitCondition = {
   /** Unique within the permit's `conditions` array. */
@@ -460,26 +484,80 @@ export type PermitCondition = {
   last_due?: string;
   /** Maximum number of deadlines, counting the first. */
   occurrences?: number;
+  /** Person or team accountable for meeting the obligation. */
+  responsible?: string;
+  /** Deadlines met, at most one per `due_date`. */
+  fulfillments?: ConditionFulfillment[];
+};
+
+/**
+ * Administrative situation of a permit, as set by the issuing body. Closed
+ * vocabulary: `requested` (filed, awaiting decision), `granted` (issued; the
+ * date-based status applies), `suspended` (temporarily halted by the
+ * authority), `revoked` (cancelled by the authority), `denied` (request
+ * refused), `withdrawn` (request or permit given up by the holder). Absent
+ * means `granted`. Since v2.3.
+ */
+export type PermitAdministrativeStatus =
+  | 'requested'
+  | 'granted'
+  | 'suspended'
+  | 'revoked'
+  | 'denied'
+  | 'withdrawn';
+
+/**
+ * One step in the administrative life of a permit: filing, process
+ * movements, notifications, fees, inspections, decisions. A mutable record.
+ * Since v2.3.
+ */
+export type PermitHistoryEntry = {
+  /** Unique within the permit's `history` array. UUID v4 recommended. */
+  id: string;
+  /** Calendar date (YYYY-MM-DD) the step happened. */
+  date: string;
+  /**
+   * Recommended: `filing`, `process`, `notification`, `fee`, `inspection`,
+   * `decision`, `renewal`. Non-canonical values SHOULD use the `x-` prefix.
+   */
+  type?: string;
+  description: string;
+  /** For actionable steps (fee paid, notification answered). Absent means informational. */
+  done?: boolean;
+  /** Calendar date (YYYY-MM-DD) by which an actionable step must be done. */
+  due_date?: string;
+  /** RFC 3339 instant of the last edit of this record. */
+  updated_at?: string;
+  /** Notices, receipts, protocols. */
+  attachments?: Attachment[];
 };
 
 /**
  * One legal instrument governing abstraction from the well (outorga,
- * dispensa, cadastro). A mutable record: the attached document is
- * authoritative. Status and condition deadlines are always derived. A renewal
- * is a new permit whose `supersedes` points to the previous one. Since v2.3.
+ * dispensa, cadastro), from its request on. A mutable record: the attached
+ * document is authoritative. The administrative `status` is stored; the
+ * validity status and condition deadlines are derived. A renewal is a new
+ * permit whose `supersedes` points to the previous one. Since v2.3.
  */
 export type Permit = {
   /** Unique within `permits`. UUID v4 recommended. */
   id: string;
   /**
    * Recommended: `abstraction_permit`, `preliminary_permit`, `exemption`,
-   * `registration`, `dewatering_permit`.
+   * `registration`, `dewatering_permit`, `drilling_permit`.
    */
   type: string;
   /** Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`. */
   authority: string;
-  /** Portaria or process number, preserved verbatim. */
-  number: string;
+  /**
+   * Identifier of the granted instrument (portaria, license code), preserved
+   * verbatim. Absent while the permit is only requested.
+   */
+  identifier?: string;
+  /** Identifier of the request or administrative process (protocolo), preserved verbatim. */
+  request_identifier?: string;
+  /** Administrative situation. Closed vocabulary. Absent means `granted`. */
+  status?: PermitAdministrativeStatus;
   /** Calendar date (YYYY-MM-DD) of issuance. */
   issued_at?: string;
   /** Calendar date (YYYY-MM-DD). Absent means valid from `issued_at`. */
@@ -503,6 +581,8 @@ export type Permit = {
   monthly_schedule?: MonthlyGrant[];
   /** Obligations (condicionantes). */
   conditions?: PermitCondition[];
+  /** Administrative steps (process, notifications, fees). */
+  history?: PermitHistoryEntry[];
   /** `permits[].id` of the instrument this one legally replaces. */
   supersedes?: string;
   notes?: string;
@@ -648,31 +728,17 @@ export type HistoryLogEntry = {
   pump_installation_id?: string;
   /** `meters[].id` the task concerns. */
   meter_id?: string;
+  /** `hydrodynamic_events[].id` holding the data produced by the task. */
+  event_id?: string;
+  /**
+   * `water_samples[].id` collected by the task (`maintenance_type:
+   * "water_sampling"`).
+   */
+  sample_id?: string;
 
   // `status_change`
   /** The well's situation from this entry on. Closed vocabulary. */
   status?: WellStatus;
-
-  // `permit_condition`
-  /** `permits[].id` whose condition this entry fulfills. */
-  permit_id?: string;
-  /** `permits[].conditions[].id` within that permit. */
-  condition_id?: string;
-  /** Calendar date (YYYY-MM-DD) of the deadline fulfilled. Absent for undated conditions. */
-  due_date?: string;
-
-  // `maintenance` and `permit_condition`
-  /**
-   * `hydrodynamic_events[].id` holding the data produced by the task
-   * (`maintenance`) or that satisfied the obligation (`permit_condition`).
-   */
-  event_id?: string;
-  /**
-   * `water_samples[].id` collected by the task (`maintenance` with
-   * `maintenance_type: "water_sampling"`) or that satisfied the obligation
-   * (`permit_condition`, e.g. a `water_quality_analysis` condition).
-   */
-  sample_id?: string;
 };
 
 // ─── Water quality objects (since v2.3) ───────────────────────────────────────

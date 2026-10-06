@@ -2,13 +2,16 @@ import type { Attachment, Permit, PermitCondition, Well } from '@welldot/core';
 import {
   formatNumber,
   getConditionDeadlineStates,
+  getPermitHistory,
   getPermitStartDate,
   getPermitStatus,
   todayCalendarDate,
 } from '@welldot/utils';
-import { formatCalendarDate } from '../date';
+import { formatCalendarDate, formatDate } from '../date';
 import {
+  permitLabel,
   resolveConditionCategoryLabel,
+  resolvePermitHistoryTypeLabel,
   resolvePermitTypeLabel,
   resolveWaterUseLabel,
 } from '../permitVocab';
@@ -73,12 +76,14 @@ function specLines(
 
   return [
     `${field('authority')}: ${p.authority}`,
-    `${field('number')}: ${p.number}`,
+    p.identifier && `${field('identifier')}: ${p.identifier}`,
+    p.request_identifier &&
+      `${field('requestIdentifier')}: ${p.request_identifier}`,
     p.issued_at && `${field('issuedAt')}: ${formatCalendarDate(p.issued_at)}`,
     p.renewal_requested_at &&
       `${field('renewalRequestedAt')}: ${formatCalendarDate(p.renewal_requested_at)}`,
     p.supersedes &&
-      `${field('supersedes')}: ${superseded ? `${superseded.authority} ${superseded.number}` : p.supersedes}`,
+      `${field('supersedes')}: ${permitLabel(superseded, p.supersedes)}`,
     p.water_use?.length &&
       `${field('waterUse')}: ${p.water_use.map(u => resolveWaterUseLabel(u, t)).join(', ')}`,
     p.flow_rate != null &&
@@ -127,10 +132,53 @@ function conditionLine(
     !states.length && t('editor.operation.permit.conditions.undated'),
   ].filter(Boolean);
 
-  const category = c.category
-    ? ` (${resolveConditionCategoryLabel(c.category, t)})`
-    : '';
+  const meta = [
+    c.category && resolveConditionCategoryLabel(c.category, t),
+    c.responsible &&
+      `${t('editor.operation.permit.conditions.responsible')}: ${c.responsible}`,
+  ].filter(Boolean);
+  const category = meta.length ? ` (${meta.join(' · ')})` : '';
   return `•  ${c.description}${category}${summary.length ? ` — ${summary.join(' · ')}` : ''}`;
+}
+
+/** Fulfillment records of a condition, one indented line each. */
+function fulfillmentLines(c: PermitCondition, t: PdfTranslate): string[] {
+  return [...(c.fulfillments ?? [])]
+    .sort(
+      (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime(),
+    )
+    .map(f =>
+      [
+        `      ✓ ${formatDate(f.datetime, 'dd/MM/yyyy')}`,
+        f.due_date &&
+          `${t('editor.operation.permit.fulfill.deadline')} ${formatCalendarDate(f.due_date)}`,
+        f.author,
+        f.description,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    );
+}
+
+/** One line per administrative history step, oldest first. */
+function historyLine(
+  h: ReturnType<typeof getPermitHistory>[number],
+  t: PdfTranslate,
+): string {
+  const state =
+    h.done === true
+      ? t('editor.operation.permit.history.done')
+      : h.due_date
+        ? `${t('editor.operation.permit.history.dueDate')} ${formatCalendarDate(h.due_date)}`
+        : null;
+  return [
+    `•  ${formatCalendarDate(h.date)}`,
+    h.type && resolvePermitHistoryTypeLabel(h.type, t),
+    h.description,
+    state && `(${state})`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 function buildBody(
@@ -156,10 +204,27 @@ function buildBody(
           text: t('editor.operation.permit.conditions.title'),
           style: 'metadataLabel',
         },
-        ...conditions.map(c => ({
-          text: conditionLine(p, c, well, today, t),
-          fontSize: 9,
-        })),
+        ...conditions.flatMap(c => [
+          { text: conditionLine(p, c, well, today, t), fontSize: 9 },
+          ...fulfillmentLines(c, t).map(text => ({
+            text,
+            fontSize: 8,
+            color: '#555555',
+          })),
+        ]),
+      ],
+      margin: [0, 4, 0, 0],
+    });
+  }
+  const history = getPermitHistory(p);
+  if (history.length) {
+    blocks.push({
+      stack: [
+        {
+          text: t('editor.operation.permit.history.title'),
+          style: 'metadataLabel',
+        },
+        ...history.map(h => ({ text: historyLine(h, t), fontSize: 9 })),
       ],
       margin: [0, 4, 0, 0],
     });

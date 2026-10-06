@@ -486,11 +486,7 @@ const MAINTENANCE_FIELDS = [
   'pump_installation_id',
   'meter_id',
 ] as const;
-const PERMIT_CONDITION_FIELDS = [
-  'permit_id',
-  'condition_id',
-  'due_date',
-] as const;
+const MAINTENANCE_LINK_FIELDS = ['event_id', 'sample_id'] as const;
 
 function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
   return log[field] !== undefined;
@@ -534,12 +530,10 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
  *
  * History logs (ids: [log]):
  * - `log_category_field_mismatch` — maintenance fields on a non-`maintenance`
- *   entry, `status` on a non-`status_change`, `permit_id` / `condition_id` /
- *   `due_date` on a non-`permit_condition`, `event_id` / `sample_id` on
- *   anything other than `maintenance` / `permit_condition`.
+ *   entry (including `event_id` / `sample_id`), `status` on a
+ *   non-`status_change`.
  * - `log_reference_unresolved` — `pump_installation_id`, `meter_id`,
- *   `event_id` or `sample_id` (`water_samples[].id`) that does not resolve
- *   (`permit_id` / `condition_id` are covered by `getPermitWarnings`).
+ *   `event_id` or `sample_id` (`water_samples[].id`) that does not resolve.
  * - `log_after_decommission` — while the current status is `decommissioned` or
  *   `abandoned`, a non-`status_change` entry dated after the start of that
  *   closed run (the earliest closing entry not followed by a reopening one).
@@ -700,13 +694,11 @@ export function getOperationWarnings(
   for (const log of well.history_logs ?? []) {
     const c = log.category;
     const mismatch =
-      (c !== 'maintenance' && MAINTENANCE_FIELDS.some(f => hasField(log, f))) ||
-      (c !== 'status_change' && hasField(log, 'status')) ||
-      (c !== 'permit_condition' &&
-        PERMIT_CONDITION_FIELDS.some(f => hasField(log, f))) ||
       (c !== 'maintenance' &&
-        c !== 'permit_condition' &&
-        (hasField(log, 'event_id') || hasField(log, 'sample_id')));
+        [...MAINTENANCE_FIELDS, ...MAINTENANCE_LINK_FIELDS].some(f =>
+          hasField(log, f),
+        )) ||
+      (c !== 'status_change' && hasField(log, 'status'));
     if (mismatch) push('log_category_field_mismatch', [log.id]);
 
     if (

@@ -1,19 +1,30 @@
 import { describe, expect, it } from 'vitest';
 
-import type { HistoryLogEntry, Permit, Well } from '@welldot/core';
+import type {
+  ConditionFulfillment,
+  Permit,
+  PermitCondition,
+  Well,
+} from '@welldot/core';
 
 import {
   addDateDuration,
   getConditionDeadlineStates,
   getConditionDeadlines,
+  getConditionFulfillments,
+  getOverduePermitHistory,
   getPermitEffectiveEnd,
+  getPermitHistory,
+  getPermitIdentifier,
   getPermitStatus,
+  getPermitTimeline,
   getPermitWarnings,
+  isPermitGranted,
   parseDateDuration,
   todayCalendarDate,
 } from './permit.utils';
 
-function makeWell(permits: Permit[], history_logs?: HistoryLogEntry[]): Well {
+function makeWell(permits: Permit[], extra: Partial<Well> = {}): Well {
   return {
     version: 2,
     bore_hole: [],
@@ -26,7 +37,7 @@ function makeWell(permits: Permit[], history_logs?: HistoryLogEntry[]): Well {
     fractures: [],
     caves: [],
     permits,
-    ...(history_logs && { history_logs }),
+    ...extra,
   };
 }
 
@@ -34,7 +45,7 @@ const base = (patch: Partial<Permit> = {}): Permit => ({
   id: 'pmt-01',
   type: 'abstraction_permit',
   authority: 'SEMAS-PA',
-  number: '1234/2025',
+  identifier: '1234/2025',
   ...patch,
 });
 
@@ -98,15 +109,40 @@ describe('getPermitStatus', () => {
     valid_until: '2029-02-10',
   });
 
-  it('is pending before the start date', () => {
+  it('is not_yet_valid before the start date', () => {
     expect(getPermitStatus(makeWell([permit]), permit, '2025-02-09')).toBe(
-      'pending',
+      'not_yet_valid',
     );
   });
 
   it('prefers valid_from over issued_at as start date', () => {
     const p = base({ issued_at: '2025-01-01', valid_from: '2025-03-01' });
-    expect(getPermitStatus(makeWell([p]), p, '2025-02-01')).toBe('pending');
+    expect(getPermitStatus(makeWell([p]), p, '2025-02-01')).toBe(
+      'not_yet_valid',
+    );
+  });
+
+  it('returns a stored administrative status other than granted as-is', () => {
+    for (const status of [
+      'requested',
+      'suspended',
+      'revoked',
+      'denied',
+      'withdrawn',
+    ] as const) {
+      const p = { ...permit, status };
+      expect(getPermitStatus(makeWell([p]), p, '2026-01-01')).toBe(status);
+    }
+  });
+
+  it('derives the date status when granted, even if superseded', () => {
+    const p = { ...permit, status: 'granted' as const };
+    expect(getPermitStatus(makeWell([p]), p, '2026-01-01')).toBe('active');
+    const suspended = { ...permit, status: 'suspended' as const };
+    const renewal = base({ id: 'pmt-02', supersedes: 'pmt-01' });
+    expect(
+      getPermitStatus(makeWell([suspended, renewal]), suspended, '2026-01-01'),
+    ).toBe('suspended');
   });
 
   it('is active through valid_until, inclusive', () => {
@@ -301,54 +337,45 @@ describe('getConditionDeadlines', () => {
 
 describe('getConditionDeadlineStates', () => {
   // The complete example of the v2.3 spec.
-  const permit = base({
-    issued_at: '2025-02-10',
-    valid_until: '2029-02-10',
-    conditions: [
-      {
-        id: 'c1',
-        description: 'Instalar hidrômetro',
-        category: 'meter_installation',
-        due_after: 'P90D',
-      },
-      {
-        id: 'c2',
-        description: 'Relatório semestral',
-        category: 'monitoring_report',
-        first_due: '2025-07-31',
-        recurrence: 'P6M',
-      },
-    ],
-  });
-  const log: HistoryLogEntry = {
-    id: 'log-1',
+  const fulfillment: ConditionFulfillment = {
+    id: 'f1',
     datetime: '2025-04-02T10:00:00-03:00',
-    category: 'permit_condition',
-    description: 'Hidrômetro instalado',
-    permit_id: 'pmt-01',
-    condition_id: 'c1',
     due_date: '2025-05-11',
+    description: 'Hidrômetro instalado',
   };
-  const well = makeWell([permit], [log]);
+  const c1 = (fulfillments?: ConditionFulfillment[]): PermitCondition => ({
+    id: 'c1',
+    description: 'Instalar hidrômetro',
+    category: 'meter_installation',
+    due_after: 'P90D',
+    ...(fulfillments && { fulfillments }),
+  });
+  const c2: PermitCondition = {
+    id: 'c2',
+    description: 'Relatório semestral',
+    category: 'monitoring_report',
+    first_due: '2025-07-31',
+    recurrence: 'P6M',
+  };
+  const permitWith = (...conditions: PermitCondition[]) =>
+    base({ issued_at: '2025-02-10', valid_until: '2029-02-10', conditions });
   const today = '2026-10-03';
+  const statesOf = (
+    condition: PermitCondition,
+    patch: Partial<Permit> = {},
+  ) => {
+    const p = { ...permitWith(condition), ...patch };
+    return getConditionDeadlineStates(makeWell([p]), p, condition, { today });
+  };
 
   it('marks a matched deadline as fulfilled on time', () => {
-    expect(
-      getConditionDeadlineStates(well, permit, permit.conditions![0]!, {
-        today,
-      }),
-    ).toEqual([
-      { due_date: '2025-05-11', status: 'fulfilled', log_id: 'log-1' },
+    expect(statesOf(c1([fulfillment]))).toEqual([
+      { due_date: '2025-05-11', status: 'fulfilled', fulfillment_id: 'f1' },
     ]);
   });
 
   it('marks past unmatched deadlines overdue and future ones upcoming', () => {
-    const states = getConditionDeadlineStates(
-      well,
-      permit,
-      permit.conditions![1]!,
-      { today },
-    );
+    const states = statesOf(c2);
     expect(states.slice(0, 3).map(s => s.status)).toEqual([
       'overdue',
       'overdue',
@@ -357,46 +384,152 @@ describe('getConditionDeadlineStates', () => {
     expect(states[3]).toEqual({ due_date: '2027-01-31', status: 'upcoming' });
   });
 
-  it('flags a fulfillment logged after the deadline as late', () => {
-    const late = { ...log, datetime: '2025-05-12T08:00:00-03:00' };
-    expect(
-      getConditionDeadlineStates(
-        makeWell([permit], [late]),
-        permit,
-        permit.conditions![0]!,
-        { today },
-      )[0]!.status,
-    ).toBe('fulfilled_late');
+  it('flags a fulfillment recorded after the deadline as late', () => {
+    const late = { ...fulfillment, datetime: '2025-05-12T08:00:00-03:00' };
+    expect(statesOf(c1([late]))[0]!.status).toBe('fulfilled_late');
   });
 
-  it('uses the local date written in the log, not UTC', () => {
+  it('uses the local date written in the fulfillment, not UTC', () => {
     // 22:00 at -03:00 is already the next day in UTC.
-    const lastMinute = { ...log, datetime: '2025-05-11T22:00:00-03:00' };
-    expect(
-      getConditionDeadlineStates(
-        makeWell([permit], [lastMinute]),
-        permit,
-        permit.conditions![0]!,
-        { today },
-      )[0]!.status,
-    ).toBe('fulfilled');
+    const lastMinute = {
+      ...fulfillment,
+      datetime: '2025-05-11T22:00:00-03:00',
+    };
+    expect(statesOf(c1([lastMinute]))[0]!.status).toBe('fulfilled');
   });
 
   it('reports undated conditions only once fulfilled', () => {
-    const undated = { id: 'c3', description: 'Laje sanitária' };
-    const p = { ...permit, conditions: [undated] };
-    expect(
-      getConditionDeadlineStates(makeWell([p]), p, undated, { today }),
-    ).toEqual([]);
-    const done: HistoryLogEntry = {
-      ...log,
-      id: 'log-3',
-      condition_id: 'c3',
-      due_date: undefined,
+    const undated: PermitCondition = {
+      id: 'c3',
+      description: 'Laje sanitária',
     };
+    expect(statesOf(undated)).toEqual([]);
+    const done = {
+      ...undated,
+      fulfillments: [{ ...fulfillment, id: 'f3', due_date: undefined }],
+    };
+    expect(statesOf(done)).toEqual([
+      { status: 'fulfilled', fulfillment_id: 'f3' },
+    ]);
+  });
+
+  it('generates nothing for a permit that was never granted', () => {
+    for (const status of ['requested', 'denied', 'withdrawn'] as const) {
+      expect(statesOf(c2, { status })).toEqual([]);
+    }
+  });
+
+  it('stops at today for a suspended or revoked permit', () => {
+    for (const status of ['suspended', 'revoked'] as const) {
+      const states = statesOf(c2, { status });
+      expect(states[states.length - 1]!.due_date).toBe('2026-07-31');
+      expect(states.every(s => s.status === 'overdue')).toBe(true);
+    }
+  });
+});
+
+describe('getConditionFulfillments', () => {
+  it('sorts fulfillments oldest first', () => {
+    const c: PermitCondition = {
+      id: 'c',
+      description: 'x',
+      fulfillments: [
+        { id: 'b', datetime: '2025-06-01T00:00:00Z' },
+        { id: 'a', datetime: '2025-01-01T00:00:00Z' },
+      ],
+    };
+    expect(getConditionFulfillments(c).map(f => f.id)).toEqual(['a', 'b']);
+    expect(getConditionFulfillments({ id: 'd', description: 'y' })).toEqual([]);
+  });
+});
+
+// ─── Identity, history & timeline ────────────────────────────────────────────
+
+describe('isPermitGranted / getPermitIdentifier', () => {
+  it('treats an absent status as granted', () => {
+    expect(isPermitGranted(base())).toBe(true);
+    expect(isPermitGranted(base({ status: 'granted' }))).toBe(true);
+    expect(isPermitGranted(base({ status: 'requested' }))).toBe(false);
+  });
+
+  it('falls back to the request identifier', () => {
+    expect(getPermitIdentifier(base())).toBe('1234/2025');
     expect(
-      getConditionDeadlineStates(makeWell([p], [done]), p, undated, { today }),
-    ).toEqual([{ status: 'fulfilled', log_id: 'log-3' }]);
+      getPermitIdentifier(
+        base({ identifier: undefined, request_identifier: 'PRT-9' }),
+      ),
+    ).toBe('PRT-9');
+    expect(getPermitIdentifier(base({ identifier: undefined }))).toBe(
+      undefined,
+    );
+  });
+});
+
+describe('getPermitHistory / getOverduePermitHistory', () => {
+  const p = base({
+    history: [
+      {
+        id: 'fee',
+        date: '2025-02-01',
+        description: 'Taxa',
+        due_date: '2025-03-01',
+      },
+      { id: 'filing', date: '2025-01-01', description: 'Protocolo' },
+      {
+        id: 'paid',
+        date: '2025-02-02',
+        description: 'Taxa 2',
+        due_date: '2025-02-10',
+        done: true,
+      },
+    ],
+  });
+
+  it('sorts history by date', () => {
+    expect(getPermitHistory(p).map(h => h.id)).toEqual([
+      'filing',
+      'fee',
+      'paid',
+    ]);
+  });
+
+  it('lists past-due steps that are not done', () => {
+    expect(getOverduePermitHistory(p, '2025-03-01')).toEqual([]);
+    expect(getOverduePermitHistory(p, '2025-03-02').map(h => h.id)).toEqual([
+      'fee',
+    ]);
+  });
+});
+
+describe('getPermitTimeline', () => {
+  it('merges history and fulfillments, newest first, by local date', () => {
+    const p = base({
+      history: [
+        { id: 'h1', date: '2025-01-01', description: 'Protocolo' },
+        { id: 'h2', date: '2025-05-11', description: 'Notificação' },
+      ],
+      conditions: [
+        {
+          id: 'c1',
+          description: 'x',
+          fulfillments: [
+            // Local date 2025-05-10 although UTC is already 2025-05-11.
+            { id: 'f1', datetime: '2025-05-10T22:00:00-03:00' },
+          ],
+        },
+      ],
+    });
+    const timeline = getPermitTimeline(p);
+    expect(timeline.map(i => i.date)).toEqual([
+      '2025-05-11',
+      '2025-05-10',
+      '2025-01-01',
+    ]);
+    expect(timeline[1]).toMatchObject({
+      kind: 'fulfillment',
+      condition: { id: 'c1' },
+      fulfillment: { id: 'f1' },
+    });
   });
 });
 
@@ -502,27 +635,95 @@ describe('getPermitWarnings', () => {
     );
   });
 
-  it('flags permit_condition logs that match no deadline', () => {
+  it('flags fulfillments that match no deadline or reference', () => {
+    const fulfillments: ConditionFulfillment[] = [
+      { id: 'ok', datetime: '2025-03-01T10:00:00Z', due_date: '2025-04-01' },
+      {
+        id: 'bad-date',
+        datetime: '2025-03-01T10:00:00Z',
+        due_date: '2025-04-02',
+      },
+      { id: 'no-date', datetime: '2025-03-01T10:00:00Z' },
+      {
+        id: 'ghost-sample',
+        datetime: '2025-03-01T10:00:00Z',
+        due_date: '2025-04-01',
+        sample_id: 'ghost',
+      },
+    ];
     const p = base({
       issued_at: '2025-01-01',
-      conditions: [{ id: 'c1', description: 'x', due_after: 'P90D' }],
+      conditions: [
+        { id: 'c1', description: 'x', due_after: 'P90D', fulfillments },
+        {
+          id: 'c2',
+          description: 'undated',
+          fulfillments: [
+            {
+              id: 'dated',
+              datetime: '2025-03-01T10:00:00Z',
+              due_date: '2025-04-01',
+            },
+          ],
+        },
+      ],
     });
-    const ok: HistoryLogEntry = {
-      id: 'ok',
-      datetime: '2025-03-01T10:00:00Z',
-      category: 'permit_condition',
-      description: 'done',
-      permit_id: p.id,
-      condition_id: 'c1',
-      due_date: '2025-04-01',
-    };
-    const wrongDate = { ...ok, id: 'bad-date', due_date: '2025-04-02' };
-    const dangling = { ...ok, id: 'dangling', permit_id: 'ghost' };
-    const warnings = getPermitWarnings(
-      makeWell([p], [ok, wrongDate, dangling]),
-      '2026-01-01',
-    ).filter(w => w.code === 'unmatched_condition_log');
-    expect(warnings.map(w => w.log_id)).toEqual(['bad-date', 'dangling']);
-    expect(warnings[1]!.ids).toEqual([]);
+    const warnings = getPermitWarnings(makeWell([p]), '2026-01-01');
+    expect(
+      warnings
+        .filter(w => w.code === 'unmatched_fulfillment')
+        .map(w => w.fulfillment_id),
+    ).toEqual(['bad-date', 'no-date', 'dated']);
+    expect(
+      warnings
+        .filter(w => w.code === 'fulfillment_reference_unresolved')
+        .map(w => w.fulfillment_id),
+    ).toEqual(['ghost-sample']);
+  });
+
+  it('flags duplicate history and fulfillment ids', () => {
+    const p = base({
+      history: [
+        { id: 'h', date: '2025-01-01', description: 'a' },
+        { id: 'h', date: '2025-01-02', description: 'b' },
+      ],
+      conditions: [
+        {
+          id: 'c',
+          description: 'x',
+          fulfillments: [
+            { id: 'f', datetime: '2025-01-01T00:00:00Z' },
+            { id: 'f', datetime: '2025-01-02T00:00:00Z' },
+          ],
+        },
+      ],
+    });
+    expect(codes(makeWell([p]))).toEqual(
+      expect.arrayContaining([
+        'duplicate_history_id',
+        'duplicate_fulfillment_id',
+      ]),
+    );
+  });
+
+  it('flags missing identifiers', () => {
+    expect(codes(makeWell([base({ identifier: undefined })]))).toContain(
+      'missing_identifier',
+    );
+    const requested = base({
+      identifier: undefined,
+      request_identifier: 'PRT-1',
+      status: 'requested',
+    });
+    expect(codes(makeWell([requested]))).toEqual([]);
+    expect(codes(makeWell([{ ...requested, status: 'granted' }]))).toContain(
+      'granted_without_identifier',
+    );
+  });
+
+  it('ignores non-granted permits for overlapping validity', () => {
+    const a = base({ id: 'a', valid_from: '2025-01-01' });
+    const b = base({ id: 'b', valid_from: '2025-06-01', status: 'requested' });
+    expect(codes(makeWell([a, b]))).not.toContain('overlapping_validity');
   });
 });

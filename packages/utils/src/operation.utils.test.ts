@@ -108,7 +108,7 @@ const specExample = (): Well =>
         id: 'pmt-01',
         type: 'abstraction_permit',
         authority: 'SEMAS-PA',
-        number: '1234/2025',
+        identifier: '1234/2025',
         issued_at: '2025-02-10',
         valid_until: '2029-02-10',
         flow_rate: 15,
@@ -148,14 +148,6 @@ const specExample = (): Well =>
       },
     ],
     history_logs: [
-      log({
-        id: 'log-1',
-        datetime: '2025-04-02T10:00:00-03:00',
-        category: 'permit_condition',
-        permit_id: 'pmt-01',
-        condition_id: 'c1',
-        due_date: '2025-05-11',
-      }),
       log({
         id: 'log-2',
         datetime: '2025-04-02T09:00:00-03:00',
@@ -738,7 +730,7 @@ describe('getOperationWarnings', () => {
       id: 'pmt-01',
       type: 'abstraction_permit',
       authority: 'SEMAS-PA',
-      number: '1',
+      identifier: '1',
       issued_at: '2025-01-01',
       valid_until: '2027-01-01',
       flow_rate: 15,
@@ -804,7 +796,7 @@ describe('getOperationWarnings', () => {
           id: 'p',
           category: 'status_change',
           status: 'active',
-          permit_id: 'x',
+          sample_id: 'x',
         }),
         log({
           id: 'e',
@@ -856,7 +848,7 @@ describe('getOperationWarnings', () => {
     expect(flagged).toEqual(['a', 'c']);
   });
 
-  it('accepts sample_id only on maintenance / permit_condition entries', () => {
+  it('accepts sample_id only on maintenance entries', () => {
     const well = makeWell({
       water_samples: [
         {
@@ -873,11 +865,6 @@ describe('getOperationWarnings', () => {
           id: 'maint',
           category: 'maintenance',
           maintenance_type: 'water_sampling',
-          sample_id: 'ws1',
-        }),
-        log({
-          id: 'cond',
-          category: 'permit_condition',
           sample_id: 'ws1',
         }),
         log({ id: 'bad', category: 'other', sample_id: 'ws1' }),

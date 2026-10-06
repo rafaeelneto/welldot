@@ -379,7 +379,10 @@ function typeLabel(e: ProductionEntry): string {
         >
           {{
             t('editor.operation.production.compliance.title', {
-              number: activePermit?.number ?? '',
+              number:
+                activePermit?.identifier ??
+                activePermit?.request_identifier ??
+                '',
             })
           }}
         </span>

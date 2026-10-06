@@ -235,7 +235,7 @@ The following were delivered in `.well` v2.0 (shipped in `@welldot/core` v0.2.0)
 The v2.3 revision (shipped in `@welldot/core` v0.4.0) adds the operational blocks and water quality:
 
 - **Pump installations** — installation history with nameplate, intake depth, riser and electrical data; the current pump is drawn on the profile
-- **Permits** — outorgas with validity, granted flow, daily operating time and volumes, and conditions (condicionantes) whose deadlines are derived from ISO 8601 date durations; fulfillment is logged in `history_logs` (`permit_condition`)
+- **Permits** — outorgas with validity, granted flow, daily operating time and volumes, and conditions (condicionantes) whose deadlines are derived from ISO 8601 date durations and whose fulfillments are recorded on the condition; an administrative status (requested, suspended, revoked…) and an administrative history (filing, notifications, fees)
 - **Meters and production** — totalizer installation history plus an append-only production ledger of meter readings and declared volumes; volumes are derived with rollover handling and are never stored as totals
 - **Operating regime** — declared flow rate, daily operating time and days per week, each entry in force from `effective_from`
 - **Structured history logs** — `maintenance` entries reference the pump, meter or event they concern (`maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`); the new `status_change` category records the well's operating status

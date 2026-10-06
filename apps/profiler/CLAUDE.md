@@ -38,8 +38,14 @@ app/                      ← srcDir
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)
-                             = permits (condition fulfillment writes `permit_condition`
-                             history logs); Water quality (.well v2.3) = the
+                             = permits (permits/: PermitsPanel cards; PermitDialog in
+                             tabs — grant / ConditionEditor / PermitHistoryEditor;
+                             ConditionFulfillDialog writing `conditions[].fulfillments`
+                             via `usePermitFulfillments()`; and PermitViewDialog in tabs
+                             — grant, full condition schedule where deadlines are marked
+                             fulfilled, history/compliance timeline — whose open permit lives in
+                             `usePermitView()` and the hash `#permits/<id>`, also opened
+                             from the Summary permit card); Water quality (.well v2.3) = the
                              `water_samples` ledger (waterQuality/: panel + card,
                              WaterSampleDialog validated with core `WaterSampleSchema`
                              before save, ResultsEditor, PurgeReadingsEditor; labels in

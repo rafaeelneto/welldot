@@ -20,8 +20,15 @@ const props = withDefaults(
     visibleCount?: number;
     /** Ask before deleting — use for saved records, not form drafts. */
     confirmDelete?: boolean;
+    /** View only: no add / edit / delete, and nothing rendered when empty. */
+    readonly?: boolean;
   }>(),
-  { context: 'history', visibleCount: 3, confirmDelete: false },
+  {
+    context: 'history',
+    visibleCount: 3,
+    confirmDelete: false,
+    readonly: false,
+  },
 );
 
 // A record without attachments passes `undefined`; emitted lists are always arrays.
@@ -82,14 +89,19 @@ defineExpose({ open });
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div v-if="!readonly || list.length" class="flex flex-col gap-2">
     <div class="flex items-center gap-2">
       <span
         class="font-mono text-[10px] tracking-[0.08em] uppercase text-content-400"
       >
         {{ t('editor.historyLog.logs.attachments', { n: list.length }) }}
       </span>
-      <button class="add-attachment-btn" type="button" @click="open()">
+      <button
+        v-if="!readonly"
+        class="add-attachment-btn"
+        type="button"
+        @click="open()"
+      >
         <Icon name="ph:plus" class="size-3" />
         {{ t('editor.historyLog.logs.addAttachment') }}
       </button>
@@ -137,6 +149,7 @@ defineExpose({ open });
             />
           </button>
           <button
+            v-if="!readonly"
             class="thumb-action"
             type="button"
             :aria-label="t('editor.historyLog.logs.editAttachment')"
@@ -145,6 +158,7 @@ defineExpose({ open });
             <Icon name="ph:pencil-simple-duotone" class="size-3" />
           </button>
           <button
+            v-if="!readonly"
             class="thumb-action thumb-action--danger"
             type="button"
             :aria-label="t('editor.historyLog.logs.deleteAttachment')"
@@ -171,6 +185,7 @@ defineExpose({ open });
   </div>
 
   <AttachmentDialog
+    v-if="!readonly"
     v-model="draft"
     v-model:visible="dialogVisible"
     :context="context"

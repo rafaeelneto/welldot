@@ -125,7 +125,7 @@ describe('buildProductionSection', () => {
               id: 'p',
               type: 'abstraction_permit',
               authority: 'ANA',
-              number: '1',
+              identifier: '1',
               issued_at: '2020-01-01',
               volume_limits: [{ period: 'annual', volume: 1000 }],
             },

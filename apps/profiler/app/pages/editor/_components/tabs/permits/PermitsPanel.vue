@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import type {
-  Attachment,
-  HistoryLogEntry,
-  Permit,
-  PermitCondition,
-} from '@welldot/core';
+import type { Attachment, Permit, PermitCondition } from '@welldot/core';
 import {
   getConditionDeadlineStates,
+  getOverduePermitHistory,
   getPermitStartDate,
   getPermitStatus,
   getPermitWarnings,
@@ -19,12 +15,14 @@ import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import {
   DEADLINE_STATUS_SEVERITY,
   PERMIT_STATUS_SEVERITY,
+  permitLabel,
   resolveConditionCategoryLabel,
   resolvePermitTypeLabel,
   resolveWaterUseLabel,
 } from '~/utils/permitVocab';
 import ConditionFulfillDialog from './ConditionFulfillDialog.vue';
 import PermitDialog from './PermitDialog.vue';
+import PermitViewDialog from './PermitViewDialog.vue';
 
 const { t, locale } = useI18n();
 const confirm = useConfirm();
@@ -63,9 +61,38 @@ function status(p: Permit) {
   return getPermitStatus(profileStore.well, p, today)!;
 }
 
-function permitLabel(id: string | undefined): string {
+/** Statuses shown dimmed: the permit no longer (or never) governs the well. */
+const INACTIVE_STATUSES = [
+  'superseded',
+  'expired',
+  'revoked',
+  'denied',
+  'withdrawn',
+];
+
+function permitLabelById(id: string | undefined): string {
+  return permitLabel(
+    profileStore.well.permits?.find(x => x.id === id),
+    id ?? '',
+  );
+}
+
+// ─── Read-only view ───────────────────────────────────────────────────────────
+
+const permitView = usePermitView();
+const viewVisible = computed({
+  get: () =>
+    !!permitView.permitId.value &&
+    !!profileStore.well.permits?.some(p => p.id === permitView.permitId.value),
+  set: open => {
+    if (!open) permitView.close();
+  },
+});
+
+function editFromView(id: string, tab: PermitDialogTab) {
   const p = profileStore.well.permits?.find(x => x.id === id);
-  return p ? `${p.authority} ${p.number}` : (id ?? '');
+  permitView.close();
+  if (p) editPermit(p, tab);
 }
 
 // ─── Permit dialog ────────────────────────────────────────────────────────────
@@ -75,11 +102,16 @@ const permitDialogVisible = ref(false);
 
 function addPermit() {
   permitDraft.value = null;
+  permitDialogTab.value = 'grant';
   permitDialogVisible.value = true;
 }
 
-function editPermit(p: Permit) {
+type PermitDialogTab = 'grant' | 'conditions' | 'history';
+const permitDialogTab = ref<PermitDialogTab>('grant');
+
+function editPermit(p: Permit, tab: PermitDialogTab = 'grant') {
   permitDraft.value = p;
+  permitDialogTab.value = tab;
   permitDialogVisible.value = true;
 }
 
@@ -178,30 +210,7 @@ function openFulfill(
   fulfillVisible.value = true;
 }
 
-function addFulfillment(entry: HistoryLogEntry) {
-  profileStore.updateWell(draft => {
-    if (!draft.history_logs) draft.history_logs = [];
-    draft.history_logs.push(entry);
-  });
-}
-
-function removeFulfillment(logId: string) {
-  confirm.require({
-    icon: 'ph:warning-duotone',
-    header: t('editor.operation.permit.conditions.undoConfirm'),
-    message: t('editor.operation.permit.conditions.undoConfirm'),
-    acceptLabel: t('editor.confirmClear.accept'),
-    rejectLabel: t('editor.confirmClear.reject'),
-    acceptProps: { severity: 'danger' },
-    rejectProps: { text: true, severity: 'secondary' },
-    defaultFocus: 'reject',
-    accept: () => {
-      profileStore.updateWell(draft => {
-        draft.history_logs = draft.history_logs?.filter(l => l.id !== logId);
-      });
-    },
-  });
-}
+const { addFulfillment, removeFulfillment } = usePermitFulfillments();
 
 // ─── Display helpers ──────────────────────────────────────────────────────────
 
@@ -280,7 +289,7 @@ function scheduleSummary(p: Permit): string | null {
         v-for="p in permits"
         :key="p.id"
         class="rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-3 flex flex-col gap-3"
-        :class="{ 'opacity-75': ['superseded', 'expired'].includes(status(p)) }"
+        :class="{ 'opacity-75': INACTIVE_STATUSES.includes(status(p)) }"
       >
         <!-- header -->
         <div class="flex items-center flex-wrap gap-2">
@@ -302,12 +311,22 @@ function scheduleSummary(p: Permit): string | null {
           class="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-content-300"
         >
           <span>{{ p.authority }}</span>
-          <span class="font-mono text-content-200">{{ p.number }}</span>
+          <span v-if="p.identifier" class="font-mono text-content-200">
+            {{ p.identifier }}
+          </span>
+          <span
+            v-if="p.request_identifier"
+            class="flex items-center gap-1"
+            :title="t('editor.operation.permit.fields.requestIdentifier')"
+          >
+            <Icon name="ph:file-text-duotone" class="size-3.5" />
+            <span class="font-mono">{{ p.request_identifier }}</span>
+          </span>
           <span v-if="p.supersedes" class="flex items-center gap-1">
             <Icon name="ph:arrow-bend-up-left-duotone" class="size-3.5" />
             {{
               t('editor.operation.permit.supersedes', {
-                number: permitLabel(p.supersedes),
+                number: permitLabelById(p.supersedes),
               })
             }}
           </span>
@@ -318,7 +337,7 @@ function scheduleSummary(p: Permit): string | null {
             <Icon name="ph:arrow-bend-down-right-duotone" class="size-3.5" />
             {{
               t('editor.operation.permit.supersededBy', {
-                number: permitLabel(
+                number: permitLabelById(
                   getSuccessorPermit(profileStore.well, p)?.id,
                 ),
               })
@@ -389,16 +408,22 @@ function scheduleSummary(p: Permit): string | null {
                 {{ c.description }}
               </span>
               <span
-                v-if="c.category"
-                class="text-[11px] text-content-400 shrink-0"
+                v-if="c.category || c.responsible"
+                class="flex flex-col items-end text-[11px] text-content-400 shrink-0"
               >
-                {{ resolveConditionCategoryLabel(c.category, t) }}
+                <span v-if="c.category">
+                  {{ resolveConditionCategoryLabel(c.category, t) }}
+                </span>
+                <span v-if="c.responsible" class="flex items-center gap-1">
+                  <Icon name="ph:user-duotone" class="size-3" />
+                  {{ c.responsible }}
+                </span>
               </span>
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
               <template
                 v-for="s in deadlineStates(p, c)"
-                :key="s.due_date ?? s.log_id"
+                :key="s.due_date ?? s.fulfillment_id"
               >
                 <Tag
                   :severity="DEADLINE_STATUS_SEVERITY[s.status]"
@@ -417,7 +442,7 @@ function scheduleSummary(p: Permit): string | null {
                       )
                     }}
                     <button
-                      v-if="s.log_id"
+                      v-if="s.fulfillment_id"
                       type="button"
                       class="bg-transparent border-0 p-0 cursor-pointer text-current"
                       :aria-label="
@@ -426,7 +451,7 @@ function scheduleSummary(p: Permit): string | null {
                       :title="
                         t('editor.operation.permit.conditions.undoFulfilled')
                       "
-                      @click="removeFulfillment(s.log_id)"
+                      @click="removeFulfillment(p.id, c.id, s.fulfillment_id)"
                     >
                       <Icon name="ph:x" class="size-3" />
                     </button>
@@ -473,6 +498,20 @@ function scheduleSummary(p: Permit): string | null {
           </div>
         </div>
 
+        <!-- overdue administrative steps -->
+        <Message
+          v-if="getOverduePermitHistory(p, today).length"
+          severity="warn"
+          size="small"
+          variant="simple"
+        >
+          {{
+            t('editor.operation.permit.history.overdue', {
+              n: getOverduePermitHistory(p, today).length,
+            })
+          }}
+        </Message>
+
         <!-- warnings -->
         <Message
           v-for="msg in warningsById.get(p.id) ?? []"
@@ -507,6 +546,18 @@ function scheduleSummary(p: Permit): string | null {
             severity="secondary"
             text
             size="small"
+            class="mr-auto"
+            :label="t('editor.operation.permit.view.open')"
+            @click="permitView.open(p.id)"
+          >
+            <template #icon>
+              <Icon name="ph:eye-duotone" />
+            </template>
+          </Button>
+          <Button
+            severity="secondary"
+            text
+            size="small"
             :label="t('editor.edit')"
             :aria-label="t('editor.operation.permit.edit')"
             @click="editPermit(p)"
@@ -535,6 +586,7 @@ function scheduleSummary(p: Permit): string | null {
     v-if="permitDialogVisible"
     v-model="permitDraft"
     v-model:visible="permitDialogVisible"
+    :initial-tab="permitDialogTab"
     @save="upsertPermit"
   />
 
@@ -544,7 +596,20 @@ function scheduleSummary(p: Permit): string | null {
     :permit="fulfillTarget.permit"
     :condition="fulfillTarget.condition"
     :due-date="fulfillTarget.dueDate"
-    @save="addFulfillment"
+    @save="
+      addFulfillment(
+        fulfillTarget!.permit.id,
+        fulfillTarget!.condition.id,
+        $event,
+      )
+    "
+  />
+
+  <PermitViewDialog
+    v-if="viewVisible && permitView.permitId.value"
+    v-model:visible="viewVisible"
+    :permit-id="permitView.permitId.value"
+    @edit="editFromView"
   />
 </template>
 

@@ -857,6 +857,9 @@
         "permitExpired": "Permit {number} expired on {date}.",
         "permitPendingRenewal": "Permit {number} expired on {date}; renewal under review.",
         "permitExpiring": "Permit {number} expires on {date} ({n} days).",
+        "permit_suspended": "Permit {number} is suspended.",
+        "permit_revoked": "Permit {number} was revoked.",
+        "permitStepsOverdue": "Permit {number}: {n} administrative step(s) past due — {description}",
         "conditionOverdue": "Condition overdue since {date}: {description}",
         "conditionOverdueMany": "{n} deadlines overdue since {date}: {description}",
         "waterExceedances": "{n} parameter(s) outside {set} limits in the {date} sample.",
@@ -891,7 +894,6 @@
           "inspection": "Inspection",
           "incident": "Incident",
           "event": "Event",
-          "permit_condition": "Condition fulfilled",
           "status_change": "Status change"
         },
         "severity": {
@@ -1258,7 +1260,8 @@
         "preliminary_permit": "Preliminary permit",
         "exemption": "Exemption",
         "registration": "Registration",
-        "dewatering_permit": "Dewatering permit"
+        "dewatering_permit": "Dewatering permit",
+        "drilling_permit": "Drilling permit"
       },
       "waterUses": {
         "human_supply": "Human supply",
@@ -1288,8 +1291,14 @@
         "supersedes": "Supersedes {number}",
         "supersededBy": "Superseded by {number}",
         "status": {
+          "requested": "Requested",
+          "granted": "Granted",
+          "suspended": "Suspended",
+          "revoked": "Revoked",
+          "denied": "Denied",
+          "withdrawn": "Withdrawn",
           "superseded": "Superseded",
-          "pending": "Pending",
+          "not_yet_valid": "Not yet valid",
           "active": "Active",
           "active_pending_renewal": "Renewal pending",
           "expired": "Expired"
@@ -1299,8 +1308,12 @@
           "typeInfo": "A renewal is not a type: create a new permit of the same type that supersedes the previous one.",
           "authority": "Authority",
           "authorityInfo": "Issuing body, e.g. ANA, SEMAS-PA.",
-          "number": "Number",
-          "numberInfo": "Portaria or process number, as written in the document.",
+          "status": "Status",
+          "statusInfo": "Administrative situation set by the authority. Leave \"Granted\" for an issued permit: its validity status is then derived from the dates.",
+          "identifier": "Permit identifier",
+          "identifierInfo": "Identifier of the granted instrument (portaria, license code…), as written in the document. Empty while the permit is only requested.",
+          "requestIdentifier": "Request identifier",
+          "requestIdentifierInfo": "Protocol or process identifier of the request, as assigned by the authority.",
           "issuedAt": "Issued at",
           "validFrom": "Valid from",
           "validFromInfo": "Leave empty when valid from the issue date.",
@@ -1331,6 +1344,8 @@
           "supersedesInfo": "The permit this one legally replaces (renewal).",
           "notes": "Notes"
         },
+        "grantDetails": "Validity and grant",
+        "grantDetailsInfo": "filled once the permit is granted",
         "conditions": {
           "title": "Conditions",
           "add": "Add condition",
@@ -1338,6 +1353,8 @@
           "description": "Description",
           "descriptionInfo": "Text of the condition as written in the document.",
           "category": "Category",
+          "responsible": "Responsible",
+          "responsibleInfo": "Person or team accountable for meeting this condition.",
           "deadline": "First deadline",
           "deadlineModes": {
             "none": "Undated",
@@ -1369,17 +1386,59 @@
           },
           "markFulfilled": "Mark fulfilled",
           "undoFulfilled": "Remove fulfillment",
-          "undoConfirm": "Remove this fulfillment from the history log?",
+          "undoConfirm": "Remove this fulfillment?",
           "remove": "Remove condition"
         },
         "fulfill": {
           "title": "Condition fulfilled",
           "deadline": "Deadline",
           "datetime": "Fulfilled at",
+          "author": "Fulfilled by",
+          "authorInfo": "Defaults to the condition's responsible.",
           "description": "Description",
           "defaultDescription": "{condition} — fulfilled",
-          "info": "Recorded as a history log entry. Attach the proof of submission as condition evidence.",
+          "info": "Recorded in the condition's fulfillments. Attach the proof of submission as condition evidence.",
           "sampleInfo": "Water sample whose analysis fulfills this condition."
+        },
+        "history": {
+          "title": "History",
+          "info": "Administrative steps of the permit: filing, process movements, notifications, fees, inspections, decisions.",
+          "add": "Add step",
+          "empty": "No steps recorded.",
+          "remove": "Remove step",
+          "date": "Date",
+          "type": "Type",
+          "description": "Description",
+          "done": "Done",
+          "dueDate": "Due",
+          "dueDateInfo": "For actionable steps (a fee to pay, a notification to answer). Past due and not done raises an alert.",
+          "dueOn": "Due {date}",
+          "overdue": "{n} administrative step(s) past due.",
+          "types": {
+            "filing": "Filing",
+            "process": "Process",
+            "notification": "Notification",
+            "fee": "Fee",
+            "inspection": "Inspection",
+            "decision": "Decision",
+            "renewal": "Renewal"
+          }
+        },
+        "view": {
+          "open": "View",
+          "close": "Close",
+          "tabs": {
+            "grant": "Permit",
+            "conditions": "Conditions",
+            "history": "History"
+          },
+          "sections": {
+            "grant": "Permit & grant",
+            "notes": "Notes & documents"
+          },
+          "fulfilledCount": "{done}/{total} fulfilled",
+          "conditionFulfilled": "Condition fulfilled",
+          "timelineEmpty": "No history steps or fulfillments recorded."
         },
         "warnings": {
           "valid_until_before_valid_from": "The expiry date is before the start date.",
@@ -1393,7 +1452,12 @@
           "duplicate_condition_id": "Two conditions share the same id.",
           "condition_due_conflict": "A condition has both a fixed date and a relative deadline; the fixed date wins.",
           "invalid_duration": "A condition has an invalid duration.",
-          "unmatched_condition_log": "A fulfillment in the history log matches no deadline of this permit."
+          "missing_identifier": "Fill in the permit identifier or the request identifier.",
+          "granted_without_identifier": "A granted permit has no permit identifier.",
+          "duplicate_history_id": "Two history steps share the same id.",
+          "duplicate_fulfillment_id": "Two fulfillments of a condition share the same id.",
+          "unmatched_fulfillment": "A condition fulfillment matches no deadline of this permit.",
+          "fulfillment_reference_unresolved": "A condition fulfillment links to an event or sample that does not exist."
         }
       },
       "warnings": {
