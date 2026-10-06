@@ -51,6 +51,7 @@ vi.mock('~/utils/fgdcTextures', () => ({
 }));
 
 import {
+  fractureDip,
   getConflictAreas,
   getLithologicalFillList,
   getLithologyFill,
@@ -206,6 +207,19 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------------------
+
+describe('fractureDip', () => {
+  it('passes a numeric dip through', () => {
+    expect(fractureDip(35)).toBe(35);
+    expect(fractureDip(0)).toBe(0);
+  });
+
+  it('treats null, undefined and NaN as 0', () => {
+    expect(fractureDip(null)).toBe(0);
+    expect(fractureDip(undefined)).toBe(0);
+    expect(fractureDip(NaN)).toBe(0);
+  });
+});
 
 describe('makeSeededPrng', () => {
   it('returns a function', () => {

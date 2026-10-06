@@ -59,6 +59,7 @@ import { asSvgElement } from './utils/d3.utils';
 import { buildSvgStyleBlock } from './utils/render.styles';
 import {
   filterByDepth,
+  fractureDip,
   populateTooltips,
   preloadFgdcTextures,
 } from './utils/render.utils';
@@ -617,10 +618,10 @@ export class WellRenderer {
         .selectAll(`g.${this.classes.fractures.item}`)
         .attr('transform', (d: unknown) => {
           if (!d) return null;
-          const f = d as { depth: number; dip: number };
+          const f = d as { depth: number; dip?: number | null };
           const cx = pocoCenterX;
           const cy = transform.applyY(yScaleLocal(f.depth));
-          return `translate(0,${cy}) rotate(${f.dip},${cx},0)`;
+          return `translate(0,${cy}) rotate(${fractureDip(f.dip)},${cx},0)`;
         });
 
       // Delegated redraws — unconditional, each renderer self-guards:

@@ -168,8 +168,8 @@ export const populateTooltips = (
           <span class="${customClasses.tooltip.title}">${title}</span>
           <span class="${customClasses.tooltip.primaryInfo}"><strong>${labels.fracture.depth}</strong> ${esc(formatLength(d.depth, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>
           ${d.water_intake ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.waterIntake}</strong> ${esc(formatLength(d.depth, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>` : ''}
-          <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.dip}</strong> ${esc(d.dip)}°</span>
-          <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.azimuth}</strong> ${esc(d.azimuth)}°</span>
+          ${typeof d.dip === 'number' ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.dip}</strong> ${esc(d.dip)}°</span>` : ''}
+          ${typeof d.azimuth === 'number' ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.azimuth}</strong> ${esc(d.azimuth)}°</span>` : ''}
           ${d.description ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.description}</strong> ${esc(d.description)}</span>` : ''}
         `;
     },

@@ -9,6 +9,10 @@ export { filterByDepth, getYAxisFunctions } from './d3.utils';
 export { makeSeededPrng, ptsToSmoothPath, wavyContact } from './geometry.utils';
 export { populateTooltips } from './tooltips.utils';
 
+/** Fracture rotation in degrees; a missing or non-finite dip renders horizontal (0°). */
+export const fractureDip = (dip: number | null | undefined): number =>
+  typeof dip === 'number' && Number.isFinite(dip) ? dip : 0;
+
 let _fgdcTextures: Record<string, string> = {};
 let _fgdcTexturesPromise: Promise<void> | null = null;
 

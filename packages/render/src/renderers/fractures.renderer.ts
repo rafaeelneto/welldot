@@ -4,7 +4,7 @@ import { Fracture } from '@welldot/core';
 import { DrawContext } from '~/types/render.types';
 import { mergeEnter } from '~/utils/d3.utils';
 import { makePointKey } from '~/utils/key.utils';
-import { makeSeededPrng } from '~/utils/render.utils';
+import { fractureDip, makeSeededPrng } from '~/utils/render.utils';
 
 function wavyLine(
   rng: () => number,
@@ -74,7 +74,7 @@ export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
   merged.attr(
     'transform',
     fracture =>
-      `translate(0,${yScale(fracture.depth)}) rotate(${fracture.dip},${pocoCenterX},0)`,
+      `translate(0,${yScale(fracture.depth)}) rotate(${fractureDip(fracture.dip)},${pocoCenterX},0)`,
   );
 
   merged.each(function (fracture) {
