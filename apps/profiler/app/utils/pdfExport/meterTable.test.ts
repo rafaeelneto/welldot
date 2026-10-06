@@ -82,4 +82,34 @@ describe('buildMeterSection', () => {
     );
     expect(serialized).toContain('10,000 L');
   });
+
+  it('lists manufacturer, model and attachments', () => {
+    const meters: Meter[] = [
+      {
+        id: 'm',
+        installed_at: '2024-01-01T12:00:00-03:00',
+        manufacturer: 'Saga',
+        model: 'MAG-50',
+        attachments: [
+          {
+            id: 'a1',
+            uri: 'https://example.test/files/install-photo.jpg',
+            media_type: 'image/jpeg',
+          },
+          {
+            id: 'a2',
+            uri: 'https://example.test/files/x.pdf',
+            media_type: 'application/pdf',
+            filename: 'nota-fiscal.pdf',
+          },
+        ],
+      },
+    ];
+    const serialized = JSON.stringify(
+      buildMeterSection(baseWell({ meters }), baseOptions, t),
+    );
+    expect(serialized).toContain('model: Saga MAG-50');
+    expect(serialized).toContain('install-photo.jpg');
+    expect(serialized).toContain('nota-fiscal.pdf');
+  });
 });

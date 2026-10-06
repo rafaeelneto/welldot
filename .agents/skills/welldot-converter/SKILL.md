@@ -314,14 +314,14 @@ commercial), `flow_rate` (m³/h), `daily_operating_time` (hours, 0–24), `volum
 (`{ period: daily|monthly|annual, volume }` in m³ — only volumes **stated** in the document, never
 flow × time), `monthly_schedule[]` (`{ month 1–12, flow_rate?, daily_operating_time?, days? }`;
 months absent from it have no abstraction granted), `conditions[]`. Each condition: `id`,
-`description` (verbatim), `category` (monitoring_report/water_level_monitoring/production_report/
-water_quality_analysis/meter_installation/sanitary_protection/renewal_request), and its deadline as
+`description` (verbatim), `category` (monitoring/reporting/equipment_installation/
+well_protection/environmental/legal), and its deadline as
 either `first_due` (date) **or** `due_after` (ISO 8601 date duration from the start date, e.g.
 `P90D`), plus `recurrence` (`P6M`, `P1Y`), `last_due`, `occurrences`, `responsible` (who must meet
 it, if stated). Never compute or store the deadline dates or the validity status — they are
 derived. Fulfillments go in the condition's `fulfillments[]`: `{ id, datetime (RFC 3339 with
 offset), due_date (the deadline met; omit for undated conditions), description?, author?,
-event_id?, sample_id? }` (`sample_id` when a `water_quality_analysis` condition was met by a
+event_id?, sample_id? }` (`sample_id` when a water-quality `monitoring` condition was met by a
 sample) — only if the report records them.
 
 ### `meters` (v2.3)

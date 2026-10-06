@@ -330,15 +330,14 @@ Solar is a `power_source`, never a `type`. Non-canonical values SHOULD use the `
 
 ## `permits[].conditions[].category` — Recommended values _(since v2.3)_
 
-| Value                    | Portuguese (BR)                       |
-| ------------------------ | ------------------------------------- |
-| `monitoring_report`      | Relatório de monitoramento            |
-| `water_level_monitoring` | Monitoramento de nível                |
-| `production_report`      | Declaração de volumes / vazão         |
-| `water_quality_analysis` | Análise de qualidade da água          |
-| `meter_installation`     | Instalação de hidrômetro              |
-| `sanitary_protection`    | Proteção sanitária / laje / perímetro |
-| `renewal_request`        | Pedido de renovação                   |
+| Value                    | Portuguese (BR)            | Covers                                                                     |
+| ------------------------ | -------------------------- | -------------------------------------------------------------------------- |
+| `monitoring`             | Monitoramento              | Water level, flow, abstracted volume and water quality monitoring/sampling |
+| `reporting`              | Relatórios e declarações   | Periodic reports and volume/flow declarations submitted to the authority   |
+| `equipment_installation` | Instalação de equipamentos | Meters (hidrômetro), level gauges, sampling taps, telemetry                |
+| `well_protection`        | Proteção do poço           | Sanitary slab, seal, protection perimeter, wellhead closure                |
+| `environmental`          | Ambiental                  | Environmental measures, compensation, licensing of the activity            |
+| `legal`                  | Legal / administrativo     | Renewal request, fees, registrations, document submissions                 |
 
 ## `permits[].history[].type` — Recommended values _(since v2.3)_
 

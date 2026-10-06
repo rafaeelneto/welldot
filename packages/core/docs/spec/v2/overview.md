@@ -73,7 +73,7 @@ v2.3 additions:
   known only by its date; consumers MUST ignore the time of day
 - history_logs gains sample_id (maintenance with maintenance_type
   water_sampling); permit condition fulfillments gain sample_id (e.g.
-  a water_quality_analysis condition)
+  a water-quality monitoring condition)
 
 v2.3 clarifications:
 - Block kinds: every top-level array is a ledger, a mutable record or

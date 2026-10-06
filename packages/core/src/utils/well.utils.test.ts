@@ -1973,7 +1973,7 @@ describe('v2.3 — permits, history and condition fulfillments', () => {
           {
             id: 'c1',
             description: 'Instalar hidrômetro na saída do poço',
-            category: 'meter_installation',
+            category: 'equipment_installation',
             due_after: 'P90D',
             responsible: 'Equipe de operação',
             fulfillments: [
@@ -1989,7 +1989,7 @@ describe('v2.3 — permits, history and condition fulfillments', () => {
           {
             id: 'c2',
             description: 'Relatório semestral de nível e vazão',
-            category: 'monitoring_report',
+            category: 'reporting',
             first_due: '2025-07-31',
             recurrence: 'P6M',
           },

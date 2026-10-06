@@ -346,14 +346,14 @@ describe('getConditionDeadlineStates', () => {
   const c1 = (fulfillments?: ConditionFulfillment[]): PermitCondition => ({
     id: 'c1',
     description: 'Instalar hidrômetro',
-    category: 'meter_installation',
+    category: 'equipment_installation',
     due_after: 'P90D',
     ...(fulfillments && { fulfillments }),
   });
   const c2: PermitCondition = {
     id: 'c2',
     description: 'Relatório semestral',
-    category: 'monitoring_report',
+    category: 'reporting',
     first_due: '2025-07-31',
     recurrence: 'P6M',
   };

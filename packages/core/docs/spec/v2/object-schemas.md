@@ -755,7 +755,7 @@ Fulfillment is recorded in the condition's `fulfillments`. Each entry fulfills o
 | `updated_at`  | string (instant) | no       | Last edit of this record.                                                          |
 | `attachments` | `Attachment[]`   | no       | Proof of submission, with `document_type: "condition_evidence"`. See § Attachment. |
 
-A `water_quality_analysis` condition is fulfilled by pointing to the sample with `sample_id`.
+A water-quality `monitoring` condition is fulfilled by pointing to the sample with `sample_id`.
 
 Derived status of each deadline, evaluated on the local civil date at the well site:
 
@@ -1191,7 +1191,7 @@ A ledger of water samples, each with its field and laboratory results. The full 
         {
           "id": "c1",
           "description": "Instalar hidrômetro na saída do poço",
-          "category": "meter_installation",
+          "category": "equipment_installation",
           "due_after": "P90D",
           "responsible": "Equipe de operação",
           "fulfillments": [
@@ -1207,14 +1207,14 @@ A ledger of water samples, each with its field and laboratory results. The full 
         {
           "id": "c2",
           "description": "Relatório semestral de nível e vazão",
-          "category": "monitoring_report",
+          "category": "reporting",
           "first_due": "2025-07-31",
           "recurrence": "P6M"
         },
         {
           "id": "c3",
           "description": "Análise anual de qualidade da água",
-          "category": "water_quality_analysis",
+          "category": "monitoring",
           "first_due": "2026-09-30",
           "recurrence": "P1Y",
           "fulfillments": [

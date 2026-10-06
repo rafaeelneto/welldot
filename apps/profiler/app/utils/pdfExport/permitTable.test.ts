@@ -51,7 +51,7 @@ const permit: Permit = {
     {
       id: 'c1',
       description: 'Install meter',
-      category: 'meter_installation',
+      category: 'equipment_installation',
       due_after: 'P90D',
       responsible: 'Ops team',
       fulfillments: [
@@ -114,7 +114,7 @@ describe('buildPermitSection', () => {
     expect(text).toContain('human_supply');
     expect(text).toContain('PRT-2024/0099');
     expect(text).toContain(
-      'Install meter (meter_installation · responsible: Ops team) — fulfilled 11/05/2025',
+      'Install meter (equipment_installation · responsible: Ops team) — fulfilled 11/05/2025',
     );
     expect(text).toContain('deadline 11/05/2025 · J. Silva · Meter installed');
     expect(text).toContain('overdue: 31/07/2025, 31/01/2026, 31/07/2026');

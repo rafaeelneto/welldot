@@ -509,8 +509,8 @@ derived by applications — never store them.
 | `notes`, `updated_at`, `attachments` |          | no       | `attachments[].document_type: "permit_document"` for the portaria.                                                                                           |
 
 Condition (`conditions[]`): `id` (unique per permit), `description` (verbatim, required), `category`
-(`monitoring_report`, `water_level_monitoring`, `production_report`, `water_quality_analysis`,
-`meter_installation`, `sanitary_protection`, `renewal_request`), and either `first_due` (date) or
+(`monitoring`, `reporting`, `equipment_installation`, `well_protection`, `environmental`,
+`legal`), and either `first_due` (date) or
 `due_after` (ISO 8601 date duration from the start date, e.g. `P90D`) — never both — plus optional
 `recurrence` (`P6M`), `last_due` (date), `occurrences` (integer), `responsible` (string) and
 `fulfillments` (see below).

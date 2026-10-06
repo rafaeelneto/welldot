@@ -1274,13 +1274,12 @@
         "commercial": "Commercial"
       },
       "conditionCategories": {
-        "monitoring_report": "Monitoring report",
-        "water_level_monitoring": "Water level monitoring",
-        "production_report": "Production report",
-        "water_quality_analysis": "Water quality analysis",
-        "meter_installation": "Meter installation",
-        "sanitary_protection": "Sanitary protection",
-        "renewal_request": "Renewal request"
+        "monitoring": "Monitoring",
+        "reporting": "Reporting",
+        "equipment_installation": "Equipment installation",
+        "well_protection": "Well protection",
+        "environmental": "Environmental",
+        "legal": "Legal / administrative"
       },
       "permit": {
         "title": "Permits",

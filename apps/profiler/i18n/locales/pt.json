@@ -1274,13 +1274,12 @@
         "commercial": "Comercial / serviços"
       },
       "conditionCategories": {
-        "monitoring_report": "Relatório de monitoramento",
-        "water_level_monitoring": "Monitoramento de nível",
-        "production_report": "Declaração de volumes / vazão",
-        "water_quality_analysis": "Análise de qualidade da água",
-        "meter_installation": "Instalação de hidrômetro",
-        "sanitary_protection": "Proteção sanitária",
-        "renewal_request": "Pedido de renovação"
+        "monitoring": "Monitoramento",
+        "reporting": "Relatórios e declarações",
+        "equipment_installation": "Instalação de equipamentos",
+        "well_protection": "Proteção do poço",
+        "environmental": "Ambiental",
+        "legal": "Legal / administrativo"
       },
       "permit": {
         "title": "Outorgas",

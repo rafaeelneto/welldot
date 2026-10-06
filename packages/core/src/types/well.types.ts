@@ -450,7 +450,7 @@ export type ConditionFulfillment = {
   author?: string;
   /** `hydrodynamic_events[].id` holding the data that satisfied the obligation. */
   event_id?: string;
-  /** `water_samples[].id` that satisfied the obligation (e.g. a `water_quality_analysis` condition). */
+  /** `water_samples[].id` that satisfied the obligation (e.g. a water-quality `monitoring` condition). */
   sample_id?: string;
   /** RFC 3339 instant of the last edit of this record. */
   updated_at?: string;
@@ -469,9 +469,8 @@ export type PermitCondition = {
   /** Text of the condition as written in the document. */
   description: string;
   /**
-   * Recommended: `monitoring_report`, `water_level_monitoring`,
-   * `production_report`, `water_quality_analysis`, `meter_installation`,
-   * `sanitary_protection`, `renewal_request`.
+   * Recommended: `monitoring`, `reporting`, `equipment_installation`,
+   * `well_protection`, `environmental`, `legal`.
    */
   category?: string;
   /** Calendar date (YYYY-MM-DD) of the first deadline. Mutually exclusive with `due_after`. */

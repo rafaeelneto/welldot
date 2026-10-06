@@ -233,7 +233,7 @@ Derived values are computed by `@welldot/utils` and never stored. Retracted samp
 
 ### History log links
 
-A `history_logs` entry of category `maintenance` with `maintenance_type: "water_sampling"` records the task and points to the sample with `sample_id`. A `water_quality_analysis` permit condition is fulfilled by a condition fulfillment pointing to the sample the same way. See object-schemas.md § `history_logs[]` — Category-specific fields and § `permits[]` — Condition fulfillment.
+A `history_logs` entry of category `maintenance` with `maintenance_type: "water_sampling"` records the task and points to the sample with `sample_id`. A water-quality `monitoring` permit condition is fulfilled by a condition fulfillment pointing to the sample the same way. See object-schemas.md § `history_logs[]` — Category-specific fields and § `permits[]` — Condition fulfillment.
 
 ---
 

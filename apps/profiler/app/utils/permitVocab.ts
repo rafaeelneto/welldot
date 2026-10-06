@@ -29,13 +29,12 @@ export const WATER_USE_VALUES = [
 ] as const;
 
 export const CONDITION_CATEGORY_VALUES = [
-  'monitoring_report',
-  'water_level_monitoring',
-  'production_report',
-  'water_quality_analysis',
-  'meter_installation',
-  'sanitary_protection',
-  'renewal_request',
+  'monitoring',
+  'reporting',
+  'equipment_installation',
+  'well_protection',
+  'environmental',
+  'legal',
 ] as const;
 
 export const PERMIT_HISTORY_TYPE_VALUES = [

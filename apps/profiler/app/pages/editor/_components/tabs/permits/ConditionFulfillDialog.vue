@@ -27,7 +27,7 @@ const emit = defineEmits<{ save: [fulfillment: ConditionFulfillment] }>();
 const { t } = useI18n();
 const profileStore = useProfileStore();
 
-/** Samples that can evidence a `water_quality_analysis` condition. */
+/** Samples that can evidence a `monitoring` condition. */
 const sampleOptions = computed(() =>
   [...(profileStore.well.water_samples ?? [])]
     .sort(
@@ -37,7 +37,7 @@ const sampleOptions = computed(() =>
 );
 const showSampleField = computed(
   () =>
-    props.condition.category === 'water_quality_analysis' &&
+    props.condition.category === 'monitoring' &&
     sampleOptions.value.length > 0,
 );
 
