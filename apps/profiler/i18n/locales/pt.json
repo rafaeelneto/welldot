@@ -1147,6 +1147,8 @@
         "lastReading": "Última leitura",
         "readingsInfo": "Registre as leituras de instalação e retirada como leituras de hidrômetro em Produção, nesses mesmos instantes.",
         "fields": {
+          "manufacturer": "Fabricante",
+          "model": "Modelo",
           "type": "Tipo de hidrômetro",
           "serial": "Número de série",
           "serialInfo": "Um hidrômetro retirado e reinstalado ganha uma nova entrada com o mesmo número de série.",

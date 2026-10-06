@@ -28,11 +28,12 @@ The `.well` format is not a file container. Attachments are referenced by URL. S
 | `history_logs[].attachments`        | Supporting documents or photos of a log entry.                              |
 | `permits[].attachments`             | The legal document (portaria, certificate). _(since v2.3)_                  |
 | `pump_installations[].attachments`  | Pump curves, invoices, photos. _(since v2.3)_                               |
+| `meters[].attachments`              | Installation photos, invoices, certificates. _(since v2.3)_                 |
 | `hydrodynamic_events[].attachments` | Field sheets, logger exports. _(since v2.3)_                                |
 | `aquifer_analysis[].attachments`    | Interpretation reports. _(since v2.3)_                                      |
 | `water_samples[].attachments`       | Laboratory reports (`lab_report`), field sheets, photos. _(since v2.3)_     |
 
-An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries.
+An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries.
 
 `Attachment.id` is unique within its owning array: the root `attachments[]`, or the `attachments` array of one record. The same id may appear under different records.
 
@@ -799,17 +800,20 @@ An installation block: each entry is one installation of a totalizer (hidrômetr
 
 ### `Meter`
 
-| Field              | Type             | Required | Unit | Description                                                   |
-| ------------------ | ---------------- | -------- | ---- | ------------------------------------------------------------- |
-| `id`               | string           | yes      |      | Unique within `meters`. UUID v4 recommended.                  |
-| `installed_at`     | string (instant) | yes      |      | RFC 3339 instant when the meter entered service in this well. |
-| `removed_at`       | string (instant) | no       |      | When it left. Absent means currently installed.               |
-| `type`             | string           | no       |      | See format-reference.md § `meters[].type`.                    |
-| `serial`           | string           | no       |      | Links reinstallations of the same unit.                       |
-| `nominal_diameter` | number           | no       | mm   | Nominal diameter (DN).                                        |
-| `max_reading`      | number           | no       | m³   | Register capacity, used to detect rollover. Greater than 0.   |
-| `notes`            | string           | no       |      |                                                               |
-| `updated_at`       | string (instant) | no       |      | Last edit of this record.                                     |
+| Field              | Type             | Required | Unit | Description                                                    |
+| ------------------ | ---------------- | -------- | ---- | -------------------------------------------------------------- |
+| `id`               | string           | yes      |      | Unique within `meters`. UUID v4 recommended.                   |
+| `installed_at`     | string (instant) | yes      |      | RFC 3339 instant when the meter entered service in this well.  |
+| `removed_at`       | string (instant) | no       |      | When it left. Absent means currently installed.                |
+| `type`             | string           | no       |      | See format-reference.md § `meters[].type`.                     |
+| `manufacturer`     | string           | no       |      |                                                                |
+| `model`            | string           | no       |      |                                                                |
+| `serial`           | string           | no       |      | Links reinstallations of the same unit.                        |
+| `nominal_diameter` | number           | no       | mm   | Nominal diameter (DN).                                         |
+| `max_reading`      | number           | no       | m³   | Register capacity, used to detect rollover. Greater than 0.    |
+| `notes`            | string           | no       |      |                                                                |
+| `updated_at`       | string (instant) | no       |      | Last edit of this record.                                      |
+| `attachments`      | `Attachment[]`   | no       |      | Installation photos, invoices, certificates. See § Attachment. |
 
 The register values at installation and removal are recorded as ordinary `meter_reading` entries in `production`, with `datetime` equal to `installed_at` or `removed_at`. Meter calibrations are `history_logs` entries of category `maintenance` with `maintenance_type: "meter_calibration"` and a `meter_id`.
 
@@ -1262,6 +1266,8 @@ A ledger of water samples, each with its field and laboratory results. The full 
       "id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
       "installed_at": "2025-04-02T09:00:00-03:00",
       "type": "electromagnetic",
+      "manufacturer": "Incontrol",
+      "model": "VMS Pro",
       "serial": "EM150-55821",
       "nominal_diameter": 150,
       "max_reading": 99999999

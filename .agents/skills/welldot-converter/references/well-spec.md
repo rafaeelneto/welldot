@@ -441,7 +441,7 @@ Category-specific fields (v2.3) — only on entries of that category, never else
 ### `Attachment` (common type since v2.3)
 
 Allowed at the root (`attachments[]`, documents about the whole well) and on `history_logs`,
-`permits` (and their `history` and condition `fulfillments`), `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` and `water_samples` entries.
+`permits` (and their `history` and condition `fulfillments`), `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis` and `water_samples` entries.
 
 | Field                               | Type   | Required | Notes                                                                                                                                                                                                    |
 | ----------------------------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -534,16 +534,18 @@ One entry per installation of a totalizer (hidrômetro). Device facts only — r
 `production`, including the readings at installation and removal (`datetime` = `installed_at` /
 `removed_at`).
 
-| Field                 | Type   | Required | Notes                                                                       |
-| --------------------- | ------ | -------- | --------------------------------------------------------------------------- |
-| `id`                  | string | yes      | Unique within `meters`.                                                     |
-| `installed_at`        | string | yes      | RFC 3339 instant with UTC offset.                                           |
-| `removed_at`          | string | no       | RFC 3339 instant. Absent = currently installed.                             |
-| `type`                | string | no       | `mechanical`, `electromagnetic`, `ultrasonic` (`x-` for others).            |
-| `serial`              | string | no       |                                                                             |
-| `nominal_diameter`    | number | no       | mm (DN).                                                                    |
-| `max_reading`         | number | no       | Register capacity in **m³**, > 0 — only if stated. Used to detect rollover. |
-| `notes`, `updated_at` |        | no       |                                                                             |
+| Field                                | Type   | Required | Notes                                                                       |
+| ------------------------------------ | ------ | -------- | --------------------------------------------------------------------------- |
+| `id`                                 | string | yes      | Unique within `meters`.                                                     |
+| `installed_at`                       | string | yes      | RFC 3339 instant with UTC offset.                                           |
+| `removed_at`                         | string | no       | RFC 3339 instant. Absent = currently installed.                             |
+| `type`                               | string | no       | `mechanical`, `electromagnetic`, `ultrasonic` (`x-` for others).            |
+| `manufacturer`                       | string | no       |                                                                             |
+| `model`                              | string | no       |                                                                             |
+| `serial`                             | string | no       |                                                                             |
+| `nominal_diameter`                   | number | no       | mm (DN).                                                                    |
+| `max_reading`                        | number | no       | Register capacity in **m³**, > 0 — only if stated. Used to detect rollover. |
+| `notes`, `updated_at`, `attachments` |        | no       |                                                                             |
 
 ---
 

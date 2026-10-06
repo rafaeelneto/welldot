@@ -418,11 +418,14 @@ export const MeterSchema = z.object({
   installed_at: rfc3339(),
   removed_at: rfc3339().optional(),
   type: z.string().optional(),
+  manufacturer: z.string().optional(),
+  model: z.string().optional(),
   serial: z.string().optional(),
   nominal_diameter: z.number().nonnegative().optional(),
   max_reading: z.number().positive().optional(),
   notes: z.string().optional(),
   updated_at: rfc3339().optional(),
+  attachments: z.array(AttachmentSchema).optional(),
 });
 
 export const ProductionEntryBaseSchema = z.object({

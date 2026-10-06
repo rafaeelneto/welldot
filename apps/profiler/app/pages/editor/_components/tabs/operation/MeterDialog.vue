@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Meter } from '@welldot/core';
+import type { Attachment, Meter } from '@welldot/core';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import {
   METER_TYPE_VALUES,
   resolveMeterTypeLabel,
@@ -26,10 +27,13 @@ const form = reactive({
   type: null as string | null,
   installedAt: null as Date | null,
   removedAt: null as Date | null,
+  manufacturer: '',
+  model: '',
   serial: '',
   nominalDiameter: null as number | null,
   maxReading: null as number | null,
   notes: '',
+  attachments: [] as Attachment[],
 });
 
 const removedBeforeInstalled = computed(
@@ -56,10 +60,13 @@ function seedForm(m: Meter | null) {
   form.type = m?.type ?? null;
   form.installedAt = m ? new Date(m.installed_at) : new Date();
   form.removedAt = m?.removed_at ? new Date(m.removed_at) : null;
+  form.manufacturer = m?.manufacturer ?? '';
+  form.model = m?.model ?? '';
   form.serial = m?.serial ?? '';
   form.nominalDiameter = m?.nominal_diameter ?? null;
   form.maxReading = m?.max_reading ?? null;
   form.notes = m?.notes ?? '';
+  form.attachments = (m?.attachments ?? []).map(a => ({ ...a }));
 }
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
@@ -89,10 +96,15 @@ function save() {
     installed_at: form.installedAt!.toISOString(),
     removed_at: form.removedAt?.toISOString(),
     type: optionalText(form.type),
+    manufacturer: optionalText(form.manufacturer),
+    model: optionalText(form.model),
     serial: optionalText(form.serial),
     nominal_diameter: optional(form.nominalDiameter),
     max_reading: optional(form.maxReading),
     notes: optionalText(form.notes),
+    attachments: form.attachments.length
+      ? form.attachments.map(a => ({ ...a }))
+      : undefined,
     updated_at: new Date().toISOString(),
   });
 
@@ -169,6 +181,15 @@ function save() {
         {{ t('editor.operation.meter.readingsInfo') }}
       </Message>
 
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <LabeledField :label="t('editor.operation.meter.fields.manufacturer')">
+          <InputText v-model="form.manufacturer" class="w-full" />
+        </LabeledField>
+        <LabeledField :label="t('editor.operation.meter.fields.model')">
+          <InputText v-model="form.model" class="w-full" />
+        </LabeledField>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <LabeledField
           :label="t('editor.operation.meter.fields.nominalDiameter')"
@@ -201,6 +222,11 @@ function save() {
 
       <LabeledField :label="t('editor.operation.meter.fields.notes')">
         <Textarea v-model="form.notes" :rows="3" class="w-full text-sm" />
+      </LabeledField>
+
+      <!-- ── Attachments ────────────────────────────────────────────────── -->
+      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+        <AttachmentField v-model="form.attachments" context="meter" />
       </LabeledField>
     </div>
 

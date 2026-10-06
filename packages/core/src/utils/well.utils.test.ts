@@ -2152,7 +2152,17 @@ describe('v2.3 — meters, production, operating_regime and log fields', () => {
         id: 'hm-02',
         installed_at: '2026-03-05T11:30:00-03:00',
         type: 'electromagnetic',
+        manufacturer: 'Saga',
+        model: 'MAG-50',
         nominal_diameter: 50,
+        attachments: [
+          {
+            id: 'hm-02-photo',
+            uri: 'https://example.org/hm-02.jpg',
+            media_type: 'image/jpeg',
+            document_type: 'photo',
+          },
+        ],
       },
     ],
     production: [

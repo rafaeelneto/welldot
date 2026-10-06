@@ -606,6 +606,9 @@ export type Meter = {
   removed_at?: string;
   /** Meter type. Recommended: `mechanical`, `electromagnetic`, `ultrasonic`. */
   type?: string;
+  manufacturer?: string;
+  model?: string;
+  /** Serial number. Links reinstallations of the same unit. */
   serial?: string;
   /** Nominal diameter (DN) in millimeters. */
   nominal_diameter?: number;
@@ -614,6 +617,8 @@ export type Meter = {
   notes?: string;
   /** RFC 3339 instant of the last edit of this record. */
   updated_at?: string;
+  /** Installation photos, invoices, certificates. */
+  attachments?: Attachment[];
 };
 
 /** Fields shared by every `production` ledger entry. Since v2.3. */

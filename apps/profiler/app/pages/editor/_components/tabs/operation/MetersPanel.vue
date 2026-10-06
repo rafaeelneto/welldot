@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Meter, MeterReading } from '@welldot/core';
+import type { Attachment, Meter, MeterReading } from '@welldot/core';
 import {
   getCurrentMeters,
   getOperationWarnings,
@@ -7,6 +7,7 @@ import {
   type OperationWarningCode,
 } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import { resolveMeterTypeLabel } from '~/utils/operationVocab';
 import MeterDialog from './MeterDialog.vue';
 
@@ -119,6 +120,17 @@ function deleteMeter(id: string) {
   });
 }
 
+// ─── Attachments on saved meters ──────────────────────────────────────────────
+
+function setAttachments(id: string, list: Attachment[]) {
+  profileStore.updateWell(draft => {
+    assignAttachments(
+      draft.meters?.find(m => m.id === id),
+      list,
+    );
+  });
+}
+
 // ─── Display helpers ──────────────────────────────────────────────────────────
 
 function specs(m: Meter) {
@@ -140,6 +152,10 @@ function specs(m: Meter) {
         : null,
     },
   ].filter(s => s.value);
+}
+
+function equipmentName(m: Meter): string {
+  return [m.manufacturer, m.model].filter(Boolean).join(' ');
 }
 </script>
 
@@ -206,14 +222,22 @@ function specs(m: Meter) {
                 : t('editor.operation.meter.untyped')
             }}
           </span>
-          <span v-if="m.serial" class="font-mono text-xs text-content-400">
-            S/N {{ m.serial }}
-          </span>
           <span class="ml-auto font-mono text-xs text-content-300">
             {{ formatDate(m.installed_at, 'dd/MM/yyyy') }}
             <template v-if="m.removed_at">
               → {{ formatDate(m.removed_at, 'dd/MM/yyyy') }}
             </template>
+          </span>
+        </div>
+
+        <!-- equipment -->
+        <div
+          v-if="equipmentName(m) || m.serial"
+          class="flex items-center gap-2 text-xs text-content-300"
+        >
+          <span v-if="equipmentName(m)">{{ equipmentName(m) }}</span>
+          <span v-if="m.serial" class="font-mono text-content-400">
+            S/N {{ m.serial }}
           </span>
         </div>
 
@@ -251,6 +275,14 @@ function specs(m: Meter) {
         >
           {{ m.notes }}
         </p>
+
+        <!-- attachments -->
+        <AttachmentField
+          :model-value="m.attachments"
+          context="meter"
+          confirm-delete
+          @update:model-value="setAttachments(m.id, $event)"
+        />
 
         <!-- footer -->
         <div

@@ -1147,6 +1147,8 @@
         "lastReading": "Last reading",
         "readingsInfo": "Record the register values at installation and removal as meter readings in Production, dated at these instants.",
         "fields": {
+          "manufacturer": "Manufacturer",
+          "model": "Model",
           "type": "Meter type",
           "serial": "Serial number",
           "serialInfo": "A meter removed and reinstalled gets a new entry with the same serial number.",

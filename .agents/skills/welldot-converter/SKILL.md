@@ -328,7 +328,7 @@ sample) — only if the report records them.
 
 Only when the report describes an installed totalizer (hidrômetro). Each entry: `id`, `installed_at`
 (RFC 3339 with offset, required), `removed_at`, `type` (mechanical/electromagnetic/ultrasonic),
-`serial`, `nominal_diameter` (mm, DN), `max_reading` (register capacity in **m³**, > 0 — only if
+`manufacturer`, `model`, `serial`, `nominal_diameter` (mm, DN), `max_reading` (register capacity in **m³**, > 0 — only if
 stated). Device facts only — **never put a
 reading on the meter**; the installation and removal register values are `production` readings with
 `datetime` equal to `installed_at` / `removed_at`.

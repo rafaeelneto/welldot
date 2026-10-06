@@ -1,4 +1,4 @@
-import type { Meter, Well } from '@welldot/core';
+import type { Attachment, Meter, Well } from '@welldot/core';
 import { getCurrentMeters } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { resolveMeterTypeLabel } from '../operationVocab';
@@ -6,6 +6,12 @@ import { createPdfFormatters, type PdfFormatters } from './formatters';
 import type { Content } from './pdfmake.types';
 import { buildEntryDivider } from './sectionTables';
 import type { PdfExportOptions, PdfTranslate } from './types';
+
+function attachmentName(attachment: Attachment): string {
+  return (
+    attachment.filename ?? attachment.uri.split('/').at(-1) ?? attachment.uri
+  );
+}
 
 function formatPeriod(m: Meter): string {
   const from = format(parseISO(m.installed_at), 'dd/MM/yyyy');
@@ -45,7 +51,10 @@ function buildHeader(m: Meter, isCurrent: boolean, t: PdfTranslate): Content {
 
 function specLines(m: Meter, fmt: PdfFormatters, t: PdfTranslate): string[] {
   const field = (key: string) => t(`editor.operation.meter.fields.${key}`);
+  const equipment = [m.manufacturer, m.model].filter(Boolean).join(' ');
+
   return [
+    equipment && `${field('model')}: ${equipment}`,
     m.serial && `${field('serial')}: ${m.serial}`,
     m.nominal_diameter != null &&
       `${field('nominalDiameter')}: ${fmt.formatDiameter(m.nominal_diameter)}`,
@@ -66,6 +75,16 @@ function buildBody(m: Meter, fmt: PdfFormatters, t: PdfTranslate): Content[] {
   }
   if (m.notes) {
     blocks.push({ text: m.notes, fontSize: 10, margin: [0, 4, 0, 0] });
+  }
+  const attachments = m.attachments ?? [];
+  if (attachments.length) {
+    blocks.push({
+      stack: attachments.map(a => ({
+        text: `•  ${attachmentName(a)}`,
+        style: 'metadataLabel',
+      })),
+      margin: [10, 4, 0, 0],
+    });
   }
   return blocks;
 }
