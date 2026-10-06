@@ -193,7 +193,7 @@ const tabs = computed<
       ]"
     >
       <Tabs v-model:value="activeTabKey">
-        <TabList>
+        <TabList class="px-6">
           <Tab
             v-for="tab in tabs"
             :key="tab.value"

@@ -17,9 +17,6 @@ const customPt = {
   tabs: {
     root: 'font-display flex flex-col flex-1 min-h-0 overflow-hidden',
   },
-  tablist: {
-    content: 'px-4 lg:px-6',
-  },
   tab: {
     root: 'font-display text-[13px] outline-none cursor-pointer transition-colors duration-150 bg-transparent border-none',
   },
