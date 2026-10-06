@@ -6,6 +6,9 @@ import {
   type OperationWarningCode,
 } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
+import RecordCard, {
+  type RecordAction,
+} from '~/components/records/RecordCard.vue';
 import RegimeDialog from './RegimeDialog.vue';
 
 const { t } = useI18n();
@@ -125,6 +128,25 @@ function specs(r: OperatingRegime) {
     },
   ].filter(s => s.value);
 }
+
+function actions(r: OperatingRegime): RecordAction[] {
+  return [
+    {
+      key: 'edit',
+      label: t('editor.edit'),
+      ariaLabel: t('editor.operation.regime.edit'),
+      icon: 'ph:pencil-simple-duotone',
+      onClick: () => editRegime(r),
+    },
+    {
+      key: 'delete',
+      label: t('editor.operation.regime.deleteConfirm'),
+      icon: 'ph:x-bold',
+      severity: 'danger',
+      onClick: () => deleteRegime(r.id),
+    },
+  ];
+}
 </script>
 
 <template>
@@ -163,14 +185,13 @@ function specs(r: OperatingRegime) {
 
     <!-- ── Cards ─────────────────────────────────────────────────────────── -->
     <div v-else class="flex flex-col gap-3">
-      <div
+      <RecordCard
         v-for="r in regimes"
         :key="r.id"
-        class="rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-3 flex flex-col gap-3"
-        :class="{ 'opacity-75': r.id !== currentRegimeId && !isScheduled(r) }"
+        :dimmed="r.id !== currentRegimeId && !isScheduled(r)"
+        :actions="actions(r)"
       >
-        <!-- header -->
-        <div class="flex items-center flex-wrap gap-2">
+        <template #tags>
           <Tag
             v-if="r.id === currentRegimeId"
             :value="t('editor.operation.regime.inForce')"
@@ -187,12 +208,12 @@ function specs(r: OperatingRegime) {
             {{ t('editor.operation.regime.from') }}
             {{ formatDate(r.effective_from, 'dd/MM/yyyy HH:mm') }}
           </span>
-        </div>
+        </template>
 
         <!-- specs -->
         <div
           v-if="specs(r).length"
-          class="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2"
+          class="grid grid-cols-2 @lg:grid-cols-4 gap-x-4 gap-y-2"
         >
           <div v-for="s in specs(r)" :key="s.label" class="flex flex-col">
             <span
@@ -206,6 +227,13 @@ function specs(r: OperatingRegime) {
           </div>
         </div>
 
+        <p
+          v-if="r.notes"
+          class="text-sm leading-relaxed whitespace-pre-line m-0 text-content-200"
+        >
+          {{ r.notes }}
+        </p>
+
         <!-- warnings -->
         <Message
           v-for="msg in warningsById.get(r.id) ?? []"
@@ -216,43 +244,7 @@ function specs(r: OperatingRegime) {
         >
           {{ msg }}
         </Message>
-
-        <p
-          v-if="r.notes"
-          class="text-sm leading-relaxed whitespace-pre-line m-0 text-content-200"
-        >
-          {{ r.notes }}
-        </p>
-
-        <!-- footer -->
-        <div
-          class="flex items-center justify-end gap-2 pt-1 border-t border-surface-100"
-        >
-          <Button
-            severity="secondary"
-            text
-            size="small"
-            :label="t('editor.edit')"
-            :aria-label="t('editor.operation.regime.edit')"
-            @click="editRegime(r)"
-          >
-            <template #icon>
-              <Icon name="ph:pencil-simple-duotone" />
-            </template>
-          </Button>
-          <Button
-            severity="danger"
-            text
-            size="small"
-            :aria-label="t('editor.operation.regime.deleteConfirm')"
-            @click="deleteRegime(r.id)"
-          >
-            <template #icon>
-              <Icon name="ph:x-bold" />
-            </template>
-          </Button>
-        </div>
-      </div>
+      </RecordCard>
     </div>
   </div>
 

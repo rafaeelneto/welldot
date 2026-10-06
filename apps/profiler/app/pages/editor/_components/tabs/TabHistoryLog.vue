@@ -7,6 +7,9 @@ import {
 import { useConfirm } from 'primevue/useconfirm';
 import AppChip from '~/components/AppChip.vue';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import RecordCard, {
+  type RecordAction,
+} from '~/components/records/RecordCard.vue';
 import {
   WELL_STATUS_SEVERITY,
   meterLabel,
@@ -216,6 +219,35 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
   );
   return diff > 60_000;
 }
+
+function entryMeta(entry: HistoryLogEntry): (string | false)[] {
+  return [
+    !!entry.author && `${t('editor.record.by')} ${entry.author}`,
+    showEditedAt(entry) &&
+      t('editor.historyLog.logs.editedAt', {
+        date: formatDate(entry.updated_at, 'dd/MM/yyyy'),
+      }),
+  ];
+}
+
+function entryActions(entry: HistoryLogEntry): RecordAction[] {
+  return [
+    {
+      key: 'edit',
+      label: t('editor.edit'),
+      ariaLabel: t('editor.historyLog.logs.editEvent'),
+      icon: 'ph:pencil-simple-duotone',
+      onClick: () => editEntry(entry),
+    },
+    {
+      key: 'delete',
+      label: t('editor.historyLog.logs.deleteConfirm'),
+      icon: 'ph:x-bold',
+      severity: 'danger',
+      onClick: () => deleteEntry(entry.id),
+    },
+  ];
+}
 </script>
 
 <template>
@@ -320,11 +352,13 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
         </div>
 
         <!-- card -->
-        <div
-          class="flex-1 rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-3 flex flex-col gap-3"
+        <RecordCard
+          class="flex-1 min-w-0"
+          :date="formatDate(entry.datetime, 'dd/MM/yyyy HH:mm')"
+          :meta="entryMeta(entry)"
+          :actions="entryActions(entry)"
         >
-          <!-- ── header row: tags + date ─────────────────────────────────── -->
-          <div class="flex items-center flex-wrap gap-2">
+          <template #tags>
             <Tag
               :value="categoryLabel(entry.category)"
               :severity="categorySeverity(entry.category)"
@@ -342,10 +376,7 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
               :severity="severityToChip(entry.severity)"
               class="text-[11px]"
             />
-            <span class="ml-auto font-mono text-xs text-content-300">
-              {{ formatDate(entry.datetime, 'dd/MM/yyyy HH:mm') }}
-            </span>
-          </div>
+          </template>
 
           <!-- ── description ────────────────────────────────────────────── -->
           <div class="flex flex-col gap-1">
@@ -394,51 +425,7 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
             confirm-delete
             @update:model-value="setAttachments(entry.id, $event)"
           />
-
-          <!-- ── footer row: author + actions ───────────────────────────── -->
-          <div class="flex items-center gap-2 pt-1 border-t border-surface-100">
-            <div
-              class="flex items-center gap-2 flex-1 text-xs text-content-400"
-            >
-              <span v-if="entry.author">
-                {{ t('editor.historyLog.logs.by') }} {{ entry.author }}
-              </span>
-              <span
-                v-if="showEditedAt(entry)"
-                :class="{ 'before:content-[\'·\'] before:mr-2': entry.author }"
-              >
-                {{
-                  t('editor.historyLog.logs.editedAt', {
-                    date: formatDate(entry.updated_at, 'dd/MM/yyyy'),
-                  })
-                }}
-              </span>
-            </div>
-            <Button
-              severity="secondary"
-              text
-              size="small"
-              :label="t('editor.edit')"
-              :aria-label="t('editor.historyLog.logs.editEvent')"
-              @click="editEntry(entry)"
-            >
-              <template #icon>
-                <Icon name="ph:pencil-simple-duotone" />
-              </template>
-            </Button>
-            <Button
-              severity="danger"
-              text
-              size="small"
-              :aria-label="t('editor.historyLog.logs.deleteConfirm')"
-              @click="deleteEntry(entry.id)"
-            >
-              <template #icon>
-                <Icon name="ph:x-bold" />
-              </template>
-            </Button>
-          </div>
-        </div>
+        </RecordCard>
       </div>
     </div>
   </div>

@@ -228,6 +228,10 @@
     "fieldInfo": "Mais informações",
     "save": "Salvar",
     "edit": "Editar",
+    "record": {
+      "by": "por",
+      "moreActions": "Mais ações"
+    },
     "saveAs": "Salvar Como",
     "open": "Abrir",
     "share": "Compartilhar",
@@ -1392,7 +1396,11 @@
           "markFulfilled": "Marcar cumprida",
           "undoFulfilled": "Remover cumprimento",
           "undoConfirm": "Remover este cumprimento?",
-          "remove": "Remover condicionante"
+          "remove": "Remover condicionante",
+          "schedule": "Cronograma da condicionante",
+          "openSchedule": "Ver cronograma",
+          "scheduleInfo": "Os cumprimentos marcados aqui são salvos junto com a outorga.",
+          "fulfilledCount": "{n} cumprido(s)"
         },
         "fulfill": {
           "title": "Condicionante cumprida",
@@ -1427,7 +1435,14 @@
             "inspection": "Vistoria",
             "decision": "Decisão",
             "renewal": "Renovação"
-          }
+          },
+          "addTitle": "Nova etapa",
+          "editTitle": "Editar etapa",
+          "edit": "Editar etapa",
+          "save": "Salvar etapa",
+          "markDone": "Marcar como concluída",
+          "reopen": "Reabrir etapa",
+          "deleteConfirm": "Remover esta etapa do histórico da outorga?"
         },
         "view": {
           "open": "Visualizar",

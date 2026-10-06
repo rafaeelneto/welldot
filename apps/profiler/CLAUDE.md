@@ -40,10 +40,15 @@ app/                      ← srcDir
                              in the volume display unit setting); Permits (.well v2.3)
                              = permits (permits/: PermitsPanel cards; PermitDialog in
                              tabs — grant / ConditionEditor / PermitHistoryEditor;
+                             ConditionEditor's ConditionScheduleDialog marks deadlines
+                             fulfilled on the draft (saved with the permit);
                              ConditionFulfillDialog writing `conditions[].fulfillments`
-                             via `usePermitFulfillments()`; and PermitViewDialog in tabs
+                             via `usePermitFulfillments()`; ConditionDeadlineList is the
+                             shared schedule list; and PermitViewDialog in tabs
                              — grant, full condition schedule where deadlines are marked
-                             fulfilled, history/compliance timeline — whose open permit lives in
+                             fulfilled, history/compliance timeline where history steps are
+                             added/edited/completed/removed (PermitHistoryEntryDialog +
+                             `usePermitHistory()`, form in PermitHistoryEntryFields) — whose open permit lives in
                              `usePermitView()` and the hash `#permits/<id>`, also opened
                              from the Summary permit card); Water quality (.well v2.3) = the
                              `water_samples` ledger (waterQuality/: panel + card,
@@ -62,6 +67,12 @@ app/                      ← srcDir
     attachments/          ← AttachmentField (strip + add/edit dialog, `v-model` of the list) and
                              AttachmentDialog. Saved records write back with `assignAttachments`
                              (utils/attachments.ts) inside `profileStore.updateWell`
+    records/              ← RecordCard: shared shell for every editor ledger card (history,
+                             events, pumps, meters, regimes, production, permits, samples) —
+                             tags + date header, body slot, footer with who/meta on the left
+                             and `RecordAction[]` on the right (labels collapse to icons on
+                             narrow cards via container queries; >3 actions overflow to a menu;
+                             danger action always last)
   composables/
     useBus.ts             ← typed event bus composable (wraps EventBus)
   core/

@@ -8,6 +8,9 @@ import {
 } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import RecordCard, {
+  type RecordAction,
+} from '~/components/records/RecordCard.vue';
 import { resolveMeterTypeLabel } from '~/utils/operationVocab';
 import MeterDialog from './MeterDialog.vue';
 
@@ -157,6 +160,41 @@ function specs(m: Meter) {
 function equipmentName(m: Meter): string {
   return [m.manufacturer, m.model].filter(Boolean).join(' ');
 }
+
+function period(m: Meter): string {
+  const from = formatDate(m.installed_at, 'dd/MM/yyyy');
+  return m.removed_at
+    ? `${from} → ${formatDate(m.removed_at, 'dd/MM/yyyy')}`
+    : from;
+}
+
+function crew(m: Meter): (string | false)[] {
+  return [
+    !!m.installed_by &&
+      `${t('editor.operation.meter.fields.installedBy')} ${m.installed_by}`,
+    !!(m.removed_at && m.removed_by) &&
+      `${t('editor.operation.meter.fields.removedBy')} ${m.removed_by}`,
+  ];
+}
+
+function actions(m: Meter): RecordAction[] {
+  return [
+    {
+      key: 'edit',
+      label: t('editor.edit'),
+      ariaLabel: t('editor.operation.meter.edit'),
+      icon: 'ph:pencil-simple-duotone',
+      onClick: () => editMeter(m),
+    },
+    {
+      key: 'delete',
+      label: t('editor.operation.meter.deleteConfirm'),
+      icon: 'ph:x-bold',
+      severity: 'danger',
+      onClick: () => deleteMeter(m.id),
+    },
+  ];
+}
 </script>
 
 <template>
@@ -195,14 +233,15 @@ function equipmentName(m: Meter): string {
 
     <!-- ── Cards ─────────────────────────────────────────────────────────── -->
     <div v-else class="flex flex-col gap-3">
-      <div
+      <RecordCard
         v-for="m in meters"
         :key="m.id"
-        class="rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-3 flex flex-col gap-3"
-        :class="{ 'opacity-75': m.removed_at }"
+        :dimmed="!!m.removed_at"
+        :date="period(m)"
+        :meta="crew(m)"
+        :actions="actions(m)"
       >
-        <!-- header -->
-        <div class="flex items-center flex-wrap gap-2">
+        <template #tags>
           <Tag
             v-if="currentIds.has(m.id)"
             :value="t('editor.operation.meter.current')"
@@ -222,13 +261,7 @@ function equipmentName(m: Meter): string {
                 : t('editor.operation.meter.untyped')
             }}
           </span>
-          <span class="ml-auto font-mono text-xs text-content-300">
-            {{ formatDate(m.installed_at, 'dd/MM/yyyy') }}
-            <template v-if="m.removed_at">
-              → {{ formatDate(m.removed_at, 'dd/MM/yyyy') }}
-            </template>
-          </span>
-        </div>
+        </template>
 
         <!-- equipment -->
         <div
@@ -241,25 +274,10 @@ function equipmentName(m: Meter): string {
           </span>
         </div>
 
-        <!-- crew -->
-        <div
-          v-if="m.installed_by || (m.removed_at && m.removed_by)"
-          class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-content-300"
-        >
-          <span v-if="m.installed_by">
-            {{ t('editor.operation.meter.fields.installedBy') }}:
-            {{ m.installed_by }}
-          </span>
-          <span v-if="m.removed_at && m.removed_by">
-            {{ t('editor.operation.meter.fields.removedBy') }}:
-            {{ m.removed_by }}
-          </span>
-        </div>
-
         <!-- specs -->
         <div
           v-if="specs(m).length"
-          class="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2"
+          class="grid grid-cols-2 @lg:grid-cols-4 gap-x-4 gap-y-2"
         >
           <div v-for="s in specs(m)" :key="s.label" class="flex flex-col">
             <span
@@ -273,6 +291,13 @@ function equipmentName(m: Meter): string {
           </div>
         </div>
 
+        <p
+          v-if="m.notes"
+          class="text-sm leading-relaxed whitespace-pre-line m-0 text-content-200"
+        >
+          {{ m.notes }}
+        </p>
+
         <!-- warnings -->
         <Message
           v-for="msg in warningsById.get(m.id) ?? []"
@@ -284,13 +309,6 @@ function equipmentName(m: Meter): string {
           {{ msg }}
         </Message>
 
-        <p
-          v-if="m.notes"
-          class="text-sm leading-relaxed whitespace-pre-line m-0 text-content-200"
-        >
-          {{ m.notes }}
-        </p>
-
         <!-- attachments -->
         <AttachmentField
           :model-value="m.attachments"
@@ -298,36 +316,7 @@ function equipmentName(m: Meter): string {
           confirm-delete
           @update:model-value="setAttachments(m.id, $event)"
         />
-
-        <!-- footer -->
-        <div
-          class="flex items-center justify-end gap-2 pt-1 border-t border-surface-100"
-        >
-          <Button
-            severity="secondary"
-            text
-            size="small"
-            :label="t('editor.edit')"
-            :aria-label="t('editor.operation.meter.edit')"
-            @click="editMeter(m)"
-          >
-            <template #icon>
-              <Icon name="ph:pencil-simple-duotone" />
-            </template>
-          </Button>
-          <Button
-            severity="danger"
-            text
-            size="small"
-            :aria-label="t('editor.operation.meter.deleteConfirm')"
-            @click="deleteMeter(m.id)"
-          >
-            <template #icon>
-              <Icon name="ph:x-bold" />
-            </template>
-          </Button>
-        </div>
-      </div>
+      </RecordCard>
     </div>
   </div>
 

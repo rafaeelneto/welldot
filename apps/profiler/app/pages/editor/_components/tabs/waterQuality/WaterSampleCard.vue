@@ -17,6 +17,9 @@ import {
   isFormationWater,
 } from '@welldot/utils';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import RecordCard, {
+  type RecordAction,
+} from '~/components/records/RecordCard.vue';
 import { pumpInstallationLabel } from '~/utils/operationVocab';
 import {
   BLANK_SAMPLE_TYPES,
@@ -310,6 +313,51 @@ const warningMessages = computed(() => {
   });
 });
 
+// ─── Header / footer ──────────────────────────────────────────────────────────
+
+const dateLine = computed(() => {
+  const date = formatDate(props.sample.datetime, 'dd/MM/yyyy HH:mm');
+  return props.sample.sequence != null
+    ? `${date} · #${props.sample.sequence}`
+    : date;
+});
+
+const meta = computed(() => [
+  !!props.sample.collected_by &&
+    `${t('editor.waterQuality.fields.collectedBy')} ${props.sample.collected_by}`,
+]);
+
+const actions = computed<RecordAction[]>(() => [
+  ...(props.retracted
+    ? []
+    : [
+        {
+          key: 'edit',
+          label: t('editor.waterQuality.editShort'),
+          tooltip: t('editor.waterQuality.editTooltip'),
+          icon: 'ph:pencil-simple-duotone',
+          onClick: () => emit('edit', props.sample),
+        },
+        {
+          key: 'correct',
+          label: t('editor.waterQuality.correct'),
+          icon: 'ph:arrow-u-up-left-duotone',
+          onClick: () => emit('correct', props.sample),
+        },
+      ]),
+  {
+    key: 'delete',
+    label: t('editor.waterQuality.deleteConfirm'),
+    icon: 'ph:x-bold',
+    severity: 'danger',
+    disabled: props.referenced,
+    tooltip: props.referenced
+      ? t('editor.waterQuality.deleteBlocked')
+      : undefined,
+    onClick: () => emit('delete', props.sample.id),
+  },
+]);
+
 // ─── Attachments ──────────────────────────────────────────────────────────────
 
 function setAttachments(list: Attachment[]) {
@@ -323,13 +371,14 @@ function setAttachments(list: Attachment[]) {
 </script>
 
 <template>
-  <div
+  <RecordCard
     :id="`ws-card-${sample.id}`"
-    class="rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-3 flex flex-col gap-3"
-    :class="{ 'opacity-60': retracted }"
+    :dimmed="retracted && 'strong'"
+    :date="dateLine"
+    :meta="meta"
+    :actions="actions"
   >
-    <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <div class="flex items-center flex-wrap gap-2">
+    <template #tags>
       <Tag
         :value="resolveSampleTypeLabel(sample.sample_type, t)"
         :severity="typeSeverity"
@@ -356,13 +405,7 @@ function setAttachments(list: Attachment[]) {
         class="text-xs font-mono"
       />
       <span class="font-mono text-xs text-content-400">{{ sample.id }}</span>
-      <span class="ml-auto font-mono text-xs text-content-300">
-        {{ formatDate(sample.datetime, 'dd/MM/yyyy HH:mm') }}
-        <template v-if="sample.sequence != null">
-          · #{{ sample.sequence }}</template
-        >
-      </span>
-    </div>
+    </template>
 
     <button
       v-if="sample.parent_sample_id"
@@ -539,54 +582,5 @@ function setAttachments(list: Attachment[]) {
       confirm-delete
       @update:model-value="setAttachments"
     />
-
-    <!-- ── Footer ─────────────────────────────────────────────────────────── -->
-    <div
-      class="flex items-center justify-end gap-2 pt-1 border-t border-surface-100"
-    >
-      <Button
-        v-if="!retracted"
-        v-tooltip.top="t('editor.waterQuality.editTooltip')"
-        severity="secondary"
-        text
-        size="small"
-        :label="t('editor.waterQuality.editShort')"
-        @click="emit('edit', sample)"
-      >
-        <template #icon>
-          <Icon name="ph:pencil-simple-duotone" />
-        </template>
-      </Button>
-      <Button
-        v-if="!retracted"
-        severity="secondary"
-        text
-        size="small"
-        :label="t('editor.waterQuality.correct')"
-        @click="emit('correct', sample)"
-      >
-        <template #icon>
-          <Icon name="ph:arrow-u-up-left-duotone" />
-        </template>
-      </Button>
-      <span
-        v-tooltip.top="
-          referenced ? t('editor.waterQuality.deleteBlocked') : undefined
-        "
-      >
-        <Button
-          severity="danger"
-          text
-          size="small"
-          :disabled="referenced"
-          :aria-label="t('editor.waterQuality.deleteConfirm')"
-          @click="emit('delete', sample.id)"
-        >
-          <template #icon>
-            <Icon name="ph:x-bold" />
-          </template>
-        </Button>
-      </span>
-    </div>
-  </div>
+  </RecordCard>
 </template>

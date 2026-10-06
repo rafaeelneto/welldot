@@ -1,16 +1,24 @@
 <script setup lang="ts">
-import type { Permit, PermitCondition, Well } from '@welldot/core';
+import type {
+  ConditionFulfillment,
+  Permit,
+  PermitCondition,
+  Well,
+} from '@welldot/core';
 import { getConditionAnchor, getConditionDeadlines } from '@welldot/utils';
 import {
   CONDITION_CATEGORY_VALUES,
   resolveConditionCategoryLabel,
 } from '~/utils/permitVocab';
+import ConditionScheduleDialog from './ConditionScheduleDialog.vue';
 import DurationInput from './DurationInput.vue';
 
 /**
  * Inline list editor for a permit's `conditions`, used inside the permit
  * dialog. Rows are edited in place on the dialog's local copy; the preview
- * runs the normative deadline generation against the permit being edited.
+ * runs the normative deadline generation against the permit being edited, and
+ * the schedule dialog records fulfillments on the same copy (saved with the
+ * permit).
  */
 const conditions = defineModel<PermitCondition[]>({ required: true });
 
@@ -136,6 +144,35 @@ function preview(c: PermitCondition): {
     dates: all.slice(0, PREVIEW_COUNT),
     more: Math.max(0, all.length - PREVIEW_COUNT),
   };
+}
+
+// ─── Schedule & fulfillments (on the draft) ─────────────────────────────────
+
+const scheduleConditionId = ref<string | null>(null);
+const scheduleCondition = computed(() =>
+  conditions.value.find(c => c.id === scheduleConditionId.value),
+);
+const scheduleVisible = computed({
+  get: () => !!scheduleCondition.value,
+  set: open => {
+    if (!open) scheduleConditionId.value = null;
+  },
+});
+
+/** Fulfillments recorded on the condition, for the preview line. */
+function fulfilledCount(c: PermitCondition): number {
+  return c.fulfillments?.length ?? 0;
+}
+
+// The fulfillments array may still be the stored (frozen) one: replace it.
+function addFulfillment(c: PermitCondition, f: ConditionFulfillment) {
+  c.fulfillments = [...(c.fulfillments ?? []), f];
+}
+
+function removeFulfillment(c: PermitCondition, id: string) {
+  const list = (c.fulfillments ?? []).filter(f => f.id !== id);
+  if (list.length) c.fulfillments = list;
+  else delete c.fulfillments;
 }
 </script>
 
@@ -301,6 +338,29 @@ function preview(c: PermitCondition): {
             })
           }}
         </span>
+        <span v-if="fulfilledCount(c)" class="flex items-center gap-1">
+          <Icon
+            name="ph:check-circle-duotone"
+            class="size-3.5 text-success-500"
+          />
+          {{
+            t('editor.operation.permit.conditions.fulfilledCount', {
+              n: fulfilledCount(c),
+            })
+          }}
+        </span>
+        <Button
+          severity="secondary"
+          text
+          size="small"
+          class="ml-auto"
+          :label="t('editor.operation.permit.conditions.openSchedule')"
+          @click="scheduleConditionId = c.id"
+        >
+          <template #icon>
+            <Icon name="ph:list-checks-duotone" />
+          </template>
+        </Button>
       </div>
     </div>
 
@@ -317,4 +377,14 @@ function preview(c: PermitCondition): {
       </template>
     </Button>
   </div>
+
+  <ConditionScheduleDialog
+    v-if="scheduleCondition"
+    v-model:visible="scheduleVisible"
+    :condition="scheduleCondition"
+    :permit="permit"
+    :well="well"
+    @fulfill="addFulfillment(scheduleCondition, $event)"
+    @undo="removeFulfillment(scheduleCondition, $event)"
+  />
 </template>

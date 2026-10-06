@@ -12,6 +12,9 @@ import {
 import type { ConditionDeadlineState } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import RecordCard, {
+  type RecordAction,
+} from '~/components/records/RecordCard.vue';
 import {
   DEADLINE_STATUS_SEVERITY,
   PERMIT_STATUS_SEVERITY,
@@ -242,6 +245,31 @@ function grants(p: Permit) {
   ].filter(g => g.value);
 }
 
+function actions(p: Permit): RecordAction[] {
+  return [
+    {
+      key: 'view',
+      label: t('editor.operation.permit.view.open'),
+      icon: 'ph:eye-duotone',
+      onClick: () => permitView.open(p.id),
+    },
+    {
+      key: 'edit',
+      label: t('editor.edit'),
+      ariaLabel: t('editor.operation.permit.edit'),
+      icon: 'ph:pencil-simple-duotone',
+      onClick: () => editPermit(p),
+    },
+    {
+      key: 'delete',
+      label: t('editor.operation.permit.deleteConfirm'),
+      icon: 'ph:x-bold',
+      severity: 'danger',
+      onClick: () => deletePermit(p.id),
+    },
+  ];
+}
+
 function scheduleSummary(p: Permit): string | null {
   if (!p.monthly_schedule) return null;
   const fmt = new Intl.DateTimeFormat(locale.value, { month: 'short' });
@@ -285,14 +313,14 @@ function scheduleSummary(p: Permit): string | null {
 
     <!-- ── Cards ─────────────────────────────────────────────────────────── -->
     <div v-else class="flex flex-col gap-3">
-      <div
+      <RecordCard
         v-for="p in permits"
         :key="p.id"
-        class="rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-3 flex flex-col gap-3"
-        :class="{ 'opacity-75': INACTIVE_STATUSES.includes(status(p)) }"
+        :dimmed="INACTIVE_STATUSES.includes(status(p))"
+        :date="validity(p)"
+        :actions="actions(p)"
       >
-        <!-- header -->
-        <div class="flex items-center flex-wrap gap-2">
+        <template #tags>
           <Tag
             :value="t(`editor.operation.permit.status.${status(p)}`)"
             :severity="PERMIT_STATUS_SEVERITY[status(p)]"
@@ -301,10 +329,7 @@ function scheduleSummary(p: Permit): string | null {
           <span class="text-sm font-medium text-content-0">
             {{ resolvePermitTypeLabel(p.type, t) }}
           </span>
-          <span class="ml-auto font-mono text-xs text-content-300">
-            {{ validity(p) }}
-          </span>
-        </div>
+        </template>
 
         <!-- identity -->
         <div
@@ -364,7 +389,7 @@ function scheduleSummary(p: Permit): string | null {
         <!-- grants -->
         <div
           v-if="grants(p).length || scheduleSummary(p)"
-          class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2"
+          class="grid grid-cols-2 @md:grid-cols-3 gap-x-4 gap-y-2"
         >
           <div v-for="g in grants(p)" :key="g.label" class="flex flex-col">
             <span
@@ -378,7 +403,7 @@ function scheduleSummary(p: Permit): string | null {
           </div>
           <div
             v-if="scheduleSummary(p)"
-            class="flex flex-col col-span-2 sm:col-span-3"
+            class="flex flex-col col-span-2 @md:col-span-3"
           >
             <span
               class="font-mono text-[10px] tracking-[0.08em] uppercase text-content-400"
@@ -512,6 +537,13 @@ function scheduleSummary(p: Permit): string | null {
           }}
         </Message>
 
+        <p
+          v-if="p.notes"
+          class="text-sm leading-relaxed whitespace-pre-line m-0 text-content-200"
+        >
+          {{ p.notes }}
+        </p>
+
         <!-- warnings -->
         <Message
           v-for="msg in warningsById.get(p.id) ?? []"
@@ -523,13 +555,6 @@ function scheduleSummary(p: Permit): string | null {
           {{ msg }}
         </Message>
 
-        <p
-          v-if="p.notes"
-          class="text-sm leading-relaxed whitespace-pre-line m-0 text-content-200"
-        >
-          {{ p.notes }}
-        </p>
-
         <!-- attachments -->
         <AttachmentField
           :model-value="p.attachments"
@@ -537,48 +562,7 @@ function scheduleSummary(p: Permit): string | null {
           confirm-delete
           @update:model-value="setAttachments(p.id, $event)"
         />
-
-        <!-- footer -->
-        <div
-          class="flex items-center justify-end gap-2 pt-1 border-t border-surface-100"
-        >
-          <Button
-            severity="secondary"
-            text
-            size="small"
-            class="mr-auto"
-            :label="t('editor.operation.permit.view.open')"
-            @click="permitView.open(p.id)"
-          >
-            <template #icon>
-              <Icon name="ph:eye-duotone" />
-            </template>
-          </Button>
-          <Button
-            severity="secondary"
-            text
-            size="small"
-            :label="t('editor.edit')"
-            :aria-label="t('editor.operation.permit.edit')"
-            @click="editPermit(p)"
-          >
-            <template #icon>
-              <Icon name="ph:pencil-simple-duotone" />
-            </template>
-          </Button>
-          <Button
-            severity="danger"
-            text
-            size="small"
-            :aria-label="t('editor.operation.permit.deleteConfirm')"
-            @click="deletePermit(p.id)"
-          >
-            <template #icon>
-              <Icon name="ph:x-bold" />
-            </template>
-          </Button>
-        </div>
-      </div>
+      </RecordCard>
     </div>
   </div>
 

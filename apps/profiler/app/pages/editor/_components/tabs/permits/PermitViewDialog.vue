@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type {
-  ConditionFulfillment,
   Permit,
   PermitCondition,
+  PermitHistoryEntry,
 } from '@welldot/core';
 import {
   getConditionDeadlineStates,
@@ -16,7 +16,6 @@ import {
 import type { ConditionDeadlineState } from '@welldot/utils';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import {
-  DEADLINE_STATUS_SEVERITY,
   PERMIT_HISTORY_TYPE_ICON,
   PERMIT_STATUS_SEVERITY,
   permitLabel,
@@ -25,15 +24,17 @@ import {
   resolvePermitTypeLabel,
   resolveWaterUseLabel,
 } from '~/utils/permitVocab';
-import { sampleLabel } from '~/utils/waterQualityVocab';
+import ConditionDeadlineList from './ConditionDeadlineList.vue';
 import ConditionFulfillDialog from './ConditionFulfillDialog.vue';
+import PermitHistoryEntryDialog from './PermitHistoryEntryDialog.vue';
 
 /**
  * Full view of one permit (.well v2.3), in tabs: identity, status and grant;
  * the complete condition schedule; and the timeline merging administrative
  * history and condition compliance. The permit itself is not edited here
  * (Edit opens the permit dialog on the same tab), but condition deadlines can
- * be marked fulfilled or have their fulfillment removed. The permit is
+ * be marked fulfilled or have their fulfillment removed, and history steps can
+ * be added, edited, completed and removed from the timeline. The permit is
  * resolved from the store by id so the view stays live.
  */
 const visible = defineModel<boolean>('visible', { default: false });
@@ -49,7 +50,6 @@ const profileStore = useProfileStore();
 const permitView = usePermitView();
 const { formatFlow, formatVolume } = useUnitFormat();
 const { formatNumber } = useNumberFormat();
-const { eventTypeLabel } = useHydrodynamicEventTypes();
 
 const today = todayCalendarDate();
 
@@ -189,13 +189,6 @@ function deadlineStates(c: PermitCondition): ConditionDeadlineState[] {
     : [];
 }
 
-function fulfillmentOf(
-  c: PermitCondition,
-  id: string | undefined,
-): ConditionFulfillment | undefined {
-  return id ? c.fulfillments?.find(f => f.id === id) : undefined;
-}
-
 /** "Every 6 months · from 31/07/2025 · until 31/12/2028 · max. 4". */
 function scheduleSummary(c: PermitCondition): string {
   const parts: string[] = [];
@@ -252,27 +245,6 @@ function conditionCounts(c: PermitCondition) {
   };
 }
 
-/** Linked evidence of a fulfillment: hydrodynamic event and/or water sample. */
-function evidence(f: ConditionFulfillment): string | null {
-  const well = profileStore.well;
-  const event = f.event_id
-    ? well.hydrodynamic_events?.find(e => e.id === f.event_id)
-    : undefined;
-  const sample = f.sample_id
-    ? well.water_samples?.find(s => s.id === f.sample_id)
-    : undefined;
-  return (
-    [
-      event
-        ? `${eventTypeLabel(event.type)} · ${formatDate(event.datetime, 'dd/MM/yyyy')}`
-        : f.event_id,
-      sample ? sampleLabel(sample, t) : f.sample_id,
-    ]
-      .filter(Boolean)
-      .join(' · ') || null
-  );
-}
-
 /** Overdue deadlines across all conditions, for the tab badge. */
 const overdueTotal = computed(() =>
   (permit.value?.conditions ?? []).reduce(
@@ -296,23 +268,6 @@ function openFulfill(condition: PermitCondition, dueDate?: string) {
   fulfillVisible.value = true;
 }
 
-/**
- * Deadlines that get the full "Mark fulfilled" button: every overdue one and
- * the next upcoming one. Later deadlines get an icon-only button.
- */
-function isPrimaryDeadline(
-  c: PermitCondition,
-  s: ConditionDeadlineState,
-): boolean {
-  if (s.status === 'overdue') return true;
-  if (s.status !== 'upcoming') return false;
-  // States are recomputed per call: compare by deadline, not identity.
-  return (
-    deadlineStates(c).find(x => x.status === 'upcoming')?.due_date ===
-    s.due_date
-  );
-}
-
 /** An undated condition with no fulfillment yet can still be marked done. */
 function canFulfillUndated(c: PermitCondition): boolean {
   return !c.first_due && !c.due_after && !deadlineStates(c).length;
@@ -330,6 +285,25 @@ function historyIcon(type: string | undefined): string {
 
 function isHistoryOverdue(due: string | undefined, done: boolean | undefined) {
   return !!due && done !== true && due < today;
+}
+
+// ─── Managing history steps ───────────────────────────────────────────────────
+
+const { upsertHistoryEntry, setHistoryDone, removeHistoryEntry } =
+  usePermitHistory();
+
+/** Entry passed to the step dialog; undefined opens it in "add" mode. */
+const historyTarget = ref<PermitHistoryEntry | undefined>();
+const historyDialogVisible = ref(false);
+
+function openHistoryEntry(entry?: PermitHistoryEntry) {
+  historyTarget.value = entry;
+  historyDialogVisible.value = true;
+}
+
+/** Actionable steps (with a deadline, or already marked) can be toggled done. */
+function isActionable(entry: PermitHistoryEntry): boolean {
+  return !!entry.due_date || entry.done !== undefined;
 }
 </script>
 
@@ -586,126 +560,12 @@ function isHistoryOverdue(due: string | undefined, done: boolean | undefined) {
                   </span>
                 </div>
 
-                <ul
-                  v-if="deadlineStates(c).length"
-                  class="m-0 p-0 list-none flex flex-col"
-                >
-                  <li
-                    v-for="s in deadlineStates(c)"
-                    :key="s.due_date ?? s.fulfillment_id"
-                    class="flex flex-col gap-1.5 border-t border-surface-200 py-2 first:border-t-0"
-                  >
-                    <div class="flex flex-wrap items-center gap-2 text-xs">
-                      <span class="font-mono text-content-100 w-24 shrink-0">
-                        {{
-                          s.due_date
-                            ? formatCalendarDate(s.due_date)
-                            : t('editor.operation.permit.conditions.undated')
-                        }}
-                      </span>
-                      <Tag
-                        :value="
-                          t(
-                            `editor.operation.permit.conditions.deadlineStatus.${s.status}`,
-                          )
-                        "
-                        :severity="
-                          DEADLINE_STATUS_SEVERITY[s.status] ?? 'secondary'
-                        "
-                        class="text-[10px]"
-                      />
-                      <template v-if="fulfillmentOf(c, s.fulfillment_id)">
-                        <span class="font-mono text-content-300">
-                          {{
-                            formatDate(
-                              fulfillmentOf(c, s.fulfillment_id)!.datetime,
-                              'dd/MM/yyyy HH:mm',
-                            )
-                          }}
-                        </span>
-                        <span
-                          v-if="fulfillmentOf(c, s.fulfillment_id)!.author"
-                          class="flex items-center gap-1 text-content-300"
-                        >
-                          <Icon name="ph:user-duotone" class="size-3" />
-                          {{ fulfillmentOf(c, s.fulfillment_id)!.author }}
-                        </span>
-                      </template>
-                      <Button
-                        v-if="!s.fulfillment_id"
-                        v-tooltip.left="
-                          isPrimaryDeadline(c, s)
-                            ? undefined
-                            : t(
-                                'editor.operation.permit.conditions.markFulfilled',
-                              )
-                        "
-                        severity="success"
-                        text
-                        size="small"
-                        class="ml-auto"
-                        :label="
-                          isPrimaryDeadline(c, s)
-                            ? t(
-                                'editor.operation.permit.conditions.markFulfilled',
-                              )
-                            : undefined
-                        "
-                        :aria-label="
-                          t('editor.operation.permit.conditions.markFulfilled')
-                        "
-                        @click="openFulfill(c, s.due_date)"
-                      >
-                        <template #icon>
-                          <Icon name="ph:check-circle-duotone" />
-                        </template>
-                      </Button>
-                      <Button
-                        v-else
-                        v-tooltip.left="
-                          t('editor.operation.permit.conditions.undoFulfilled')
-                        "
-                        severity="secondary"
-                        text
-                        size="small"
-                        class="ml-auto"
-                        :aria-label="
-                          t('editor.operation.permit.conditions.undoFulfilled')
-                        "
-                        @click="
-                          removeFulfillment(permit.id, c.id, s.fulfillment_id)
-                        "
-                      >
-                        <template #icon>
-                          <Icon name="ph:arrow-counter-clockwise" />
-                        </template>
-                      </Button>
-                    </div>
-                    <template v-if="fulfillmentOf(c, s.fulfillment_id)">
-                      <p
-                        v-if="fulfillmentOf(c, s.fulfillment_id)!.description"
-                        class="m-0 text-xs text-content-200 whitespace-pre-line sm:pl-26"
-                      >
-                        {{ fulfillmentOf(c, s.fulfillment_id)!.description }}
-                      </p>
-                      <span
-                        v-if="evidence(fulfillmentOf(c, s.fulfillment_id)!)"
-                        class="flex items-center gap-1.5 text-[11px] text-content-400 sm:pl-26"
-                      >
-                        <Icon name="ph:link-duotone" class="size-3.5" />
-                        {{ evidence(fulfillmentOf(c, s.fulfillment_id)!) }}
-                      </span>
-                      <div class="sm:pl-26">
-                        <AttachmentField
-                          :model-value="
-                            fulfillmentOf(c, s.fulfillment_id)!.attachments
-                          "
-                          readonly
-                        />
-                      </div>
-                    </template>
-                  </li>
-                </ul>
+                <ConditionDeadlineList
+                  :condition="c"
+                  :states="deadlineStates(c)"
+                  @fulfill="openFulfill(c, $event)"
+                  @undo="removeFulfillment(permit.id, c.id, $event)"
+                />
                 <Button
                   v-if="canFulfillUndated(c)"
                   severity="success"
@@ -726,6 +586,23 @@ function isHistoryOverdue(due: string | undefined, done: boolean | undefined) {
         <TabPanel value="history">
           <div class="py-4">
             <section class="flex flex-col gap-3">
+              <div class="flex items-center justify-between gap-3 flex-wrap">
+                <p class="m-0 text-xs text-content-400 max-w-md">
+                  {{ t('editor.operation.permit.history.info') }}
+                </p>
+                <Button
+                  severity="secondary"
+                  outlined
+                  size="small"
+                  class="shrink-0"
+                  :label="t('editor.operation.permit.history.add')"
+                  @click="openHistoryEntry()"
+                >
+                  <template #icon>
+                    <Icon name="ph:plus" />
+                  </template>
+                </Button>
+              </div>
               <p v-if="!timeline.length" class="m-0 text-xs text-content-400">
                 {{ t('editor.operation.permit.view.timelineEmpty') }}
               </p>
@@ -808,6 +685,105 @@ function isHistoryOverdue(due: string | undefined, done: boolean | undefined) {
                           {{ formatCalendarDate(item.fulfillment.due_date) }}
                         </span>
                       </template>
+
+                      <!-- actions -->
+                      <span class="ml-auto flex items-center">
+                        <template v-if="item.kind === 'history'">
+                          <Button
+                            v-if="isActionable(item.entry)"
+                            v-tooltip.top="
+                              item.entry.done === true
+                                ? t('editor.operation.permit.history.reopen')
+                                : t('editor.operation.permit.history.markDone')
+                            "
+                            :severity="
+                              item.entry.done === true ? 'secondary' : 'success'
+                            "
+                            text
+                            size="small"
+                            :aria-label="
+                              item.entry.done === true
+                                ? t('editor.operation.permit.history.reopen')
+                                : t('editor.operation.permit.history.markDone')
+                            "
+                            @click="
+                              setHistoryDone(
+                                permit.id,
+                                item.entry.id,
+                                item.entry.done !== true,
+                              )
+                            "
+                          >
+                            <template #icon>
+                              <Icon
+                                :name="
+                                  item.entry.done === true
+                                    ? 'ph:arrow-counter-clockwise'
+                                    : 'ph:check-circle-duotone'
+                                "
+                              />
+                            </template>
+                          </Button>
+                          <Button
+                            v-tooltip.top="
+                              t('editor.operation.permit.history.edit')
+                            "
+                            severity="secondary"
+                            text
+                            size="small"
+                            :aria-label="
+                              t('editor.operation.permit.history.edit')
+                            "
+                            @click="openHistoryEntry(item.entry)"
+                          >
+                            <template #icon>
+                              <Icon name="ph:pencil-simple-duotone" />
+                            </template>
+                          </Button>
+                          <Button
+                            severity="danger"
+                            text
+                            size="small"
+                            :aria-label="
+                              t('editor.operation.permit.history.remove')
+                            "
+                            @click="
+                              removeHistoryEntry(permit.id, item.entry.id)
+                            "
+                          >
+                            <template #icon>
+                              <Icon name="ph:x-bold" />
+                            </template>
+                          </Button>
+                        </template>
+                        <Button
+                          v-else
+                          v-tooltip.top="
+                            t(
+                              'editor.operation.permit.conditions.undoFulfilled',
+                            )
+                          "
+                          severity="secondary"
+                          text
+                          size="small"
+                          :aria-label="
+                            t(
+                              'editor.operation.permit.conditions.undoFulfilled',
+                            )
+                          "
+                          @click="
+                            removeFulfillment(
+                              permit.id,
+                              item.condition.id,
+                              item.fulfillment.id,
+                            )
+                          "
+                        >
+                          <template #icon>
+                            <Icon name="ph:arrow-counter-clockwise" />
+                          </template>
+                        </Button>
+                      </span>
                     </div>
                     <span class="text-sm text-content-0 whitespace-pre-line">
                       {{
@@ -874,6 +850,13 @@ function isHistoryOverdue(due: string | undefined, done: boolean | undefined) {
     :condition="fulfillTarget.condition"
     :due-date="fulfillTarget.dueDate"
     @save="addFulfillment(permit!.id, fulfillTarget!.condition.id, $event)"
+  />
+
+  <PermitHistoryEntryDialog
+    v-if="permit && historyDialogVisible"
+    v-model:visible="historyDialogVisible"
+    :entry="historyTarget"
+    @save="upsertHistoryEntry(permit!.id, $event)"
   />
 </template>
 

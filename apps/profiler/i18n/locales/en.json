@@ -228,6 +228,10 @@
     "fieldInfo": "More information",
     "save": "Save",
     "edit": "Edit",
+    "record": {
+      "by": "by",
+      "moreActions": "More actions"
+    },
     "saveAs": "Save As",
     "open": "Open",
     "share": "Share",
@@ -1392,7 +1396,11 @@
           "markFulfilled": "Mark fulfilled",
           "undoFulfilled": "Remove fulfillment",
           "undoConfirm": "Remove this fulfillment?",
-          "remove": "Remove condition"
+          "remove": "Remove condition",
+          "schedule": "Condition schedule",
+          "openSchedule": "View schedule",
+          "scheduleInfo": "Fulfillments marked here are saved with the permit.",
+          "fulfilledCount": "{n} fulfilled"
         },
         "fulfill": {
           "title": "Condition fulfilled",
@@ -1427,7 +1435,14 @@
             "inspection": "Inspection",
             "decision": "Decision",
             "renewal": "Renewal"
-          }
+          },
+          "addTitle": "New step",
+          "editTitle": "Edit step",
+          "edit": "Edit step",
+          "save": "Save step",
+          "markDone": "Mark as done",
+          "reopen": "Reopen step",
+          "deleteConfirm": "Remove this step from the permit history?"
         },
         "view": {
           "open": "View",

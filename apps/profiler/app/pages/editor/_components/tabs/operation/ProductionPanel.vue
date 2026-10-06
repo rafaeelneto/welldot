@@ -15,6 +15,9 @@ import {
   type ProductionPeriod,
 } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
+import RecordCard, {
+  type RecordAction,
+} from '~/components/records/RecordCard.vue';
 import {
   meterLabel,
   resolveDeclaredMethodLabel,
@@ -301,6 +304,28 @@ function typeLabel(e: ProductionEntry): string {
     : // Unknown (`x-…`) entry types are kept and shown raw.
       (e as { type: string }).type;
 }
+
+function actions(e: ProductionEntry): RecordAction[] {
+  const list: RecordAction[] = [];
+  if (!retractedIds.value.has(e.id)) {
+    list.push({
+      key: 'correct',
+      label: t('editor.operation.production.correct'),
+      icon: 'ph:arrow-u-up-left-duotone',
+      onClick: () => correctEntry(e),
+    });
+  }
+  if (!correctedIds.value.has(e.id)) {
+    list.push({
+      key: 'delete',
+      label: t('editor.operation.production.deleteConfirm'),
+      icon: 'ph:x-bold',
+      severity: 'danger',
+      onClick: () => deleteEntry(e.id),
+    });
+  }
+  return list;
+}
 </script>
 
 <template>
@@ -532,13 +557,14 @@ function typeLabel(e: ProductionEntry): string {
           </div>
         </div>
 
-        <div
+        <RecordCard
           v-for="e in entries"
           :key="e.id"
-          class="rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-2.5 flex flex-col gap-2"
-          :class="{ 'opacity-60': retractedIds.has(e.id) }"
+          :dimmed="retractedIds.has(e.id) && 'strong'"
+          :date="formatDate(entryInstant(e), 'dd/MM/yyyy HH:mm')"
+          :actions="actions(e)"
         >
-          <div class="flex items-center flex-wrap gap-2">
+          <template #tags>
             <Tag
               :value="typeLabel(e)"
               :severity="e.type === 'meter_reading' ? 'info' : 'secondary'"
@@ -561,10 +587,7 @@ function typeLabel(e: ProductionEntry): string {
             <span class="font-mono text-sm text-content-0">
               {{ value(e) }}
             </span>
-            <span class="ml-auto font-mono text-xs text-content-300">
-              {{ formatDate(entryInstant(e), 'dd/MM/yyyy HH:mm') }}
-            </span>
-          </div>
+          </template>
           <span class="text-xs text-content-400">{{ details(e) }}</span>
           <p
             v-if="e.notes"
@@ -581,35 +604,7 @@ function typeLabel(e: ProductionEntry): string {
           >
             {{ msg }}
           </Message>
-          <div
-            class="flex items-center justify-end gap-2 pt-1 border-t border-surface-100"
-          >
-            <Button
-              v-if="!retractedIds.has(e.id)"
-              severity="secondary"
-              text
-              size="small"
-              :label="t('editor.operation.production.correct')"
-              @click="correctEntry(e)"
-            >
-              <template #icon>
-                <Icon name="ph:arrow-u-up-left-duotone" />
-              </template>
-            </Button>
-            <Button
-              v-if="!correctedIds.has(e.id)"
-              severity="danger"
-              text
-              size="small"
-              :aria-label="t('editor.operation.production.deleteConfirm')"
-              @click="deleteEntry(e.id)"
-            >
-              <template #icon>
-                <Icon name="ph:x-bold" />
-              </template>
-            </Button>
-          </div>
-        </div>
+        </RecordCard>
       </div>
     </template>
   </div>

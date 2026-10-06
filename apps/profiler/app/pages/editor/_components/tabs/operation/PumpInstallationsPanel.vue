@@ -7,6 +7,9 @@ import {
 } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import RecordCard, {
+  type RecordAction,
+} from '~/components/records/RecordCard.vue';
 import {
   resolvePowerSourceLabel,
   resolvePumpTypeLabel,
@@ -152,6 +155,41 @@ function specs(p: PumpInstallation) {
 function equipmentName(p: PumpInstallation): string {
   return [p.manufacturer, p.model].filter(Boolean).join(' ');
 }
+
+function period(p: PumpInstallation): string {
+  const from = formatDate(p.installed_at, 'dd/MM/yyyy');
+  return p.removed_at
+    ? `${from} → ${formatDate(p.removed_at, 'dd/MM/yyyy')}`
+    : from;
+}
+
+function crew(p: PumpInstallation): (string | false)[] {
+  return [
+    !!p.installed_by &&
+      `${t('editor.operation.pump.fields.installedBy')} ${p.installed_by}`,
+    !!(p.removed_at && p.removed_by) &&
+      `${t('editor.operation.pump.fields.removedBy')} ${p.removed_by}`,
+  ];
+}
+
+function actions(p: PumpInstallation): RecordAction[] {
+  return [
+    {
+      key: 'edit',
+      label: t('editor.edit'),
+      ariaLabel: t('editor.operation.pump.edit'),
+      icon: 'ph:pencil-simple-duotone',
+      onClick: () => editInstallation(p),
+    },
+    {
+      key: 'delete',
+      label: t('editor.operation.pump.deleteConfirm'),
+      icon: 'ph:x-bold',
+      severity: 'danger',
+      onClick: () => deleteInstallation(p.id),
+    },
+  ];
+}
 </script>
 
 <template>
@@ -218,14 +256,15 @@ function equipmentName(p: PumpInstallation): string {
 
     <!-- ── Cards ─────────────────────────────────────────────────────────── -->
     <div v-else class="flex flex-col gap-3">
-      <div
+      <RecordCard
         v-for="p in installations"
         :key="p.id"
-        class="rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-3 flex flex-col gap-3"
-        :class="{ 'opacity-75': p.removed_at }"
+        :dimmed="!!p.removed_at"
+        :date="period(p)"
+        :meta="crew(p)"
+        :actions="actions(p)"
       >
-        <!-- header -->
-        <div class="flex items-center flex-wrap gap-2">
+        <template #tags>
           <Tag
             v-if="p.id === currentPumpId"
             :value="t('editor.operation.pump.current')"
@@ -248,13 +287,7 @@ function equipmentName(p: PumpInstallation): string {
             <Icon name="ph:lightning-duotone" class="size-3.5" />
             {{ resolvePowerSourceLabel(p.power_source, t) }}
           </span>
-          <span class="ml-auto font-mono text-xs text-content-300">
-            {{ formatDate(p.installed_at, 'dd/MM/yyyy') }}
-            <template v-if="p.removed_at">
-              → {{ formatDate(p.removed_at, 'dd/MM/yyyy') }}
-            </template>
-          </span>
-        </div>
+        </template>
 
         <!-- equipment -->
         <div
@@ -267,25 +300,10 @@ function equipmentName(p: PumpInstallation): string {
           </span>
         </div>
 
-        <!-- crew -->
-        <div
-          v-if="p.installed_by || (p.removed_at && p.removed_by)"
-          class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-content-300"
-        >
-          <span v-if="p.installed_by">
-            {{ t('editor.operation.pump.fields.installedBy') }}:
-            {{ p.installed_by }}
-          </span>
-          <span v-if="p.removed_at && p.removed_by">
-            {{ t('editor.operation.pump.fields.removedBy') }}:
-            {{ p.removed_by }}
-          </span>
-        </div>
-
         <!-- specs -->
         <div
           v-if="specs(p).length"
-          class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2"
+          class="grid grid-cols-2 @md:grid-cols-3 gap-x-4 gap-y-2"
         >
           <div v-for="s in specs(p)" :key="s.label" class="flex flex-col">
             <span
@@ -299,6 +317,13 @@ function equipmentName(p: PumpInstallation): string {
           </div>
         </div>
 
+        <p
+          v-if="p.notes"
+          class="text-sm leading-relaxed whitespace-pre-line m-0 text-content-200"
+        >
+          {{ p.notes }}
+        </p>
+
         <!-- warnings -->
         <Message
           v-for="msg in warningsById.get(p.id) ?? []"
@@ -310,13 +335,6 @@ function equipmentName(p: PumpInstallation): string {
           {{ msg }}
         </Message>
 
-        <p
-          v-if="p.notes"
-          class="text-sm leading-relaxed whitespace-pre-line m-0 text-content-200"
-        >
-          {{ p.notes }}
-        </p>
-
         <!-- attachments -->
         <AttachmentField
           :model-value="p.attachments"
@@ -324,36 +342,7 @@ function equipmentName(p: PumpInstallation): string {
           confirm-delete
           @update:model-value="setAttachments(p.id, $event)"
         />
-
-        <!-- footer -->
-        <div
-          class="flex items-center justify-end gap-2 pt-1 border-t border-surface-100"
-        >
-          <Button
-            severity="secondary"
-            text
-            size="small"
-            :label="t('editor.edit')"
-            :aria-label="t('editor.operation.pump.edit')"
-            @click="editInstallation(p)"
-          >
-            <template #icon>
-              <Icon name="ph:pencil-simple-duotone" />
-            </template>
-          </Button>
-          <Button
-            severity="danger"
-            text
-            size="small"
-            :aria-label="t('editor.operation.pump.deleteConfirm')"
-            @click="deleteInstallation(p.id)"
-          >
-            <template #icon>
-              <Icon name="ph:x-bold" />
-            </template>
-          </Button>
-        </div>
-      </div>
+      </RecordCard>
     </div>
   </div>
 
