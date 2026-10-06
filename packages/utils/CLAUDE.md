@@ -10,11 +10,14 @@ Provides computational helpers for analyzing `.well` profiles: depth calculation
 
 ```
 src/
-  index.ts              ← re-exports everything from profile.utils.ts, permit.utils.ts and number.utils.ts
+  index.ts              ← re-exports everything from profile, permit, operation, shared and number utils
   profile.utils.ts      ← profile analysis functions
   profile.utils.test.ts ← Vitest tests (comprehensive coverage)
   permit.utils.ts       ← v2.3 permits: calendar-date math, status, condition deadlines, warnings
   permit.utils.test.ts  ← Vitest tests (spec examples included)
+  operation.utils.ts    ← v2.3 meters, production ledger volumes, operating regime, well status, operation warnings
+  operation.utils.test.ts ← Vitest tests (spec complete example golden test included)
+  shared.utils.ts       ← getRetractedIds + instantLocalDate, shared by the modules above (avoids import cycles)
   number.utils.ts       ← formatNumber (locale-aware number display formatting)
   number.utils.test.ts  ← Vitest tests (comprehensive coverage)
 ```
@@ -48,6 +51,14 @@ src/
 | `getConditionDeadlineStates(well, permit, condition, opts?)`          | Deadlines + fulfilled/late/upcoming/overdue via `permit_condition`    |
 | `getPermitWarnings(well, today?)`                                     | v2.3 permits + `permit_condition` log validation warnings             |
 | `parseDateDuration` / `addDateDuration` / `todayCalendarDate`         | ISO 8601 date-duration parsing and calendar-date arithmetic           |
+| `getRetractedIds(entries)` / `instantLocalDate(instant)`              | Generic ledger retraction set / local date of an instant as written   |
+| `getRetractedProductionIds(well)` / `getEffectiveProduction(well)`    | v2.3 production ledger: retracted ids / non-retracted entries         |
+| `getCurrentMeters(well)`                                              | Open `meters` entries, newest installation first                      |
+| `getMeterIntervals(well)`                                             | Normative per-meter interval volumes (rollover, unknown = `null`)     |
+| `getProductionTotal(well)` / `getProductionByPeriod(well, period)`    | Metered + uncovered estimated volumes; reported kept apart (m³)       |
+| `getCurrentRegime(well, at?)`                                         | `operating_regime` entry in force at an instant                       |
+| `getCurrentWellStatus(well)` / `getCurrentWellStatusEntry(well)`      | Latest `status_change` status (undefined = unknown) / its log entry   |
+| `getOperationWarnings(well, today?)`                                  | v2.3 meters/production/regime/history_logs/analysis warnings          |
 | `isFlowingArtesian(well)`                                             | Latest static level is above ground (v2.1 artesian detection)         |
 | `getCentralizerDepths(centralizer)`                                   | Individual centralizer depths from interval + spacing                 |
 | `getLatestAquiferAnalysisField(well, field)`                          | Most recent value of a named field from aquifer_analysis              |
@@ -65,7 +76,7 @@ pnpm dev        # tsup --watch
 
 ## Documentation requirements
 
-`packages/utils` has no README today. If one is added, it must be kept in sync. Until then, the `src/profile.utils.ts` and `src/permit.utils.ts` JSDoc comments **are** the public documentation — keep them accurate.
+`packages/utils/README.md` is the published package documentation; together with the JSDoc comments in `src/*.utils.ts` it is the public API reference — keep both accurate and in sync.
 
 Update JSDoc when:
 
@@ -73,7 +84,7 @@ Update JSDoc when:
 - A function's behavior changes in a way that would surprise a caller
 - A new exported function is added — it must have a JSDoc block before merging
 
-If a `README.md` is added to this package, update it whenever a function is added to or removed from `src/index.ts`.
+Update `README.md` whenever a function is added to or removed from `src/index.ts`.
 
 ## Constraints
 

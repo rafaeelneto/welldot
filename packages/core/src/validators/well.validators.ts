@@ -247,6 +247,14 @@ export const HydrodynamicEventSchema = z
 
 // ─── Aquifer analysis + history log schemas ───────────────────────────────────
 
+export const WellStatusSchema = z.enum([
+  'active',
+  'maintenance',
+  'inactive',
+  'decommissioned',
+  'abandoned',
+]);
+
 export const HistoryLogEntrySchema = z.object({
   id: z.string(),
   datetime: rfc3339(),
@@ -256,6 +264,10 @@ export const HistoryLogEntrySchema = z.object({
   author: z.string().optional(),
   severity: z.string().optional(),
   attachments: z.array(AttachmentSchema).optional(),
+  maintenance_type: z.string().optional(),
+  pump_installation_id: z.string().optional(),
+  meter_id: z.string().optional(),
+  status: WellStatusSchema.optional(),
   permit_id: z.string().optional(),
   condition_id: z.string().optional(),
   due_date: calendarDate().optional(),
@@ -366,6 +378,67 @@ export const PermitSchema = z.object({
   attachments: z.array(AttachmentSchema).optional(),
 });
 
+export const MeterSchema = z.object({
+  id: z.string(),
+  installed_at: rfc3339(),
+  removed_at: rfc3339().optional(),
+  type: z.string().optional(),
+  serial: z.string().optional(),
+  nominal_diameter: z.number().nonnegative().optional(),
+  max_reading: z.number().positive().optional(),
+  purpose: z.string().optional(),
+  notes: z.string().optional(),
+  updated_at: rfc3339().optional(),
+});
+
+export const ProductionEntryBaseSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  corrects: z.string().optional(),
+  sequence: z.number().int().optional(),
+  notes: z.string().optional(),
+});
+
+export const MeterReadingSchema = ProductionEntryBaseSchema.extend({
+  type: z.literal('meter_reading'),
+  datetime: rfc3339(),
+  meter_id: z.string(),
+  reading: z.number().nonnegative(),
+  source: z.string().optional(),
+});
+
+export const DeclaredVolumeSchema = ProductionEntryBaseSchema.extend({
+  type: z.literal('declared_volume'),
+  period_start: rfc3339(),
+  period_end: rfc3339(),
+  volume: z.number().nonnegative(),
+  method: z.string().optional(),
+  purpose: z.string().optional(),
+});
+
+const PRODUCTION_TYPES = ['meter_reading', 'declared_volume'];
+
+// Unknown (`x-`) entry types fall back to the base schema with passthrough;
+// known types must satisfy their own schema.
+export const ProductionEntrySchema = z
+  .discriminatedUnion('type', [MeterReadingSchema, DeclaredVolumeSchema])
+  .or(
+    ProductionEntryBaseSchema.passthrough().refine(
+      e => !PRODUCTION_TYPES.includes(e.type),
+      { message: 'malformed production entry' },
+    ),
+  );
+
+export const OperatingRegimeSchema = z.object({
+  id: z.string(),
+  effective_from: rfc3339(),
+  flow_rate: z.number().nonnegative().optional(),
+  daily_operating_time: z.number().min(0).max(24).optional(),
+  days_per_week: z.number().int().min(1).max(7).optional(),
+  notes: z.string().optional(),
+  updated_at: rfc3339().optional(),
+});
+
 // ─── Well schema ──────────────────────────────────────────────────────────────
 
 export const WellSchema = z
@@ -416,6 +489,9 @@ export const WellSchema = z
     attachments: z.array(AttachmentSchema).optional(),
     pump_installations: z.array(PumpInstallationSchema).optional(),
     permits: z.array(PermitSchema).optional(),
+    meters: z.array(MeterSchema).optional(),
+    production: z.array(ProductionEntrySchema).optional(),
+    operating_regime: z.array(OperatingRegimeSchema).optional(),
   })
   .passthrough();
 

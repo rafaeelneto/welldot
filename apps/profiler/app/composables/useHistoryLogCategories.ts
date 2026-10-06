@@ -27,6 +27,11 @@ export function useHistoryLogCategories() {
       value: 'permit_condition',
       icon: 'ph:seal-check-duotone',
     },
+    {
+      label: t('editor.historyLog.logs.categories.status_change'),
+      value: 'status_change',
+      icon: 'ph:traffic-signal-duotone',
+    },
   ]);
 
   const severityOptions = computed(() => [
@@ -56,6 +61,7 @@ export function useHistoryLogCategories() {
       incident: 'danger',
       event: 'secondary',
       permit_condition: 'success',
+      status_change: 'info',
     };
     return map[category] ?? 'secondary';
   }

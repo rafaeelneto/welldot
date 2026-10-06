@@ -157,6 +157,11 @@ function equipmentName(p: PumpInstallation): string {
 <template>
   <div class="flex flex-col gap-4 p-6">
     <!-- ── Toolbar ───────────────────────────────────────────────────────── -->
+    <h3
+      class="font-serif text-[22px] font-medium tracking-[-0.015em] text-content-0 m-0"
+    >
+      {{ t('editor.operation.pump.title') }}
+    </h3>
     <div class="flex items-center justify-between gap-3 flex-wrap">
       <p class="text-xs text-content-400 m-0 max-w-md">
         {{ t('editor.operation.pump.intro') }}

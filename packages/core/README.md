@@ -15,8 +15,10 @@ TypeScript types, Zod validators, and serialization utilities for the `.well` op
 - **Administrative metadata** — well identity, construction type and purpose (`well_type`, `well_purpose`), authority-scoped IDs (`well_id`), driller, construction date, and geographic coordinates with explicit CRS
 - **Hydrodynamic events** — append-only ledger of static level readings, pumping tests (constant-rate, step-drawdown, airlift), and recovery phases
 - **Aquifer analysis** — interpreted parameter sets: transmissivity, specific capacity, storativity, and Jacob loss coefficients
-- **Operational history** — timestamped log of maintenance, inspections, and incidents with HTTPS attachment references
+- **Operational history** — timestamped log of maintenance, inspections, incidents, status changes and permit condition fulfillment, with HTTPS attachment references
 - **Pump installations** — installation history of the well's pumps: nameplate data, intake depth, riser and electrical data (v2.3)
+- **Permits** — legal instruments governing abstraction (outorgas): validity, granted flow and daily operating time, volume limits, monthly schedule, and conditions (condicionantes) whose deadlines are derived from ISO 8601 date durations (v2.3)
+- **Meters, production and operating regime** — totalizer (hidrômetro) installation history, an append-only production ledger of meter readings and declared volumes (volumes are derived, never stored as totals), and the declared operating regime in force from a given instant (v2.3)
 - **Attachments** — HTTPS-referenced files typed by `document_type`: a root-level `attachments` array for general files about the well (e.g. the drilling report), plus per-record attachments on pumps, events, analyses and log entries. The root array does not collect the per-record ones (v2.3)
 
 The format is designed for three use cases: visualization of technical well profiles, registration with regulatory bodies, and hydrogeological research.
@@ -72,93 +74,110 @@ const empty = isWellEmpty(well);
 
 All types are exported as TypeScript type-only exports (zero runtime cost).
 
-| Type                    | Description                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------- |
-| `Well`                  | Complete static record of a water well (v2)                                     |
-| `BoreHole`              | A drilled interval with diameter and optional drilling method                   |
-| `WellCase`              | Steel or plastic casing installed in the borehole                               |
-| `Reduction`             | Transition piece between different casing diameters                             |
-| `WellScreen`            | Slotted screen section for water intake (`screen_slot` in mm)                   |
-| `SurfaceCase`           | Protective casing near the surface                                              |
-| `HoleFill`              | Annular fill material (`gravel_pack` or `seal`)                                 |
-| `CementPad`             | Concrete wellhead pad dimensions                                                |
-| `Centralizer`           | Casing/screen centralizers over a depth interval with spacing (v2.1)            |
-| `Lithology`             | Geological description of a depth interval                                      |
-| `Texture`               | `{ code: string \| number; vocabulary?: string }` — lithology texture reference |
-| `Fracture`              | A discrete fracture or fracture zone                                            |
-| `Cave`                  | A cavity or void zone                                                           |
-| `Constructive`          | Grouped type: borehole + casings + screens + fills                              |
-| `Geologic`              | Grouped type: lithology + fractures + caves                                     |
-| `WellId`                | Authority-scoped well identifier `{ authority, id, primary? }`                  |
-| `Location`              | Geographic location with optional elevation and CRS properties                  |
-| `LocationProperties`    | CRS, datum, and precision metadata for a `Location`                             |
-| `LevelReading`          | A single depth/time reading during a pumping or recovery phase                  |
-| `RecoveryPhase`         | Time-series of level readings after pump shutdown                               |
-| `PumpingStep`           | One flow-rate step in a pumping test                                            |
-| `HydrodynamicEventBase` | Common fields shared by all hydrodynamic event types                            |
-| `SpotMeasurementEvent`  | A single static water level reading                                             |
-| `ConstantRateEvent`     | A constant-rate pumping test                                                    |
-| `StepDrawdownEvent`     | A step-drawdown pumping test                                                    |
-| `AirliftEvent`          | An air-lift development or test                                                 |
-| `RecoveryOnlyEvent`     | Recovery measurements without drawdown data                                     |
-| `HydrodynamicEvent`     | Discriminated union of all event types + x- custom events                       |
-| `AquiferAnalysis`       | An interpreted set of aquifer parameters                                        |
-| `Attachment`            | An HTTPS-referenced document, typed by `document_type` (common type since v2.3) |
-| `PumpInstallation`      | One installation of a pump in the well (v2.3)                                   |
-| `PumpElectrical`        | Electrical data of a pump installation (v2.3)                                   |
-| `Permit`                | A legal instrument governing abstraction — outorga, dispensa, cadastro (v2.3)   |
-| `PermitCondition`       | An obligation (condicionante) of a permit, with derived deadlines (v2.3)        |
-| `VolumeLimit`           | A volume stated in a permit for a daily, monthly or annual period (v2.3)        |
-| `MonthlyGrant`          | One month of a permit's month-by-month grant (v2.3)                             |
-| `HistoryLogEntry`       | One entry in the operational history log                                        |
-| `Units`                 | `{ length: 'm' \| 'ft'; diameter: 'mm' \| 'inches' }`                           |
-| `LengthUnits`           | `'m' \| 'ft'`                                                                   |
-| `DiameterUnits`         | `'mm' \| 'inches'`                                                              |
-| `UnitsTypes`            | `'metric' \| 'imperial'`                                                        |
-| `TextureType`           | `{ code: TextureCode; label: string }` — a single FGDC texture entry (lookup)   |
-| `TextureCode`           | `number \| string` — numeric FGDC code or custom string code                    |
+| Type                    | Description                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `Well`                  | Complete static record of a water well (v2)                                                                   |
+| `BoreHole`              | A drilled interval with diameter and optional drilling method                                                 |
+| `WellCase`              | Steel or plastic casing installed in the borehole                                                             |
+| `Reduction`             | Transition piece between different casing diameters                                                           |
+| `WellScreen`            | Slotted screen section for water intake (`screen_slot` in mm)                                                 |
+| `WellStatus`            | Closed `status_change` vocabulary: `active`, `maintenance`, `inactive`, `decommissioned`, `abandoned` (v2.3)  |
+| `SurfaceCase`           | Protective casing near the surface                                                                            |
+| `HoleFill`              | Annular fill material (`gravel_pack` or `seal`)                                                               |
+| `CementPad`             | Concrete wellhead pad dimensions                                                                              |
+| `Centralizer`           | Casing/screen centralizers over a depth interval with spacing (v2.1)                                          |
+| `Lithology`             | Geological description of a depth interval                                                                    |
+| `Texture`               | `{ code: string \| number; vocabulary?: string }` — lithology texture reference                               |
+| `Fracture`              | A discrete fracture or fracture zone                                                                          |
+| `Cave`                  | A cavity or void zone                                                                                         |
+| `Constructive`          | Grouped type: borehole + casings + screens + fills                                                            |
+| `Geologic`              | Grouped type: lithology + fractures + caves                                                                   |
+| `WellId`                | Authority-scoped well identifier `{ authority, id, primary? }`                                                |
+| `Location`              | Geographic location with optional elevation and CRS properties                                                |
+| `LocationProperties`    | CRS, datum, and precision metadata for a `Location`                                                           |
+| `LevelReading`          | A single depth/time reading during a pumping or recovery phase                                                |
+| `RecoveryPhase`         | Time-series of level readings after pump shutdown                                                             |
+| `PumpingStep`           | One flow-rate step in a pumping test                                                                          |
+| `HydrodynamicEventBase` | Common fields shared by all hydrodynamic event types                                                          |
+| `SpotMeasurementEvent`  | A single static water level reading                                                                           |
+| `ConstantRateEvent`     | A constant-rate pumping test                                                                                  |
+| `StepDrawdownEvent`     | A step-drawdown pumping test                                                                                  |
+| `AirliftEvent`          | An air-lift development or test                                                                               |
+| `RecoveryOnlyEvent`     | Recovery measurements without drawdown data                                                                   |
+| `HydrodynamicEvent`     | Discriminated union of all event types + x- custom events                                                     |
+| `AquiferAnalysis`       | An interpreted set of aquifer parameters                                                                      |
+| `Attachment`            | An HTTPS-referenced document, typed by `document_type` (common type since v2.3)                               |
+| `PumpInstallation`      | One installation of a pump in the well (v2.3)                                                                 |
+| `PumpElectrical`        | Electrical data of a pump installation (v2.3)                                                                 |
+| `Permit`                | A legal instrument governing abstraction — outorga, dispensa, cadastro (v2.3)                                 |
+| `PermitCondition`       | An obligation (condicionante) of a permit, with derived deadlines (v2.3)                                      |
+| `VolumeLimit`           | A volume stated in a permit for a daily, monthly or annual period (v2.3)                                      |
+| `MonthlyGrant`          | One month of a permit's month-by-month grant (v2.3)                                                           |
+| `Meter`                 | One installation of a totalizer (hidrômetro) in the well (v2.3)                                               |
+| `ProductionEntryBase`   | Common fields of every `production` ledger entry (v2.3)                                                       |
+| `MeterReading`          | A totalizer register value in m³ (`type: 'meter_reading'`) (v2.3)                                             |
+| `DeclaredVolume`        | A volume declared for a period, without a meter (`type: 'declared_volume'`) (v2.3)                            |
+| `ProductionEntry`       | `MeterReading \| DeclaredVolume` — one entry of the `production` ledger (v2.3)                                |
+| `OperatingRegime`       | Declared flow rate, daily operating time and days per week from `effective_from` (v2.3)                       |
+| `HistoryLogEntry`       | One entry in the operational history log (incl. `maintenance`, `status_change` and `permit_condition` fields) |
+| `Units`                 | `{ length; diameter; flow?; power?; volume? }` — display/input unit preferences                               |
+| `LengthUnits`           | `'m' \| 'ft'`                                                                                                 |
+| `DiameterUnits`         | `'mm' \| 'inches'`                                                                                            |
+| `FlowUnits`             | `'m3/h' \| 'L/s' \| 'gpm'`                                                                                    |
+| `PowerUnits`            | `'kW' \| 'cv' \| 'hp'`                                                                                        |
+| `VolumeUnits`           | `'m3' \| 'L' \| 'ft3' \| 'gal'` (`gal` is the US gallon)                                                      |
+| `UnitsTypes`            | `'metric' \| 'imperial'`                                                                                      |
+| `TextureType`           | `{ code: TextureCode; label: string }` — a single FGDC texture entry (lookup)                                 |
+| `TextureCode`           | `number \| string` — numeric FGDC code or custom string code                                                  |
 
 ### Validators
 
 Each schema validates its corresponding type at runtime. All schemas are Zod objects and compose with standard Zod methods (`.parse`, `.safeParse`, `.extend`, etc.).
 
-| Export                        | Validates                                                               |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| `WellSchema`                  | `Well` (the complete document; `.passthrough()` preserves unknown keys) |
-| `BoreHoleSchema`              | `BoreHole`                                                              |
-| `WellCaseSchema`              | `WellCase`                                                              |
-| `ReductionSchema`             | `Reduction`                                                             |
-| `WellScreenSchema`            | `WellScreen`                                                            |
-| `SurfaceCaseSchema`           | `SurfaceCase`                                                           |
-| `HoleFillSchema`              | `HoleFill`                                                              |
-| `CementPadSchema`             | `CementPad`                                                             |
-| `CentralizerSchema`           | `Centralizer`                                                           |
-| `LithologySchema`             | `Lithology`                                                             |
-| `TextureSchema`               | `Texture`                                                               |
-| `FractureSchema`              | `Fracture`                                                              |
-| `CaveSchema`                  | `Cave`                                                                  |
-| `WellIdSchema`                | `WellId`                                                                |
-| `LocationPropertiesSchema`    | `LocationProperties`                                                    |
-| `LocationSchema`              | `Location`                                                              |
-| `LevelReadingSchema`          | `LevelReading`                                                          |
-| `RecoveryPhaseSchema`         | `RecoveryPhase`                                                         |
-| `PumpingStepSchema`           | `PumpingStep`                                                           |
-| `HydrodynamicEventBaseSchema` | `HydrodynamicEventBase`                                                 |
-| `SpotMeasurementEventSchema`  | `SpotMeasurementEvent`                                                  |
-| `ConstantRateEventSchema`     | `ConstantRateEvent`                                                     |
-| `StepDrawdownEventSchema`     | `StepDrawdownEvent`                                                     |
-| `AirliftEventSchema`          | `AirliftEvent`                                                          |
-| `RecoveryOnlyEventSchema`     | `RecoveryOnlyEvent`                                                     |
-| `HydrodynamicEventSchema`     | `HydrodynamicEvent` (discriminated union + x- passthrough)              |
-| `AquiferAnalysisSchema`       | `AquiferAnalysis`                                                       |
-| `AttachmentSchema`            | `Attachment`                                                            |
-| `PumpInstallationSchema`      | `PumpInstallation`                                                      |
-| `PumpElectricalSchema`        | `PumpElectrical`                                                        |
-| `PermitSchema`                | `Permit`                                                                |
-| `PermitConditionSchema`       | `PermitCondition`                                                       |
-| `VolumeLimitSchema`           | `VolumeLimit`                                                           |
-| `MonthlyGrantSchema`          | `MonthlyGrant`                                                          |
-| `HistoryLogEntrySchema`       | `HistoryLogEntry`                                                       |
+| Export                        | Validates                                                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `WellSchema`                  | `Well` (the complete document; `.passthrough()` preserves unknown keys)                                    |
+| `BoreHoleSchema`              | `BoreHole`                                                                                                 |
+| `WellCaseSchema`              | `WellCase`                                                                                                 |
+| `ReductionSchema`             | `Reduction`                                                                                                |
+| `WellScreenSchema`            | `WellScreen`                                                                                               |
+| `WellStatusSchema`            | `WellStatus` (z.enum — any other value is rejected)                                                        |
+| `SurfaceCaseSchema`           | `SurfaceCase`                                                                                              |
+| `HoleFillSchema`              | `HoleFill`                                                                                                 |
+| `CementPadSchema`             | `CementPad`                                                                                                |
+| `CentralizerSchema`           | `Centralizer`                                                                                              |
+| `LithologySchema`             | `Lithology`                                                                                                |
+| `TextureSchema`               | `Texture`                                                                                                  |
+| `FractureSchema`              | `Fracture`                                                                                                 |
+| `CaveSchema`                  | `Cave`                                                                                                     |
+| `WellIdSchema`                | `WellId`                                                                                                   |
+| `LocationPropertiesSchema`    | `LocationProperties`                                                                                       |
+| `LocationSchema`              | `Location`                                                                                                 |
+| `LevelReadingSchema`          | `LevelReading`                                                                                             |
+| `RecoveryPhaseSchema`         | `RecoveryPhase`                                                                                            |
+| `PumpingStepSchema`           | `PumpingStep`                                                                                              |
+| `HydrodynamicEventBaseSchema` | `HydrodynamicEventBase`                                                                                    |
+| `SpotMeasurementEventSchema`  | `SpotMeasurementEvent`                                                                                     |
+| `ConstantRateEventSchema`     | `ConstantRateEvent`                                                                                        |
+| `StepDrawdownEventSchema`     | `StepDrawdownEvent`                                                                                        |
+| `AirliftEventSchema`          | `AirliftEvent`                                                                                             |
+| `RecoveryOnlyEventSchema`     | `RecoveryOnlyEvent`                                                                                        |
+| `HydrodynamicEventSchema`     | `HydrodynamicEvent` (discriminated union + x- passthrough)                                                 |
+| `AquiferAnalysisSchema`       | `AquiferAnalysis`                                                                                          |
+| `AttachmentSchema`            | `Attachment`                                                                                               |
+| `PumpInstallationSchema`      | `PumpInstallation`                                                                                         |
+| `PumpElectricalSchema`        | `PumpElectrical`                                                                                           |
+| `PermitSchema`                | `Permit`                                                                                                   |
+| `PermitConditionSchema`       | `PermitCondition`                                                                                          |
+| `VolumeLimitSchema`           | `VolumeLimit`                                                                                              |
+| `MonthlyGrantSchema`          | `MonthlyGrant`                                                                                             |
+| `MeterSchema`                 | `Meter` (`max_reading` > 0)                                                                                |
+| `ProductionEntryBaseSchema`   | `ProductionEntryBase`                                                                                      |
+| `MeterReadingSchema`          | `MeterReading`                                                                                             |
+| `DeclaredVolumeSchema`        | `DeclaredVolume`                                                                                           |
+| `ProductionEntrySchema`       | `ProductionEntry` (discriminated union + x- passthrough; a known type missing required fields is rejected) |
+| `OperatingRegimeSchema`       | `OperatingRegime` (`daily_operating_time` 0–24, integer `days_per_week` 1–7)                               |
+| `HistoryLogEntrySchema`       | `HistoryLogEntry`                                                                                          |
 
 ### Functions
 
@@ -185,6 +204,24 @@ Returns `null` if the parsed data is empty. Throws on unrecognized version numbe
 #### `isWellEmpty(well: Well | null | undefined): boolean`
 
 Returns `true` when all constructive and geologic arrays are empty. Accepts `null` and `undefined` (both treated as empty).
+
+#### Unit conversion
+
+`.well` files always store canonical SI units; these helpers convert for display and input.
+
+| Quantity       | Functions                                                                                                                                                                                            |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Length         | `metersToFeet`, `feetToMeters`                                                                                                                                                                       |
+| Diameter       | `mmToInches`, `inchesToMm`, `slotNumberToMm`, `mmToSlotNumber`                                                                                                                                       |
+| Flow           | `cubicMeterPerHourToLitersPerSecond`, `litersPerSecondToCubicMeterPerHour`, `cubicMeterPerHourToUsGallonsPerMinute`, `usGallonsPerMinuteToCubicMeterPerHour`, `flowFromCanonical`, `flowToCanonical` |
+| Power          | `cvToKilowatts`, `kilowattsToCv`, `hpToKilowatts`, `kilowattsToHp`, `powerFromCanonical`, `powerToCanonical`                                                                                         |
+| Volume         | `litersToCubicMeters`, `cubicMetersToLiters`, `cubicMetersToCubicFeet`, `cubicFeetToCubicMeters`, `cubicMetersToUsGallons`, `usGallonsToCubicMeters`, `volumeFromCanonical`, `volumeToCanonical`     |
+| Time           | `minutesToHours`, `hoursToMinutes`                                                                                                                                                                   |
+| Pressure       | `kilopascalToPsi`, `psiToKilopascal`                                                                                                                                                                 |
+| Transmissivity | `squareMeterPerSecondToSquareMeterPerDay`, `squareMeterPerDayToSquareMeterPerSecond`                                                                                                                 |
+| Coordinates    | `decimalDegreesToDms`, `dmsToDecimalDegrees` (`DmsCoordinate`)                                                                                                                                       |
+
+`*FromCanonical(value, unit)` converts from the canonical unit (m³/h, kW, m³) to the given display unit; `*ToCanonical(value, unit)` converts back.
 
 ## FGDC Texture Patterns
 

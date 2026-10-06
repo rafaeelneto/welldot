@@ -9,6 +9,7 @@ export type {
   Centralizer,
   ConstantRateEvent,
   Constructive,
+  DeclaredVolume,
   Fracture,
   Geologic,
   HistoryLogEntry,
@@ -19,9 +20,14 @@ export type {
   Lithology,
   Location,
   LocationProperties,
+  Meter,
+  MeterReading,
   MonthlyGrant,
+  OperatingRegime,
   Permit,
   PermitCondition,
+  ProductionEntry,
+  ProductionEntryBase,
   PumpElectrical,
   PumpInstallation,
   PumpingStep,
@@ -39,6 +45,7 @@ export type {
   WellCase,
   WellId,
   WellScreen,
+  WellStatus,
 } from './types/well.types';
 
 export type {
@@ -48,6 +55,7 @@ export type {
   PowerUnits,
   Units,
   UnitsTypes,
+  VolumeUnits,
 } from './types/units.types';
 
 // Validators
@@ -60,6 +68,7 @@ export {
   CementPadSchema,
   CentralizerSchema,
   ConstantRateEventSchema,
+  DeclaredVolumeSchema,
   FractureSchema,
   HistoryLogEntrySchema,
   HoleFillSchema,
@@ -69,9 +78,14 @@ export {
   LithologySchema,
   LocationPropertiesSchema,
   LocationSchema,
+  MeterReadingSchema,
+  MeterSchema,
   MonthlyGrantSchema,
+  OperatingRegimeSchema,
   PermitConditionSchema,
   PermitSchema,
+  ProductionEntryBaseSchema,
+  ProductionEntrySchema,
   PumpElectricalSchema,
   PumpInstallationSchema,
   PumpingStepSchema,
@@ -87,6 +101,7 @@ export {
   WellIdSchema,
   WellSchema,
   WellScreenSchema,
+  WellStatusSchema,
   parseWell,
 } from './validators/well.validators';
 
@@ -110,9 +125,12 @@ export type { Well as Profile } from './types/well.types';
 
 // Units conversion utilities
 export {
+  cubicFeetToCubicMeters,
   cubicMeterPerHourToLitersPerSecond,
   cubicMeterPerHourToUsGallonsPerMinute,
+  cubicMetersToCubicFeet,
   cubicMetersToLiters,
+  cubicMetersToUsGallons,
   cvToKilowatts,
   decimalDegreesToDms,
   dmsToDecimalDegrees,
@@ -138,5 +156,8 @@ export {
   squareMeterPerDayToSquareMeterPerSecond,
   squareMeterPerSecondToSquareMeterPerDay,
   usGallonsPerMinuteToCubicMeterPerHour,
+  usGallonsToCubicMeters,
+  volumeFromCanonical,
+  volumeToCanonical,
 } from './utils/units';
 export type { DmsCoordinate } from './utils/units';

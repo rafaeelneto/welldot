@@ -24,7 +24,7 @@ const visible = defineModel<boolean>('visible', { default: false });
 const emit = defineEmits<{ save: [permit: Permit] }>();
 
 const { t, locale } = useI18n();
-const { flowUnit } = useUnitFormat();
+const { flowUnit, volumeUnit } = useUnitFormat();
 const profileStore = useProfileStore();
 
 const VOLUME_PERIODS = ['daily', 'monthly', 'annual'] as const;
@@ -466,11 +466,12 @@ function save() {
             <span class="text-[11px] text-content-400">
               {{ t(`editor.operation.permit.fields.volumePeriods.${period}`) }}
             </span>
-            <WellInputNumber
+            <UnitInput
               v-model="form.volumes[period]"
+              unit-type="volume"
               :min="0"
               :max-fraction-digits="2"
-              suffix=" m³"
+              :suffix="` ${volumeUnit}`"
               class="w-full"
               :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
             />

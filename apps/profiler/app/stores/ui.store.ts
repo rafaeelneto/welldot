@@ -3,6 +3,7 @@ import type {
   FlowUnits,
   LengthUnits,
   PowerUnits,
+  VolumeUnits,
 } from '@welldot/core';
 import { defineStore } from 'pinia';
 
@@ -15,6 +16,7 @@ export const useUiStore = defineStore(
     const diameterUnit = ref<DiameterUnits>('mm');
     const flowUnit = ref<FlowUnits>('m3/h');
     const powerUnit = ref<PowerUnits>('kW');
+    const volumeUnit = ref<VolumeUnits>('m3');
     const coordinateFormat = ref<CoordinateFormat>('DD');
     // Ids of startup tips the user chose not to see again.
     const dismissedTips = ref<string[]>([]);
@@ -24,6 +26,7 @@ export const useUiStore = defineStore(
       diameterUnit,
       flowUnit,
       powerUnit,
+      volumeUnit,
       coordinateFormat,
       dismissedTips,
     };

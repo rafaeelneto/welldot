@@ -512,6 +512,118 @@ export type Permit = {
   attachments?: Attachment[];
 };
 
+/**
+ * One installation of a totalizer (hidrômetro) in the well (installation
+ * pattern). Holds device facts only: every register value, including the
+ * installation and removal readings, lives in `production`. Since v2.3.
+ */
+export type Meter = {
+  /** Unique within `meters`. UUID v4 recommended. */
+  id: string;
+  /** RFC 3339 instant when the meter entered service in this well. */
+  installed_at: string;
+  /** RFC 3339 instant when it left. Absent means currently installed. */
+  removed_at?: string;
+  /** Meter type. Recommended: `mechanical`, `electromagnetic`, `ultrasonic`. */
+  type?: string;
+  serial?: string;
+  /** Nominal diameter (DN) in millimeters. */
+  nominal_diameter?: number;
+  /** Register capacity in m³, used to detect rollover. */
+  max_reading?: number;
+  /** A `well_purpose` value this meter accounts for. All its readings inherit it. */
+  purpose?: string;
+  notes?: string;
+  /** RFC 3339 instant of the last edit of this record. */
+  updated_at?: string;
+};
+
+/** Fields shared by every `production` ledger entry. Since v2.3. */
+export type ProductionEntryBase = {
+  /** Unique within `production`. UUID v4 recommended. */
+  id: string;
+  /** `meter_reading` or `declared_volume`. */
+  type: string;
+  /** `production[].id` of the entry this one retracts (ledger correction). */
+  corrects?: string;
+  /** Tie-breaker for identical instants, lower first. */
+  sequence?: number;
+  notes?: string;
+};
+
+/** A totalizer register value. Since v2.3. */
+export type MeterReading = ProductionEntryBase & {
+  type: 'meter_reading';
+  /** RFC 3339 instant of the reading. */
+  datetime: string;
+  /** `meters[].id` of the meter read. */
+  meter_id: string;
+  /** Register value in m³. Meters reading in liters are converted on input. */
+  reading: number;
+  /** Recommended: `manual`, `telemetry`. */
+  source?: string;
+};
+
+/** A volume declared for a period, without a meter. Since v2.3. */
+export type DeclaredVolume = ProductionEntryBase & {
+  type: 'declared_volume';
+  /** RFC 3339 instant the period starts. */
+  period_start: string;
+  /** RFC 3339 instant the period ends. Later than `period_start`. */
+  period_end: string;
+  /** Volume in m³. */
+  volume: number;
+  /**
+   * `estimated` (e.g. flow × time; counts only where no meter covers) or
+   * `reported` (as declared to a regulator; never added to totals). Absent
+   * means `estimated`.
+   */
+  method?: string;
+  /** A `well_purpose` value. */
+  purpose?: string;
+};
+
+/**
+ * One entry of the append-only `production` ledger, discriminated by `type`.
+ * Corrected with `corrects`, never edited in place. Since v2.3.
+ */
+export type ProductionEntry = MeterReading | DeclaredVolume;
+
+/**
+ * How the well is intended to run from `effective_from` on. A mutable record;
+ * a change of regime is a new entry. An absent field means unknown, never
+ * zero. Since v2.3.
+ */
+export type OperatingRegime = {
+  /** Unique within `operating_regime`. UUID v4 recommended. */
+  id: string;
+  /** RFC 3339 instant the regime takes effect. Unique within the block. */
+  effective_from: string;
+  /** Flow in m³/h. */
+  flow_rate?: number;
+  /** Daily operating time in hours, 0–24. */
+  daily_operating_time?: number;
+  /** Days of operation per week, 1–7. */
+  days_per_week?: number;
+  notes?: string;
+  /** RFC 3339 instant of the last edit of this record. */
+  updated_at?: string;
+};
+
+/**
+ * Operational situation of the well, set by `status_change` history logs.
+ * Closed vocabulary: `active` (normal operation), `maintenance` (temporarily
+ * out of service for work), `inactive` (out of service, recoverable),
+ * `decommissioned` (permanently closed and properly sealed), `abandoned`
+ * (left without proper sealing). Since v2.3.
+ */
+export type WellStatus =
+  | 'active'
+  | 'maintenance'
+  | 'inactive'
+  | 'decommissioned'
+  | 'abandoned';
+
 // ─── History log objects ──────────────────────────────────────────────────────
 
 export type HistoryLogEntry = {
@@ -526,15 +638,38 @@ export type HistoryLogEntry = {
   severity?: string;
   attachments?: Attachment[];
 
-  // `permit_condition` category fields (since v2.3). MUST be absent on
-  // entries of other categories.
+  // Category-specific fields (since v2.3). MUST be absent on entries of
+  // other categories.
+
+  // `maintenance`
+  /**
+   * Recommended: `inspection`, `cleaning`, `redevelopment`, `disinfection`,
+   * `pump_service`, `meter_calibration`, `video_inspection`,
+   * `level_measurement`, `pump_test`, `water_sampling`.
+   */
+  maintenance_type?: string;
+  /** `pump_installations[].id` the task concerns. */
+  pump_installation_id?: string;
+  /** `meters[].id` the task concerns. */
+  meter_id?: string;
+
+  // `status_change`
+  /** The well's situation from this entry on. Closed vocabulary. */
+  status?: WellStatus;
+
+  // `permit_condition`
   /** `permits[].id` whose condition this entry fulfills. */
   permit_id?: string;
   /** `permits[].conditions[].id` within that permit. */
   condition_id?: string;
   /** Calendar date (YYYY-MM-DD) of the deadline fulfilled. Absent for undated conditions. */
   due_date?: string;
-  /** `hydrodynamic_events[].id` that satisfied the obligation, when applicable. */
+
+  // `maintenance` and `permit_condition`
+  /**
+   * `hydrodynamic_events[].id` holding the data produced by the task
+   * (`maintenance`) or that satisfied the obligation (`permit_condition`).
+   */
   event_id?: string;
 };
 
@@ -602,6 +737,12 @@ export type Well = {
   pump_installations?: PumpInstallation[];
   /** Legal instruments governing abstraction (outorgas). Since v2.3. */
   permits?: Permit[];
+  /** Totalizer (hidrômetro) installation history. Since v2.3. */
+  meters?: Meter[];
+  /** Append-only ledger of produced water. Since v2.3. */
+  production?: ProductionEntry[];
+  /** Declared operating regimes, each in force from `effective_from`. Since v2.3. */
+  operating_regime?: OperatingRegime[];
 };
 
 /** Geologic section of a well (lithology, fractures, caves). */

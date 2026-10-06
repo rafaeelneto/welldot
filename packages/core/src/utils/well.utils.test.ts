@@ -2079,3 +2079,204 @@ describe('v2.3 — permits and permit_condition logs', () => {
     expect(result.history_logs).toEqual(well.history_logs);
   });
 });
+
+describe('v2.3 — meters, production, operating_regime and log fields', () => {
+  const OPS_DOC = {
+    version: 2,
+    well_type: 'tubular',
+    well_purpose: ['production'],
+    bore_hole: [{ from: 0, to: 80, diameter: 250 }],
+    well_case: [],
+    reduction: [],
+    well_screen: [],
+    surface_case: [],
+    hole_fill: [],
+    lithology: [],
+    fractures: [],
+    caves: [],
+    meters: [
+      {
+        id: 'hm-01',
+        installed_at: '2025-04-02T09:00:00-03:00',
+        removed_at: '2026-03-05T11:00:00-03:00',
+        type: 'mechanical',
+        max_reading: 99999,
+      },
+      {
+        id: 'hm-02',
+        installed_at: '2026-03-05T11:30:00-03:00',
+        type: 'electromagnetic',
+        nominal_diameter: 50,
+        purpose: 'production',
+      },
+    ],
+    production: [
+      {
+        id: 'p1',
+        type: 'meter_reading',
+        datetime: '2025-04-02T09:00:00-03:00',
+        meter_id: 'hm-01',
+        reading: 0,
+      },
+      {
+        id: 'p2',
+        type: 'meter_reading',
+        datetime: '2026-03-05T11:00:00-03:00',
+        meter_id: 'hm-01',
+        reading: 81240,
+      },
+      {
+        id: 'p3',
+        type: 'meter_reading',
+        datetime: '2026-03-05T11:30:00-03:00',
+        meter_id: 'hm-02',
+        reading: 0,
+      },
+      {
+        id: 'p4',
+        type: 'meter_reading',
+        datetime: '2026-09-30T08:00:00-03:00',
+        meter_id: 'hm-02',
+        reading: 52310,
+        source: 'telemetry',
+      },
+      {
+        id: 'p5',
+        type: 'declared_volume',
+        period_start: '2025-01-01T00:00:00-03:00',
+        period_end: '2025-04-01T00:00:00-03:00',
+        volume: 12000,
+        method: 'reported',
+        purpose: 'production',
+      },
+      {
+        id: 'p6',
+        type: 'meter_reading',
+        datetime: '2026-09-30T08:00:00-03:00',
+        meter_id: 'hm-02',
+        reading: 52300,
+        corrects: 'p4',
+        sequence: 1,
+      },
+    ],
+    operating_regime: [
+      {
+        id: 'r1',
+        effective_from: '2025-04-02T09:00:00-03:00',
+        flow_rate: 14,
+        daily_operating_time: 18,
+        days_per_week: 7,
+      },
+    ],
+    history_logs: [
+      {
+        id: 'log-1',
+        datetime: '2025-04-02T09:00:00-03:00',
+        category: 'status_change',
+        description: 'Poço entra em operação',
+        status: 'active',
+      },
+      {
+        id: 'log-2',
+        datetime: '2026-03-05T11:30:00-03:00',
+        category: 'maintenance',
+        description: 'Troca de hidrômetro',
+        maintenance_type: 'meter_calibration',
+        meter_id: 'hm-01',
+        pump_installation_id: 'pump-02',
+        event_id: 'ev-1',
+      },
+    ],
+  };
+
+  it('parseWell accepts the new blocks and log fields', () => {
+    const well = parseWell(JSON.stringify(OPS_DOC));
+    expect(well.meters).toEqual(OPS_DOC.meters);
+    expect(well.production).toEqual(OPS_DOC.production);
+    expect(well.operating_regime).toEqual(OPS_DOC.operating_regime);
+    expect(well.history_logs).toEqual(OPS_DOC.history_logs);
+  });
+
+  it('parseWell rejects a meter installed_at without offset', () => {
+    const doc = {
+      ...OPS_DOC,
+      meters: [{ id: 'm', installed_at: '2025-04-02T09:00:00' }],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects a meter_reading without meter_id', () => {
+    const { meter_id: _m, ...noMeter } = OPS_DOC.production[0];
+    expect(() =>
+      parseWell(JSON.stringify({ ...OPS_DOC, production: [noMeter] })),
+    ).toThrow();
+  });
+
+  it('parseWell rejects a declared_volume without period_end', () => {
+    const { period_end: _p, ...noEnd } = OPS_DOC.production[4];
+    expect(() =>
+      parseWell(JSON.stringify({ ...OPS_DOC, production: [noEnd] })),
+    ).toThrow();
+  });
+
+  it('parseWell keeps unknown production entry types', () => {
+    const custom = { id: 'x1', type: 'x-pulse', pulses: 120 };
+    const well = parseWell(
+      JSON.stringify({ ...OPS_DOC, production: [custom] }),
+    );
+    expect(well.production).toEqual([custom]);
+  });
+
+  it('parseWell rejects a status outside the closed vocabulary', () => {
+    const doc = {
+      ...OPS_DOC,
+      history_logs: [{ ...OPS_DOC.history_logs[0], status: 'x-paused' }],
+    };
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects regime values out of range', () => {
+    const base = OPS_DOC.operating_regime[0];
+    expect(() =>
+      parseWell(
+        JSON.stringify({
+          ...OPS_DOC,
+          operating_regime: [{ ...base, days_per_week: 8 }],
+        }),
+      ),
+    ).toThrow();
+    expect(() =>
+      parseWell(
+        JSON.stringify({
+          ...OPS_DOC,
+          operating_regime: [{ ...base, daily_operating_time: 25 }],
+        }),
+      ),
+    ).toThrow();
+  });
+
+  it('round-trips through serializeWell → deserializeWell', () => {
+    const well = deserializeWell(JSON.stringify(OPS_DOC))!;
+    const again = deserializeWell(serializeWell(well))!;
+    expect(again.meters).toEqual(OPS_DOC.meters);
+    expect(again.production).toEqual(OPS_DOC.production);
+    expect(again.operating_regime).toEqual(OPS_DOC.operating_regime);
+    expect(again.history_logs).toEqual(OPS_DOC.history_logs);
+  });
+
+  it('redactWell removes the operational blocks with operation', () => {
+    const well = deserializeWell(JSON.stringify(OPS_DOC))!;
+    const result = redactWell(well, {
+      general: true,
+      constructive: true,
+      geology: true,
+      hydrodynamic: true,
+      history: true,
+      operation: false,
+    });
+    expect(result.meters).toBeUndefined();
+    expect(result.production).toBeUndefined();
+    expect(result.operating_regime).toBeUndefined();
+    expect(result.history_logs).toEqual(well.history_logs);
+  });
+});

@@ -21,6 +21,11 @@ export function useUnitFormat() {
     toCanonical: powerToCanonical,
     unit: powerUnit,
   } = useUnitDisplay('power');
+  const {
+    toDisplay: volumeToDisplay,
+    toCanonical: volumeToCanonical,
+    unit: volumeUnit,
+  } = useUnitDisplay('volume');
   const { formatNumber } = useNumberFormat();
   const { locale } = useI18n();
 
@@ -54,7 +59,10 @@ export function useUnitFormat() {
     fractionDigits = 2,
   ): string {
     if (value == null) return '—';
-    return formatNumber(value, { fractionDigits, suffix: 'm³' });
+    return formatNumber(volumeToDisplay(value), {
+      fractionDigits,
+      suffix: volumeUnit.value,
+    });
   }
 
   function formatFlow(
@@ -117,11 +125,14 @@ export function useUnitFormat() {
     formatSpecificCapacity,
     flowUnit,
     powerUnit,
+    volumeUnit,
     specificCapacityUnit,
     toFlow: flowToDisplay,
     toCanonicalFlow: flowToCanonical,
     toPower: powerToDisplay,
     toCanonicalPower: powerToCanonical,
+    toVolume: volumeToDisplay,
+    toCanonicalVolume: volumeToCanonical,
     toSpecificCapacity,
   };
 }

@@ -113,12 +113,14 @@ single `LevelReading` — never fabricate intermediate readings to fill out a cu
 Accepted conversions (only when original unit is explicit in the document):
 
 - ft → m: `× 0.3048` | in → mm: `× 25.4` | cm → mm: `× 10`
+- L → m³: `÷ 1000` (meter readings and volumes) | L/s → m³/h: `× 3.6` | cv → kW: `× 0.7355`
 - DMS → decimal degrees: convert precisely
 - SIRGAS 2000 UTM → WGS84 decimal: convert precisely or ask the user
 
 Use empty arrays (`[]`) for array fields the document has nothing for. **Omit** `cement_pad`,
 `location`, `well_id`, `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquifer_analysis`,
-`history_logs`, `attachments`, `pump_installations`, and `permits` entirely rather than emitting empty placeholders.
+`history_logs`, `attachments`, `pump_installations`, `permits`, `meters`, `production`, and
+`operating_regime` entirely rather than emitting empty placeholders.
 
 ---
 
@@ -187,6 +189,8 @@ apply an enum. Always transcribe the report's own wording verbatim, in its own l
 
 - `hole_fill[].type`: `gravel_pack` or `seal` only. (`hole_fill[].description` carries the
   near-verbatim material detail instead.)
+- `history_logs[].status` (category `status_change`): `active`, `maintenance`, `inactive`,
+  `decommissioned` or `abandoned` only — no `x-` values; any other value is rejected.
 
 ### Texture — `lithology[].texture`
 
@@ -258,10 +262,25 @@ references `hydrodynamic_events` ids, never `airlift`), `method`
 Interventions/inspections/incidents distinct from `hydrodynamic_events`. Each entry: `id`,
 `datetime` (RFC 3339 with offset, when it happened), `updated_at` (RFC 3339 with offset, when the
 record was made/edited — **NEVER synthesize this** if the report doesn't distinguish it from
-`datetime`; omit instead), `category` (maintenance/inspection/incident/event, open vocab),
-`description` (near-verbatim), `author`, `severity` (low/medium/high/critical), `attachments`
-(only if the report references an actual retrievable URL — `Attachment`: `id`, `uri` (https,
-required), `media_type` (required), `document_type`, `filename`, `description`, `sha256`).
+`datetime`; omit instead), `category` (maintenance/inspection/incident/event/change_of_use/
+status_change/permit_condition, open vocab), `description` (near-verbatim), `author`, `severity`
+(low/medium/high/critical), `attachments` (only if the report references an actual retrievable URL —
+`Attachment`: `id`, `uri` (https, required), `media_type` (required), `document_type`, `filename`,
+`description`, `sha256`).
+
+Category-specific fields (v2.3) go **only** on entries of their category:
+
+- `maintenance` — `maintenance_type` (inspection/cleaning/redevelopment/disinfection/pump_service/
+  meter_calibration/video_inspection/level_measurement/pump_test/water_sampling), and optional
+  references `pump_installation_id`, `meter_id`, `event_id` (the `hydrodynamic_events` entry holding
+  the data the task produced). The log records that the task was done — **never copy measured values
+  into it**; a level measured during maintenance is a `spot_measurement` event referenced by `event_id`.
+- `status_change` — `status`, a **closed** enum: exactly one of `active`, `maintenance`, `inactive`,
+  `decommissioned`, `abandoned` (any other value, `x-` included, makes the file invalid; if the
+  report's wording maps to none of them, use a plain `event` entry instead) — only when the
+  report states the well was put into operation, stopped, sealed or abandoned, with a date. Never
+  infer a status from silence: without a `status_change`, the status is unknown.
+- `permit_condition` — see § `permits` below.
 
 ### `pump_installations` (v2.3)
 
@@ -291,6 +310,39 @@ either `first_due` (date) **or** `due_after` (ISO 8601 date duration from the st
 `P90D`), plus `recurrence` (`P6M`, `P1Y`), `last_due`, `occurrences`. Never compute or store the
 deadline dates or the permit status — they are derived. Fulfillments are `history_logs` entries with
 `category: "permit_condition"`, `permit_id`, `condition_id`, `due_date` — only if the report records them.
+
+### `meters` (v2.3)
+
+Only when the report describes an installed totalizer (hidrômetro). Each entry: `id`, `installed_at`
+(RFC 3339 with offset, required), `removed_at`, `type` (mechanical/electromagnetic/ultrasonic),
+`serial`, `nominal_diameter` (mm, DN), `max_reading` (register capacity in **m³**, > 0 — only if
+stated), `purpose` (a `well_purpose` value the meter accounts for). Device facts only — **never put a
+reading on the meter**; the installation and removal register values are `production` readings with
+`datetime` equal to `installed_at` / `removed_at`.
+
+### `production` (v2.3)
+
+Append-only ledger, discriminated by `type`. Common: `id`, `type`, `corrects` (id of an entry this
+one retracts — only if the source itself records a correction), `sequence`, `notes`.
+
+- `meter_reading` — `datetime` (RFC 3339 with offset), `meter_id` (a `meters[].id`, required —
+  create the meter entry too), `reading` (register value in **m³**; a meter reading in liters is
+  converted `÷ 1000`), `source` (manual/telemetry).
+- `declared_volume` — `period_start`, `period_end` (instants, end later than start), `volume` (m³),
+  `method` (`reported` when the report transcribes a volume declared to a regulator; `estimated`
+  when the report itself gives an estimate such as flow × time), `purpose`.
+
+**Never compute or store derived values**: no consumption between readings, no monthly/annual totals,
+no average flow — transcribe register values and declared volumes only. Never fabricate a reading
+of `0` at installation unless the report states it.
+
+### `operating_regime` (v2.3)
+
+Only when the report states how the well is operated (e.g. "opera 20 h/dia a 15 m³/h"). Each entry:
+`id`, `effective_from` (RFC 3339 with offset, required; unique), `flow_rate` (m³/h),
+`daily_operating_time` (hours, 0–24), `days_per_week` (integer 1–7). Omit unknown fields — never
+write `0`. A stopped well is a `status_change`, not a regime with `flow_rate: 0`. The granted values of
+a permit go in `permits`, not here.
 
 ### `attachments` (v2.3)
 
@@ -336,12 +388,17 @@ debris, or partial backfill reduced the depth; SIAGAS-style records with a separ
    present, is > 0 and came from the report (never derived from a count); water levels above ground are
    negative
 8. Every `hydrodynamic_events[]`, `aquifer_analysis[]`, `history_logs[]` `datetime` (and `updated_at`),
-   and every `pump_installations[]` `installed_at` / `removed_at`, is
+   every `pump_installations[]` / `meters[]` `installed_at` / `removed_at`, every `production[]`
+   `datetime` / `period_start` / `period_end`, and every `operating_regime[].effective_from`, is
    RFC 3339 **with a UTC offset** — reject and fix any naked `YYYY-MM-DDTHH:MM:SS` or bare date used
    where an instant is required (only `construction_date`, the `permits[]` dates, condition
    `first_due`/`last_due` and `history_logs[].due_date` are bare calendar dates)
    8b. `permits[].conditions[]` `due_after`/`recurrence` are date-only durations (`P90D`, `P6M`, never
    `PT…`); a condition never has both `first_due` and `due_after`
+   8c. Every `production[].meter_id` resolves to a `meters[].id`; readings and volumes are in m³; no
+   derived totals were written; `operating_regime` has no zero placeholders, `daily_operating_time` is
+   0–24 and `days_per_week` an integer 1–7; `history_logs` category-specific fields appear only on
+   their own category; every `status` is one of the five closed values
 9. `hydrodynamic_events[].steps` cardinality matches its `type`: `spot_measurement` 0–1,
    `constant_rate` exactly 1, `step_drawdown` ≥2 ascending, `airlift` ≥1, `recovery_only` none
    (recovery required instead)
@@ -358,7 +415,8 @@ where). If you cannot, return the complete JSON in a fenced block instead.
 Present it with a brief summary:
 
 - Sections found: constructive (bore_hole, casing, screen, etc.) / geologic (lithology, fractures) /
-  hydrodynamic (pumping tests, aquifer analysis) / history (maintenance, inspections, incidents)
+  hydrodynamic (pumping tests, aquifer analysis) / history (maintenance, inspections, incidents,
+  status changes) / operation (pumps, permits, meters, production, operating regime)
 - Total depth (from `bore_hole`), and `well_depth` separately if the report gave a distinct current/
   usable depth
 - Any freetext "type" field (drilling_method, well_case/reduction/well_screen.type, cement_pad.type)
@@ -417,6 +475,10 @@ Ask targeted questions for missing critical data. Common gaps:
 | Maintenance  | Manutenção, troca de bomba, limpeza, recondicionamento     | Maintenance, pump replacement, cleaning, redevelopment |
 | Inspection   | Inspeção, vistoria, filmagem                               | Inspection, survey, camera log                         |
 | Incident     | Incidente, colapso, contaminação, vandalismo               | Incident, collapse, contamination, vandalism           |
+| Meter        | Hidrômetro, macromedidor, leitura, totalizador             | Water meter, flow totalizer, meter reading             |
+| Production   | Volume captado, volume extraído, declaração de uso         | Abstracted volume, production, declared volume         |
+| Regime       | Regime de operação/bombeamento, horas por dia, dias/semana | Operating regime, hours per day, days per week         |
+| Status       | Em operação, paralisado, desativado, tamponado, abandonado | Active, inactive, decommissioned, sealed, abandoned    |
 
 ---
 

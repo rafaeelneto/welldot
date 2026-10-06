@@ -455,6 +455,12 @@ The following values are **never stored**. Applications compute them on demand.
 
 **Current pump:** The `pump_installations` entry without `removed_at`. See § `pump_installations[]`.
 
+**Current meter(s):** The `meters` entries without `removed_at`. More than one open meter is valid (secondary meters) but emits a warning. See § `meters[]`.
+
+**Regime in force:** The `operating_regime` entry with the latest `effective_from` not after the instant of interest. Before the first entry, the regime is unknown. See § `operating_regime[]`.
+
+**Current well status:** The `status` of the `history_logs` entry of category `status_change` with the latest `datetime`. With no `status_change` entry, the status is **unknown** — applications MUST NOT assume `active`. See § `history_logs[]` — `status_change`.
+
 ---
 
 ## `history_logs[]`
@@ -470,14 +476,15 @@ These timestamps may differ substantially: a maintenance intervention `datetime`
 
 ### Categories
 
-| `category`         | Portuguese (BR)              | Description                                                                                                                                       |
-| ------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `maintenance`      | Manutenção                   | Physical intervention: pump replacement, casing repair, cleaning, redevelopment.                                                                  |
-| `inspection`       | Inspeção                     | Site visit without physical alteration: visual survey, camera inspection, sample collection.                                                      |
-| `incident`         | Incidente                    | Unplanned event: partial collapse, contamination, prolonged drought, vandalism.                                                                   |
-| `event`            | Evento                       | Generic milestone: construction completion, commissioning, deactivation, reactivation, ownership transfer, rehabilitation, data-integrity repair. |
-| `change_of_use`    | Mudança de uso               | _(since v2.1)_ The well's purpose changed (e.g. production → monitoring). Update `well_purpose` to the new use and log the change here.           |
-| `permit_condition` | Cumprimento de condicionante | _(since v2.3)_ A permit condition deadline was fulfilled. Carries the category-specific fields below.                                             |
+| `category`         | Portuguese (BR)              | Description                                                                                                                                                                    |
+| ------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `maintenance`      | Manutenção                   | Physical intervention or service task: pump replacement, casing repair, cleaning, redevelopment, meter calibration. Carries the category-specific fields below _(since v2.3)_. |
+| `inspection`       | Inspeção                     | Site visit without physical alteration: visual survey, camera inspection, sample collection.                                                                                   |
+| `incident`         | Incidente                    | Unplanned event: partial collapse, contamination, prolonged drought, vandalism.                                                                                                |
+| `event`            | Evento                       | Generic milestone: construction completion, commissioning, deactivation, reactivation, ownership transfer, rehabilitation, data-integrity repair.                              |
+| `change_of_use`    | Mudança de uso               | _(since v2.1)_ The well's purpose changed (e.g. production → monitoring). Update `well_purpose` to the new use and log the change here.                                        |
+| `status_change`    | Mudança de situação          | _(since v2.3)_ The well's operating status changed (e.g. active → inactive). Carries the category-specific fields below.                                                       |
+| `permit_condition` | Cumprimento de condicionante | _(since v2.3)_ A permit condition deadline was fulfilled. Carries the category-specific fields below.                                                                          |
 
 Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -505,7 +512,36 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
 ### Category-specific fields _(since v2.3)_
 
-Category-specific fields MUST be absent on entries of other categories; their presence emits a warning.
+Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. They are optional in the schema: a missing required category field (e.g. `maintenance_type` on a `maintenance` entry) surfaces as a warning, never a rejection. `event_id` is shared by `maintenance` and `permit_condition`.
+
+#### `maintenance`
+
+| Field                  | Type   | Required | Description                                                        |
+| ---------------------- | ------ | -------- | ------------------------------------------------------------------ |
+| `maintenance_type`     | string | yes      | See format-reference.md § `history_logs[].maintenance_type`.       |
+| `pump_installation_id` | string | no       | `pump_installations[].id` the task concerns.                       |
+| `meter_id`             | string | no       | `meters[].id` the task concerns (e.g. a `meter_calibration`).      |
+| `event_id`             | string | no       | `hydrodynamic_events[].id` holding the data produced by this task. |
+
+A maintenance entry records that the task was done. Measured values belong in their own block and are referenced by id, never copied into the log: a `level_measurement` points to the `spot_measurement` event with `event_id`, a `pump_test` to its `constant_rate` or `step_drawdown` event. A `sample_id` reference for `water_sampling` is reserved for the water quality block (v2.4).
+
+#### `status_change`
+
+| Field    | Type          | Required | Description                                                                                                                       |
+| -------- | ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `status` | string (enum) | yes      | One of the five values below (closed vocabulary; any other value is rejected). See format-reference.md § `history_logs[].status`. |
+
+| Value            | Portuguese (BR)        | Semantics                               |
+| ---------------- | ---------------------- | --------------------------------------- |
+| `active`         | Ativo / em operação    | Normal operation.                       |
+| `maintenance`    | Em manutenção          | Temporarily out of service for work.    |
+| `inactive`       | Paralisado             | Out of service, recoverable.            |
+| `decommissioned` | Desativado / tamponado | Permanently closed and properly sealed. |
+| `abandoned`      | Abandonado             | Left without proper sealing.            |
+
+The current status is the `status` of the `status_change` entry with the latest `datetime`. With no such entry, the status is unknown. `status` is a closed vocabulary: the `x-` extension mechanism does not apply, and a file carrying any other value is rejected.
+
+Any non-`status_change` entry dated after a `decommissioned` or `abandoned` status emits a warning. A stopped well is recorded with a `status_change`, never with an `operating_regime` entry whose `flow_rate` is `0`.
 
 #### `permit_condition`
 
@@ -705,6 +741,129 @@ The lead time a renewal request requires varies by jurisdiction; it is evaluated
 - A condition with both `first_due` and `due_after`.
 
 A collective grant covering several wells is repeated in each well's file until cross-file references arrive in v3.
+
+---
+
+## `meters[]` _(since v2.3)_
+
+An installation block: each entry is one installation of a totalizer (hidrômetro) in the well, present from `installed_at` until `removed_at`. Entries are edited in place, and `updated_at` records the last edit. A meter holds device facts only: every register value, including the installation and removal readings, lives in `production`. The installation-pattern rules of § `pump_installations[]` apply; overlapping open meters emit a warning, not an error, because secondary meters exist.
+
+### `Meter`
+
+| Field              | Type             | Required | Unit | Description                                                                  |
+| ------------------ | ---------------- | -------- | ---- | ---------------------------------------------------------------------------- |
+| `id`               | string           | yes      |      | Unique within `meters`. UUID v4 recommended.                                 |
+| `installed_at`     | string (instant) | yes      |      | RFC 3339 instant when the meter entered service in this well.                |
+| `removed_at`       | string (instant) | no       |      | When it left. Absent means currently installed.                              |
+| `type`             | string           | no       |      | See format-reference.md § `meters[].type`.                                   |
+| `serial`           | string           | no       |      | Links reinstallations of the same unit.                                      |
+| `nominal_diameter` | number           | no       | mm   | Nominal diameter (DN).                                                       |
+| `max_reading`      | number           | no       | m³   | Register capacity, used to detect rollover. Greater than 0.                  |
+| `purpose`          | string           | no       |      | A `well_purpose` value this meter accounts for. All its readings inherit it. |
+| `notes`            | string           | no       |      |                                                                              |
+| `updated_at`       | string (instant) | no       |      | Last edit of this record.                                                    |
+
+The register values at installation and removal are recorded as ordinary `meter_reading` entries in `production`, with `datetime` equal to `installed_at` or `removed_at`. Meter calibrations are `history_logs` entries of category `maintenance` with `maintenance_type: "meter_calibration"` and a `meter_id`.
+
+### Validation (warnings, never rejection)
+
+- `removed_at` earlier than or equal to `installed_at`.
+- More than one entry without `removed_at`.
+- A `production` reading for this meter outside its installation window.
+
+---
+
+## `production[]` _(since v2.3)_
+
+A ledger: the append-only record of water produced by the well. An erroneous entry is never edited in place; the correction is a new entry whose `corrects` holds the id of the retracted entry, following § `hydrodynamic_events[]` — Corrections (retracted entries stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning). Entries are discriminated by `type`. Volumes are always derived, never stored as totals.
+
+### Common fields
+
+| Field      | Type    | Required | Description                                                                           |
+| ---------- | ------- | -------- | ------------------------------------------------------------------------------------- |
+| `id`       | string  | yes      | Unique within `production`. UUID v4 recommended.                                      |
+| `type`     | string  | yes      | `meter_reading` or `declared_volume`. Non-canonical types SHOULD use the `x-` prefix. |
+| `corrects` | string  | no       | `production[].id` of the entry this one retracts.                                     |
+| `sequence` | integer | no       | Tie-breaker for identical instants, lower first.                                      |
+| `notes`    | string  | no       |                                                                                       |
+
+An entry of a known `type` that lacks its required fields is rejected. Entries of unknown (`x-`) types are preserved with their extra members and are excluded from volume derivations.
+
+### `meter_reading`
+
+| Field      | Type             | Required | Unit | Description                                                      |
+| ---------- | ---------------- | -------- | ---- | ---------------------------------------------------------------- |
+| `datetime` | string (instant) | yes      |      | RFC 3339 instant of the reading.                                 |
+| `meter_id` | string           | yes      |      | `meters[].id`.                                                   |
+| `reading`  | number           | yes      | m³   | Register value. Meters reading in liters are converted on input. |
+| `source`   | string           | no       |      | `manual`, `telemetry`, `x-…`                                     |
+
+A totalizer value is cumulative, so telemetry needs no aggregation field: storing fewer points loses no volume. The producing application decides the density written to the file.
+
+### `declared_volume`
+
+| Field          | Type             | Required | Unit | Description                                                                                |
+| -------------- | ---------------- | -------- | ---- | ------------------------------------------------------------------------------------------ |
+| `period_start` | string (instant) | yes      |      | Start of the declared period.                                                              |
+| `period_end`   | string (instant) | yes      |      | End of the declared period. Later than `period_start`.                                     |
+| `volume`       | number           | yes      | m³   | Volume produced in the period.                                                             |
+| `method`       | string           | no       |      | `estimated` (e.g. flow × time) or `reported` (as declared to a regulator). See Precedence. |
+| `purpose`      | string           | no       |      | A `well_purpose` value.                                                                    |
+
+### Volume derivation (normative)
+
+Corrected entries are ignored throughout. Readings of each meter are ordered by instant, then `sequence`.
+
+1. For consecutive readings r₁, r₂ of the same meter, if r₂ ≥ r₁ the volume is r₂ − r₁.
+2. If r₂ < r₁ and the meter has `max_reading`, the volume is (`max_reading` − r₁) + r₂ (rollover).
+3. If r₂ < r₁ and there is no `max_reading`, the interval is unknown and a warning is emitted. It is never negative.
+4. Volume is never computed across two different meters. When readings exist at the removal and installation instants, coverage is complete up to the removal and from the installation; the gap between them is unmetered and not counted. Without those readings, the volume between the two meters is unknown.
+5. Production before a meter's first reading is unknown, not zero.
+
+### Precedence
+
+- A `declared_volume` with `method: "estimated"` counts only for time not covered by meter readings. Overlap emits a warning, and the meter wins.
+- A `declared_volume` with `method: "reported"` is never added to production totals. It is kept as the legal declaration and compared against the derived volume.
+- A `declared_volume` without `method` is treated as `estimated`.
+
+### Derived values
+
+Volume per period (day, month, year); volume per purpose (a reading inherits its meter's `purpose`); average flow over a period; compliance against `permits[].volume_limits` and `monthly_schedule`. None of these are stored.
+
+### Validation (warnings, never rejection)
+
+- A reading outside its meter's installation window, or a `meter_id` that does not resolve.
+- A decreasing reading on a meter without `max_reading` (unknown interval).
+- An `estimated` declared volume overlapping metered time.
+- A `declared_volume` whose `period_end` is not later than `period_start`.
+- A `corrects` cycle, or a `corrects` reference that does not resolve.
+
+---
+
+## `operating_regime[]` _(since v2.3)_
+
+A mutable record block: each entry declares how the well is intended to run from a given instant. Entries are edited in place, and `updated_at` records the last edit. A change of regime is a new entry; the entry with the latest `effective_from` not after a given instant is the regime in force. There is no end field.
+
+### `OperatingRegime`
+
+| Field                  | Type             | Required | Unit | Description                                            |
+| ---------------------- | ---------------- | -------- | ---- | ------------------------------------------------------ |
+| `id`                   | string           | yes      |      | Unique within `operating_regime`.                      |
+| `effective_from`       | string (instant) | yes      |      | When the regime takes effect. Unique within the block. |
+| `flow_rate`            | number           | no       | m³/h |                                                        |
+| `daily_operating_time` | number           | no       | h    | 0–24.                                                  |
+| `days_per_week`        | integer          | no       |      | 1–7.                                                   |
+| `notes`                | string           | no       |      |                                                        |
+| `updated_at`           | string (instant) | no       |      | Last edit of this record.                              |
+
+- An absent field means unknown, never zero.
+- A stopped well is recorded with a `history_logs` `status_change`, not a regime with `flow_rate: 0`.
+- `daily_operating_time` outside 0–24 and `days_per_week` outside 1–7 (or not an integer) are schema errors.
+
+### Validation (warnings, never rejection)
+
+- Two entries with the same `effective_from`.
+- Regime values above those of the permit active at `effective_from` (`flow_rate`, `daily_operating_time`).
 
 ---
 
@@ -987,6 +1146,83 @@ A collective grant covering several wells is repeated in each well's file until 
     }
   ],
 
+  "meters": [
+    {
+      "id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
+      "installed_at": "2025-04-02T09:00:00-03:00",
+      "type": "electromagnetic",
+      "serial": "EM150-55821",
+      "nominal_diameter": 150,
+      "max_reading": 99999999,
+      "purpose": "production"
+    }
+  ],
+
+  "production": [
+    {
+      "id": "p-0001",
+      "type": "meter_reading",
+      "datetime": "2025-04-02T09:00:00-03:00",
+      "meter_id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
+      "reading": 0,
+      "source": "manual"
+    },
+    {
+      "id": "p-0002",
+      "type": "meter_reading",
+      "datetime": "2025-12-31T17:00:00-03:00",
+      "meter_id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
+      "reading": 1452300,
+      "source": "telemetry"
+    },
+    {
+      "id": "p-0003",
+      "type": "declared_volume",
+      "period_start": "2025-04-02T09:00:00-03:00",
+      "period_end": "2026-01-01T00:00:00-03:00",
+      "volume": 1450000,
+      "method": "reported",
+      "purpose": "production",
+      "notes": "Declaração anual de uso ao órgão gestor."
+    },
+    {
+      "id": "p-0004",
+      "type": "meter_reading",
+      "datetime": "2026-06-30T17:00:00-03:00",
+      "meter_id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
+      "reading": 2541800,
+      "source": "manual"
+    },
+    {
+      "id": "p-0005",
+      "type": "meter_reading",
+      "datetime": "2026-06-30T17:00:00-03:00",
+      "meter_id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
+      "reading": 2451800,
+      "source": "manual",
+      "corrects": "p-0004",
+      "notes": "Corrige erro de digitação na leitura p-0004."
+    }
+  ],
+
+  "operating_regime": [
+    {
+      "id": "r-0001",
+      "effective_from": "2018-06-12T15:00:00-03:00",
+      "flow_rate": 300,
+      "daily_operating_time": 16,
+      "days_per_week": 7
+    },
+    {
+      "id": "r-0002",
+      "effective_from": "2025-04-02T09:00:00-03:00",
+      "flow_rate": 320,
+      "daily_operating_time": 18,
+      "days_per_week": 7,
+      "updated_at": "2025-04-02T12:00:00-03:00"
+    }
+  ],
+
   "history_logs": [
     {
       "id": "d0e1f2a3-b4c5-6789-defa-890123456789",
@@ -997,10 +1233,19 @@ A collective grant covering several wells is repeated in each well's file until 
       "author": "Prefeitura Municipal de Belém"
     },
     {
+      "id": "c3d4e5f6-a7b8-9012-cdef-3456789abcde",
+      "datetime": "2006-03-20T10:00:00-03:00",
+      "category": "status_change",
+      "description": "Poço entra em operação após instalação da bomba.",
+      "status": "active"
+    },
+    {
       "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
       "datetime": "2018-06-12T09:30:00-03:00",
       "updated_at": "2024-03-15T11:42:00-03:00",
       "category": "maintenance",
+      "maintenance_type": "pump_service",
+      "pump_installation_id": "f2a3b4c5-d6e7-8901-fabc-345678901bcd",
       "description": "Original 15 CV submersible pump replaced after motor burnout. New pump: Schneider ME-25 10 CV. (Description corrected 2024-03-15: model was ME-25, not ME-22 as originally logged.)",
       "author": "Manutenção Rápida Ltda.",
       "severity": "high",
@@ -1024,6 +1269,15 @@ A collective grant covering several wells is repeated in each well's file until 
       "permit_id": "9a8b7c6d-5e4f-3210-abcd-0123456789ab",
       "condition_id": "c1",
       "due_date": "2025-05-11"
+    },
+    {
+      "id": "f3a4b5c6-d7e8-9012-fabc-3456789abcde",
+      "datetime": "2026-04-10T14:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "meter_calibration",
+      "meter_id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
+      "description": "Aferição do medidor eletromagnético; erro dentro da tolerância.",
+      "author": "Metrologia Norte Ltda."
     }
   ]
 }

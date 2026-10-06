@@ -29,6 +29,8 @@ import {
   squareMeterPerDayToSquareMeterPerSecond,
   squareMeterPerSecondToSquareMeterPerDay,
   usGallonsPerMinuteToCubicMeterPerHour,
+  volumeFromCanonical,
+  volumeToCanonical,
 } from './units';
 
 // ─── Length ───────────────────────────────────────────────────────────────────
@@ -308,5 +310,23 @@ describe('powerFromCanonical / powerToCanonical', () => {
       10,
       9,
     );
+  });
+});
+
+describe('volumeFromCanonical / volumeToCanonical', () => {
+  it('passes m3 through unchanged', () => {
+    expect(volumeFromCanonical(12, 'm3')).toBe(12);
+    expect(volumeToCanonical(12, 'm3')).toBe(12);
+  });
+
+  it('converts liters, cubic feet and US gallons', () => {
+    expect(volumeFromCanonical(1, 'L')).toBe(1000);
+    expect(volumeFromCanonical(1, 'ft3')).toBeCloseTo(35.3146667, 6);
+    expect(volumeToCanonical(1, 'gal')).toBeCloseTo(0.003785411784, 12);
+    for (const unit of ['L', 'ft3', 'gal'] as const) {
+      expect(
+        volumeToCanonical(volumeFromCanonical(42.5, unit), unit),
+      ).toBeCloseTo(42.5, 9);
+    }
   });
 });

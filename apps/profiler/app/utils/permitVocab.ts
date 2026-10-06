@@ -1,3 +1,10 @@
+import type { Permit, Well } from '@welldot/core';
+import {
+  getPermitStartDate,
+  getPermitStatus,
+  todayCalendarDate,
+} from '@welldot/utils';
+
 /**
  * Recommended vocabularies for `permits` (.well spec v2.3) — suggestions
  * only; any free text or `x-` value is valid and stored as-is.
@@ -92,3 +99,21 @@ export const DEADLINE_STATUS_SEVERITY: Record<string, string> = {
   upcoming: 'info',
   overdue: 'danger',
 };
+
+/**
+ * The permit production compliance is judged by: among the `active` /
+ * `active_pending_renewal` permits on `today`, the one with the latest start.
+ */
+export function getActivePermit(
+  well: Well,
+  today: string = todayCalendarDate(),
+): Permit | undefined {
+  return (well.permits ?? [])
+    .filter(p => {
+      const status = getPermitStatus(well, p, today);
+      return status === 'active' || status === 'active_pending_renewal';
+    })
+    .sort((a, b) =>
+      (getPermitStartDate(b) ?? '').localeCompare(getPermitStartDate(a) ?? ''),
+    )[0];
+}

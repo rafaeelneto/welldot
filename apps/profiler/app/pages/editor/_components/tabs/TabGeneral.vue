@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import type { Attachment } from '@welldot/core';
+import { getCurrentWellStatus } from '@welldot/utils';
 import AppChip from '~/components/AppChip.vue';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+
+/** Current status (.well v2.3), derived from `status_change` history logs. */
+const wellStatus = computed(() => getCurrentWellStatus(profileStore.well));
 
 /**
  * Root `attachments` (.well v2.3): general files about the well as a whole,
@@ -249,12 +253,26 @@ function removeWellPurpose(value: string) {
         </div>
       </Message>
 
-      <Tag
-        v-if="profileStore.flowingArtesian"
-        severity="info"
-        class="self-start"
-        :value="t('editor.general.flowingArtesian')"
-      />
+      <div class="flex items-center flex-wrap gap-2">
+        <Tag
+          v-if="wellStatus"
+          v-tooltip.top="t('editor.operation.wellStatus.derivedInfo')"
+          :severity="WELL_STATUS_SEVERITY[wellStatus] ?? 'secondary'"
+          :value="resolveWellStatusLabel(wellStatus, t)"
+        />
+        <Tag
+          v-else
+          v-tooltip.top="t('editor.operation.wellStatus.unknownInfo')"
+          severity="secondary"
+          class="opacity-70"
+          :value="t('editor.operation.wellStatus.unknown')"
+        />
+        <Tag
+          v-if="profileStore.flowingArtesian"
+          severity="info"
+          :value="t('editor.general.flowingArtesian')"
+        />
+      </div>
     </section>
 
     <!-- ── Section: Well Identifiers ────────────────────────────────────── -->

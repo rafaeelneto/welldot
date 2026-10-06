@@ -252,7 +252,8 @@
         "length": "Length",
         "diameter": "Diameter",
         "flow": "Flow rate",
-        "power": "Power"
+        "power": "Power",
+        "volume": "Volume"
       },
       "coordinates": {
         "title": "Coordinates",
@@ -336,7 +337,7 @@
         "geology": "Geology",
         "hydrodynamic": "Pumping tests",
         "history": "History",
-        "operation": "Pump"
+        "operation": "Operation"
       }
     },
     "exportPdfDialog": {
@@ -767,7 +768,8 @@
           "inspection": "Inspection",
           "incident": "Incident",
           "event": "Event",
-          "permit_condition": "Condition fulfilled"
+          "permit_condition": "Condition fulfilled",
+          "status_change": "Status change"
         },
         "severity": {
           "low": "Low",
@@ -784,7 +786,14 @@
           "attachments": "Attachments",
           "attachmentUrl": "File URL",
           "attachmentFilename": "Display name",
-          "attachmentMediaType": "File type"
+          "attachmentMediaType": "File type",
+          "maintenanceType": "Maintenance type",
+          "pumpInstallation": "Pump installation",
+          "meter": "Meter",
+          "event": "Hydrodynamic event",
+          "eventInfo": "Event holding the data produced by this task, e.g. the level measured or the pumping test performed.",
+          "status": "Status",
+          "statusInfo": "The latest status change sets the current status of the well."
         }
       },
       "events": {
@@ -916,6 +925,38 @@
         "diesel": "Diesel",
         "hybrid": "Hybrid"
       },
+      "meterTypes": {
+        "mechanical": "Mechanical",
+        "electromagnetic": "Electromagnetic",
+        "ultrasonic": "Ultrasonic"
+      },
+      "readingSources": {
+        "manual": "Manual",
+        "telemetry": "Telemetry"
+      },
+      "declaredMethods": {
+        "estimated": "Estimated",
+        "reported": "Reported"
+      },
+      "maintenanceTypes": {
+        "inspection": "Inspection",
+        "cleaning": "Cleaning",
+        "redevelopment": "Redevelopment",
+        "disinfection": "Disinfection",
+        "pump_service": "Pump service",
+        "meter_calibration": "Meter calibration",
+        "video_inspection": "Video inspection / optical logging",
+        "level_measurement": "Level measurement",
+        "pump_test": "Pumping test",
+        "water_sampling": "Water sampling"
+      },
+      "wellStatuses": {
+        "active": "Active",
+        "maintenance": "Under maintenance",
+        "inactive": "Inactive",
+        "decommissioned": "Decommissioned",
+        "abandoned": "Abandoned"
+      },
       "pump": {
         "title": "Pump installations",
         "intro": "One entry per installation. A pump pulled and reinstalled gets a new entry with the same serial number. The current pump is the one without a removal date.",
@@ -964,6 +1005,131 @@
           "multiple_open_installations": "More than one installation has no removal date.",
           "removed_before_installed": "The removal date must be after the installation date."
         }
+      },
+      "meter": {
+        "title": "Meters",
+        "intro": "One entry per installation of a totalizer (water meter). Device facts only: every register value, including the installation and removal readings, is a reading in Production.",
+        "add": "Add meter",
+        "edit": "Edit meter",
+        "deleteConfirm": "Delete this meter?",
+        "deleteConfirmWithReadings": "This meter has readings in the production ledger. They stay in the file but will no longer resolve to a meter. Delete it anyway?",
+        "empty": "No meter recorded yet.",
+        "current": "Current",
+        "removed": "Removed",
+        "untyped": "Meter",
+        "lastReading": "Last reading",
+        "readingsInfo": "Record the register values at installation and removal as meter readings in Production, dated at these instants.",
+        "fields": {
+          "type": "Meter type",
+          "serial": "Serial number",
+          "serialInfo": "A meter removed and reinstalled gets a new entry with the same serial number.",
+          "installedAt": "Installed at",
+          "removedAt": "Removed at",
+          "removedAtInfo": "Leave empty while the meter is installed.",
+          "nominalDiameter": "Nominal diameter",
+          "nominalDiameterInfo": "Nominal diameter (DN) of the meter.",
+          "maxReading": "Register capacity",
+          "maxReadingInfo": "Largest value the register shows before rolling over to zero. Used to derive the volume across a rollover.",
+          "purpose": "Accounted purpose",
+          "purposeInfo": "The well purpose this meter accounts for. All its readings inherit it.",
+          "notes": "Notes"
+        }
+      },
+      "regime": {
+        "title": "Operating regime",
+        "intro": "How the well is intended to run from a given moment. A change of regime is a new entry; the latest one already in effect is the regime in force. A stopped well is a status change in the history log, not a zero flow.",
+        "add": "Add regime",
+        "edit": "Edit regime",
+        "deleteConfirm": "Delete this regime?",
+        "empty": "No operating regime recorded yet.",
+        "inForce": "Regime in force",
+        "scheduled": "Scheduled",
+        "from": "From",
+        "dailyVolume": "Daily volume",
+        "none": "No regime in force.",
+        "noValues": "No values declared",
+        "unknownInfo": "Leave a field empty when it is unknown — an empty field never means zero.",
+        "hoursPerDay": "{n} h/day",
+        "daysPerWeekShort": "{n} days/week",
+        "fields": {
+          "effectiveFrom": "Effective from",
+          "effectiveFromInfo": "Unique within the block. There is no end date: the next regime replaces this one.",
+          "flowRate": "Flow rate",
+          "dailyOperatingTime": "Daily operation",
+          "daysPerWeek": "Days per week",
+          "notes": "Notes"
+        }
+      },
+      "production": {
+        "title": "Production",
+        "intro": "Append-only ledger of water produced: meter readings and declared volumes. Entries are never edited — a correction is a new entry that retracts the original.",
+        "add": "Add entry",
+        "correct": "Correct",
+        "correctInfo": "The correction is saved as a new entry that retracts this one. The original stays in the file but no longer counts.",
+        "saveCorrection": "Save correction",
+        "deleteConfirm": "Delete this entry?",
+        "deleteInfo": "Deleting removes the entry from the file. To fix a wrong value, prefer a correction, which keeps the history. Delete anyway?",
+        "empty": "No production recorded yet.",
+        "noMeters": "Add a meter first to record its readings.",
+        "types": {
+          "meter_reading": "Meter reading",
+          "declared_volume": "Declared volume"
+        },
+        "fields": {
+          "type": "Type",
+          "details": "Details",
+          "value": "Value",
+          "meter": "Meter",
+          "datetime": "Date / Time",
+          "reading": "Reading",
+          "readingInfo": "Register value. Choose the volume unit in Settings to enter readings of meters that count in liters or gallons — they are stored in m³.",
+          "source": "Source",
+          "periodStart": "Period start",
+          "periodEnd": "Period end",
+          "volume": "Volume",
+          "method": "Method",
+          "methodInfo": "Estimated volumes count only where no meter reading covers the period. Reported volumes (as declared to a regulator) are kept for comparison and never added to the total.",
+          "purpose": "Purpose",
+          "notes": "Notes"
+        },
+        "totals": {
+          "total": "Total",
+          "totalInfo": "Metered plus estimated volumes. Meters take precedence over estimates.",
+          "metered": "Metered",
+          "estimated": "Estimated",
+          "reported": "Reported",
+          "reportedInfo": "Volumes declared to a regulator, for comparison only."
+        },
+        "unknownIntervals": "{n} interval between readings has an unknown volume (the register went down and the meter has no register capacity). | {n} intervals between readings have an unknown volume (the register went down and the meter has no register capacity).",
+        "unknownIntervalsLabel": "Unknown intervals",
+        "compliance": {
+          "title": "Compliance · permit {number}",
+          "annual": "Year {period}",
+          "monthly": "Month {period}"
+        },
+        "periods": {
+          "period": "Period",
+          "month": "Month",
+          "year": "Year"
+        },
+        "byPeriod": "Production by period",
+        "annual": "Annual production",
+        "ofLimit": "% of limit",
+        "noPeriods": "No volume can be derived yet.",
+        "ledger": "Ledger",
+        "hideRetracted": "Hide retracted",
+        "allEntries": "All entries",
+        "retracted": "Retracted",
+        "retractedInfo": "A later entry corrects this one. It stays in the file but no longer counts.",
+        "correction": "Correction",
+        "correctionInfo": "This entry corrects an earlier one."
+      },
+      "wellStatus": {
+        "title": "Well status",
+        "unknown": "Status unknown",
+        "unknownInfo": "The status is derived from “Status change” entries in the history log. None has been recorded yet.",
+        "derivedInfo": "Derived from the latest “Status change” entry in the history log.",
+        "since": "since {date}"
       },
       "permitTypes": {
         "abstraction_permit": "Abstraction permit",
@@ -1106,6 +1272,28 @@
           "invalid_duration": "A condition has an invalid duration.",
           "unmatched_condition_log": "A fulfillment in the history log matches no deadline of this permit."
         }
+      },
+      "warnings": {
+        "meter_removed_before_installed": "The removal date must be after the installation date.",
+        "overlapping_meters": "This meter is installed at the same time as another one.",
+        "duplicate_meter_id": "Two meters share the same id.",
+        "reading_meter_unresolved": "The meter of this reading does not exist in this file.",
+        "reading_outside_installation": "This reading is outside the meter installation period.",
+        "reading_rollover_unknown": "The register went down and the meter has no register capacity: the volume of this interval is unknown.",
+        "duplicate_production_id": "Two production entries share the same id.",
+        "corrects_unresolved": "The corrected entry does not exist in this file.",
+        "corrects_cycle": "The correction chain loops back on itself.",
+        "declared_period_invalid": "The period end must be after its start.",
+        "estimated_overlaps_meter": "This estimated volume overlaps meter readings; the meter takes precedence.",
+        "duplicate_regime_id": "Two regimes share the same id.",
+        "regime_duplicate_effective_from": "Another regime starts at the same instant.",
+        "regime_exceeds_permit": "The regime in force is above the flow or daily operation granted by the active permit.",
+        "log_category_field_mismatch": "This entry has fields that belong to another category.",
+        "log_reference_unresolved": "A referenced pump, meter or event does not exist in this file.",
+        "log_after_decommission": "This entry is dated after the well was decommissioned or abandoned.",
+        "missing_maintenance_type": "This maintenance entry references data but has no maintenance type.",
+        "missing_status": "This status change has no status.",
+        "analysis_uses_retracted_event": "This analysis uses an event that has been retracted."
       }
     }
   },

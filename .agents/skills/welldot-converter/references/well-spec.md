@@ -10,19 +10,22 @@ This is a condensed reference for extraction. The normative source is
 
 ## Units (all SI, no per-file declaration)
 
-| Measure                                                                          | Unit                                                                                                                                                   |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Depths, lengths, elevation                                                       | meters                                                                                                                                                 |
-| Diameters, screen slot                                                           | millimeters                                                                                                                                            |
-| Coordinates                                                                      | WGS84 decimal degrees                                                                                                                                  |
-| Volumetric flow rate                                                             | m³/h                                                                                                                                                   |
-| Elapsed time, duration                                                           | minutes                                                                                                                                                |
-| Transmissivity                                                                   | m²/s                                                                                                                                                   |
-| Hydraulic conductivity                                                           | m/s                                                                                                                                                    |
-| Pressure                                                                         | kPa                                                                                                                                                    |
-| Azimuth (0–360), dip (0–90)                                                      | degrees                                                                                                                                                |
-| `construction_date`                                                              | ISO 8601 calendar date, `YYYY-MM-DD` — no time, no offset                                                                                              |
-| Every other datetime (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`) | RFC 3339 instant with **mandatory UTC offset**, e.g. `2006-03-14T08:00:00-03:00` or `...Z`. A naked timestamp with no offset is malformed — reject it. |
+| Measure                                                                                                                           | Unit                                                                                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Depths, lengths, elevation                                                                                                        | meters                                                                                                                                                 |
+| Diameters, screen slot                                                                                                            | millimeters                                                                                                                                            |
+| Coordinates                                                                                                                       | WGS84 decimal degrees                                                                                                                                  |
+| Volumetric flow rate                                                                                                              | m³/h                                                                                                                                                   |
+| Elapsed time, duration                                                                                                            | minutes                                                                                                                                                |
+| Transmissivity                                                                                                                    | m²/s                                                                                                                                                   |
+| Hydraulic conductivity                                                                                                            | m/s                                                                                                                                                    |
+| Pressure                                                                                                                          | kPa                                                                                                                                                    |
+| Azimuth (0–360), dip (0–90)                                                                                                       | degrees                                                                                                                                                |
+| Volume (meter readings, declared volumes, permit limits)                                                                          | m³ (convert liters `÷ 1000`)                                                                                                                           |
+| Daily operating time                                                                                                              | hours (0–24)                                                                                                                                           |
+| Power                                                                                                                             | kW                                                                                                                                                     |
+| Calendar dates: `construction_date`, `permits[]` dates, condition `first_due`/`last_due`, `history_logs[].due_date`               | ISO 8601 calendar date, `YYYY-MM-DD` — no time, no offset                                                                                              |
+| Every other datetime (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, installations, `production`, `operating_regime`) | RFC 3339 instant with **mandatory UTC offset**, e.g. `2006-03-14T08:00:00-03:00` or `...Z`. A naked timestamp with no offset is malformed — reject it. |
 
 ---
 
@@ -53,7 +56,8 @@ This is a condensed reference for extraction. The normative source is
 
   "hydrodynamic_events": [...], "aquifer_analysis": [...], "history_logs": [...],
 
-  "attachments": [...], "pump_installations": [...], "permits": [...]
+  "attachments": [...], "pump_installations": [...], "permits": [...],
+  "meters": [...], "production": [...], "operating_regime": [...]
 }
 ```
 
@@ -417,11 +421,19 @@ Mutable chronological record of interventions/inspections/incidents — distinct
 | `id`          | string         | yes      | Unique within `history_logs`.                                                                                                                                          |
 | `datetime`    | string         | yes      | RFC 3339 with UTC offset. When the logged event occurred.                                                                                                              |
 | `updated_at`  | string         | no       | RFC 3339 with UTC offset. When this entry was created/edited. **Never synthesize this if the report doesn't distinguish it from `datetime`** — omit rather than guess. |
-| `category`    | string         | yes      | `maintenance`, `inspection`, `incident`, `event`, `change_of_use` (v2.1) or `permit_condition` (v2.3) (open vocab, `x-` prefix for others).                            |
+| `category`    | string         | yes      | `maintenance`, `inspection`, `incident`, `event`, `change_of_use` (v2.1), `status_change` or `permit_condition` (v2.3) (open vocab, `x-` prefix for others).           |
 | `description` | string         | yes      | Near-verbatim account. See § Free-text preservation.                                                                                                                   |
 | `author`      | string         | no       |                                                                                                                                                                        |
 | `severity`    | string         | no       | Recommended: `low`, `medium`, `high`, `critical`.                                                                                                                      |
 | `attachments` | `Attachment[]` | no       |                                                                                                                                                                        |
+
+Category-specific fields (v2.3) — only on entries of that category, never elsewhere:
+
+| Category           | Fields                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maintenance`      | `maintenance_type` (`inspection`, `cleaning`, `redevelopment`, `disinfection`, `pump_service`, `meter_calibration`, `video_inspection`, `level_measurement`, `pump_test`, `water_sampling`); optional `pump_installation_id`, `meter_id`, `event_id` (the `hydrodynamic_events` entry holding the data the task produced). Never copy measured values into the log. |
+| `status_change`    | `status` (closed enum — any other value is rejected): `active`, `maintenance`, `inactive`, `decommissioned`, `abandoned`. Only when the report states the change and its date. No `status_change` = status unknown — never infer one.                                                                                                                               |
+| `permit_condition` | `permit_id`, `condition_id`, `due_date`, `event_id` — see § `permits[]`.                                                                                                                                                                                                                                                                                            |
 
 ### `Attachment` (common type since v2.3)
 
@@ -505,6 +517,61 @@ Condition (`conditions[]`): `id` (unique per permit), `description` (verbatim, r
 
 A recorded fulfillment is a `history_logs` entry with `category: "permit_condition"`, `permit_id`,
 `condition_id` and `due_date` (the deadline fulfilled); its `datetime` is when it was fulfilled.
+
+---
+
+## `meters[]` (v2.3, optional — omit entirely if the report has no water meter)
+
+One entry per installation of a totalizer (hidrômetro). Device facts only — register values go in
+`production`, including the readings at installation and removal (`datetime` = `installed_at` /
+`removed_at`).
+
+| Field                 | Type   | Required | Notes                                                                       |
+| --------------------- | ------ | -------- | --------------------------------------------------------------------------- |
+| `id`                  | string | yes      | Unique within `meters`.                                                     |
+| `installed_at`        | string | yes      | RFC 3339 instant with UTC offset.                                           |
+| `removed_at`          | string | no       | RFC 3339 instant. Absent = currently installed.                             |
+| `type`                | string | no       | `mechanical`, `electromagnetic`, `ultrasonic` (`x-` for others).            |
+| `serial`              | string | no       |                                                                             |
+| `nominal_diameter`    | number | no       | mm (DN).                                                                    |
+| `max_reading`         | number | no       | Register capacity in **m³**, > 0 — only if stated. Used to detect rollover. |
+| `purpose`             | string | no       | A `well_purpose` value the meter accounts for.                              |
+| `notes`, `updated_at` |        | no       |                                                                             |
+
+---
+
+## `production[]` (v2.3, optional — omit entirely if the report has no readings or volumes)
+
+Append-only ledger, discriminated by `type`. Common fields: `id` (unique), `type`, `corrects` (id of
+the entry this one retracts — only when the source records a correction), `sequence` (tie-breaker),
+`notes`. **Never compute or store derived values** — no consumption between readings, no period
+totals, no average flow.
+
+| `type`            | Fields                                                                                                                                                                                                                                              |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `meter_reading`   | `datetime` (instant, required), `meter_id` (a `meters[].id`, required), `reading` (register value in **m³**, required — meters reading in liters are converted `÷ 1000`), `source` (`manual`, `telemetry`).                                         |
+| `declared_volume` | `period_start`, `period_end` (instants, required; end later than start), `volume` (m³, required), `method` (`reported` = as declared to a regulator, never added to totals; `estimated` = flow × time or similar; absent = `estimated`), `purpose`. |
+
+Applications derive volumes from consecutive readings of the same meter (with rollover via
+`max_reading`); metered time wins over `estimated` volumes.
+
+---
+
+## `operating_regime[]` (v2.3, optional — omit entirely if the report doesn't state how the well runs)
+
+Each entry is the declared regime in force from `effective_from`; a change of regime is a new entry.
+
+| Field                  | Type    | Required | Notes                                                      |
+| ---------------------- | ------- | -------- | ---------------------------------------------------------- |
+| `id`                   | string  | yes      | Unique within `operating_regime`.                          |
+| `effective_from`       | string  | yes      | RFC 3339 instant with UTC offset. Unique within the block. |
+| `flow_rate`            | number  | no       | m³/h.                                                      |
+| `daily_operating_time` | number  | no       | Hours, 0–24.                                               |
+| `days_per_week`        | integer | no       | 1–7.                                                       |
+| `notes`, `updated_at`  |         | no       |                                                            |
+
+An absent field means unknown — never write `0`. A stopped well is a `history_logs` `status_change`,
+not a regime with `flow_rate: 0`. Granted (permit) values belong in `permits`, not here.
 
 ---
 

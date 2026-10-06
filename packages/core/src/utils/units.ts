@@ -1,4 +1,4 @@
-import type { FlowUnits, PowerUnits } from '../types/units.types';
+import type { FlowUnits, PowerUnits, VolumeUnits } from '../types/units.types';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -13,6 +13,8 @@ const SLOT_MM = 0.025_4; // 1 slot = 0.001 in = 0.0254 mm
 const KW_PER_CV = 0.735_498_75; // exact (metric horsepower, cavalo-vapor)
 const KW_PER_HP = 0.745_699_872; // mechanical horsepower
 const LITERS_PER_M3 = 1_000;
+const FT3_PER_M3 = 35.314_666_721; // 1 ft = 0.3048 m exact
+const USGAL_PER_M3 = 264.172_052_358; // 1 US gal = 3.785411784 L exact
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,6 +74,22 @@ export function cubicMetersToLiters(m3: number): number {
   return m3 * LITERS_PER_M3;
 }
 
+export function cubicMetersToCubicFeet(m3: number): number {
+  return m3 * FT3_PER_M3;
+}
+
+export function cubicFeetToCubicMeters(ft3: number): number {
+  return ft3 / FT3_PER_M3;
+}
+
+export function cubicMetersToUsGallons(m3: number): number {
+  return m3 * USGAL_PER_M3;
+}
+
+export function usGallonsToCubicMeters(gal: number): number {
+  return gal / USGAL_PER_M3;
+}
+
 // ─── Power ────────────────────────────────────────────────────────────────────
 
 /** Metric horsepower (cv, cavalo-vapor) to kilowatts. */
@@ -119,6 +137,22 @@ export function powerFromCanonical(kw: number, unit: PowerUnits): number {
 export function powerToCanonical(value: number, unit: PowerUnits): number {
   if (unit === 'cv') return cvToKilowatts(value);
   if (unit === 'hp') return hpToKilowatts(value);
+  return value;
+}
+
+/** Converts a canonical volume (m³) to `unit`. */
+export function volumeFromCanonical(m3: number, unit: VolumeUnits): number {
+  if (unit === 'L') return cubicMetersToLiters(m3);
+  if (unit === 'ft3') return cubicMetersToCubicFeet(m3);
+  if (unit === 'gal') return cubicMetersToUsGallons(m3);
+  return m3;
+}
+
+/** Converts a volume expressed in `unit` back to canonical m³. */
+export function volumeToCanonical(value: number, unit: VolumeUnits): number {
+  if (unit === 'L') return litersToCubicMeters(value);
+  if (unit === 'ft3') return cubicFeetToCubicMeters(value);
+  if (unit === 'gal') return usGallonsToCubicMeters(value);
   return value;
 }
 

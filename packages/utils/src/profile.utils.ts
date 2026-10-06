@@ -11,6 +11,8 @@ import {
   Well,
 } from '@welldot/core';
 
+import { getRetractedIds } from './shared.utils';
+
 type DepthPoint = { depth: number };
 type DepthInterval = { to: number };
 type DepthRange = { from: number; to: number; diameter: number };
@@ -266,11 +268,7 @@ export function calculateHydraulicConductivity(
  * B, which corrected A) both A and B are retracted; only C counts.
  */
 export function getRetractedEventIds(well: Well): Set<string> {
-  const retracted = new Set<string>();
-  for (const event of well.hydrodynamic_events ?? []) {
-    if (typeof event.corrects === 'string') retracted.add(event.corrects);
-  }
-  return retracted;
+  return getRetractedIds(well.hydrodynamic_events ?? []);
 }
 
 /**

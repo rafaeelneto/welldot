@@ -252,7 +252,8 @@
         "length": "Comprimento",
         "diameter": "Diâmetro",
         "flow": "Vazão",
-        "power": "Potência"
+        "power": "Potência",
+        "volume": "Volume"
       },
       "coordinates": {
         "title": "Coordenadas",
@@ -336,7 +337,7 @@
         "geology": "Geologia",
         "hydrodynamic": "Testes de bombeamento",
         "history": "Histórico",
-        "operation": "Bomba"
+        "operation": "Operação"
       }
     },
     "exportPdfDialog": {
@@ -767,7 +768,8 @@
           "inspection": "Inspeção",
           "incident": "Incidente",
           "event": "Evento",
-          "permit_condition": "Condicionante cumprida"
+          "permit_condition": "Condicionante cumprida",
+          "status_change": "Mudança de situação"
         },
         "severity": {
           "low": "Baixa",
@@ -784,7 +786,14 @@
           "attachments": "Anexos",
           "attachmentUrl": "URL do arquivo",
           "attachmentFilename": "Nome exibido",
-          "attachmentMediaType": "Tipo de arquivo"
+          "attachmentMediaType": "Tipo de arquivo",
+          "maintenanceType": "Tipo de manutenção",
+          "pumpInstallation": "Instalação de bomba",
+          "meter": "Hidrômetro",
+          "event": "Evento hidrodinâmico",
+          "eventInfo": "Evento com os dados produzidos por esta tarefa, ex. o nível medido ou o teste de bombeamento realizado.",
+          "status": "Situação",
+          "statusInfo": "A mudança de situação mais recente define a situação atual do poço."
         }
       },
       "events": {
@@ -916,6 +925,38 @@
         "diesel": "Diesel",
         "hybrid": "Híbrido"
       },
+      "meterTypes": {
+        "mechanical": "Mecânico",
+        "electromagnetic": "Eletromagnético",
+        "ultrasonic": "Ultrassônico"
+      },
+      "readingSources": {
+        "manual": "Manual",
+        "telemetry": "Telemetria"
+      },
+      "declaredMethods": {
+        "estimated": "Estimado",
+        "reported": "Declarado"
+      },
+      "maintenanceTypes": {
+        "inspection": "Inspeção",
+        "cleaning": "Limpeza",
+        "redevelopment": "Redesenvolvimento",
+        "disinfection": "Desinfecção",
+        "pump_service": "Manutenção da bomba",
+        "meter_calibration": "Aferição do hidrômetro",
+        "video_inspection": "Filmagem / perfilagem ótica",
+        "level_measurement": "Medição de nível",
+        "pump_test": "Teste de bombeamento",
+        "water_sampling": "Coleta de água"
+      },
+      "wellStatuses": {
+        "active": "Ativo",
+        "maintenance": "Em manutenção",
+        "inactive": "Paralisado",
+        "decommissioned": "Desativado",
+        "abandoned": "Abandonado"
+      },
       "pump": {
         "title": "Instalações de bomba",
         "intro": "Um registro por instalação. Uma bomba retirada e reinstalada ganha um novo registro com o mesmo número de série. A bomba atual é a que não tem data de retirada.",
@@ -964,6 +1005,131 @@
           "multiple_open_installations": "Mais de uma instalação está sem data de retirada.",
           "removed_before_installed": "A data de retirada deve ser posterior à de instalação."
         }
+      },
+      "meter": {
+        "title": "Hidrômetros",
+        "intro": "Uma entrada por instalação de totalizador (hidrômetro). Somente dados do equipamento: toda leitura, inclusive as de instalação e retirada, é registrada em Produção.",
+        "add": "Adicionar hidrômetro",
+        "edit": "Editar hidrômetro",
+        "deleteConfirm": "Excluir este hidrômetro?",
+        "deleteConfirmWithReadings": "Este hidrômetro tem leituras no registro de produção. Elas permanecem no arquivo, mas deixarão de apontar para um hidrômetro. Excluir mesmo assim?",
+        "empty": "Nenhum hidrômetro registrado.",
+        "current": "Atual",
+        "removed": "Retirado",
+        "untyped": "Hidrômetro",
+        "lastReading": "Última leitura",
+        "readingsInfo": "Registre as leituras de instalação e retirada como leituras de hidrômetro em Produção, nesses mesmos instantes.",
+        "fields": {
+          "type": "Tipo de hidrômetro",
+          "serial": "Número de série",
+          "serialInfo": "Um hidrômetro retirado e reinstalado ganha uma nova entrada com o mesmo número de série.",
+          "installedAt": "Instalado em",
+          "removedAt": "Retirado em",
+          "removedAtInfo": "Deixe vazio enquanto o hidrômetro estiver instalado.",
+          "nominalDiameter": "Diâmetro nominal",
+          "nominalDiameterInfo": "Diâmetro nominal (DN) do hidrômetro.",
+          "maxReading": "Capacidade do totalizador",
+          "maxReadingInfo": "Maior valor exibido antes de o totalizador voltar a zero. Usado para calcular o volume após a virada.",
+          "purpose": "Finalidade contabilizada",
+          "purposeInfo": "A finalidade do poço que este hidrômetro contabiliza. Todas as suas leituras a herdam.",
+          "notes": "Observações"
+        }
+      },
+      "regime": {
+        "title": "Regime de operação",
+        "intro": "Como o poço deve operar a partir de um instante. Uma mudança de regime é uma nova entrada; a mais recente já em vigor é o regime vigente. Poço parado é uma mudança de situação no histórico, não vazão zero.",
+        "add": "Adicionar regime",
+        "edit": "Editar regime",
+        "deleteConfirm": "Excluir este regime?",
+        "empty": "Nenhum regime de operação registrado.",
+        "inForce": "Regime vigente",
+        "scheduled": "Programado",
+        "from": "A partir de",
+        "dailyVolume": "Volume diário",
+        "none": "Nenhum regime em vigor.",
+        "noValues": "Nenhum valor declarado",
+        "unknownInfo": "Deixe o campo vazio quando desconhecido — campo vazio nunca significa zero.",
+        "hoursPerDay": "{n} h/dia",
+        "daysPerWeekShort": "{n} dias/semana",
+        "fields": {
+          "effectiveFrom": "Vigente a partir de",
+          "effectiveFromInfo": "Único no bloco. Não há data de fim: o próximo regime substitui este.",
+          "flowRate": "Vazão",
+          "dailyOperatingTime": "Operação diária",
+          "daysPerWeek": "Dias por semana",
+          "notes": "Observações"
+        }
+      },
+      "production": {
+        "title": "Produção",
+        "intro": "Registro somente de inclusão da água produzida: leituras de hidrômetro e volumes declarados. Entradas nunca são editadas — uma correção é uma nova entrada que anula a original.",
+        "add": "Adicionar registro",
+        "correct": "Corrigir",
+        "correctInfo": "A correção é salva como uma nova entrada que anula esta. A original permanece no arquivo, mas deixa de contar.",
+        "saveCorrection": "Salvar correção",
+        "deleteConfirm": "Excluir este registro?",
+        "deleteInfo": "Excluir remove o registro do arquivo. Para corrigir um valor errado, prefira uma correção, que preserva o histórico. Excluir mesmo assim?",
+        "empty": "Nenhuma produção registrada.",
+        "noMeters": "Adicione um hidrômetro antes de registrar leituras.",
+        "types": {
+          "meter_reading": "Leitura de hidrômetro",
+          "declared_volume": "Volume declarado"
+        },
+        "fields": {
+          "type": "Tipo",
+          "details": "Detalhes",
+          "value": "Valor",
+          "meter": "Hidrômetro",
+          "datetime": "Data / Hora",
+          "reading": "Leitura",
+          "readingInfo": "Valor do totalizador. Escolha a unidade de volume nas Configurações para lançar leituras de hidrômetros em litros ou galões — são armazenadas em m³.",
+          "source": "Origem",
+          "periodStart": "Início do período",
+          "periodEnd": "Fim do período",
+          "volume": "Volume",
+          "method": "Método",
+          "methodInfo": "Volumes estimados só contam onde nenhuma leitura de hidrômetro cobre o período. Volumes declarados (ao órgão gestor) ficam apenas para comparação e nunca somam ao total.",
+          "purpose": "Finalidade",
+          "notes": "Observações"
+        },
+        "totals": {
+          "total": "Total",
+          "totalInfo": "Volumes medidos mais estimados. O hidrômetro tem precedência sobre estimativas.",
+          "metered": "Medido",
+          "estimated": "Estimado",
+          "reported": "Declarado",
+          "reportedInfo": "Volumes declarados ao órgão gestor, apenas para comparação."
+        },
+        "unknownIntervals": "{n} intervalo entre leituras tem volume desconhecido (o totalizador diminuiu e o hidrômetro não tem capacidade informada). | {n} intervalos entre leituras têm volume desconhecido (o totalizador diminuiu e o hidrômetro não tem capacidade informada).",
+        "unknownIntervalsLabel": "Intervalos desconhecidos",
+        "compliance": {
+          "title": "Conformidade · outorga {number}",
+          "annual": "Ano {period}",
+          "monthly": "Mês {period}"
+        },
+        "periods": {
+          "period": "Período",
+          "month": "Mês",
+          "year": "Ano"
+        },
+        "byPeriod": "Produção por período",
+        "annual": "Produção anual",
+        "ofLimit": "% do limite",
+        "noPeriods": "Ainda não é possível calcular volumes.",
+        "ledger": "Registro",
+        "hideRetracted": "Ocultar anulados",
+        "allEntries": "Todos os registros",
+        "retracted": "Anulado",
+        "retractedInfo": "Um registro posterior corrige este. Ele permanece no arquivo, mas deixa de contar.",
+        "correction": "Correção",
+        "correctionInfo": "Este registro corrige um anterior."
+      },
+      "wellStatus": {
+        "title": "Situação do poço",
+        "unknown": "Situação desconhecida",
+        "unknownInfo": "A situação é derivada das entradas “Mudança de situação” do histórico. Nenhuma foi registrada ainda.",
+        "derivedInfo": "Derivada da entrada “Mudança de situação” mais recente do histórico.",
+        "since": "desde {date}"
       },
       "permitTypes": {
         "abstraction_permit": "Outorga de direito de uso",
@@ -1106,6 +1272,28 @@
           "invalid_duration": "Uma condicionante tem duração inválida.",
           "unmatched_condition_log": "Um cumprimento no histórico não corresponde a nenhum prazo desta outorga."
         }
+      },
+      "warnings": {
+        "meter_removed_before_installed": "A data de retirada deve ser posterior à de instalação.",
+        "overlapping_meters": "Este hidrômetro está instalado ao mesmo tempo que outro.",
+        "duplicate_meter_id": "Dois hidrômetros têm o mesmo id.",
+        "reading_meter_unresolved": "O hidrômetro desta leitura não existe neste arquivo.",
+        "reading_outside_installation": "Esta leitura está fora do período de instalação do hidrômetro.",
+        "reading_rollover_unknown": "O totalizador diminuiu e o hidrômetro não tem capacidade informada: o volume deste intervalo é desconhecido.",
+        "duplicate_production_id": "Dois registros de produção têm o mesmo id.",
+        "corrects_unresolved": "O registro corrigido não existe neste arquivo.",
+        "corrects_cycle": "A cadeia de correções volta a si mesma.",
+        "declared_period_invalid": "O fim do período deve ser posterior ao início.",
+        "estimated_overlaps_meter": "Este volume estimado se sobrepõe a leituras de hidrômetro; o hidrômetro prevalece.",
+        "duplicate_regime_id": "Dois regimes têm o mesmo id.",
+        "regime_duplicate_effective_from": "Outro regime começa no mesmo instante.",
+        "regime_exceeds_permit": "O regime vigente excede a vazão ou a operação diária outorgadas.",
+        "log_category_field_mismatch": "Esta entrada tem campos de outra categoria.",
+        "log_reference_unresolved": "Uma bomba, hidrômetro ou evento referenciado não existe neste arquivo.",
+        "log_after_decommission": "Esta entrada é posterior à desativação ou ao abandono do poço.",
+        "missing_maintenance_type": "Esta manutenção referencia dados, mas não tem tipo de manutenção.",
+        "missing_status": "Esta mudança de situação não tem situação.",
+        "analysis_uses_retracted_event": "Esta análise usa um evento anulado."
       }
     }
   },

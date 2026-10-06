@@ -104,29 +104,32 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
 
 The format captures:
 
-| Section             | Field                                                                                      | Description                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| Identity            | `version`, `well_type`, `well_purpose`, `name`, `well_driller`, `construction_date`, `obs` | Version, construction method, intended use(s), name, driller, date, and free-text observations |
-| Location            | `location`                                                                                 | Lat/lng/elevation with explicit CRS and datum; default WGS84 (`EPSG:4326`)                     |
-| Registry IDs        | `well_id[]`                                                                                | Authority-scoped identifiers (e.g. SIAGAS, ANA, NGWD)                                          |
-| Borehole            | `bore_hole[]`                                                                              | Depth intervals and drilling method                                                            |
-| Well depth          | `well_depth`                                                                               | Current usable depth; may be less than drilled depth after siltation                           |
-| Well casing         | `well_case[]`                                                                              | Casing material, diameter, and depth                                                           |
-| Reductions          | `reduction[]`                                                                              | Diameter transitions between casing sections                                                   |
-| Well screen         | `well_screen[]`                                                                            | Screen type, slot size (`screen_slot`, mm), and depth                                          |
-| Surface casing      | `surface_case[]`                                                                           | Outer protective casing                                                                        |
-| Hole fill           | `hole_fill[]`                                                                              | Gravel pack and cement seal intervals                                                          |
-| Centralizers        | `centralizers[]`                                                                           | Casing/screen centralizers as interval + spacing (v2.1)                                        |
-| Cement pad          | `cement_pad`                                                                               | Surface pad dimensions                                                                         |
-| Lithology           | `lithology[]`                                                                              | Geologic layers with FGDC texture codes, colors, and aquifer units                             |
-| Fractures           | `fractures[]`                                                                              | Depth, azimuth, dip, water intake                                                              |
-| Caves               | `caves[]`                                                                                  | Depth intervals and water intake                                                               |
-| Hydrodynamic events | `hydrodynamic_events[]`                                                                    | Pumping tests, static readings, airlift, and recovery phases with time-series                  |
-| Aquifer analysis    | `aquifer_analysis[]`                                                                       | Interpreted transmissivity, specific capacity, storativity, Jacob coefficients                 |
-| Operational history | `history_logs[]`                                                                           | Timestamped log of maintenance, inspections, and incidents                                     |
-| Pump installations  | `pump_installations[]`                                                                     | Pump history with nameplate, intake depth, riser and electrical data (v2.3)                    |
-| Permits             | `permits[]`                                                                                | Outorgas with validity, granted flow and volumes, and conditions with derived deadlines (v2.3) |
-| General attachments | `attachments[]`                                                                            | Root-level files about the well as a whole, e.g. the drilling report (v2.3)                    |
+| Section             | Field                                                                                      | Description                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Identity            | `version`, `well_type`, `well_purpose`, `name`, `well_driller`, `construction_date`, `obs` | Version, construction method, intended use(s), name, driller, date, and free-text observations        |
+| Location            | `location`                                                                                 | Lat/lng/elevation with explicit CRS and datum; default WGS84 (`EPSG:4326`)                            |
+| Registry IDs        | `well_id[]`                                                                                | Authority-scoped identifiers (e.g. SIAGAS, ANA, NGWD)                                                 |
+| Borehole            | `bore_hole[]`                                                                              | Depth intervals and drilling method                                                                   |
+| Well depth          | `well_depth`                                                                               | Current usable depth; may be less than drilled depth after siltation                                  |
+| Well casing         | `well_case[]`                                                                              | Casing material, diameter, and depth                                                                  |
+| Reductions          | `reduction[]`                                                                              | Diameter transitions between casing sections                                                          |
+| Well screen         | `well_screen[]`                                                                            | Screen type, slot size (`screen_slot`, mm), and depth                                                 |
+| Surface casing      | `surface_case[]`                                                                           | Outer protective casing                                                                               |
+| Hole fill           | `hole_fill[]`                                                                              | Gravel pack and cement seal intervals                                                                 |
+| Centralizers        | `centralizers[]`                                                                           | Casing/screen centralizers as interval + spacing (v2.1)                                               |
+| Cement pad          | `cement_pad`                                                                               | Surface pad dimensions                                                                                |
+| Lithology           | `lithology[]`                                                                              | Geologic layers with FGDC texture codes, colors, and aquifer units                                    |
+| Fractures           | `fractures[]`                                                                              | Depth, azimuth, dip, water intake                                                                     |
+| Caves               | `caves[]`                                                                                  | Depth intervals and water intake                                                                      |
+| Hydrodynamic events | `hydrodynamic_events[]`                                                                    | Pumping tests, static readings, airlift, and recovery phases with time-series                         |
+| Aquifer analysis    | `aquifer_analysis[]`                                                                       | Interpreted transmissivity, specific capacity, storativity, Jacob coefficients                        |
+| Operational history | `history_logs[]`                                                                           | Timestamped log of maintenance, inspections, incidents and status changes                             |
+| Pump installations  | `pump_installations[]`                                                                     | Pump history with nameplate, intake depth, riser and electrical data (v2.3)                           |
+| Permits             | `permits[]`                                                                                | Outorgas with validity, granted flow and volumes, and conditions with derived deadlines (v2.3)        |
+| Meters              | `meters[]`                                                                                 | Totalizer (hidrômetro) installation history: type, serial, nominal diameter, register capacity (v2.3) |
+| Production          | `production[]`                                                                             | Append-only ledger of meter readings and declared volumes; volumes are derived, never stored (v2.3)   |
+| Operating regime    | `operating_regime[]`                                                                       | Declared flow rate, daily operating time and days per week, in force from a given instant (v2.3)      |
+| General attachments | `attachments[]`                                                                            | Root-level files about the well as a whole, e.g. the drilling report (v2.3)                           |
 
 All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`packages/core/docs/spec/v2/`](packages/core/docs/spec/v2/).
 
@@ -228,17 +231,19 @@ The following were delivered in `.well` v2.0 (shipped in `@welldot/core` v0.2.0)
 - **Structured location** — `location` object with explicit CRS, elevation datum, and one-sigma precision fields
 - **Registry identifiers** — `well_id[]` array linking a well to multiple national and institutional registries
 
-The v2.3 revision (shipped in `@welldot/core` v0.4.0) adds the first operational blocks:
+The v2.3 revision (shipped in `@welldot/core` v0.4.0) adds the operational blocks:
 
 - **Pump installations** — installation history with nameplate, intake depth, riser and electrical data; the current pump is drawn on the profile
+- **Permits** — outorgas with validity, granted flow, daily operating time and volumes, and conditions (condicionantes) whose deadlines are derived from ISO 8601 date durations; fulfillment is logged in `history_logs` (`permit_condition`)
+- **Meters and production** — totalizer installation history plus an append-only production ledger of meter readings and declared volumes; volumes are derived with rollover handling and are never stored as totals
+- **Operating regime** — declared flow rate, daily operating time and days per week, each entry in force from `effective_from`
+- **Structured history logs** — `maintenance` entries reference the pump, meter or event they concern (`maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`); the new `status_change` category records the well's operating status
 - **Attachments** — a root-level `attachments` array for general files about the well (e.g. the drilling report), plus `document_type` and per-record attachments on pumps, hydrodynamic events and aquifer analyses. The root array does not collect the per-record attachments
-- **Ledger corrections** — `hydrodynamic_events[].corrects` retracts an erroneous event without editing it
+- **Ledger corrections** — `hydrodynamic_events[].corrects` and `production[].corrects` retract an erroneous entry without editing it
 
 ### `.well` format — future versions
 
-- **Permits, meters, production and operating regime** — the remaining operational blocks (drafted for a later v2 revision)
-
-- **Water quality** — physico-chemical and microbiological parameters tied to sampling date and depth interval (drafted as a `water_samples` block for a later v2 revision)
+- **Water quality** — physico-chemical and microbiological parameters tied to sampling date and depth interval (drafted as a `water_samples` block, targeted at v2.4)
 - **Geophysical logs** — downhole resistivity, gamma ray, and caliper surveys (reserved for v3)
 - **Multi-well linking** — observation well references for storativity determination (reserved for v3)
 

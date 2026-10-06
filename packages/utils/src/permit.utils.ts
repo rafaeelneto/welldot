@@ -5,6 +5,8 @@ import type {
   Well,
 } from '@welldot/core';
 
+import { instantLocalDate } from './shared.utils';
+
 // ─── Calendar date helpers (.well v2.3) ──────────────────────────────────────
 // Permit dates are calendar dates (`YYYY-MM-DD`), the local civil date at the
 // well site. They are compared as strings and never turned into instants; the
@@ -94,14 +96,6 @@ export function todayCalendarDate(now: Date = new Date()): string {
     now.getMonth() + 1,
     now.getDate(),
   );
-}
-
-/**
- * Local calendar date of an RFC 3339 instant, as written: the date part of
- * the string, interpreted in the offset it carries.
- */
-function instantLocalDate(instant: string): string {
-  return instant.slice(0, 10);
 }
 
 // ─── Permit status ───────────────────────────────────────────────────────────

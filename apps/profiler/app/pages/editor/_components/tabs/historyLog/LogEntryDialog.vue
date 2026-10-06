@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import type { Attachment, HistoryLogEntry } from '@welldot/core';
+import type { Attachment, HistoryLogEntry, WellStatus } from '@welldot/core';
 import { formatISO } from 'date-fns';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import {
+  MAINTENANCE_TYPE_VALUES,
+  WELL_STATUS_VALUES,
+  meterLabel,
+  pumpInstallationLabel,
+  resolveMaintenanceTypeLabel,
+  resolveWellStatusLabel,
+} from '~/utils/operationVocab';
 
 /** The entry being edited. `null` means "adding a new one". */
 const model = defineModel<HistoryLogEntry | null>({ default: null });
@@ -11,6 +19,45 @@ const emit = defineEmits<{ save: [entry: HistoryLogEntry] }>();
 
 const { t } = useI18n();
 const { categoryOptions, severityOptions } = useHistoryLogCategories();
+const { eventTypeLabel } = useHydrodynamicEventTypes();
+const profileStore = useProfileStore();
+
+// ─── Category-specific options (.well v2.3) ──────────────────────────────────
+
+const maintenanceTypeOptions = computed(() =>
+  MAINTENANCE_TYPE_VALUES.map(value => ({
+    value,
+    label: resolveMaintenanceTypeLabel(value, t),
+  })),
+);
+const statusOptions = computed(() =>
+  WELL_STATUS_VALUES.map(value => ({
+    value,
+    label: resolveWellStatusLabel(value, t),
+  })),
+);
+const pumpOptions = computed(() =>
+  (profileStore.well.pump_installations ?? []).map(p => ({
+    value: p.id,
+    label: pumpInstallationLabel(p, t),
+  })),
+);
+const meterOptions = computed(() =>
+  (profileStore.well.meters ?? []).map(m => ({
+    value: m.id,
+    label: meterLabel(m, t),
+  })),
+);
+const eventOptions = computed(() =>
+  [...(profileStore.well.hydrodynamic_events ?? [])]
+    .sort(
+      (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+    )
+    .map(e => ({
+      value: e.id,
+      label: `${eventTypeLabel(e.type)} · ${formatDate(e.datetime, 'dd/MM/yyyy')}`,
+    })),
+);
 
 /** Local copy — edits never reach the bound value until Save. */
 const form = reactive({
@@ -20,6 +67,13 @@ const form = reactive({
   author: '',
   severity: '' as string,
   attachments: [] as Attachment[],
+  // `maintenance`
+  maintenanceType: null as string | null,
+  pumpInstallationId: null as string | null,
+  meterId: null as string | null,
+  eventId: null as string | null,
+  // `status_change`
+  status: null as WellStatus | null,
 });
 
 /**
@@ -35,7 +89,11 @@ const selectableCategories = computed(() =>
 );
 
 const isFormValid = computed(
-  () => !!form.category && !!form.datetime && !!form.description.trim(),
+  () =>
+    !!form.category &&
+    !!form.datetime &&
+    !!form.description.trim() &&
+    (form.category !== 'status_change' || !!form.status),
 );
 
 // `immediate` so the dialog seeds when mounted already open (behind `v-if`).
@@ -54,6 +112,11 @@ function seedForm(entry: HistoryLogEntry | null) {
   form.author = entry?.author ?? '';
   form.severity = entry?.severity ?? '';
   form.attachments = (entry?.attachments ?? []).map(a => ({ ...a }));
+  form.maintenanceType = entry?.maintenance_type ?? null;
+  form.pumpInstallationId = entry?.pump_installation_id ?? null;
+  form.meterId = entry?.meter_id ?? null;
+  form.eventId = entry?.event_id ?? null;
+  form.status = entry?.status ?? null;
 }
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
@@ -81,11 +144,32 @@ function saveEntry() {
       : undefined,
     updated_at: new Date().toISOString(),
   };
+  if (next.category === 'maintenance') {
+    next.maintenance_type = form.maintenanceType?.trim() || undefined;
+    next.pump_installation_id = form.pumpInstallationId || undefined;
+    next.meter_id = form.meterId || undefined;
+    next.event_id = form.eventId || undefined;
+  }
+  if (next.category === 'status_change') {
+    next.status = form.status ?? undefined;
+  }
   // Category-specific fields MUST be absent on entries of other categories.
+  if (next.category !== 'maintenance') {
+    delete next.maintenance_type;
+    delete next.pump_installation_id;
+    delete next.meter_id;
+  }
+  if (next.category !== 'status_change') delete next.status;
   if (next.category !== 'permit_condition') {
     delete next.permit_id;
     delete next.condition_id;
     delete next.due_date;
+  }
+  if (next.category !== 'maintenance' && next.category !== 'permit_condition') {
+    delete next.event_id;
+  }
+  for (const key of Object.keys(next) as (keyof HistoryLogEntry)[]) {
+    if (next[key] === undefined) delete next[key];
   }
 
   model.value = next;
@@ -125,6 +209,84 @@ function saveEntry() {
             <span>{{ opt.label }}</span>
           </label>
         </div>
+      </LabeledField>
+
+      <!-- ── maintenance: structured fields (optional — legacy logs lack them) -->
+      <div
+        v-if="form.category === 'maintenance'"
+        class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      >
+        <LabeledField
+          :label="t('editor.historyLog.logs.fields.maintenanceType')"
+          class="sm:col-span-2"
+        >
+          <Select
+            v-model="form.maintenanceType"
+            :options="maintenanceTypeOptions"
+            option-label="label"
+            option-value="value"
+            editable
+            show-clear
+            class="w-full"
+          />
+        </LabeledField>
+        <LabeledField
+          v-if="pumpOptions.length"
+          :label="t('editor.historyLog.logs.fields.pumpInstallation')"
+        >
+          <Select
+            v-model="form.pumpInstallationId"
+            :options="pumpOptions"
+            option-label="label"
+            option-value="value"
+            show-clear
+            class="w-full"
+          />
+        </LabeledField>
+        <LabeledField
+          v-if="meterOptions.length"
+          :label="t('editor.historyLog.logs.fields.meter')"
+        >
+          <Select
+            v-model="form.meterId"
+            :options="meterOptions"
+            option-label="label"
+            option-value="value"
+            show-clear
+            class="w-full"
+          />
+        </LabeledField>
+        <LabeledField
+          v-if="eventOptions.length"
+          :label="t('editor.historyLog.logs.fields.event')"
+          :info="t('editor.historyLog.logs.fields.eventInfo')"
+          class="sm:col-span-2"
+        >
+          <Select
+            v-model="form.eventId"
+            :options="eventOptions"
+            option-label="label"
+            option-value="value"
+            show-clear
+            class="w-full"
+          />
+        </LabeledField>
+      </div>
+
+      <!-- ── status_change: required status (closed vocabulary) ─────────── -->
+      <LabeledField
+        v-if="form.category === 'status_change'"
+        :label="t('editor.historyLog.logs.fields.status')"
+        :info="t('editor.historyLog.logs.fields.statusInfo')"
+      >
+        <Select
+          v-model="form.status"
+          :options="statusOptions"
+          option-label="label"
+          option-value="value"
+          :invalid="!form.status"
+          class="w-full"
+        />
       </LabeledField>
 
       <LabeledField :label="t('editor.historyLog.logs.fields.datetime')">

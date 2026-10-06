@@ -25,9 +25,13 @@ app/                      ← srcDir
     index.vue             ← landing page
     editor/               ← editor; tabs in _components/tabs/ (General, Construction,
                              Geological, Summary, History, Hydrodynamic, Operation, Permits)
-                             Operation (.well v2.3) = pump_installations; Permits (.well v2.3)
+                             Operation (.well v2.3) = pump_installations, meters,
+                             operating_regime and the production ledger (volumes shown
+                             in the volume display unit setting); Permits (.well v2.3)
                              = permits (condition fulfillment writes `permit_condition`
-                             history logs); root `attachments`
+                             history logs); History log dialog edits `maintenance`
+                             fields and `status_change` status (current well status
+                             tag); root `attachments`
                              (general files) live in the General tab below Observations
   layouts/
     landing.vue           ← layout for the landing page

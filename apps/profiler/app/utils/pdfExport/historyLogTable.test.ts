@@ -158,4 +158,29 @@ describe('buildHistoryLogSection', () => {
     // anchor (title+header), first entry's body block, divider, second entry.
     expect(items).toHaveLength(4);
   });
+
+  it('prints the maintenance type and the status_change status', () => {
+    const logs: HistoryLogEntry[] = [
+      {
+        id: 'm',
+        datetime: '2024-05-01T10:00:00-03:00',
+        category: 'maintenance',
+        maintenance_type: 'meter_calibration',
+        description: 'Calibrated',
+      },
+      {
+        id: 's',
+        datetime: '2024-06-01T10:00:00-03:00',
+        category: 'status_change',
+        status: 'inactive',
+        description: 'Stopped',
+      },
+    ];
+    const serialized = JSON.stringify(
+      buildHistoryLogSection(baseWell({ history_logs: logs }), baseOptions, t),
+    );
+    expect(serialized).toContain('status_change');
+    expect(serialized).toContain(' · meter_calibration');
+    expect(serialized).toContain(' · inactive');
+  });
 });

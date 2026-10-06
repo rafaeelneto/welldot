@@ -42,7 +42,10 @@
 
   "attachments": [ ... ],
   "pump_installations": [ ... ],
-  "permits": [ ... ]
+  "permits": [ ... ],
+  "meters": [ ... ],
+  "production": [ ... ],
+  "operating_regime": [ ... ]
 }
 ```
 
@@ -57,7 +60,7 @@
 
 Minor revisions (`2.1`, `2.3`, …) are additive and do not change the `version` integer: a v2.3 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
 
-The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `hydrodynamic_events[].corrects`, the `permit_condition` fields of `history_logs` and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
+The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `hydrodynamic_events[].corrects`, the category-specific fields of `history_logs` (`maintenance`, `status_change`, `permit_condition`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
 
 ### Parser version handling
 
@@ -68,7 +71,7 @@ The `version` field is an integer and must always be present.
 - Either parser encountering an unrecognized integer version MUST reject the file with a clear error.
 - A file without a `version` field SHOULD be rejected. Parsers MAY emit a warning and attempt to read the file as v1 if all required v1 fields are present and no v2-specific blocks are detected, but this fallback behavior is implementation-specific and not guaranteed by the spec.
 
-Files with `version: 1` MUST NOT contain any v2-only blocks (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, `attachments`, `pump_installations`, `permits`, `profiles`, `well_id` as array, `location` object, `@context`). A v1 file containing such fields is malformed.
+Files with `version: 1` MUST NOT contain any v2-only blocks (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `profiles`, `well_id` as array, `location` object, `@context`). A v1 file containing such fields is malformed.
 
 ---
 
@@ -154,21 +157,24 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 
 ### v2.3 additions
 
-| Field                | Type                 | Required | Description                                                                                          |
-| -------------------- | -------------------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `attachments`        | `Attachment[]`       | no       | Documents about the well as a whole, not tied to any record. See object-schemas.md § Attachment.     |
-| `pump_installations` | `PumpInstallation[]` | no       | Pump installation history (installation block). See object-schemas.md § `pump_installations[]`.      |
-| `permits`            | `Permit[]`           | no       | Legal instruments governing abstraction (mutable record block). See object-schemas.md § `permits[]`. |
+| Field                | Type                 | Required | Description                                                                                                                           |
+| -------------------- | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `attachments`        | `Attachment[]`       | no       | Documents about the well as a whole, not tied to any record. See object-schemas.md § Attachment.                                      |
+| `pump_installations` | `PumpInstallation[]` | no       | Pump installation history (installation block). See object-schemas.md § `pump_installations[]`.                                       |
+| `permits`            | `Permit[]`           | no       | Legal instruments governing abstraction (mutable record block). See object-schemas.md § `permits[]`.                                  |
+| `meters`             | `Meter[]`            | no       | Totalizer (hidrômetro) installation history (installation block). See object-schemas.md § `meters[]`.                                 |
+| `production`         | `ProductionEntry[]`  | no       | Append-only ledger of meter readings and declared volumes (ledger block). See object-schemas.md § `production[]`.                     |
+| `operating_regime`   | `OperatingRegime[]`  | no       | Declared operating regimes, each in force from `effective_from` (mutable record block). See object-schemas.md § `operating_regime[]`. |
 
 ### Block kinds _(since v2.3)_
 
 Every top-level array is one of three kinds. The kind decides how records are corrected.
 
-| Kind           | Blocks                    | Correction                                                                               | Edit tracking                           |
-| -------------- | ------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
-| Ledger         | `hydrodynamic_events`     | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
-| Mutable record | `history_logs`, `permits` | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
-| Installation   | `pump_installations`      | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Kind           | Blocks                                        | Correction                                                                               | Edit tracking                           |
+| -------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
+| Ledger         | `hydrodynamic_events`, `production`           | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
+| Mutable record | `history_logs`, `permits`, `operating_regime` | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Installation   | `pump_installations`, `meters`                | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
 
 Constructive and geologic arrays describe the well as built and are edited in place. `aquifer_analysis` entries are interpretations: a new interpretation is a new entry, and earlier ones coexist.
 
@@ -178,7 +184,7 @@ Constructive and geologic arrays describe the well as built and are edited in pl
 
 - `removed_at` earlier than or equal to `installed_at` is malformed and emits a warning.
 - Each entry is one installation, not one piece of equipment. A unit pulled and reinstalled gets a new entry with the same `serial`.
-- Overlapping open installations in the same block emit a warning, not an error.
+- Overlapping open installations in the same block emit a warning, not an error. Standby pumps and secondary meters exist.
 
 ### Naming rules _(since v2.3)_
 
@@ -205,6 +211,9 @@ The `.well` format distinguishes two kinds of temporal values:
 - `history_logs[].updated_at`
 - `pump_installations[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
 - `permits[].updated_at` _(since v2.3)_
+- `meters[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
+- `production[].datetime` (`meter_reading`); `production[].period_start`, `period_end` (`declared_volume`) _(since v2.3)_
+- `operating_regime[].effective_from`, `updated_at` _(since v2.3)_
 
 Validity and deadline checks compare calendar dates, never UTC instants. When an instant must be compared with a calendar date — for example a `permit_condition` log's `datetime` against its `due_date` — the instant's local date is the date part of the string, in the offset it carries. Producers SHOULD therefore write such instants in the well site's local offset.
 
@@ -313,6 +322,81 @@ Solar is a `power_source`, never a `type`. Non-canonical values SHOULD use the `
 | `meter_installation`     | Instalação de hidrômetro              |
 | `sanitary_protection`    | Proteção sanitária / laje / perímetro |
 | `renewal_request`        | Pedido de renovação                   |
+
+## `meters[].type` — Recommended values _(since v2.3)_
+
+| Value             | Portuguese (BR)         |
+| ----------------- | ----------------------- |
+| `mechanical`      | Hidrômetro mecânico     |
+| `electromagnetic` | Medidor eletromagnético |
+| `ultrasonic`      | Medidor ultrassônico    |
+
+Non-canonical values SHOULD use the `x-` prefix.
+
+## `production[]` — Recommended values _(since v2.3)_
+
+**`type`** — the entry discriminator: `meter_reading` (a totalizer register value) or `declared_volume` (a volume declared for a period, without a meter). Non-canonical entry types SHOULD use the `x-` prefix; parsers preserve them and exclude them from volume derivations.
+
+**`source`** (`meter_reading`):
+
+| Value       | Portuguese (BR) |
+| ----------- | --------------- |
+| `manual`    | Leitura manual  |
+| `telemetry` | Telemetria      |
+
+**`method`** (`declared_volume`):
+
+| Value       | Portuguese (BR)           | Description                                                                                       |
+| ----------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
+| `estimated` | Estimado                  | Computed outside the file (e.g. flow × time). Counts only for time not covered by meter readings. |
+| `reported`  | Declarado ao órgão gestor | As declared to a regulator. Kept for comparison; never added to production totals.                |
+
+An absent `method` is treated as `estimated`.
+
+## `history_logs[].category` — Recommended values
+
+| Value              | Portuguese (BR)              | Category-specific fields                                                          |
+| ------------------ | ---------------------------- | --------------------------------------------------------------------------------- |
+| `maintenance`      | Manutenção                   | `maintenance_type`, `pump_installation_id`, `meter_id`, `event_id` _(since v2.3)_ |
+| `inspection`       | Inspeção                     | —                                                                                 |
+| `incident`         | Incidente                    | —                                                                                 |
+| `event`            | Evento                       | —                                                                                 |
+| `change_of_use`    | Mudança de uso               | — _(since v2.1)_                                                                  |
+| `status_change`    | Mudança de situação          | `status` _(since v2.3)_                                                           |
+| `permit_condition` | Cumprimento de condicionante | `permit_id`, `condition_id`, `due_date`, `event_id` _(since v2.3)_                |
+
+Descriptions are in object-schemas.md § `history_logs[]`. Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. Non-canonical values SHOULD use the `x-` prefix.
+
+## `history_logs[].maintenance_type` — Recommended values _(since v2.3)_
+
+| Value               | Portuguese (BR)             |
+| ------------------- | --------------------------- |
+| `inspection`        | Inspeção                    |
+| `cleaning`          | Limpeza                     |
+| `redevelopment`     | Redesenvolvimento           |
+| `disinfection`      | Desinfecção                 |
+| `pump_service`      | Manutenção da bomba         |
+| `meter_calibration` | Aferição do hidrômetro      |
+| `video_inspection`  | Filmagem / perfilagem ótica |
+| `level_measurement` | Medição de nível            |
+| `pump_test`         | Teste de bombeamento        |
+| `water_sampling`    | Coleta de água              |
+
+Non-canonical values SHOULD use the `x-` prefix.
+
+## `history_logs[].status` — Allowed values _(since v2.3)_
+
+Used by entries of category `status_change`. This is a **closed vocabulary**: `status` MUST be one of the five values below. Any other value, including an `x-` value, is a schema error and the file is rejected.
+
+| Value            | Portuguese (BR)        | Semantics                               |
+| ---------------- | ---------------------- | --------------------------------------- |
+| `active`         | Ativo / em operação    | Normal operation.                       |
+| `maintenance`    | Em manutenção          | Temporarily out of service for work.    |
+| `inactive`       | Paralisado             | Out of service, recoverable.            |
+| `decommissioned` | Desativado / tamponado | Permanently closed and properly sealed. |
+| `abandoned`      | Abandonado             | Left without proper sealing.            |
+
+The well's current status is the `status` of the `status_change` entry with the latest `datetime`; with no such entry, the status is unknown.
 
 ## `Attachment.document_type` — Recommended values _(since v2.3)_
 
@@ -485,6 +569,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `hole_fill[].diameter`
 - `centralizers[].diameter`
 - `pump_installations[].riser_diameter` _(since v2.3)_
+- `meters[].nominal_diameter` _(since v2.3)_
 
 **Cubic meter per hour (`m3/h`)** — all volumetric flow rates:
 
@@ -493,6 +578,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `recovery_only.pumping_rate`
 - `pump_installations[].rated_flow_rate` _(since v2.3)_
 - `permits[].flow_rate`, `permits[].monthly_schedule[].flow_rate` _(since v2.3)_
+- `operating_regime[].flow_rate` _(since v2.3)_
 
 **Minute (`min`)** — all elapsed times and durations:
 
@@ -503,10 +589,13 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 **Cubic meter (`m3`)** — volume _(since v2.3)_:
 
 - `permits[].volume_limits[].volume`
+- `meters[].max_reading`
+- `production[].reading` (`meter_reading`), `production[].volume` (`declared_volume`)
 
 **Hour (`h`)** — daily operating time _(since v2.3)_:
 
 - `permits[].daily_operating_time`, `permits[].monthly_schedule[].daily_operating_time`
+- `operating_regime[].daily_operating_time`
 
 The minute remains the canonical unit for elapsed time and durations. The hour is bound only to `daily_operating_time`, which regulators always express in hours.
 
@@ -548,6 +637,7 @@ The minute remains the canonical unit for elapsed time and durations. The hour i
 - Lithology `color` (CSS hex string)
 - `pump_installations[].stages`, `electrical.phases` (counts)
 - `permits[].monthly_schedule[].month`, `days`; `permits[].conditions[].occurrences` (counts)
+- `operating_regime[].days_per_week` (count, 1–7)
 
 ### Level sign convention
 
@@ -567,7 +657,7 @@ An interchange format with configurable units multiplies the number of valid enc
 
 Producers receiving non-SI source data (imperial drilling reports, US gpm flow measurements, inch casing designations, slot-number screens) MUST convert to SI before writing. Consumers presenting the data to users in non-SI units MUST convert on read.
 
-Conversion utilities for the common transformations are provided in `@welldot/core` under the `units` module — m ↔ ft, mm ↔ in, m³/h ↔ L/s, m³/h ↔ US gpm, m²/s ↔ m²/d, DD ↔ DMS, slot-number ↔ mm, cv/hp ↔ kW, L ↔ m³, and similar.
+Conversion utilities for the common transformations are provided in `@welldot/core` under the `units` module — m ↔ ft, mm ↔ in, m³/h ↔ L/s, m³/h ↔ US gpm, m²/s ↔ m²/d, DD ↔ DMS, slot-number ↔ mm, cv/hp ↔ kW, L / ft³ / US gal ↔ m³, and similar.
 
 ---
 
@@ -631,13 +721,13 @@ Top-level blocks not defined in this spec MUST use the `x-` prefix. Parsers MUST
 
 ### Custom vocabulary values — `x-` prefix
 
-Open vocabulary fields in this spec (`type` in `hydrodynamic_events`, `category` in `history_logs`, `vocabulary` in `texture`, `method` in `aquifer_analysis`, `well_type`, and any other field documented as accepting any string) SHOULD use the `x-` prefix when the value is non-canonical — i.e. not listed in the recommended vocabulary of this spec.
+Open vocabulary fields in this spec (`type` in `hydrodynamic_events`, `category` in `history_logs`, `vocabulary` in `texture`, `method` in `aquifer_analysis`, `well_type`, and any other field documented as accepting any string; not closed vocabularies such as `history_logs[].status`) SHOULD use the `x-` prefix when the value is non-canonical — i.e. not listed in the recommended vocabulary of this spec.
 
 Parsers MUST treat `x-` prefixed vocabulary values as valid. Promotion from `x-` form to canonical form follows the Deprecation Policy (see § Deprecation Policy — Vocabulary value promotion).
 
 ```json
 { "type": "x-slug_test" }
-{ "category": "x-decommission" }
+{ "category": "x-site_visit" }
 { "method": "x-theis_recovery" }
 ```
 
@@ -658,6 +748,9 @@ Each ID-bearing array maintains its **own uniqueness scope**. The ID namespaces 
 - `permits[].id` — unique within `permits` _(since v2.3)_
 - `permits[].conditions[].id` — unique within the `conditions` array of one permit _(since v2.3)_
 - `permits[].monthly_schedule[].month` and `permits[].volume_limits[].period` — unique within one permit _(since v2.3)_
+- `meters[].id` — unique within `meters` _(since v2.3)_
+- `production[].id` — unique within `production` _(since v2.3)_
+- `operating_regime[].id` — unique within `operating_regime`; `operating_regime[].effective_from` is also unique within the block _(since v2.3)_
 - `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis`). The same id may appear under different records.
 - `well_id[]` — uniqueness is on the composite key `(authority, id)`, not on `id` alone
 
@@ -667,15 +760,19 @@ An ID value MAY repeat across different arrays without conflict (e.g. an event a
 
 The following fields hold references to IDs in other arrays:
 
-| Reference field                             | Points to                                                | Resolution scope |
-| ------------------------------------------- | -------------------------------------------------------- | ---------------- |
-| `aquifer_analysis[].source_event_ids[]`     | `hydrodynamic_events[].id`                               | Same file only   |
-| `aquifer_analysis[].static_level_source_id` | `hydrodynamic_events[].id`                               | Same file only   |
-| `hydrodynamic_events[].corrects`            | `hydrodynamic_events[].id`                               | Same file only   |
-| `permits[].supersedes`                      | `permits[].id`                                           | Same file only   |
-| `history_logs[].permit_id`                  | `permits[].id`                                           | Same file only   |
-| `history_logs[].condition_id`               | `permits[].conditions[].id` within the referenced permit | Same file only   |
-| `history_logs[].event_id`                   | `hydrodynamic_events[].id`                               | Same file only   |
+| Reference field                             | Points to                                                      | Resolution scope |
+| ------------------------------------------- | -------------------------------------------------------------- | ---------------- |
+| `aquifer_analysis[].source_event_ids[]`     | `hydrodynamic_events[].id`                                     | Same file only   |
+| `aquifer_analysis[].static_level_source_id` | `hydrodynamic_events[].id`                                     | Same file only   |
+| `hydrodynamic_events[].corrects`            | `hydrodynamic_events[].id`                                     | Same file only   |
+| `production[].corrects`                     | `production[].id`                                              | Same file only   |
+| `production[].meter_id`                     | `meters[].id`                                                  | Same file only   |
+| `permits[].supersedes`                      | `permits[].id`                                                 | Same file only   |
+| `history_logs[].pump_installation_id`       | `pump_installations[].id`                                      | Same file only   |
+| `history_logs[].meter_id`                   | `meters[].id`                                                  | Same file only   |
+| `history_logs[].permit_id`                  | `permits[].id`                                                 | Same file only   |
+| `history_logs[].condition_id`               | `permits[].conditions[].id` within the referenced permit       | Same file only   |
+| `history_logs[].event_id`                   | `hydrodynamic_events[].id` (`maintenance`, `permit_condition`) | Same file only   |
 
 Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events` or `aquifer_analysis` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
 

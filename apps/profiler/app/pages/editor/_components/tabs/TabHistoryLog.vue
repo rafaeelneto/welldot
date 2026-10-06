@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import type { Attachment, HistoryLogEntry } from '@welldot/core';
+import {
+  getOperationWarnings,
+  type OperationWarningCode,
+} from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
 import AppChip from '~/components/AppChip.vue';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import {
+  WELL_STATUS_SEVERITY,
+  meterLabel,
+  pumpInstallationLabel,
+  resolveMaintenanceTypeLabel,
+  resolveWellStatusLabel,
+} from '~/utils/operationVocab';
 import LogEntryDialog from './historyLog/LogEntryDialog.vue';
 
 const { t } = useI18n();
@@ -16,6 +27,7 @@ const {
   severityLabel,
   severityToChip,
 } = useHistoryLogCategories();
+const { eventTypeLabel } = useHydrodynamicEventTypes();
 
 // ─── Dialog bindings — the dialogs edit a copy and hand it back on save ──────
 
@@ -84,6 +96,67 @@ function permitConditionRef(entry: HistoryLogEntry): string | null {
       .join(' · ') || null
   );
 }
+
+// ─── maintenance / status_change (.well v2.3) ────────────────────────────────
+
+/** "Pump service · Submersible Acme · 01/02/2024 · Constant rate · 03/02/2024". */
+function maintenanceRef(entry: HistoryLogEntry): string | null {
+  if (entry.category !== 'maintenance') return null;
+  const well = profileStore.well;
+  const pump = entry.pump_installation_id
+    ? well.pump_installations?.find(p => p.id === entry.pump_installation_id)
+    : undefined;
+  const meter = entry.meter_id
+    ? well.meters?.find(m => m.id === entry.meter_id)
+    : undefined;
+  const event = entry.event_id
+    ? well.hydrodynamic_events?.find(e => e.id === entry.event_id)
+    : undefined;
+  return (
+    [
+      entry.maintenance_type
+        ? resolveMaintenanceTypeLabel(entry.maintenance_type, t)
+        : null,
+      pump ? pumpInstallationLabel(pump, t) : entry.pump_installation_id,
+      meter ? meterLabel(meter, t) : entry.meter_id,
+      event
+        ? `${eventTypeLabel(event.type)} · ${formatDate(event.datetime, 'dd/MM/yyyy')}`
+        : entry.event_id,
+    ]
+      .filter(Boolean)
+      .join(' · ') || null
+  );
+}
+
+function statusSeverity(status: string): string {
+  return (
+    WELL_STATUS_SEVERITY[status as keyof typeof WELL_STATUS_SEVERITY] ??
+    'secondary'
+  );
+}
+
+const LOG_WARNING_CODES: readonly OperationWarningCode[] = [
+  'log_category_field_mismatch',
+  'log_reference_unresolved',
+  'log_after_decommission',
+  'missing_maintenance_type',
+  'missing_status',
+];
+
+/** Warning messages per log entry id. */
+const warningsById = computed(() => {
+  const map = new Map<string, string[]>();
+  for (const w of getOperationWarnings(profileStore.well)) {
+    if (!LOG_WARNING_CODES.includes(w.code)) continue;
+    for (const id of w.ids) {
+      const list = map.get(id) ?? [];
+      const msg = t(`editor.operation.warnings.${w.code}`);
+      if (!list.includes(msg)) list.push(msg);
+      map.set(id, list);
+    }
+  }
+  return map;
+});
 
 // ─── Description expand ───────────────────────────────────────────────────────
 
@@ -267,6 +340,12 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
               class="text-[11px]"
             />
             <Tag
+              v-if="entry.category === 'status_change' && entry.status"
+              :value="resolveWellStatusLabel(entry.status, t)"
+              :severity="statusSeverity(entry.status)"
+              class="text-[11px]"
+            />
+            <Tag
               v-if="entry.severity"
               :value="severityLabel(entry.severity)"
               :severity="severityToChip(entry.severity)"
@@ -285,6 +364,13 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
             >
               <Icon name="ph:seal-check-duotone" class="size-3.5 shrink-0" />
               {{ permitConditionRef(entry) }}
+            </span>
+            <span
+              v-if="maintenanceRef(entry)"
+              class="flex items-center gap-1.5 text-xs text-content-400"
+            >
+              <Icon name="ph:wrench-duotone" class="size-3.5 shrink-0" />
+              {{ maintenanceRef(entry) }}
             </span>
             <p
               class="text-sm leading-relaxed whitespace-pre-line m-0 transition-all"
@@ -305,6 +391,17 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
               }}
             </button>
           </div>
+
+          <!-- ── warnings ────────────────────────────────────────────────── -->
+          <Message
+            v-for="msg in warningsById.get(entry.id) ?? []"
+            :key="msg"
+            severity="warn"
+            size="small"
+            variant="simple"
+          >
+            {{ msg }}
+          </Message>
 
           <!-- ── attachments ─────────────────────────────────────────────── -->
           <AttachmentField

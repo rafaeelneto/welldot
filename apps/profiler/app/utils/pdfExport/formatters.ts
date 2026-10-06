@@ -3,11 +3,13 @@ import {
   metersToFeet,
   mmToInches,
   powerFromCanonical,
+  volumeFromCanonical,
 } from '@welldot/core';
 import { formatNumber } from '@welldot/utils';
 import {
   resolveDiameterUnitLabel,
   resolveFlowUnitLabel,
+  resolveVolumeUnitLabel,
 } from '~/utils/unitLabel';
 import type { PdfExportOptions } from './types';
 
@@ -34,6 +36,8 @@ export interface PdfFormatters {
   ): string;
   lengthUnit: PdfExportOptions['lengthUnit'];
   diameterUnit: PdfExportOptions['diameterUnit'];
+  /** Display label of the resolved volume unit (`m³`, `L`, `ft³`, `gal`). */
+  volumeUnitLabel: string;
 }
 
 /**
@@ -43,12 +47,20 @@ export interface PdfFormatters {
 export function createPdfFormatters(
   options: Pick<
     PdfExportOptions,
-    'lengthUnit' | 'diameterUnit' | 'locale' | 'flowUnit' | 'powerUnit'
+    | 'lengthUnit'
+    | 'diameterUnit'
+    | 'locale'
+    | 'flowUnit'
+    | 'powerUnit'
+    | 'volumeUnit'
   >,
 ): PdfFormatters {
   const { lengthUnit, diameterUnit, locale } = options;
   const flowUnit = options.flowUnit ?? 'm3/h';
   const powerUnit = options.powerUnit ?? 'kW';
+  // Without an explicit volume unit, follow the length system (ft → ft³).
+  const volumeUnit = options.volumeUnit ?? (lengthUnit === 'ft' ? 'ft3' : 'm3');
+  const volumeUnitLabel = resolveVolumeUnitLabel(volumeUnit);
 
   function formatLength(
     value: number | null | undefined,
@@ -76,13 +88,10 @@ export function createPdfFormatters(
     fractionDigits = 2,
   ): string {
     if (volumeM3 == null) return '—';
-    if (lengthUnit === 'ft') {
-      return formatNumber(volumeM3 * 35.3147, {
-        fractionDigits,
-        suffix: 'ft³',
-      });
-    }
-    return formatNumber(volumeM3, { fractionDigits, suffix: 'm³' });
+    return formatNumber(volumeFromCanonical(volumeM3, volumeUnit), {
+      fractionDigits,
+      suffix: volumeUnitLabel,
+    });
   }
 
   function formatFlow(
@@ -115,5 +124,6 @@ export function createPdfFormatters(
     formatPower,
     lengthUnit,
     diameterUnit,
+    volumeUnitLabel,
   };
 }

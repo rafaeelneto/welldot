@@ -4,12 +4,15 @@ import { buildFooterContent } from './footer';
 import { buildHistoryLogSection } from './historyLogTable';
 import { buildHydrodynamicEventsSection } from './hydrodynamicEventsTable';
 import { buildMetadataTable, packLabelValueRows } from './metadataTable';
+import { buildMeterSection } from './meterTable';
+import { buildOperatingRegimeSection } from './operatingRegimeTable';
 import type {
   Content,
   ContentTable,
   TDocumentDefinition,
 } from './pdfmake.types';
 import { buildPermitSection } from './permitTable';
+import { buildProductionSection } from './productionTable';
 import { buildPumpInstallationSection } from './pumpInstallationTable';
 import { buildSectionTables, withTableTitle } from './sectionTables';
 import type { PdfExportOptions, PdfTranslate, RenderedSvg } from './types';
@@ -102,6 +105,15 @@ export function buildDocDefinition(
 
   const pumpSection = buildPumpInstallationSection(well, options, t);
   if (pumpSection) content.push(pumpSection);
+
+  const meterSection = buildMeterSection(well, options, t);
+  if (meterSection) content.push(meterSection);
+
+  const regimeSection = buildOperatingRegimeSection(well, options, t);
+  if (regimeSection) content.push(regimeSection);
+
+  const productionSection = buildProductionSection(well, options, t);
+  if (productionSection) content.push(productionSection);
 
   const permitSection = buildPermitSection(well, options, t);
   if (permitSection) content.push(permitSection);

@@ -7,24 +7,36 @@ import {
   mmToInches,
   powerFromCanonical,
   powerToCanonical,
+  volumeFromCanonical,
+  volumeToCanonical,
 } from '@welldot/core';
-import { resolveFlowUnitLabel } from '~/utils/unitLabel';
+import {
+  resolveFlowUnitLabel,
+  resolveVolumeUnitLabel,
+} from '~/utils/unitLabel';
 
-export type DisplayUnitType = 'length' | 'diameter' | 'flow' | 'power';
+export type DisplayUnitType =
+  | 'length'
+  | 'diameter'
+  | 'flow'
+  | 'power'
+  | 'volume';
 
 /**
  * Canonical ↔ display conversion for one quantity, following the unit the
- * user picked in Settings. `.well` files always store SI (m, mm, m³/h, kW);
+ * user picked in Settings. `.well` files always store SI (m, mm, m³/h, kW, m³);
  * this only changes what the UI shows and accepts.
  */
 export function useUnitDisplay(unitType: DisplayUnitType) {
   const uiStore = useUiStore();
 
-  /** Raw unit for length/diameter (`m`, `inches`…); display label for flow/power. */
+  /** Raw unit for length/diameter (`m`, `inches`…); display label for flow/power/volume. */
   const unit = computed(() => {
     if (unitType === 'length') return uiStore.lengthUnit;
     if (unitType === 'diameter') return uiStore.diameterUnit;
     if (unitType === 'flow') return resolveFlowUnitLabel(uiStore.flowUnit);
+    if (unitType === 'volume')
+      return resolveVolumeUnitLabel(uiStore.volumeUnit);
     return uiStore.powerUnit;
   });
 
@@ -42,6 +54,8 @@ export function useUnitDisplay(unitType: DisplayUnitType) {
         return flowFromCanonical(canonical, uiStore.flowUnit);
       case 'power':
         return powerFromCanonical(canonical, uiStore.powerUnit);
+      case 'volume':
+        return volumeFromCanonical(canonical, uiStore.volumeUnit);
     }
   }
 
@@ -57,6 +71,8 @@ export function useUnitDisplay(unitType: DisplayUnitType) {
         return flowToCanonical(display, uiStore.flowUnit);
       case 'power':
         return powerToCanonical(display, uiStore.powerUnit);
+      case 'volume':
+        return volumeToCanonical(display, uiStore.volumeUnit);
     }
   }
 

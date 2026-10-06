@@ -3,6 +3,7 @@ import type {
   FlowUnits,
   LengthUnits,
   PowerUnits,
+  VolumeUnits,
 } from '@welldot/core';
 import type { CoordinateFormat } from '~/stores/ui.store';
 
@@ -29,6 +30,8 @@ export interface PdfExportOptions {
   flowUnit?: FlowUnits;
   /** Display unit for power. Defaults to `kW`. */
   powerUnit?: PowerUnits;
+  /** Display unit for volumes. Defaults to `ft3` when `lengthUnit` is `ft`, else `m3`. */
+  volumeUnit?: VolumeUnits;
   coordinateFormat: CoordinateFormat;
   /** Active app locale (`useI18n().locale.value`) — drives the diameter unit symbol (`in.`/`"`) and the embedded profile SVG's language. */
   locale: string;
