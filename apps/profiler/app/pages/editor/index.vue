@@ -29,17 +29,26 @@ onMounted(() => showStartupTip());
 
 const isMobile = computed(() => viewport.isLessThan('lg'));
 const mobileView = ref<'profile' | 'data'>('data');
-const activeTabKey = ref<string>('0');
+// The summary (value '3') is listed first and opens by default.
+const activeTabKey = ref<string>('3');
 
 const tabs = computed<
   {
     value: string;
     label: string;
     shortLabel: string;
+    /** Icon-only tab: the label goes to the tooltip / aria-label. */
+    icon?: string;
     disabled?: boolean;
     comingSoon?: boolean;
   }[]
 >(() => [
+  {
+    value: '3',
+    label: t('editor.tabs.summary'),
+    shortLabel: t('editor.tabs.summary'),
+    icon: 'ph:squares-four-duotone',
+  },
   {
     value: '0',
     label: t('editor.tabs.general'),
@@ -54,11 +63,6 @@ const tabs = computed<
     value: '2',
     label: t('editor.tabs.geological'),
     shortLabel: t('editor.tabs.geological'),
-  },
-  {
-    value: '3',
-    label: t('editor.tabs.summary'),
-    shortLabel: t('editor.tabs.summary'),
   },
   {
     value: '4',
@@ -121,8 +125,15 @@ const tabs = computed<
             :key="tab.value"
             :value="tab.value"
             :disabled="tab.disabled ?? false"
+            :aria-label="tab.icon ? tab.label : undefined"
           >
-            <span class="flex items-center gap-1.5">
+            <Icon
+              v-if="tab.icon"
+              v-tooltip.bottom="tab.label"
+              :name="tab.icon"
+              class="block size-4.5"
+            />
+            <span v-else class="flex items-center gap-1.5">
               {{ isMobile ? tab.shortLabel : tab.label }}
               <span
                 v-if="tab.comingSoon"
@@ -137,7 +148,9 @@ const tabs = computed<
           <TabPanel value="0"><TabGeneral /></TabPanel>
           <TabPanel value="1"><TabConstruction /></TabPanel>
           <TabPanel value="2"><TabGeological /></TabPanel>
-          <TabPanel value="3"><TabSummary /></TabPanel>
+          <TabPanel value="3">
+            <TabSummary @navigate="key => (activeTabKey = key)" />
+          </TabPanel>
           <TabPanel value="4"><TabHistoryLog /></TabPanel>
           <TabPanel value="5"><TabHydrodynamicEvents /></TabPanel>
           <TabPanel value="6"><TabOperation /></TabPanel>

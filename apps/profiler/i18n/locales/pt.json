@@ -665,11 +665,14 @@
       "attachmentsInfo": "Arquivos sobre o poço como um todo, como o relatório de perfuração ou o perfil as-built. Anexos de bombas, testes e do histórico ficam no próprio registro."
     },
     "summary": {
-      "tag": "Visão geral · Volumes",
+      "tag": "Visão geral do poço",
       "kpis": {
         "depth": "Prof. Total",
         "layers": "Camadas",
-        "screen": "Filtro"
+        "screen": "Filtro",
+        "wellDepth": "Prof. útil",
+        "staticLevel": "NE atual",
+        "flowRate": "Vazão"
       },
       "boreHole": {
         "title": "Furo",
@@ -691,14 +694,12 @@
       },
       "casing": {
         "title": "Revestimento",
-        "tag": "TUBULAÇÃO · FILTROS",
-        "type": "Tipo",
+        "tag": "TUBULAÇÃO CEGA",
+        "type": "Material",
         "diameter": "Diâm.",
         "from": "De",
         "to": "Até",
         "length": "Trecho",
-        "kindCase": "Revestimento",
-        "kindScreen": "Filtro",
         "total": "Total revestido"
       },
       "reduction": {
@@ -741,6 +742,125 @@
         "from": "De",
         "to": "Até",
         "thickness": "Espessura"
+      },
+      "unnamed": "Poço sem nome",
+      "seeIn": "Ver em {tab}",
+      "identity": {
+        "title": "Identificação",
+        "tag": "GERAL",
+        "ids": "Identificadores"
+      },
+      "location": {
+        "title": "Localização",
+        "tag": "COORDENADAS",
+        "empty": "Coordenadas não informadas."
+      },
+      "pump": {
+        "title": "Bomba atual",
+        "tag": "OPERAÇÃO",
+        "installedAt": "Instalada em {date}",
+        "intakeDepth": "Prof. de sucção",
+        "submergence": "Submergência",
+        "ratedFlow": "Vazão nominal",
+        "ratedHead": "Altura manométrica",
+        "ratedPower": "Potência",
+        "serviceTime": "Tempo em serviço",
+        "years": "{n} anos",
+        "days": "{n} dias",
+        "empty": "Nenhuma bomba instalada."
+      },
+      "aquifer": {
+        "title": "Aquífero",
+        "tag": "HIDRODINÂMICA",
+        "staticLevel": "Nível estático",
+        "dynamicLevel": "Nível dinâmico",
+        "flowRate": "Vazão",
+        "maxFlowRate": "Vazão máxima",
+        "specificCapacity": "Cap. específica",
+        "transmissivity": "Transmissividade",
+        "hydraulicConductivity": "Condutividade hidráulica",
+        "storativity": "Coef. de armazenamento",
+        "aquiferThickness": "Espessura saturada",
+        "wellEfficiency": "Eficiência do poço",
+        "latestAnalysis": "Análise mais recente em {date}",
+        "empty": "Nenhum dado hidrodinâmico registrado."
+      },
+      "waterQuality": {
+        "title": "Qualidade da água",
+        "tag": "ÚLTIMA ANÁLISE",
+        "collectedAt": "Coleta",
+        "sampleType": "Tipo de amostra",
+        "laboratory": "Laboratório",
+        "results": "Resultados",
+        "facies": "Fácies",
+        "ionBalance": "Balanço iônico",
+        "compliance": "Conformidade · {set}",
+        "noExceedances": "Nenhum parâmetro fora dos limites.",
+        "noLimitSet": "Selecione um conjunto de limites na aba Qualidade da água para verificar a conformidade.",
+        "empty": "Nenhuma amostra registrada."
+      },
+      "permit": {
+        "title": "Outorga",
+        "total": "{n} outorgas no total",
+        "validity": "Validade",
+        "flowRate": "Vazão outorgada",
+        "dailyTime": "Tempo diário",
+        "waterUse": "Finalidade de uso",
+        "nextDeadlines": "Próximas condicionantes",
+        "noDeadlines": "Nenhum prazo pendente.",
+        "empty": "Nenhuma outorga registrada.",
+        "overdueCount": "{n} atrasadas"
+      },
+      "activity": {
+        "title": "Eventos e alertas",
+        "tag": "HISTÓRICO",
+        "alerts": "Alertas",
+        "noAlerts": "Nenhum alerta.",
+        "latestEvent": "Último evento hidrodinâmico",
+        "noEvents": "Nenhum evento hidrodinâmico registrado.",
+        "recentLogs": "Últimos registros",
+        "noLogs": "Nenhum registro no histórico.",
+        "domains": {
+          "permits": "Outorgas",
+          "pump": "Bombas",
+          "operation": "Operação",
+          "historyLog": "Histórico",
+          "waterQuality": "Qualidade da água"
+        },
+        "dataIssues": "Inconsistências nos dados ({n})"
+      },
+      "construction": {
+        "title": "Detalhes construtivos",
+        "tag": "CONSTRUTIVO · GEOLOGIA",
+        "empty": "Nenhum dado construtivo registrado."
+      },
+      "screen": {
+        "title": "Filtro",
+        "tag": "SEÇÕES FILTRANTES",
+        "type": "Tipo",
+        "diameter": "Diâm.",
+        "slot": "Abertura",
+        "from": "De",
+        "to": "Até",
+        "length": "Trecho",
+        "total": "Total de filtros"
+      },
+      "cementPad": {
+        "title": "Laje de proteção",
+        "tag": "SUPERFÍCIE",
+        "type": "Tipo",
+        "width": "Largura",
+        "length": "Comprimento",
+        "thickness": "Espessura"
+      },
+      "alerts": {
+        "permitExpired": "Outorga {number} vencida em {date}.",
+        "permitPendingRenewal": "Outorga {number} vencida em {date}; renovação em análise.",
+        "permitExpiring": "Outorga {number} vence em {date} ({n} dias).",
+        "conditionOverdue": "Condicionante atrasada desde {date}: {description}",
+        "conditionOverdueMany": "{n} prazos atrasados desde {date}: {description}",
+        "waterExceedances": "{n} parâmetro(s) fora dos limites de {set} na amostra de {date}.",
+        "wellStatus": "Situação do poço: {status} desde {date}."
       }
     },
     "historyLog": {

@@ -23,9 +23,14 @@ app/                      ← srcDir
   app.vue                 ← root component
   pages/
     index.vue             ← landing page
-    editor/               ← editor; tabs in _components/tabs/ (General, Construction,
-                             Geological, Summary, History, Hydrodynamic, Operation, Permits,
-                             Water quality)
+    editor/               ← editor; tabs in _components/tabs/ (Summary, General,
+                             Construction, Geological, History, Hydrodynamic, Operation,
+                             Permits, Water quality). Summary is an icon-only first tab and
+                             the default one: a read-only dashboard (summary/: identity,
+                             location map, current pump + regime, aquifer state from
+                             `useAquiferState`, latest water sample, permit in force,
+                             alerts/latest event/recent logs, construction tables) whose
+                             cards switch tabs through the `summaryNavigateKey` inject.
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)

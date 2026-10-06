@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { HydrodynamicEvent } from '@welldot/core';
-import { getRetractedEventIds } from '@welldot/utils';
 import AppChip from '~/components/AppChip.vue';
 import EventCard from './hydrodynamicEvents/EventCard.vue';
 import EventDialog from './hydrodynamicEvents/EventDialog.vue';
@@ -36,45 +35,7 @@ const filteredEvents = computed<HydrodynamicEvent[]>(() => {
 
 // ─── Current State ────────────────────────────────────────────────────────────
 
-const currentState = computed(() => {
-  const events = allEvents.value;
-  const analyses = [...(profileStore.well.aquifer_analysis ?? [])].sort(
-    (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
-  );
-
-  // Events retracted by a later `corrects` never count (.well v2.3 ledger rule).
-  const retracted = getRetractedEventIds(profileStore.well);
-  const neEvent = events.find(
-    e =>
-      !retracted.has(e.id) &&
-      'static_level' in e &&
-      (e as Record<string, unknown>).static_level != null,
-  );
-  const ne = neEvent
-    ? {
-        value: (neEvent as Record<string, unknown>).static_level as number,
-        datetime: neEvent.datetime,
-      }
-    : null;
-
-  const scAnalysis = analyses.find(a => a.specific_capacity != null);
-  const specificCapacity = scAnalysis
-    ? { value: scAnalysis.specific_capacity!, method: scAnalysis.method }
-    : null;
-
-  const txAnalysis = analyses.find(a => a.transmissivity != null);
-  const transmissivity = txAnalysis
-    ? { value: txAnalysis.transmissivity!, method: txAnalysis.method }
-    : null;
-
-  const ndAnalysis = analyses.find(a => a.dynamic_level != null);
-  const dynamicLevel = ndAnalysis ? { value: ndAnalysis.dynamic_level! } : null;
-
-  const qAnalysis = analyses.find(a => a.flow_rate != null);
-  const flowRate = qAnalysis ? { value: qAnalysis.flow_rate! } : null;
-
-  return { ne, specificCapacity, transmissivity, dynamicLevel, flowRate };
-});
+const { state: currentState } = useAquiferState();
 
 const analysesCount = computed(
   () => profileStore.well.aquifer_analysis?.length ?? 0,
@@ -83,28 +44,15 @@ const analysesCount = computed(
 // ─── Display helpers ──────────────────────────────────────────────────────────
 
 function methodLabel(method?: string): string {
-  if (!method) return '';
-  const names: Record<string, string> = {
-    cooper_jacob: 'Cooper-Jacob',
-    theis: 'Theis',
-    neuman: 'Neuman',
-    hantush: 'Hantush',
-    birsoy_summers: 'Birsoy-Summers',
-    eden_hazel: 'Eden-Hazel',
-    visual_inspection: 'Visual',
-  };
-  return names[method] ?? method;
+  return aquiferMethodLabel(method);
 }
 
 function formatTransmissivityMantissa(val: number): string {
-  if (val === 0) return '0';
-  const exp = Math.floor(Math.log10(Math.abs(val)));
-  return (val / Math.pow(10, exp)).toFixed(1);
+  return scientificParts(val).mantissa;
 }
 
 function formatTransmissivityExp(val: number): string {
-  if (val === 0) return '';
-  return String(Math.floor(Math.log10(Math.abs(val))));
+  return scientificParts(val).exp;
 }
 
 function toggleTypeFilter(type: string) {

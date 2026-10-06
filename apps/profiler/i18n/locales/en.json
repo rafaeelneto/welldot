@@ -665,11 +665,14 @@
       "attachmentsInfo": "Files about the well as a whole, such as the drilling report or an as-built drawing. Attachments of pumps, tests and history entries stay on their own records."
     },
     "summary": {
-      "tag": "Overview · Volumes",
+      "tag": "Well overview",
       "kpis": {
         "depth": "Total Depth",
         "layers": "Layers",
-        "screen": "Screen"
+        "screen": "Screen",
+        "wellDepth": "Usable depth",
+        "staticLevel": "Current SWL",
+        "flowRate": "Flow rate"
       },
       "boreHole": {
         "title": "Bore Hole",
@@ -691,14 +694,12 @@
       },
       "casing": {
         "title": "Casing",
-        "tag": "CASING · SCREEN",
-        "type": "Type",
+        "tag": "BLANK CASING",
+        "type": "Material",
         "diameter": "Diam.",
         "from": "From",
         "to": "To",
         "length": "Length",
-        "kindCase": "Casing",
-        "kindScreen": "Screen",
         "total": "Total cased length"
       },
       "reduction": {
@@ -741,6 +742,125 @@
         "from": "From",
         "to": "To",
         "thickness": "Thickness"
+      },
+      "unnamed": "Unnamed well",
+      "seeIn": "See in {tab}",
+      "identity": {
+        "title": "Identification",
+        "tag": "GENERAL",
+        "ids": "Identifiers"
+      },
+      "location": {
+        "title": "Location",
+        "tag": "COORDINATES",
+        "empty": "No coordinates provided."
+      },
+      "pump": {
+        "title": "Current pump",
+        "tag": "OPERATION",
+        "installedAt": "Installed on {date}",
+        "intakeDepth": "Intake depth",
+        "submergence": "Submergence",
+        "ratedFlow": "Rated flow",
+        "ratedHead": "Rated head",
+        "ratedPower": "Power",
+        "serviceTime": "Time in service",
+        "years": "{n} years",
+        "days": "{n} days",
+        "empty": "No pump installed."
+      },
+      "aquifer": {
+        "title": "Aquifer",
+        "tag": "HYDRODYNAMICS",
+        "staticLevel": "Static level",
+        "dynamicLevel": "Dynamic level",
+        "flowRate": "Flow rate",
+        "maxFlowRate": "Max. flow rate",
+        "specificCapacity": "Specific capacity",
+        "transmissivity": "Transmissivity",
+        "hydraulicConductivity": "Hydraulic conductivity",
+        "storativity": "Storativity",
+        "aquiferThickness": "Saturated thickness",
+        "wellEfficiency": "Well efficiency",
+        "latestAnalysis": "Latest analysis on {date}",
+        "empty": "No hydrodynamic data recorded."
+      },
+      "waterQuality": {
+        "title": "Water quality",
+        "tag": "LATEST ANALYSIS",
+        "collectedAt": "Collected",
+        "sampleType": "Sample type",
+        "laboratory": "Laboratory",
+        "results": "Results",
+        "facies": "Facies",
+        "ionBalance": "Ion balance",
+        "compliance": "Compliance · {set}",
+        "noExceedances": "No parameter outside the limits.",
+        "noLimitSet": "Pick a limit set in the Water quality tab to check compliance.",
+        "empty": "No samples recorded."
+      },
+      "permit": {
+        "title": "Permit",
+        "total": "{n} permits in total",
+        "validity": "Validity",
+        "flowRate": "Granted flow",
+        "dailyTime": "Daily time",
+        "waterUse": "Water use",
+        "nextDeadlines": "Upcoming conditions",
+        "noDeadlines": "No pending deadlines.",
+        "empty": "No permits recorded.",
+        "overdueCount": "{n} overdue"
+      },
+      "activity": {
+        "title": "Events & alerts",
+        "tag": "HISTORY",
+        "alerts": "Alerts",
+        "noAlerts": "No alerts.",
+        "latestEvent": "Latest hydrodynamic event",
+        "noEvents": "No hydrodynamic events recorded.",
+        "recentLogs": "Recent logs",
+        "noLogs": "No history log entries.",
+        "domains": {
+          "permits": "Permits",
+          "pump": "Pumps",
+          "operation": "Operation",
+          "historyLog": "History",
+          "waterQuality": "Water quality"
+        },
+        "dataIssues": "Data inconsistencies ({n})"
+      },
+      "construction": {
+        "title": "Construction details",
+        "tag": "CONSTRUCTION · GEOLOGY",
+        "empty": "No construction data recorded."
+      },
+      "screen": {
+        "title": "Screen",
+        "tag": "SCREENED SECTIONS",
+        "type": "Type",
+        "diameter": "Diam.",
+        "slot": "Slot",
+        "from": "From",
+        "to": "To",
+        "length": "Length",
+        "total": "Total screened"
+      },
+      "cementPad": {
+        "title": "Cement pad",
+        "tag": "SURFACE",
+        "type": "Type",
+        "width": "Width",
+        "length": "Length",
+        "thickness": "Thickness"
+      },
+      "alerts": {
+        "permitExpired": "Permit {number} expired on {date}.",
+        "permitPendingRenewal": "Permit {number} expired on {date}; renewal under review.",
+        "permitExpiring": "Permit {number} expires on {date} ({n} days).",
+        "conditionOverdue": "Condition overdue since {date}: {description}",
+        "conditionOverdueMany": "{n} deadlines overdue since {date}: {description}",
+        "waterExceedances": "{n} parameter(s) outside {set} limits in the {date} sample.",
+        "wellStatus": "Well status: {status} since {date}."
       }
     },
     "historyLog": {

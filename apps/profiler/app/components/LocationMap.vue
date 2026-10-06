@@ -4,6 +4,14 @@ import type { Map, Marker } from 'leaflet';
 const lat = defineModel<number>('lat', { required: true });
 const lng = defineModel<number>('lng', { required: true });
 
+const props = withDefaults(
+  defineProps<{
+    /** Display only: no pin dragging or click-to-place. */
+    readonly?: boolean;
+  }>(),
+  { readonly: false },
+);
+
 const mapEl = useTemplateRef<HTMLElement>('mapEl');
 let map: Map | null = null;
 let marker: Marker | null = null;
@@ -45,15 +53,26 @@ onMounted(async () => {
     noWrap: true,
   }).addTo(map);
 
-  marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+  marker = L.marker([initialLat, initialLng], {
+    draggable: !props.readonly,
+  }).addTo(map);
 
-  marker.on('dragend', () => {
+  if (!props.readonly) registerEditHandlers(L);
+
+  resizeObserver = new ResizeObserver(() => {
+    map?.invalidateSize();
+  });
+  resizeObserver.observe(mapEl.value!);
+});
+
+function registerEditHandlers(L: typeof import('leaflet')) {
+  marker!.on('dragend', () => {
     const pos = marker!.getLatLng();
     updateCoordinate('lat', pos.lat);
     updateCoordinate('lng', pos.lng);
   });
 
-  map.on('click', async e => {
+  map!.on('click', async e => {
     const clampedLatLng = L.latLng(
       clampLat(e.latlng.lat),
       clampLng(e.latlng.lng),
@@ -62,12 +81,7 @@ onMounted(async () => {
     updateCoordinate('lat', clampedLatLng.lat);
     updateCoordinate('lng', clampedLatLng.lng);
   });
-
-  resizeObserver = new ResizeObserver(() => {
-    map?.invalidateSize();
-  });
-  resizeObserver.observe(mapEl.value!);
-});
+}
 
 onUnmounted(() => {
   resizeObserver?.disconnect();
