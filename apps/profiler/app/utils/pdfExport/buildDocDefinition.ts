@@ -9,6 +9,7 @@ import type {
   ContentTable,
   TDocumentDefinition,
 } from './pdfmake.types';
+import { buildPermitSection } from './permitTable';
 import { buildPumpInstallationSection } from './pumpInstallationTable';
 import { buildSectionTables, withTableTitle } from './sectionTables';
 import type { PdfExportOptions, PdfTranslate, RenderedSvg } from './types';
@@ -101,6 +102,9 @@ export function buildDocDefinition(
 
   const pumpSection = buildPumpInstallationSection(well, options, t);
   if (pumpSection) content.push(pumpSection);
+
+  const permitSection = buildPermitSection(well, options, t);
+  if (permitSection) content.push(permitSection);
 
   const footerShare = {
     baseUrl: options.baseUrl,

@@ -22,6 +22,8 @@ export type DocumentTypeValue = (typeof DOCUMENT_TYPE_VALUES)[number];
 export const DOCUMENT_TYPE_SUGGESTIONS = {
   root: ['drilling_report', 'as_built_drawing', 'registry_record', 'photo'],
   pump: ['pump_curve', 'invoice', 'photo'],
+  permit: ['permit_document', 'photo'],
+  condition: ['condition_evidence', 'photo'],
   event: ['field_sheet', 'photo'],
   history: ['condition_evidence', 'photo', 'invoice'],
 } as const satisfies Record<string, readonly DocumentTypeValue[]>;

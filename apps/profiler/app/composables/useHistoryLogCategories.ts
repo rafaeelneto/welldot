@@ -22,6 +22,11 @@ export function useHistoryLogCategories() {
       value: 'event',
       icon: 'ph:flag-duotone',
     },
+    {
+      label: t('editor.historyLog.logs.categories.permit_condition'),
+      value: 'permit_condition',
+      icon: 'ph:seal-check-duotone',
+    },
   ]);
 
   const severityOptions = computed(() => [
@@ -50,6 +55,7 @@ export function useHistoryLogCategories() {
       inspection: 'info',
       incident: 'danger',
       event: 'secondary',
+      permit_condition: 'success',
     };
     return map[category] ?? 'secondary';
   }

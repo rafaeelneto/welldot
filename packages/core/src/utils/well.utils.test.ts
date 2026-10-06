@@ -1934,3 +1934,148 @@ describe('v2.3 — attachments and pump_installations', () => {
     expect(result.pump_installations).toEqual(well.pump_installations);
   });
 });
+
+// ─── v2.3 — permits ──────────────────────────────────────────────────────────
+
+describe('v2.3 — permits and permit_condition logs', () => {
+  const PERMIT_DOC = {
+    version: 2,
+    well_type: 'tubular',
+    bore_hole: [{ from: 0, to: 80, diameter: 250 }],
+    well_case: [],
+    reduction: [],
+    well_screen: [],
+    surface_case: [],
+    hole_fill: [],
+    lithology: [],
+    fractures: [],
+    caves: [],
+    permits: [
+      {
+        id: 'pmt-01',
+        type: 'abstraction_permit',
+        authority: 'SEMAS-PA',
+        number: '1234/2025',
+        issued_at: '2025-02-10',
+        valid_until: '2029-02-10',
+        water_use: ['human_supply'],
+        flow_rate: 15,
+        daily_operating_time: 20,
+        volume_limits: [{ period: 'annual', volume: 109500 }],
+        monthly_schedule: [{ month: 1, flow_rate: 12, days: 31 }],
+        conditions: [
+          {
+            id: 'c1',
+            description: 'Instalar hidrômetro na saída do poço',
+            category: 'meter_installation',
+            due_after: 'P90D',
+          },
+          {
+            id: 'c2',
+            description: 'Relatório semestral de nível e vazão',
+            category: 'monitoring_report',
+            first_due: '2025-07-31',
+            recurrence: 'P6M',
+          },
+        ],
+        attachments: [
+          {
+            id: 'att-1',
+            uri: 'https://files.example.org/pp01/portaria-1234-2025.pdf',
+            media_type: 'application/pdf',
+            document_type: 'permit_document',
+          },
+        ],
+      },
+    ],
+    history_logs: [
+      {
+        id: 'log-1',
+        datetime: '2025-04-02T10:00:00-03:00',
+        category: 'permit_condition',
+        description: 'Hidrômetro instalado e comunicado ao órgão',
+        permit_id: 'pmt-01',
+        condition_id: 'c1',
+        due_date: '2025-05-11',
+      },
+    ],
+  };
+
+  const withPermit = (patch: Record<string, unknown>) => ({
+    ...PERMIT_DOC,
+    permits: [{ ...PERMIT_DOC.permits[0], ...patch }],
+  });
+
+  it('parseWell accepts permits and permit_condition log fields', () => {
+    const well = parseWell(JSON.stringify(PERMIT_DOC));
+    expect(well.permits).toEqual(PERMIT_DOC.permits);
+    expect(well.history_logs).toEqual(PERMIT_DOC.history_logs);
+  });
+
+  it('parseWell rejects a permit without authority or number', () => {
+    const { authority: _a, ...noAuthority } = PERMIT_DOC.permits[0];
+    expect(() =>
+      parseWell(JSON.stringify({ ...PERMIT_DOC, permits: [noAuthority] })),
+    ).toThrow();
+    const { number: _n, ...noNumber } = PERMIT_DOC.permits[0];
+    expect(() =>
+      parseWell(JSON.stringify({ ...PERMIT_DOC, permits: [noNumber] })),
+    ).toThrow();
+  });
+
+  it('parseWell rejects permit dates that are instants', () => {
+    const doc = withPermit({ valid_until: '2029-02-10T00:00:00Z' });
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects durations with time components', () => {
+    const doc = withPermit({
+      conditions: [{ id: 'c', description: 'x', due_after: 'PT12H' }],
+    });
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+    const empty = withPermit({
+      conditions: [{ id: 'c', description: 'x', recurrence: 'P' }],
+    });
+    expect(() => parseWell(JSON.stringify(empty))).toThrow();
+  });
+
+  it('parseWell accepts combined date durations', () => {
+    const doc = withPermit({
+      conditions: [{ id: 'c', description: 'x', recurrence: 'P1Y6M' }],
+    });
+    expect(() => parseWell(JSON.stringify(doc))).not.toThrow();
+  });
+
+  it('parseWell rejects a monthly_schedule month outside 1–12', () => {
+    const doc = withPermit({ monthly_schedule: [{ month: 13 }] });
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('parseWell rejects an unknown volume_limits period', () => {
+    const doc = withPermit({
+      volume_limits: [{ period: 'weekly', volume: 10 }],
+    });
+    expect(() => parseWell(JSON.stringify(doc))).toThrow();
+  });
+
+  it('round-trips through serializeWell → deserializeWell', () => {
+    const well = deserializeWell(JSON.stringify(PERMIT_DOC))!;
+    const again = deserializeWell(serializeWell(well))!;
+    expect(again.permits).toEqual(PERMIT_DOC.permits);
+    expect(again.history_logs).toEqual(PERMIT_DOC.history_logs);
+  });
+
+  it('redactWell removes permits with operation', () => {
+    const well = deserializeWell(JSON.stringify(PERMIT_DOC))!;
+    const result = redactWell(well, {
+      general: true,
+      constructive: true,
+      geology: true,
+      hydrodynamic: true,
+      history: true,
+      operation: false,
+    });
+    expect(result.permits).toBeUndefined();
+    expect(result.history_logs).toEqual(well.history_logs);
+  });
+});

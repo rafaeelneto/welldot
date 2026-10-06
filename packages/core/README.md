@@ -106,6 +106,10 @@ All types are exported as TypeScript type-only exports (zero runtime cost).
 | `Attachment`            | An HTTPS-referenced document, typed by `document_type` (common type since v2.3) |
 | `PumpInstallation`      | One installation of a pump in the well (v2.3)                                   |
 | `PumpElectrical`        | Electrical data of a pump installation (v2.3)                                   |
+| `Permit`                | A legal instrument governing abstraction — outorga, dispensa, cadastro (v2.3)   |
+| `PermitCondition`       | An obligation (condicionante) of a permit, with derived deadlines (v2.3)        |
+| `VolumeLimit`           | A volume stated in a permit for a daily, monthly or annual period (v2.3)        |
+| `MonthlyGrant`          | One month of a permit's month-by-month grant (v2.3)                             |
 | `HistoryLogEntry`       | One entry in the operational history log                                        |
 | `Units`                 | `{ length: 'm' \| 'ft'; diameter: 'mm' \| 'inches' }`                           |
 | `LengthUnits`           | `'m' \| 'ft'`                                                                   |
@@ -150,6 +154,10 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 | `AttachmentSchema`            | `Attachment`                                                            |
 | `PumpInstallationSchema`      | `PumpInstallation`                                                      |
 | `PumpElectricalSchema`        | `PumpElectrical`                                                        |
+| `PermitSchema`                | `Permit`                                                                |
+| `PermitConditionSchema`       | `PermitCondition`                                                       |
+| `VolumeLimitSchema`           | `VolumeLimit`                                                           |
+| `MonthlyGrantSchema`          | `MonthlyGrant`                                                          |
 | `HistoryLogEntrySchema`       | `HistoryLogEntry`                                                       |
 
 ### Functions

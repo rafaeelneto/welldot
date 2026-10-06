@@ -146,7 +146,7 @@
     "headline1": "O",
     "headlineEm": "futuro",
     "headline2": ".",
-    "intro": "A v2.3 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero, instalações de bomba, anexos gerais e histórico operacional. A especificação evolui de forma aberta para abraçar o que ainda vem pela frente.",
+    "intro": "A v2.3 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero, instalações de bomba, outorgas e suas condicionantes, anexos gerais e histórico operacional. A especificação evolui de forma aberta para abraçar o que ainda vem pela frente.",
     "props": [
       {
         "num": "§ 4.1",
@@ -160,8 +160,8 @@
       },
       {
         "num": "§ 4.3",
-        "title": "Outorga e produção",
-        "body": "Outorgas e suas condicionantes, hidrômetros, volumes produzidos e regime de operação — os próximos blocos operacionais."
+        "title": "Produção e operação",
+        "body": "Hidrômetros, volumes produzidos comparados aos limites da outorga e regime de operação — os próximos blocos operacionais."
       },
       {
         "num": "§ 4.4",
@@ -276,7 +276,8 @@
       "hydrodynamicEvents": "Hidrodinâmica",
       "hydro": "Hidro",
       "inDevelopment": "Em dev",
-      "operation": "Operação"
+      "operation": "Operação",
+      "permits": "Outorgas"
     },
     "status": {
       "saved": "Salvo",
@@ -765,7 +766,8 @@
           "maintenance": "Manutenção",
           "inspection": "Inspeção",
           "incident": "Incidente",
-          "event": "Evento"
+          "event": "Evento",
+          "permit_condition": "Condicionante cumprida"
         },
         "severity": {
           "low": "Baixa",
@@ -961,6 +963,148 @@
           "intake_in_screen": "O crivo está dentro de um intervalo de filtro.",
           "multiple_open_installations": "Mais de uma instalação está sem data de retirada.",
           "removed_before_installed": "A data de retirada deve ser posterior à de instalação."
+        }
+      },
+      "permitTypes": {
+        "abstraction_permit": "Outorga de direito de uso",
+        "preliminary_permit": "Outorga prévia",
+        "exemption": "Dispensa / uso insignificante",
+        "registration": "Cadastro",
+        "dewatering_permit": "Outorga para rebaixamento"
+      },
+      "waterUses": {
+        "human_supply": "Abastecimento humano",
+        "industrial": "Industrial",
+        "mining": "Mineração",
+        "irrigation": "Irrigação",
+        "livestock": "Dessedentação animal",
+        "commercial": "Comercial / serviços"
+      },
+      "conditionCategories": {
+        "monitoring_report": "Relatório de monitoramento",
+        "water_level_monitoring": "Monitoramento de nível",
+        "production_report": "Declaração de volumes / vazão",
+        "water_quality_analysis": "Análise de qualidade da água",
+        "meter_installation": "Instalação de hidrômetro",
+        "sanitary_protection": "Proteção sanitária",
+        "renewal_request": "Pedido de renovação"
+      },
+      "permit": {
+        "title": "Outorgas",
+        "intro": "Um registro por instrumento legal. O documento anexado prevalece. Uma renovação é uma nova outorga que substitui a anterior; situação e prazos das condicionantes são calculados.",
+        "add": "Adicionar outorga",
+        "edit": "Editar outorga",
+        "deleteConfirm": "Excluir esta outorga?",
+        "empty": "Nenhuma outorga registrada.",
+        "noExpiry": "sem vencimento",
+        "supersedes": "Substitui {number}",
+        "supersededBy": "Substituída por {number}",
+        "status": {
+          "superseded": "Substituída",
+          "pending": "Pendente",
+          "active": "Vigente",
+          "active_pending_renewal": "Renovação em análise",
+          "expired": "Vencida"
+        },
+        "fields": {
+          "type": "Tipo",
+          "typeInfo": "Renovação não é um tipo: crie uma nova outorga do mesmo tipo que substitui a anterior.",
+          "authority": "Órgão",
+          "authorityInfo": "Órgão emissor, ex.: ANA, SEMAS-PA.",
+          "number": "Número",
+          "numberInfo": "Número da portaria ou do processo, como no documento.",
+          "issuedAt": "Emitida em",
+          "validFrom": "Válida a partir de",
+          "validFromInfo": "Deixe vazio quando vale desde a emissão.",
+          "validUntil": "Válida até",
+          "validUntilInfo": "Deixe vazio quando não há vencimento.",
+          "renewalRequestedAt": "Renovação solicitada em",
+          "renewalRequestedAtInfo": "Um pedido protocolado até o vencimento mantém a outorga vigente enquanto é analisado.",
+          "validity": "Vigência",
+          "waterUse": "Finalidade de uso",
+          "waterUseEmpty": "Nenhuma finalidade selecionada",
+          "waterUseAdd": "Adicionar finalidade",
+          "waterUseEdit": "Editar",
+          "waterUseRemove": "Remover finalidade",
+          "flowRate": "Vazão máx.",
+          "dailyOperatingTime": "Tempo diário máx.",
+          "volumeLimits": "Limites de volume",
+          "volumeLimitsInfo": "Somente volumes declarados no documento. Volumes de vazão × tempo são calculados, nunca armazenados.",
+          "volumePeriods": {
+            "daily": "Diário",
+            "monthly": "Mensal",
+            "annual": "Anual"
+          },
+          "monthlySchedule": "Regime mensal",
+          "monthlyScheduleInfo": "Quando há regime mensal, meses vazios não têm captação outorgada.",
+          "month": "Mês",
+          "days": "Dias",
+          "supersedes": "Substitui",
+          "supersedesInfo": "A outorga que esta substitui legalmente (renovação).",
+          "notes": "Observações"
+        },
+        "conditions": {
+          "title": "Condicionantes",
+          "add": "Adicionar condicionante",
+          "empty": "Nenhuma condicionante.",
+          "description": "Descrição",
+          "descriptionInfo": "Texto da condicionante como está no documento.",
+          "category": "Categoria",
+          "deadline": "Primeiro prazo",
+          "deadlineModes": {
+            "none": "Sem prazo",
+            "fixed": "Data fixa",
+            "relative": "Após início"
+          },
+          "firstDue": "Data",
+          "dueAfter": "Após",
+          "recurrence": "Repete a cada",
+          "recurrenceNone": "Única",
+          "lastDue": "Até",
+          "occurrences": "Máx. de ocorrências",
+          "units": {
+            "D": "dias",
+            "W": "semanas",
+            "M": "meses",
+            "Y": "anos"
+          },
+          "preview": "Próximos prazos",
+          "previewNone": "Nenhum prazo é gerado.",
+          "noStartDate": "Precisa da data de emissão ou de início.",
+          "undated": "Sem prazo",
+          "more": "+{count} prazos",
+          "deadlineStatus": {
+            "fulfilled": "Cumprida",
+            "fulfilled_late": "Cumprida com atraso",
+            "upcoming": "A vencer",
+            "overdue": "Atrasada"
+          },
+          "markFulfilled": "Marcar cumprida",
+          "undoFulfilled": "Remover cumprimento",
+          "undoConfirm": "Remover este cumprimento do histórico?",
+          "remove": "Remover condicionante"
+        },
+        "fulfill": {
+          "title": "Condicionante cumprida",
+          "deadline": "Prazo",
+          "datetime": "Cumprida em",
+          "description": "Descrição",
+          "defaultDescription": "{condition} — cumprida",
+          "info": "Registrado como entrada do histórico. Anexe o comprovante de protocolo como comprovante de condicionante."
+        },
+        "warnings": {
+          "valid_until_before_valid_from": "O vencimento é anterior ao início da vigência.",
+          "supersedes_unresolved": "A outorga substituída não existe neste arquivo.",
+          "supersedes_cycle": "A cadeia de substituições volta para si mesma.",
+          "overlapping_validity": "Outra outorga do mesmo tipo tem vigência sobreposta.",
+          "daily_operating_time_out_of_range": "Um tempo diário de operação está fora de 0–24 h.",
+          "monthly_above_max": "Um valor mensal excede o máximo da outorga.",
+          "duplicate_month": "Um mês aparece mais de uma vez no regime.",
+          "duplicate_volume_period": "Um período de volume aparece mais de uma vez.",
+          "duplicate_condition_id": "Duas condicionantes têm o mesmo id.",
+          "condition_due_conflict": "Uma condicionante tem data fixa e prazo relativo; a data fixa prevalece.",
+          "invalid_duration": "Uma condicionante tem duração inválida.",
+          "unmatched_condition_log": "Um cumprimento no histórico não corresponde a nenhum prazo desta outorga."
         }
       }
     }

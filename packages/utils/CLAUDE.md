@@ -10,9 +10,11 @@ Provides computational helpers for analyzing `.well` profiles: depth calculation
 
 ```
 src/
-  index.ts              ← re-exports everything from profile.utils.ts and number.utils.ts
+  index.ts              ← re-exports everything from profile.utils.ts, permit.utils.ts and number.utils.ts
   profile.utils.ts      ← profile analysis functions
   profile.utils.test.ts ← Vitest tests (comprehensive coverage)
+  permit.utils.ts       ← v2.3 permits: calendar-date math, status, condition deadlines, warnings
+  permit.utils.test.ts  ← Vitest tests (spec examples included)
   number.utils.ts       ← formatNumber (locale-aware number display formatting)
   number.utils.test.ts  ← Vitest tests (comprehensive coverage)
 ```
@@ -40,6 +42,12 @@ src/
 | `calculateSubmergence(well)`                                          | Current pump `intake_depth − dynamic_level` (m)                       |
 | `getPumpServiceTime(well, serial, now?)`                              | Minutes in service across installations with the same serial          |
 | `getPumpInstallationWarnings(well)`                                   | v2.3 pump_installations validation warnings (codes + ids)             |
+| `getPermitStatus(well, permit, today?)`                               | v2.3 derived permit status (`superseded`, `pending`, `active`, …)     |
+| `getPermitEffectiveEnd(well, permit, today?)`                         | Day before successor start, else `valid_until`; none while renewing   |
+| `getConditionDeadlines(well, permit, condition, opts?)`               | Normative condition deadline generation (anchored, month-end clamp)   |
+| `getConditionDeadlineStates(well, permit, condition, opts?)`          | Deadlines + fulfilled/late/upcoming/overdue via `permit_condition`    |
+| `getPermitWarnings(well, today?)`                                     | v2.3 permits + `permit_condition` log validation warnings             |
+| `parseDateDuration` / `addDateDuration` / `todayCalendarDate`         | ISO 8601 date-duration parsing and calendar-date arithmetic           |
 | `isFlowingArtesian(well)`                                             | Latest static level is above ground (v2.1 artesian detection)         |
 | `getCentralizerDepths(centralizer)`                                   | Individual centralizer depths from interval + spacing                 |
 | `getLatestAquiferAnalysisField(well, field)`                          | Most recent value of a named field from aquifer_analysis              |
@@ -57,7 +65,7 @@ pnpm dev        # tsup --watch
 
 ## Documentation requirements
 
-`packages/utils` has no README today. If one is added, it must be kept in sync. Until then, the `src/profile.utils.ts` JSDoc comments **are** the public documentation — keep them accurate.
+`packages/utils` has no README today. If one is added, it must be kept in sync. Until then, the `src/profile.utils.ts` and `src/permit.utils.ts` JSDoc comments **are** the public documentation — keep them accurate.
 
 Update JSDoc when:
 

@@ -146,7 +146,7 @@
     "headline1": "The",
     "headlineEm": "future",
     "headline2": ".",
-    "intro": "v2.3 covers geological, construction, and hydrodynamic profiles — pump tests, aquifer analysis, pump installations, general attachments, and operational history. The specification evolves openly to embrace what's still ahead.",
+    "intro": "v2.3 covers geological, construction, and hydrodynamic profiles — pump tests, aquifer analysis, pump installations, water-use permits and their conditions, general attachments, and operational history. The specification evolves openly to embrace what's still ahead.",
     "props": [
       {
         "num": "§ 4.1",
@@ -160,8 +160,8 @@
       },
       {
         "num": "§ 4.3",
-        "title": "Permits & production",
-        "body": "Water-use permits and their conditions, meters, produced volumes, and operating regime — the next operational blocks."
+        "title": "Production & operation",
+        "body": "Meters, produced volumes checked against permit limits, and operating regime — the next operational blocks."
       },
       {
         "num": "§ 4.4",
@@ -276,7 +276,8 @@
       "hydrodynamicEvents": "Hydrodynamic",
       "hydro": "Hydro",
       "inDevelopment": "In dev",
-      "operation": "Operation"
+      "operation": "Operation",
+      "permits": "Permits"
     },
     "status": {
       "saved": "Saved",
@@ -765,7 +766,8 @@
           "maintenance": "Maintenance",
           "inspection": "Inspection",
           "incident": "Incident",
-          "event": "Event"
+          "event": "Event",
+          "permit_condition": "Condition fulfilled"
         },
         "severity": {
           "low": "Low",
@@ -961,6 +963,148 @@
           "intake_in_screen": "The intake sits inside a screen interval.",
           "multiple_open_installations": "More than one installation has no removal date.",
           "removed_before_installed": "The removal date must be after the installation date."
+        }
+      },
+      "permitTypes": {
+        "abstraction_permit": "Abstraction permit",
+        "preliminary_permit": "Preliminary permit",
+        "exemption": "Exemption",
+        "registration": "Registration",
+        "dewatering_permit": "Dewatering permit"
+      },
+      "waterUses": {
+        "human_supply": "Human supply",
+        "industrial": "Industrial",
+        "mining": "Mining",
+        "irrigation": "Irrigation",
+        "livestock": "Livestock",
+        "commercial": "Commercial"
+      },
+      "conditionCategories": {
+        "monitoring_report": "Monitoring report",
+        "water_level_monitoring": "Water level monitoring",
+        "production_report": "Production report",
+        "water_quality_analysis": "Water quality analysis",
+        "meter_installation": "Meter installation",
+        "sanitary_protection": "Sanitary protection",
+        "renewal_request": "Renewal request"
+      },
+      "permit": {
+        "title": "Permits",
+        "intro": "One entry per legal instrument. The attached document is authoritative. A renewal is a new permit that supersedes the previous one; status and condition deadlines are derived.",
+        "add": "Add permit",
+        "edit": "Edit permit",
+        "deleteConfirm": "Delete this permit?",
+        "empty": "No permit recorded yet.",
+        "noExpiry": "no fixed expiry",
+        "supersedes": "Supersedes {number}",
+        "supersededBy": "Superseded by {number}",
+        "status": {
+          "superseded": "Superseded",
+          "pending": "Pending",
+          "active": "Active",
+          "active_pending_renewal": "Renewal pending",
+          "expired": "Expired"
+        },
+        "fields": {
+          "type": "Type",
+          "typeInfo": "A renewal is not a type: create a new permit of the same type that supersedes the previous one.",
+          "authority": "Authority",
+          "authorityInfo": "Issuing body, e.g. ANA, SEMAS-PA.",
+          "number": "Number",
+          "numberInfo": "Portaria or process number, as written in the document.",
+          "issuedAt": "Issued at",
+          "validFrom": "Valid from",
+          "validFromInfo": "Leave empty when valid from the issue date.",
+          "validUntil": "Valid until",
+          "validUntilInfo": "Leave empty when there is no fixed expiry.",
+          "renewalRequestedAt": "Renewal requested at",
+          "renewalRequestedAtInfo": "A renewal filed on or before the expiry keeps the permit active while it is pending.",
+          "validity": "Validity",
+          "waterUse": "Water use",
+          "waterUseEmpty": "No use selected",
+          "waterUseAdd": "Add use",
+          "waterUseEdit": "Edit",
+          "waterUseRemove": "Remove use",
+          "flowRate": "Max. flow",
+          "dailyOperatingTime": "Max. daily operation",
+          "volumeLimits": "Volume limits",
+          "volumeLimitsInfo": "Only volumes stated in the document. Volumes implied by flow × time are derived, never stored.",
+          "volumePeriods": {
+            "daily": "Daily",
+            "monthly": "Monthly",
+            "annual": "Annual"
+          },
+          "monthlySchedule": "Monthly schedule",
+          "monthlyScheduleInfo": "When a schedule exists, months left empty have no abstraction granted.",
+          "month": "Month",
+          "days": "Days",
+          "supersedes": "Supersedes",
+          "supersedesInfo": "The permit this one legally replaces (renewal).",
+          "notes": "Notes"
+        },
+        "conditions": {
+          "title": "Conditions",
+          "add": "Add condition",
+          "empty": "No conditions.",
+          "description": "Description",
+          "descriptionInfo": "Text of the condition as written in the document.",
+          "category": "Category",
+          "deadline": "First deadline",
+          "deadlineModes": {
+            "none": "Undated",
+            "fixed": "Fixed date",
+            "relative": "After start"
+          },
+          "firstDue": "Date",
+          "dueAfter": "After",
+          "recurrence": "Repeats every",
+          "recurrenceNone": "One-time",
+          "lastDue": "Until",
+          "occurrences": "Max. occurrences",
+          "units": {
+            "D": "days",
+            "W": "weeks",
+            "M": "months",
+            "Y": "years"
+          },
+          "preview": "Next deadlines",
+          "previewNone": "No deadline is generated.",
+          "noStartDate": "Needs an issue or start date to resolve.",
+          "undated": "Undated",
+          "more": "+{count} more",
+          "deadlineStatus": {
+            "fulfilled": "Fulfilled",
+            "fulfilled_late": "Fulfilled late",
+            "upcoming": "Upcoming",
+            "overdue": "Overdue"
+          },
+          "markFulfilled": "Mark fulfilled",
+          "undoFulfilled": "Remove fulfillment",
+          "undoConfirm": "Remove this fulfillment from the history log?",
+          "remove": "Remove condition"
+        },
+        "fulfill": {
+          "title": "Condition fulfilled",
+          "deadline": "Deadline",
+          "datetime": "Fulfilled at",
+          "description": "Description",
+          "defaultDescription": "{condition} — fulfilled",
+          "info": "Recorded as a history log entry. Attach the proof of submission as condition evidence."
+        },
+        "warnings": {
+          "valid_until_before_valid_from": "The expiry date is before the start date.",
+          "supersedes_unresolved": "The superseded permit does not exist in this file.",
+          "supersedes_cycle": "The supersedes chain loops back on itself.",
+          "overlapping_validity": "Another permit of the same type overlaps this one.",
+          "daily_operating_time_out_of_range": "A daily operating time is outside 0–24 h.",
+          "monthly_above_max": "A monthly value is above the permit maximum.",
+          "duplicate_month": "A month appears more than once in the schedule.",
+          "duplicate_volume_period": "A volume period appears more than once.",
+          "duplicate_condition_id": "Two conditions share the same id.",
+          "condition_due_conflict": "A condition has both a fixed date and a relative deadline; the fixed date wins.",
+          "invalid_duration": "A condition has an invalid duration.",
+          "unmatched_condition_log": "A fulfillment in the history log matches no deadline of this permit."
         }
       }
     }

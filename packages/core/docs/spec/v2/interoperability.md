@@ -61,7 +61,7 @@ Adds mappings for `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquife
 
 **Phase 5 — Operational blocks (v2.3)**
 
-Adds mappings for `attachments`, `Attachment.document_type`, `pump_installations`, `PumpInstallation` and `PumpElectrical` fields, and `hydrodynamic_events[].corrects`. `corrects` maps to a retraction relation between two observation records; attachments alias to `schema:MediaObject` (`uri` → `schema:contentUrl`, `media_type` → `schema:encodingFormat`, `sha256` → `schema:sha256`). Units bind to QUDT (`unit:KiloW`, `unit:V`, `unit:MilliM2`). This phase ships alongside the v2.3 spec revision.
+Adds mappings for `attachments`, `Attachment.document_type`, `pump_installations`, `PumpInstallation` and `PumpElectrical` fields, `permits` (`Permit`, `VolumeLimit`, `MonthlyGrant`, `PermitCondition`) with the `permit_condition` log fields, and `hydrodynamic_events[].corrects`. Permit dates map to `xsd:date` and condition durations to `xsd:duration`; `supersedes` is a succession relation between two instruments, distinct from `corrects`. `corrects` maps to a retraction relation between two observation records; attachments alias to `schema:MediaObject` (`uri` → `schema:contentUrl`, `media_type` → `schema:encodingFormat`, `sha256` → `schema:sha256`). Units bind to QUDT (`unit:KiloW`, `unit:V`, `unit:MilliM2`, `unit:M3`, `unit:HR`). This phase ships alongside the v2.3 spec revision.
 
 ### Versioning and stability
 
@@ -141,6 +141,7 @@ The mapping below is **informative, not normative**. Class names in italics are 
 | `aquifer_analysis[]`             | GWML2-AquiferTest      | Aquifer test result properties (?)                                 |
 | `history_logs[]`                 | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
 | `pump_installations[]`           | GWML2-WellConstruction | Pump / wellhead equipment (?) — pending check against the XSD      |
+| `permits[]`                      | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
 | `attachments[]` (root)           | n/a                    | No direct equivalent — documents referenced by URL                 |
 | `hydrodynamic_events[].corrects` | n/a                    | No direct equivalent — ledger correction outside GWML2 scope       |
 

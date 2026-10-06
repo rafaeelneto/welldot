@@ -125,6 +125,7 @@ The format captures:
 | Aquifer analysis    | `aquifer_analysis[]`                                                                       | Interpreted transmissivity, specific capacity, storativity, Jacob coefficients                 |
 | Operational history | `history_logs[]`                                                                           | Timestamped log of maintenance, inspections, and incidents                                     |
 | Pump installations  | `pump_installations[]`                                                                     | Pump history with nameplate, intake depth, riser and electrical data (v2.3)                    |
+| Permits             | `permits[]`                                                                                | Outorgas with validity, granted flow and volumes, and conditions with derived deadlines (v2.3) |
 | General attachments | `attachments[]`                                                                            | Root-level files about the well as a whole, e.g. the drilling report (v2.3)                    |
 
 All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`packages/core/docs/spec/v2/`](packages/core/docs/spec/v2/).

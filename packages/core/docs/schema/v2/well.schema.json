@@ -315,8 +315,7 @@
           },
           "spacing": {
             "type": "number",
-            "exclusiveMinimum": true,
-            "minimum": 0
+            "exclusiveMinimum": 0
           },
           "type": {
             "type": "string"
@@ -1014,6 +1013,19 @@
             "items": {
               "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments/items"
             }
+          },
+          "permit_id": {
+            "type": "string"
+          },
+          "condition_id": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "event_id": {
+            "type": "string"
           }
         },
         "required": [
@@ -1080,8 +1092,7 @@
           },
           "stages": {
             "type": "integer",
-            "exclusiveMinimum": true,
-            "minimum": 0
+            "exclusiveMinimum": 0
           },
           "riser_diameter": {
             "type": "number",
@@ -1136,6 +1147,176 @@
           "id",
           "installed_at",
           "type"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "permits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "authority": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "issued_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "valid_from": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "valid_until": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "renewal_requested_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "water_use": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "flow_rate": {
+            "type": "number",
+            "minimum": 0
+          },
+          "daily_operating_time": {
+            "type": "number",
+            "minimum": 0
+          },
+          "volume_limits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "period": {
+                  "type": "string",
+                  "enum": [
+                    "daily",
+                    "monthly",
+                    "annual"
+                  ]
+                },
+                "volume": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "period",
+                "volume"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "monthly_schedule": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "month": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "flow_rate": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "daily_operating_time": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "days": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 31
+                }
+              },
+              "required": [
+                "month"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string"
+                },
+                "first_due": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "due_after": {
+                  "type": "string",
+                  "pattern": "^P(?=\\d)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?$"
+                },
+                "recurrence": {
+                  "type": "string",
+                  "pattern": "^P(?=\\d)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?$"
+                },
+                "last_due": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "occurrences": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "id",
+                "description"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "supersedes": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments/items"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "authority",
+          "number"
         ],
         "additionalProperties": false
       }

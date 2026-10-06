@@ -8,6 +8,7 @@ import TabSummary from './_components/tabs/TabSummary.vue';
 import TabHistoryLog from './_components/tabs/TabHistoryLog.vue';
 import TabHydrodynamicEvents from './_components/tabs/TabHydrodynamicEvents.vue';
 import TabOperation from './_components/tabs/TabOperation.vue';
+import TabPermits from './_components/tabs/TabPermits.vue';
 
 definePageMeta({ layout: 'editor' });
 
@@ -73,6 +74,11 @@ const tabs = computed<
     label: t('editor.tabs.operation'),
     shortLabel: t('editor.tabs.operation'),
   },
+  {
+    value: '7',
+    label: t('editor.tabs.permits'),
+    shortLabel: t('editor.tabs.permits'),
+  },
 ]);
 </script>
 
@@ -129,6 +135,7 @@ const tabs = computed<
           <TabPanel value="4"><TabHistoryLog /></TabPanel>
           <TabPanel value="5"><TabHydrodynamicEvents /></TabPanel>
           <TabPanel value="6"><TabOperation /></TabPanel>
+          <TabPanel value="7"><TabPermits /></TabPanel>
         </TabPanels>
       </Tabs>
     </div>

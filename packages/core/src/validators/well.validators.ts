@@ -22,6 +22,17 @@ const rfc3339 = () =>
     .string()
     .regex(RFC3339_WITH_OFFSET, 'datetime must be RFC 3339 with UTC offset');
 
+// Calendar date (YYYY-MM-DD): the local civil date at the well site.
+const CALENDAR_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const calendarDate = () =>
+  z.string().regex(CALENDAR_DATE, 'date must be YYYY-MM-DD');
+
+// ISO 8601 duration restricted to date components (`PnYnMnWnD`); time
+// components (`T…`) are malformed.
+const DATE_DURATION = /^P(?=\d)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?$/;
+const dateDuration = () =>
+  z.string().regex(DATE_DURATION, 'duration must be an ISO 8601 date duration');
+
 // ─── Common schemas ───────────────────────────────────────────────────────────
 
 export const AttachmentSchema = z.object({
@@ -245,6 +256,10 @@ export const HistoryLogEntrySchema = z.object({
   author: z.string().optional(),
   severity: z.string().optional(),
   attachments: z.array(AttachmentSchema).optional(),
+  permit_id: z.string().optional(),
+  condition_id: z.string().optional(),
+  due_date: calendarDate().optional(),
+  event_id: z.string().optional(),
 });
 
 export const AquiferAnalysisSchema = z.object({
@@ -307,6 +322,50 @@ export const PumpInstallationSchema = z.object({
   attachments: z.array(AttachmentSchema).optional(),
 });
 
+export const VolumeLimitSchema = z.object({
+  period: z.enum(['daily', 'monthly', 'annual']),
+  volume: z.number().nonnegative(),
+});
+
+export const MonthlyGrantSchema = z.object({
+  month: z.number().int().min(1).max(12),
+  flow_rate: z.number().nonnegative().optional(),
+  daily_operating_time: z.number().nonnegative().optional(),
+  days: z.number().int().min(0).max(31).optional(),
+});
+
+export const PermitConditionSchema = z.object({
+  id: z.string(),
+  description: z.string(),
+  category: z.string().optional(),
+  first_due: calendarDate().optional(),
+  due_after: dateDuration().optional(),
+  recurrence: dateDuration().optional(),
+  last_due: calendarDate().optional(),
+  occurrences: z.number().int().positive().optional(),
+});
+
+export const PermitSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  authority: z.string(),
+  number: z.string(),
+  issued_at: calendarDate().optional(),
+  valid_from: calendarDate().optional(),
+  valid_until: calendarDate().optional(),
+  renewal_requested_at: calendarDate().optional(),
+  water_use: z.array(z.string()).optional(),
+  flow_rate: z.number().nonnegative().optional(),
+  daily_operating_time: z.number().nonnegative().optional(),
+  volume_limits: z.array(VolumeLimitSchema).optional(),
+  monthly_schedule: z.array(MonthlyGrantSchema).optional(),
+  conditions: z.array(PermitConditionSchema).optional(),
+  supersedes: z.string().optional(),
+  notes: z.string().optional(),
+  updated_at: rfc3339().optional(),
+  attachments: z.array(AttachmentSchema).optional(),
+});
+
 // ─── Well schema ──────────────────────────────────────────────────────────────
 
 export const WellSchema = z
@@ -333,7 +392,7 @@ export const WellSchema = z
     well_driller: z.string().optional(),
     construction_date: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, 'construction_date must be YYYY-MM-DD')
+      .regex(CALENDAR_DATE, 'construction_date must be YYYY-MM-DD')
       .optional(),
     obs: z.string().optional(),
     lat: z.number().optional(),
@@ -356,6 +415,7 @@ export const WellSchema = z
     history_logs: z.array(HistoryLogEntrySchema).optional(),
     attachments: z.array(AttachmentSchema).optional(),
     pump_installations: z.array(PumpInstallationSchema).optional(),
+    permits: z.array(PermitSchema).optional(),
   })
   .passthrough();
 

@@ -216,6 +216,9 @@ function decodeV2Well(raw: RawJSON): Well {
     ...(raw.pump_installations !== undefined && {
       pump_installations: raw.pump_installations as Well['pump_installations'],
     }),
+    ...(raw.permits !== undefined && {
+      permits: raw.permits as Well['permits'],
+    }),
   };
   return mergeWell(decoded, raw) as Well;
 }
@@ -322,6 +325,7 @@ export function serializeWell(well: Well): string {
     ...(well.pump_installations !== undefined && {
       pump_installations: well.pump_installations,
     }),
+    ...(well.permits !== undefined && { permits: well.permits }),
   };
 
   return JSON.stringify(payload);
@@ -409,6 +413,7 @@ export function redactWell(well: Well, visibility: SectionVisibility): Well {
 
   if (!visibility.operation) {
     delete redacted.pump_installations;
+    delete redacted.permits;
   }
 
   return redacted;

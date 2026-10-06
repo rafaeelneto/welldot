@@ -3,7 +3,8 @@
 /**
  * A document attached to the well or to one of its records. Since v2.3 it is
  * a common type, allowed at the root (`attachments`) and on `history_logs`,
- * `pump_installations`, `hydrodynamic_events` and `aquifer_analysis` entries.
+ * `permits`, `pump_installations`, `hydrodynamic_events` and
+ * `aquifer_analysis` entries.
  */
 export type Attachment = {
   /** Unique within its owning `attachments` array. UUID v4 recommended. */
@@ -409,6 +410,108 @@ export type PumpInstallation = {
   attachments?: Attachment[];
 };
 
+/** A volume stated in a permit for one period. Since v2.3. */
+export type VolumeLimit = {
+  /** `daily`, `monthly` or `annual`. Each period appears at most once per permit. */
+  period: 'daily' | 'monthly' | 'annual';
+  /** Granted volume in m³. Only volumes stated in the document — never derived ones. */
+  volume: number;
+};
+
+/**
+ * Month-by-month grant of a permit. When `monthly_schedule` is present, a
+ * month absent from it has no abstraction granted. Since v2.3.
+ */
+export type MonthlyGrant = {
+  /** Month number, 1–12, unique within the schedule. */
+  month: number;
+  /** Granted flow in m³/h. */
+  flow_rate?: number;
+  /** Granted daily operating time in hours, 0–24. */
+  daily_operating_time?: number;
+  /** Days of operation granted in the month. */
+  days?: number;
+};
+
+/**
+ * An obligation (condicionante) of a permit. Deadlines are derived from
+ * `first_due` or `due_after`, `recurrence`, `last_due` and `occurrences`;
+ * fulfillment is logged in `history_logs` with category `permit_condition`.
+ * Since v2.3.
+ */
+export type PermitCondition = {
+  /** Unique within the permit's `conditions` array. */
+  id: string;
+  /** Text of the condition as written in the document. */
+  description: string;
+  /**
+   * Recommended: `monitoring_report`, `water_level_monitoring`,
+   * `production_report`, `water_quality_analysis`, `meter_installation`,
+   * `sanitary_protection`, `renewal_request`.
+   */
+  category?: string;
+  /** Calendar date (YYYY-MM-DD) of the first deadline. Mutually exclusive with `due_after`. */
+  first_due?: string;
+  /** ISO 8601 date duration (e.g. `P90D`) from the permit's start date to the first deadline. */
+  due_after?: string;
+  /** ISO 8601 date duration between deadlines (e.g. `P6M`). Absent means one-time. */
+  recurrence?: string;
+  /** Calendar date (YYYY-MM-DD); no deadline is generated after it. */
+  last_due?: string;
+  /** Maximum number of deadlines, counting the first. */
+  occurrences?: number;
+};
+
+/**
+ * One legal instrument governing abstraction from the well (outorga,
+ * dispensa, cadastro). A mutable record: the attached document is
+ * authoritative. Status and condition deadlines are always derived. A renewal
+ * is a new permit whose `supersedes` points to the previous one. Since v2.3.
+ */
+export type Permit = {
+  /** Unique within `permits`. UUID v4 recommended. */
+  id: string;
+  /**
+   * Recommended: `abstraction_permit`, `preliminary_permit`, `exemption`,
+   * `registration`, `dewatering_permit`.
+   */
+  type: string;
+  /** Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`. */
+  authority: string;
+  /** Portaria or process number, preserved verbatim. */
+  number: string;
+  /** Calendar date (YYYY-MM-DD) of issuance. */
+  issued_at?: string;
+  /** Calendar date (YYYY-MM-DD). Absent means valid from `issued_at`. */
+  valid_from?: string;
+  /** Calendar date (YYYY-MM-DD). Absent means no fixed expiry. */
+  valid_until?: string;
+  /** Calendar date (YYYY-MM-DD) a renewal request was filed. */
+  renewal_requested_at?: string;
+  /**
+   * What the abstracted water is for. Recommended: `human_supply`,
+   * `industrial`, `mining`, `irrigation`, `livestock`, `commercial`.
+   */
+  water_use?: string[];
+  /** Maximum granted flow in m³/h. */
+  flow_rate?: number;
+  /** Maximum granted daily operating time in hours, 0–24. */
+  daily_operating_time?: number;
+  /** Volumes stated in the document. */
+  volume_limits?: VolumeLimit[];
+  /** Month-by-month grant. */
+  monthly_schedule?: MonthlyGrant[];
+  /** Obligations (condicionantes). */
+  conditions?: PermitCondition[];
+  /** `permits[].id` of the instrument this one legally replaces. */
+  supersedes?: string;
+  notes?: string;
+  /** RFC 3339 instant of the last edit of this record. */
+  updated_at?: string;
+  /** The legal document. */
+  attachments?: Attachment[];
+};
+
 // ─── History log objects ──────────────────────────────────────────────────────
 
 export type HistoryLogEntry = {
@@ -422,6 +525,17 @@ export type HistoryLogEntry = {
   author?: string;
   severity?: string;
   attachments?: Attachment[];
+
+  // `permit_condition` category fields (since v2.3). MUST be absent on
+  // entries of other categories.
+  /** `permits[].id` whose condition this entry fulfills. */
+  permit_id?: string;
+  /** `permits[].conditions[].id` within that permit. */
+  condition_id?: string;
+  /** Calendar date (YYYY-MM-DD) of the deadline fulfilled. Absent for undated conditions. */
+  due_date?: string;
+  /** `hydrodynamic_events[].id` that satisfied the obligation, when applicable. */
+  event_id?: string;
 };
 
 // ─── Well root ────────────────────────────────────────────────────────────────
@@ -486,6 +600,8 @@ export type Well = {
   attachments?: Attachment[];
   /** Pump installation history. Since v2.3. */
   pump_installations?: PumpInstallation[];
+  /** Legal instruments governing abstraction (outorgas). Since v2.3. */
+  permits?: Permit[];
 };
 
 /** Geologic section of a well (lithology, fractures, caves). */

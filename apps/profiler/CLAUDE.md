@@ -24,8 +24,10 @@ app/                      ← srcDir
   pages/
     index.vue             ← landing page
     editor/               ← editor; tabs in _components/tabs/ (General, Construction,
-                             Geological, Summary, History, Hydrodynamic, Operation)
-                             Operation (.well v2.3) = pump_installations; root `attachments`
+                             Geological, Summary, History, Hydrodynamic, Operation, Permits)
+                             Operation (.well v2.3) = pump_installations; Permits (.well v2.3)
+                             = permits (condition fulfillment writes `permit_condition`
+                             history logs); root `attachments`
                              (general files) live in the General tab below Observations
   layouts/
     landing.vue           ← layout for the landing page

@@ -118,7 +118,7 @@ Accepted conversions (only when original unit is explicit in the document):
 
 Use empty arrays (`[]`) for array fields the document has nothing for. **Omit** `cement_pad`,
 `location`, `well_id`, `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquifer_analysis`,
-`history_logs`, `attachments`, and `pump_installations` entirely rather than emitting empty placeholders.
+`history_logs`, `attachments`, `pump_installations`, and `permits` entirely rather than emitting empty placeholders.
 
 ---
 
@@ -273,6 +273,25 @@ hybrid), `manufacturer`, `model`, `serial`, `intake_depth` (m), `rated_flow_rate
 `check_valve`, `electrical` (`voltage` V, `phases` 1|3, `cable_section` mm², `cable_length` m). A pump
 mentioned only as test equipment belongs in the event's `equipment` field, not here.
 
+### `permits` (v2.3)
+
+Only when the report transcribes a legal instrument (outorga, outorga prévia, dispensa, cadastro
+CNARH). Each entry: `id`, `type` (abstraction_permit/preliminary_permit/exemption/registration/
+dewatering_permit — a renewal is **not** a type: it is a new permit whose `supersedes` is the previous
+permit's `id`), `authority` (issuing body, e.g. `ANA`, `SEMAS-PA`), `number` (portaria/process number,
+verbatim), `issued_at`, `valid_from`, `valid_until`, `renewal_requested_at` (all **calendar dates**
+`YYYY-MM-DD`, never instants), `water_use[]` (human_supply/industrial/mining/irrigation/livestock/
+commercial), `flow_rate` (m³/h), `daily_operating_time` (hours, 0–24), `volume_limits[]`
+(`{ period: daily|monthly|annual, volume }` in m³ — only volumes **stated** in the document, never
+flow × time), `monthly_schedule[]` (`{ month 1–12, flow_rate?, daily_operating_time?, days? }`;
+months absent from it have no abstraction granted), `conditions[]`. Each condition: `id`,
+`description` (verbatim), `category` (monitoring_report/water_level_monitoring/production_report/
+water_quality_analysis/meter_installation/sanitary_protection/renewal_request), and its deadline as
+either `first_due` (date) **or** `due_after` (ISO 8601 date duration from the start date, e.g.
+`P90D`), plus `recurrence` (`P6M`, `P1Y`), `last_due`, `occurrences`. Never compute or store the
+deadline dates or the permit status — they are derived. Fulfillments are `history_logs` entries with
+`category: "permit_condition"`, `permit_id`, `condition_id`, `due_date` — only if the report records them.
+
 ### `attachments` (v2.3)
 
 Root-level documents about the whole well (drilling report, as-built drawing, registry record) —
@@ -319,7 +338,10 @@ debris, or partial backfill reduced the depth; SIAGAS-style records with a separ
 8. Every `hydrodynamic_events[]`, `aquifer_analysis[]`, `history_logs[]` `datetime` (and `updated_at`),
    and every `pump_installations[]` `installed_at` / `removed_at`, is
    RFC 3339 **with a UTC offset** — reject and fix any naked `YYYY-MM-DDTHH:MM:SS` or bare date used
-   where an instant is required (only `construction_date` is a bare calendar date)
+   where an instant is required (only `construction_date`, the `permits[]` dates, condition
+   `first_due`/`last_due` and `history_logs[].due_date` are bare calendar dates)
+   8b. `permits[].conditions[]` `due_after`/`recurrence` are date-only durations (`P90D`, `P6M`, never
+   `PT…`); a condition never has both `first_due` and `due_after`
 9. `hydrodynamic_events[].steps` cardinality matches its `type`: `spot_measurement` 0–1,
    `constant_rate` exactly 1, `step_drawdown` ≥2 ascending, `airlift` ≥1, `recovery_only` none
    (recovery required instead)

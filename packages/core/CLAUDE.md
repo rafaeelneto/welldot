@@ -24,8 +24,8 @@ src/
 
 ## Key domain concepts
 
-- **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata, the event/analysis/log blocks, and (since v2.3) root `attachments` and `pump_installations`.
-- **Block kinds** (v2.3) — `hydrodynamic_events` is a ledger (corrected via `corrects`, never edited); `history_logs` is a mutable record; `pump_installations` is an installation block (`installed_at`/`removed_at`). Derivations that honor these rules (current pump, retracted events) live in `@welldot/utils`.
+- **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata, the event/analysis/log blocks, and (since v2.3) root `attachments`, `pump_installations` and `permits`.
+- **Block kinds** (v2.3) — `hydrodynamic_events` is a ledger (corrected via `corrects`, never edited); `history_logs` and `permits` are mutable records; `pump_installations` is an installation block (`installed_at`/`removed_at`). Permit dates are calendar dates (`YYYY-MM-DD`) and condition offsets are ISO 8601 date durations (`P90D`); `history_logs` entries of category `permit_condition` carry `permit_id`/`condition_id`/`due_date`. Derivations that honor these rules (current pump, retracted events, permit status, condition deadlines) live in `@welldot/utils`.
 - **New top-level blocks** must be mapped explicitly in `decodeV2Well`, `serializeWell` (which whitelists fields) and `redactWell`.
 - **`Profile`** — backward-compat alias for `Well`; used in the legacy Next.js app.
 - All depth values are **meters from ground level** (0 = surface, increasing downward).
@@ -98,7 +98,7 @@ What to update: the relevant field table, the field-to-unit binding list if the 
 
 Update when:
 
-- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `Centralizer`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, `PumpInstallation`, `PumpElectrical`, or any `hydrodynamic_events` event type).
+- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `Centralizer`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, `PumpInstallation`, `PumpElectrical`, `Permit`, `PermitCondition`, `VolumeLimit`, `MonthlyGrant`, or any `hydrodynamic_events` event type).
 - A new event type is added to `hydrodynamic_events`.
 - The Complete Example JSON no longer validates against the current types.
 

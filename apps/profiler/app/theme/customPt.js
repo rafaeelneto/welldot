@@ -45,11 +45,11 @@ const customPt = {
       'font-display transition-all duration-200 hover:scale-[1.02] active:scale-95',
   },
   inputtext: {
-    root: 'font-mono border-content-600 py-[5px] border-[1px] text-[12px] rounded-[var(--radius-sm)] focus:shadow-[inset_0_0_0_1.5px_var(--color-focus-ring)] [&.p-invalid]:shadow-[inset_0_0_0_1.5px_var(--color-error-ring)]',
+    root: 'w-full font-mono border-content-600 py-[5px] border-[1px] text-[12px] rounded-[var(--radius-sm)] focus:shadow-[inset_0_0_0_1.5px_var(--color-focus-ring)] [&.p-invalid]:shadow-[inset_0_0_0_1.5px_var(--color-error-ring)]',
   },
   inputnumber: {
     pcInput: {
-      root: 'font-mono border-content-600 border-[1px] py-[5px] text-[12px] rounded-[var(--radius-sm)] focus:shadow-[inset_0_0_0_1.5px_var(--color-focus-ring)] [&.p-invalid]:shadow-[inset_0_0_0_1.5px_var(--color-error-ring)]',
+      root: 'w-full font-mono border-content-600 border-[1px] py-[5px] text-[12px] rounded-[var(--radius-sm)] focus:shadow-[inset_0_0_0_1.5px_var(--color-focus-ring)] [&.p-invalid]:shadow-[inset_0_0_0_1.5px_var(--color-error-ring)]',
     },
   },
   select: {

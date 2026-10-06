@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Attachment, HistoryLogEntry } from '@welldot/core';
+import { formatISO } from 'date-fns';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 
 /** The entry being edited. `null` means "adding a new one". */
@@ -20,6 +21,18 @@ const form = reactive({
   severity: '' as string,
   attachments: [] as Attachment[],
 });
+
+/**
+ * `permit_condition` entries are created from the Operation › Permits tab,
+ * which sets the permit references; offer it here only when editing one.
+ */
+const selectableCategories = computed(() =>
+  categoryOptions.value.filter(
+    o =>
+      o.value !== 'permit_condition' ||
+      model.value?.category === 'permit_condition',
+  ),
+);
 
 const isFormValid = computed(
   () => !!form.category && !!form.datetime && !!form.description.trim(),
@@ -57,7 +70,9 @@ function saveEntry() {
     ...model.value,
     id: model.value?.id ?? crypto.randomUUID(),
     category: form.category,
-    datetime: form.datetime!.toISOString(),
+    // Keep the local offset: a `permit_condition` deadline is judged by the
+    // local date written in the instant.
+    datetime: formatISO(form.datetime!),
     description: form.description.trim(),
     author: form.author.trim() || undefined,
     severity: form.severity || undefined,
@@ -66,6 +81,12 @@ function saveEntry() {
       : undefined,
     updated_at: new Date().toISOString(),
   };
+  // Category-specific fields MUST be absent on entries of other categories.
+  if (next.category !== 'permit_condition') {
+    delete next.permit_id;
+    delete next.condition_id;
+    delete next.due_date;
+  }
 
   model.value = next;
   emit('save', next);
@@ -88,7 +109,7 @@ function saveEntry() {
       <LabeledField :label="t('editor.historyLog.logs.fields.category')">
         <div class="flex flex-wrap gap-2">
           <label
-            v-for="opt in categoryOptions"
+            v-for="opt in selectableCategories"
             :key="opt.value"
             :for="`cat-${opt.value}`"
             class="category-radio-option"

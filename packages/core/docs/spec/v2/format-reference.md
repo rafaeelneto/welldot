@@ -41,7 +41,8 @@
   "history_logs": [ ... ],
 
   "attachments": [ ... ],
-  "pump_installations": [ ... ]
+  "pump_installations": [ ... ],
+  "permits": [ ... ]
 }
 ```
 
@@ -56,7 +57,7 @@
 
 Minor revisions (`2.1`, `2.3`, …) are additive and do not change the `version` integer: a v2.3 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
 
-The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `hydrodynamic_events[].corrects` and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
+The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `hydrodynamic_events[].corrects`, the `permit_condition` fields of `history_logs` and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
 
 ### Parser version handling
 
@@ -67,7 +68,7 @@ The `version` field is an integer and must always be present.
 - Either parser encountering an unrecognized integer version MUST reject the file with a clear error.
 - A file without a `version` field SHOULD be rejected. Parsers MAY emit a warning and attempt to read the file as v1 if all required v1 fields are present and no v2-specific blocks are detected, but this fallback behavior is implementation-specific and not guaranteed by the spec.
 
-Files with `version: 1` MUST NOT contain any v2-only blocks (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, `attachments`, `pump_installations`, `profiles`, `well_id` as array, `location` object, `@context`). A v1 file containing such fields is malformed.
+Files with `version: 1` MUST NOT contain any v2-only blocks (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, `attachments`, `pump_installations`, `permits`, `profiles`, `well_id` as array, `location` object, `@context`). A v1 file containing such fields is malformed.
 
 ---
 
@@ -153,20 +154,21 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 
 ### v2.3 additions
 
-| Field                | Type                 | Required | Description                                                                                      |
-| -------------------- | -------------------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `attachments`        | `Attachment[]`       | no       | Documents about the well as a whole, not tied to any record. See object-schemas.md § Attachment. |
-| `pump_installations` | `PumpInstallation[]` | no       | Pump installation history (installation block). See object-schemas.md § `pump_installations[]`.  |
+| Field                | Type                 | Required | Description                                                                                          |
+| -------------------- | -------------------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| `attachments`        | `Attachment[]`       | no       | Documents about the well as a whole, not tied to any record. See object-schemas.md § Attachment.     |
+| `pump_installations` | `PumpInstallation[]` | no       | Pump installation history (installation block). See object-schemas.md § `pump_installations[]`.      |
+| `permits`            | `Permit[]`           | no       | Legal instruments governing abstraction (mutable record block). See object-schemas.md § `permits[]`. |
 
 ### Block kinds _(since v2.3)_
 
 Every top-level array is one of three kinds. The kind decides how records are corrected.
 
-| Kind           | Blocks                | Correction                                                                               | Edit tracking                           |
-| -------------- | --------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
-| Ledger         | `hydrodynamic_events` | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
-| Mutable record | `history_logs`        | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
-| Installation   | `pump_installations`  | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Kind           | Blocks                    | Correction                                                                               | Edit tracking                           |
+| -------------- | ------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
+| Ledger         | `hydrodynamic_events`     | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
+| Mutable record | `history_logs`, `permits` | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Installation   | `pump_installations`      | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
 
 Constructive and geologic arrays describe the well as built and are edited in place. `aquifer_analysis` entries are interpretations: a new interpretation is a new entry, and earlier ones coexist.
 
@@ -183,7 +185,9 @@ Constructive and geologic arrays describe the well as built and are edited in pl
 - No unit in a field name. Units are bound by the field-to-unit table (§ Units).
 - `flow_rate` is the canonical name for a volumetric rate; nameplate values use the `rated_` prefix (`rated_flow_rate`, `rated_head`, `rated_power`).
 - `from` / `to` are reserved for depth intervals in meters. Time intervals use `period_start` / `period_end`.
-- References to another array end in `_id` (single) or `_ids` (array), plus the relationship field `corrects`.
+- References to another array end in `_id` (single) or `_ids` (array), plus the two relationship fields `corrects` and `supersedes`.
+
+**`supersedes` vs `corrects`.** `supersedes` expresses legal succession between two valid permits and appears only on `permits`. It is not a correction mechanism: `corrects` retracts ledger entries.
 
 ---
 
@@ -191,7 +195,7 @@ Constructive and geologic arrays describe the well as built and are edited in pl
 
 The `.well` format distinguishes two kinds of temporal values:
 
-**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, in future operational blocks, for legal documents (permit issue and validity dates, condition deadlines). Interpreted as the local civil date at the well site. The well site's timezone is not stored separately; calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
+**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, since v2.3, for legal documents: `permits[].issued_at`, `valid_from`, `valid_until`, `renewal_requested_at`; `permits[].conditions[].first_due`, `last_due`; and `history_logs[].due_date`. Interpreted as the local civil date at the well site. The well site's timezone is not stored separately; calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
 
 **Instants** — RFC 3339 datetime strings with a mandatory UTC offset (e.g. `2006-03-14T08:00:00-03:00` or `2006-03-14T11:00:00Z`). Used for all event, analysis, and log timestamps:
 
@@ -200,8 +204,11 @@ The `.well` format distinguishes two kinds of temporal values:
 - `history_logs[].datetime`
 - `history_logs[].updated_at`
 - `pump_installations[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
+- `permits[].updated_at` _(since v2.3)_
 
-Validity and deadline checks compare calendar dates, never UTC instants.
+Validity and deadline checks compare calendar dates, never UTC instants. When an instant must be compared with a calendar date — for example a `permit_condition` log's `datetime` against its `due_date` — the instant's local date is the date part of the string, in the offset it carries. Producers SHOULD therefore write such instants in the well site's local offset.
+
+Relative deadlines and recurrences are ISO 8601 date durations (`P90D`, `P6M`, `P1Y6M`); see object-schemas.md § Date duration.
 
 A datetime without an offset (naked `YYYY-MM-DDTHH:MM:SS`) is malformed and parsers MUST reject it. Time zone abbreviations (`EST`, `BRT`) are not RFC 3339 and MUST NOT be used.
 
@@ -270,21 +277,58 @@ Solar is a `power_source`, never a `type`. Non-canonical values SHOULD use the `
 | `diesel` | Gerador a diesel     |
 | `hybrid` | Híbrido              |
 
+## `permits[].type` — Recommended values _(since v2.3)_
+
+| Value                | Portuguese (BR)                        | Description                         |
+| -------------------- | -------------------------------------- | ----------------------------------- |
+| `abstraction_permit` | Outorga de direito de uso              | Grant to abstract groundwater.      |
+| `preliminary_permit` | Outorga prévia / declaração de reserva | Permission before drilling.         |
+| `exemption`          | Dispensa / uso insignificante          | Formal exemption for small users.   |
+| `registration`       | Cadastro (e.g. CNARH)                  | Registration without a grant.       |
+| `dewatering_permit`  | Outorga para rebaixamento              | Mining and construction dewatering. |
+
+`renewal` is not a type: a renewal is a new permit of the same type whose `supersedes` points to the previous one. Non-canonical values SHOULD use the `x-` prefix.
+
+## `permits[].water_use` — Recommended values _(since v2.3)_
+
+| Value          | Portuguese (BR)                        |
+| -------------- | -------------------------------------- |
+| `human_supply` | Abastecimento público / consumo humano |
+| `industrial`   | Industrial                             |
+| `mining`       | Mineração                              |
+| `irrigation`   | Irrigação                              |
+| `livestock`    | Dessedentação animal                   |
+| `commercial`   | Comercial / serviços                   |
+
+`water_use` describes what the abstracted water is for; `well_purpose` describes the well's role.
+
+## `permits[].conditions[].category` — Recommended values _(since v2.3)_
+
+| Value                    | Portuguese (BR)                       |
+| ------------------------ | ------------------------------------- |
+| `monitoring_report`      | Relatório de monitoramento            |
+| `water_level_monitoring` | Monitoramento de nível                |
+| `production_report`      | Declaração de volumes / vazão         |
+| `water_quality_analysis` | Análise de qualidade da água          |
+| `meter_installation`     | Instalação de hidrômetro              |
+| `sanitary_protection`    | Proteção sanitária / laje / perímetro |
+| `renewal_request`        | Pedido de renovação                   |
+
 ## `Attachment.document_type` — Recommended values _(since v2.3)_
 
-| Value                | Portuguese (BR)                             | Typical location                      |
-| -------------------- | ------------------------------------------- | ------------------------------------- |
-| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                                  |
-| `as_built_drawing`   | Perfil construtivo as-built                 | Root                                  |
-| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                                  |
-| `photo`              | Fotografia                                  | Any                                   |
-| `permit_document`    | Portaria / certificado de outorga           | Reserved for a future `permits` block |
-| `condition_evidence` | Comprovante de cumprimento de condicionante | `history_logs`                        |
-| `pump_curve`         | Curva da bomba                              | `pump_installations`                  |
-| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events`                 |
-| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`                    |
-| `lab_report`         | Laudo laboratorial                          | Reserved for water quality            |
-| `invoice`            | Nota fiscal                                 | Any                                   |
+| Value                | Portuguese (BR)                             | Typical location           |
+| -------------------- | ------------------------------------------- | -------------------------- |
+| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                       |
+| `as_built_drawing`   | Perfil construtivo as-built                 | Root                       |
+| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                       |
+| `photo`              | Fotografia                                  | Any                        |
+| `permit_document`    | Portaria / certificado de outorga           | `permits`                  |
+| `condition_evidence` | Comprovante de cumprimento de condicionante | `history_logs`             |
+| `pump_curve`         | Curva da bomba                              | `pump_installations`       |
+| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events`      |
+| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`         |
+| `lab_report`         | Laudo laboratorial                          | Reserved for water quality |
+| `invoice`            | Nota fiscal                                 | Any                        |
 
 The vocabulary is open; non-canonical values SHOULD use the `x-` prefix.
 
@@ -391,6 +435,8 @@ All numeric values in a `.well` file are in **SI**. The format does not encode u
 | Diameter                 | millimeter               | `mm`   | number                                   |
 | Volumetric flow rate     | cubic meter per hour     | `m3/h` | number                                   |
 | Elapsed time, duration   | minute                   | `min`  | number                                   |
+| Daily operating time     | hour                     | `h`    | number (0–24)                            |
+| Volume                   | cubic meter              | `m3`   | number                                   |
 | Power                    | kilowatt                 | `kW`   | number                                   |
 | Voltage                  | volt                     | `V`    | number                                   |
 | Cross-sectional area     | square millimeter        | `mm2`  | number                                   |
@@ -446,12 +492,23 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `aquifer_analysis[].flow_rate`, `flow_rate_precision`
 - `recovery_only.pumping_rate`
 - `pump_installations[].rated_flow_rate` _(since v2.3)_
+- `permits[].flow_rate`, `permits[].monthly_schedule[].flow_rate` _(since v2.3)_
 
 **Minute (`min`)** — all elapsed times and durations:
 
 - `PumpingStep.duration`
 - `LevelReading.elapsed`
 - `recovery_only.pumping_duration`
+
+**Cubic meter (`m3`)** — volume _(since v2.3)_:
+
+- `permits[].volume_limits[].volume`
+
+**Hour (`h`)** — daily operating time _(since v2.3)_:
+
+- `permits[].daily_operating_time`, `permits[].monthly_schedule[].daily_operating_time`
+
+The minute remains the canonical unit for elapsed time and durations. The hour is bound only to `daily_operating_time`, which regulators always express in hours.
 
 **Square meter per second (`m2/s`)** — transmissivity:
 
@@ -490,6 +547,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `aquifer_analysis[].specific_capacity` (derived ratio in m³/h per m, i.e. `m2/h`)
 - Lithology `color` (CSS hex string)
 - `pump_installations[].stages`, `electrical.phases` (counts)
+- `permits[].monthly_schedule[].month`, `days`; `permits[].conditions[].occurrences` (counts)
 
 ### Level sign convention
 
@@ -597,7 +655,10 @@ Each ID-bearing array maintains its **own uniqueness scope**. The ID namespaces 
 - `aquifer_analysis[].id` — unique within `aquifer_analysis`
 - `history_logs[].id` — unique within `history_logs`
 - `pump_installations[].id` — unique within `pump_installations` _(since v2.3)_
-- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis`). The same id may appear under different records.
+- `permits[].id` — unique within `permits` _(since v2.3)_
+- `permits[].conditions[].id` — unique within the `conditions` array of one permit _(since v2.3)_
+- `permits[].monthly_schedule[].month` and `permits[].volume_limits[].period` — unique within one permit _(since v2.3)_
+- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis`). The same id may appear under different records.
 - `well_id[]` — uniqueness is on the composite key `(authority, id)`, not on `id` alone
 
 An ID value MAY repeat across different arrays without conflict (e.g. an event and an analysis MAY both use the ID `"001"`), though distinct values are recommended for clarity.
@@ -606,13 +667,17 @@ An ID value MAY repeat across different arrays without conflict (e.g. an event a
 
 The following fields hold references to IDs in other arrays:
 
-| Reference field                             | Points to                  | Resolution scope |
-| ------------------------------------------- | -------------------------- | ---------------- |
-| `aquifer_analysis[].source_event_ids[]`     | `hydrodynamic_events[].id` | Same file only   |
-| `aquifer_analysis[].static_level_source_id` | `hydrodynamic_events[].id` | Same file only   |
-| `hydrodynamic_events[].corrects`            | `hydrodynamic_events[].id` | Same file only   |
+| Reference field                             | Points to                                                | Resolution scope |
+| ------------------------------------------- | -------------------------------------------------------- | ---------------- |
+| `aquifer_analysis[].source_event_ids[]`     | `hydrodynamic_events[].id`                               | Same file only   |
+| `aquifer_analysis[].static_level_source_id` | `hydrodynamic_events[].id`                               | Same file only   |
+| `hydrodynamic_events[].corrects`            | `hydrodynamic_events[].id`                               | Same file only   |
+| `permits[].supersedes`                      | `permits[].id`                                           | Same file only   |
+| `history_logs[].permit_id`                  | `permits[].id`                                           | Same file only   |
+| `history_logs[].condition_id`               | `permits[].conditions[].id` within the referenced permit | Same file only   |
+| `history_logs[].event_id`                   | `hydrodynamic_events[].id`                               | Same file only   |
 
-Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `pump_installations`, `hydrodynamic_events` or `aquifer_analysis` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
+Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events` or `aquifer_analysis` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
 
 Cross-file references are not supported in v2.
 

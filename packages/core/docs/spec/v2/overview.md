@@ -8,7 +8,7 @@
 
 ## Changes in v2.3
 
-v2.3 is an additive minor revision. Every valid v2.1 document is a valid v2.3 document, and documents keep declaring `"version": 2`. It is the first part of the operational blocks: equipment and documents. Permits, meters, production and operating regime are planned for a later revision.
+v2.3 is an additive minor revision. Every valid v2.1 document is a valid v2.3 document, and documents keep declaring `"version": 2`. It is the first part of the operational blocks: equipment, documents and permits. Meters, production and operating regime are planned for a later revision.
 
 ```
 v2.3 additions:
@@ -20,10 +20,19 @@ v2.3 additions:
   test_report, lab_report, invoice)
 - pump_installations (optional PumpInstallation[]): pump installation
   history, with nameplate, intake depth, riser and electrical data
+- permits (optional Permit[]): legal instruments governing abstraction
+  (outorga, dispensa, cadastro) with validity, granted flow, daily
+  operating time, volume limits, monthly schedule and conditions
+  (condicionantes) whose deadlines are derived from ISO 8601 date
+  durations; renewals are linked with supersedes
+- history_logs category permit_condition, with permit_id,
+  condition_id, due_date and event_id: fulfillment of a condition
+  deadline
 - hydrodynamic_events[].corrects: retracts an earlier event (ledger
   correction)
 - hydrodynamic_events[].attachments, aquifer_analysis[].attachments
-- Canonical units kW (power), V (voltage), mm² (cable cross-section)
+- Canonical units kW (power), V (voltage), mm² (cable cross-section),
+  m³ (volume), h (daily operating time only)
 
 v2.3 clarifications:
 - Block kinds: every top-level array is a ledger, a mutable record or
@@ -32,6 +41,10 @@ v2.3 clarifications:
   everything else uses RFC 3339 instants
 - Naming rules: no units in field names; nameplate values use the
   rated_ prefix; time intervals use period_start / period_end
+- supersedes (legal succession between permits) is distinct from
+  corrects (ledger retraction)
+- Permit status and condition deadlines are derived on the local civil
+  date at the well site, never stored
 ```
 
 v2.3 contains no deprecations.
@@ -123,7 +136,7 @@ The `.well` format is an open standard for representing water well data. It is d
 - **Geographic north** — all azimuth values are referenced to geographic north.
 - **Three block kinds** — every top-level array is one of three kinds, and the kind decides how records are corrected:
   - **Ledger** (`hydrodynamic_events`) — append-only. An error is corrected by appending a new entry whose `corrects` points to the retracted entry; existing entries are never edited in place. A retracted entry stays in the file but is excluded from every derivation. This is enforced by authoring tools in the welldot stack, not by the file format itself. The format provides `id`, `datetime`, `sequence` and `corrects` to support this discipline.
-  - **Mutable record** (`history_logs`) — edited in place; `updated_at` records the last edit.
+  - **Mutable record** (`history_logs`, `permits`) — edited in place; `updated_at` records the last edit.
   - **Installation** (`pump_installations`) — equipment present in the well for a period (`installed_at` / `removed_at`); edited in place with `updated_at`.
 - **Derived values are never stored raw** — `s/Q`, `Q/s`, drawdown `s`, and any other value computable from stored fields must not appear as stored fields. Applications compute them on demand.
 - **Interpreted results are versioned** — `aquifer_analysis` records which method was used, who performed the analysis, and which events were used as input. Multiple analyses may coexist.
@@ -139,7 +152,8 @@ The following are recognized limitations of this version, reserved for future ve
 
 - **No internationalization of text fields.** All free-text fields (`description`, `notes`, `author`, etc.) are opaque strings with no language tag. A file produced in Brazil will have Portuguese content; one from Norway will have Norwegian. v3 will consider BCP 47 language objects for text fields, with backward-compatible string fallback.
 - **No water quality block.** Chemical and physical water quality measurements are not yet covered; a `water_samples` block is drafted for a later v2 revision.
-- **Operational blocks are partial.** v2.3 covers pump installations and attachments. Permits, meters, production and operating regime are drafted for a later v2 revision; until then, they can be carried as `x-` blocks.
+- **Operational blocks are partial.** v2.3 covers pump installations, attachments and permits. Meters, production and operating regime are drafted for a later v2 revision; until then, they can be carried as `x-` blocks.
+- **Collective permits are repeated per well.** A grant covering several wells is repeated in each well's file until cross-file references arrive in v3.
 - **No geophysical logs block.** Downhole geophysical surveys (resistivity, gamma ray, caliper) are out of scope for v2 and reserved for v3.
 - **No multi-well linking.** Storativity determination requires observation well data. The top-level `references` field name is reserved for v3 to link wells across files.
 

@@ -53,7 +53,7 @@ This is a condensed reference for extraction. The normative source is
 
   "hydrodynamic_events": [...], "aquifer_analysis": [...], "history_logs": [...],
 
-  "attachments": [...], "pump_installations": [...]
+  "attachments": [...], "pump_installations": [...], "permits": [...]
 }
 ```
 
@@ -417,7 +417,7 @@ Mutable chronological record of interventions/inspections/incidents — distinct
 | `id`          | string         | yes      | Unique within `history_logs`.                                                                                                                                          |
 | `datetime`    | string         | yes      | RFC 3339 with UTC offset. When the logged event occurred.                                                                                                              |
 | `updated_at`  | string         | no       | RFC 3339 with UTC offset. When this entry was created/edited. **Never synthesize this if the report doesn't distinguish it from `datetime`** — omit rather than guess. |
-| `category`    | string         | yes      | `maintenance`, `inspection`, `incident`, `event`, or `change_of_use` (v2.1) (open vocab, `x-` prefix for others).                                                      |
+| `category`    | string         | yes      | `maintenance`, `inspection`, `incident`, `event`, `change_of_use` (v2.1) or `permit_condition` (v2.3) (open vocab, `x-` prefix for others).                            |
 | `description` | string         | yes      | Near-verbatim account. See § Free-text preservation.                                                                                                                   |
 | `author`      | string         | no       |                                                                                                                                                                        |
 | `severity`    | string         | no       | Recommended: `low`, `medium`, `high`, `critical`.                                                                                                                      |
@@ -426,7 +426,7 @@ Mutable chronological record of interventions/inspections/incidents — distinct
 ### `Attachment` (common type since v2.3)
 
 Allowed at the root (`attachments[]`, documents about the whole well) and on `history_logs`,
-`pump_installations`, `hydrodynamic_events` and `aquifer_analysis` entries.
+`permits`, `pump_installations`, `hydrodynamic_events` and `aquifer_analysis` entries.
 
 | Field                               | Type   | Required | Notes                                                                                                                                                                                                    |
 | ----------------------------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -463,6 +463,48 @@ One entry per installation of a pump. The current pump is the entry without `rem
 
 `hydrodynamic_events[]` entries may also carry `attachments` and `corrects` (id of an event this one
 retracts); `aquifer_analysis[]` entries may carry `attachments` (v2.3).
+
+---
+
+## `permits[]` (v2.3, optional — omit entirely if the report has no permit data)
+
+One entry per legal instrument (outorga, dispensa, cadastro). Status and condition deadlines are
+derived by applications — never store them.
+
+| Field                                | Type     | Required | Notes                                                                                                                                  |
+| ------------------------------------ | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                                 | string   | yes      | Unique within `permits`.                                                                                                               |
+| `type`                               | string   | yes      | `abstraction_permit`, `preliminary_permit`, `exemption`, `registration`, `dewatering_permit` (`x-` for others). Renewal is not a type. |
+| `authority`                          | string   | yes      | Issuing body, e.g. `ANA`, `SEMAS-PA`.                                                                                                  |
+| `number`                             | string   | yes      | Portaria or process number, verbatim.                                                                                                  |
+| `issued_at`                          | string   | no       | Calendar date `YYYY-MM-DD`.                                                                                                            |
+| `valid_from`                         | string   | no       | Calendar date. Absent = valid from `issued_at`.                                                                                        |
+| `valid_until`                        | string   | no       | Calendar date. Absent = no fixed expiry.                                                                                               |
+| `renewal_requested_at`               | string   | no       | Calendar date the renewal was filed.                                                                                                   |
+| `water_use`                          | string[] | no       | `human_supply`, `industrial`, `mining`, `irrigation`, `livestock`, `commercial`.                                                       |
+| `flow_rate`                          | number   | no       | m³/h, maximum granted.                                                                                                                 |
+| `daily_operating_time`               | number   | no       | Hours, 0–24.                                                                                                                           |
+| `volume_limits`                      | array    | no       | `{ period: "daily" \| "monthly" \| "annual", volume }` (m³). Only volumes stated in the document.                                      |
+| `monthly_schedule`                   | array    | no       | `{ month (1–12), flow_rate?, daily_operating_time?, days? }`. Months absent = no abstraction granted.                                  |
+| `conditions`                         | array    | no       | See below.                                                                                                                             |
+| `supersedes`                         | string   | no       | `permits[].id` this instrument legally replaces (renewal).                                                                             |
+| `notes`, `updated_at`, `attachments` |          | no       | `attachments[].document_type: "permit_document"` for the portaria.                                                                     |
+
+Condition (`conditions[]`): `id` (unique per permit), `description` (verbatim, required), `category`
+(`monitoring_report`, `water_level_monitoring`, `production_report`, `water_quality_analysis`,
+`meter_installation`, `sanitary_protection`, `renewal_request`), and either `first_due` (date) or
+`due_after` (ISO 8601 date duration from the start date, e.g. `P90D`) — never both — plus optional
+`recurrence` (`P6M`), `last_due` (date) and `occurrences` (integer).
+
+| Document wording                             | Encoding                                                |
+| -------------------------------------------- | ------------------------------------------------------- |
+| Install a meter within 90 days               | `due_after: "P90D"`                                     |
+| Semiannual report from issuance              | `due_after: "P6M", recurrence: "P6M"`                   |
+| Semiannual report by 31 Jan and 31 Jul       | `first_due: "<next of those dates>", recurrence: "P6M"` |
+| Monthly level readings during the first year | `due_after: "P1M", recurrence: "P1M", occurrences: 12`  |
+
+A recorded fulfillment is a `history_logs` entry with `category: "permit_condition"`, `permit_id`,
+`condition_id` and `due_date` (the deadline fulfilled); its `datetime` is when it was fulfilled.
 
 ---
 
