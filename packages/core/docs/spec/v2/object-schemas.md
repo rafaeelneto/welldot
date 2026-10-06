@@ -554,33 +554,36 @@ Any non-`status_change` entry dated after a `decommissioned` or `abandoned` stat
 An installation block: each entry is one installation of a pump in the well, present from `installed_at` until `removed_at`. Entries are edited in place, and `updated_at` records the last edit. The current pump and its submergence are derived, never stored.
 
 - `removed_at` earlier than or equal to `installed_at` is malformed and emits a warning.
+- `installed_by` and `removed_by` name who did the work (person or company, free text). `removed_by` on an entry without `removed_at` carries no meaning and consumers ignore it.
 - Each entry is one installation, not one piece of equipment. A unit pulled and reinstalled gets a new entry with the same `serial`.
 - Overlapping open installations emit a warning, not an error. Standby pumps exist.
 
 ### `PumpInstallation`
 
-| Field             | Type             | Required | Unit | Description                                                  |
-| ----------------- | ---------------- | -------- | ---- | ------------------------------------------------------------ |
-| `id`              | string           | yes      |      | Unique within `pump_installations`. UUID v4 recommended.     |
-| `installed_at`    | string (instant) | yes      |      | RFC 3339 instant when the pump entered service in this well. |
-| `removed_at`      | string (instant) | no       |      | When it left. Absent means currently installed.              |
-| `type`            | string           | yes      |      | See format-reference.md § `pump_installations[].type`.       |
-| `power_source`    | string           | no       |      | `grid`, `solar`, `diesel`, `hybrid`, `x-…`                   |
-| `manufacturer`    | string           | no       |      |                                                              |
-| `model`           | string           | no       |      |                                                              |
-| `serial`          | string           | no       |      | Links reinstallations of the same unit.                      |
-| `intake_depth`    | number           | no       | m    | Depth of the pump intake (crivo), from ground level.         |
-| `rated_flow_rate` | number           | no       | m³/h | Nameplate duty-point flow.                                   |
-| `rated_head`      | number           | no       | m    | Nameplate duty-point head.                                   |
-| `rated_power`     | number           | no       | kW   | Motor power.                                                 |
-| `stages`          | integer          | no       |      | Number of stages.                                            |
-| `riser_diameter`  | number           | no       | mm   | Riser pipe (edutor), as-built outer diameter.                |
-| `riser_material`  | string           | no       |      | Same vocabulary as `well_case.type`.                         |
-| `check_valve`     | boolean          | no       |      | Whether a check valve is installed.                          |
-| `electrical`      | `PumpElectrical` | no       |      | See below.                                                   |
-| `notes`           | string           | no       |      |                                                              |
-| `updated_at`      | string (instant) | no       |      | Last edit of this record.                                    |
-| `attachments`     | `Attachment[]`   | no       |      | Pump curves, invoices, photos. See § Attachment.             |
+| Field             | Type             | Required | Unit | Description                                                                 |
+| ----------------- | ---------------- | -------- | ---- | --------------------------------------------------------------------------- |
+| `id`              | string           | yes      |      | Unique within `pump_installations`. UUID v4 recommended.                    |
+| `installed_at`    | string (instant) | yes      |      | RFC 3339 instant when the pump entered service in this well.                |
+| `removed_at`      | string (instant) | no       |      | When it left. Absent means currently installed.                             |
+| `installed_by`    | string           | no       |      | Person or company that installed the pump.                                  |
+| `removed_by`      | string           | no       |      | Person or company that removed the pump. Only meaningful with `removed_at`. |
+| `type`            | string           | yes      |      | See format-reference.md § `pump_installations[].type`.                      |
+| `power_source`    | string           | no       |      | `grid`, `solar`, `diesel`, `hybrid`, `x-…`                                  |
+| `manufacturer`    | string           | no       |      |                                                                             |
+| `model`           | string           | no       |      |                                                                             |
+| `serial`          | string           | no       |      | Links reinstallations of the same unit.                                     |
+| `intake_depth`    | number           | no       | m    | Depth of the pump intake (crivo), from ground level.                        |
+| `rated_flow_rate` | number           | no       | m³/h | Nameplate duty-point flow.                                                  |
+| `rated_head`      | number           | no       | m    | Nameplate duty-point head.                                                  |
+| `rated_power`     | number           | no       | kW   | Motor power.                                                                |
+| `stages`          | integer          | no       |      | Number of stages.                                                           |
+| `riser_diameter`  | number           | no       | mm   | Riser pipe (edutor), as-built outer diameter.                               |
+| `riser_material`  | string           | no       |      | Same vocabulary as `well_case.type`.                                        |
+| `check_valve`     | boolean          | no       |      | Whether a check valve is installed.                                         |
+| `electrical`      | `PumpElectrical` | no       |      | See below.                                                                  |
+| `notes`           | string           | no       |      |                                                                             |
+| `updated_at`      | string (instant) | no       |      | Last edit of this record.                                                   |
+| `attachments`     | `Attachment[]`   | no       |      | Pump curves, invoices, photos. See § Attachment.                            |
 
 ### `PumpElectrical`
 
@@ -800,20 +803,22 @@ An installation block: each entry is one installation of a totalizer (hidrômetr
 
 ### `Meter`
 
-| Field              | Type             | Required | Unit | Description                                                    |
-| ------------------ | ---------------- | -------- | ---- | -------------------------------------------------------------- |
-| `id`               | string           | yes      |      | Unique within `meters`. UUID v4 recommended.                   |
-| `installed_at`     | string (instant) | yes      |      | RFC 3339 instant when the meter entered service in this well.  |
-| `removed_at`       | string (instant) | no       |      | When it left. Absent means currently installed.                |
-| `type`             | string           | no       |      | See format-reference.md § `meters[].type`.                     |
-| `manufacturer`     | string           | no       |      |                                                                |
-| `model`            | string           | no       |      |                                                                |
-| `serial`           | string           | no       |      | Links reinstallations of the same unit.                        |
-| `nominal_diameter` | number           | no       | mm   | Nominal diameter (DN).                                         |
-| `max_reading`      | number           | no       | m³   | Register capacity, used to detect rollover. Greater than 0.    |
-| `notes`            | string           | no       |      |                                                                |
-| `updated_at`       | string (instant) | no       |      | Last edit of this record.                                      |
-| `attachments`      | `Attachment[]`   | no       |      | Installation photos, invoices, certificates. See § Attachment. |
+| Field              | Type             | Required | Unit | Description                                                                  |
+| ------------------ | ---------------- | -------- | ---- | ---------------------------------------------------------------------------- |
+| `id`               | string           | yes      |      | Unique within `meters`. UUID v4 recommended.                                 |
+| `installed_at`     | string (instant) | yes      |      | RFC 3339 instant when the meter entered service in this well.                |
+| `removed_at`       | string (instant) | no       |      | When it left. Absent means currently installed.                              |
+| `installed_by`     | string           | no       |      | Person or company that installed the meter.                                  |
+| `removed_by`       | string           | no       |      | Person or company that removed the meter. Only meaningful with `removed_at`. |
+| `type`             | string           | no       |      | See format-reference.md § `meters[].type`.                                   |
+| `manufacturer`     | string           | no       |      |                                                                              |
+| `model`            | string           | no       |      |                                                                              |
+| `serial`           | string           | no       |      | Links reinstallations of the same unit.                                      |
+| `nominal_diameter` | number           | no       | mm   | Nominal diameter (DN).                                                       |
+| `max_reading`      | number           | no       | m³   | Register capacity, used to detect rollover. Greater than 0.                  |
+| `notes`            | string           | no       |      |                                                                              |
+| `updated_at`       | string (instant) | no       |      | Last edit of this record.                                                    |
+| `attachments`      | `Attachment[]`   | no       |      | Installation photos, invoices, certificates. See § Attachment.               |
 
 The register values at installation and removal are recorded as ordinary `meter_reading` entries in `production`, with `datetime` equal to `installed_at` or `removed_at`. Meter calibrations are `history_logs` entries of category `maintenance` with `maintenance_type: "meter_calibration"` and a `meter_id`.
 
@@ -1136,6 +1141,8 @@ A ledger of water samples, each with its field and laboratory results. The full 
       "id": "e1f2a3b4-c5d6-7890-efab-234567890abc",
       "installed_at": "2006-03-20T10:00:00-03:00",
       "removed_at": "2018-06-12T09:30:00-03:00",
+      "installed_by": "Perfurações Silva Ltda.",
+      "removed_by": "Bombas Norte Serviços",
       "type": "submersible",
       "power_source": "grid",
       "rated_power": 11.0,
@@ -1265,6 +1272,7 @@ A ledger of water samples, each with its field and laboratory results. The full 
     {
       "id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
       "installed_at": "2025-04-02T09:00:00-03:00",
+      "installed_by": "Hidro Serviços",
       "type": "electromagnetic",
       "manufacturer": "Incontrol",
       "model": "VMS Pro",

@@ -178,7 +178,7 @@ function toggleTypeFilter(type: string) {
 
     <!-- ── Sub-tabs ─────────────────────────────────────────────────────────── -->
     <Tabs v-model:value="activeSubTab">
-      <TabList>
+      <TabList class="pl-6">
         <Tab value="measurements">
           <span class="flex items-center gap-1.5">
             {{ t('editor.hydrodynamicEvents.tabs.measurements') }}

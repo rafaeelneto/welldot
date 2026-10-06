@@ -241,6 +241,21 @@ function equipmentName(m: Meter): string {
           </span>
         </div>
 
+        <!-- crew -->
+        <div
+          v-if="m.installed_by || (m.removed_at && m.removed_by)"
+          class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-content-300"
+        >
+          <span v-if="m.installed_by">
+            {{ t('editor.operation.meter.fields.installedBy') }}:
+            {{ m.installed_by }}
+          </span>
+          <span v-if="m.removed_at && m.removed_by">
+            {{ t('editor.operation.meter.fields.removedBy') }}:
+            {{ m.removed_by }}
+          </span>
+        </div>
+
         <!-- specs -->
         <div
           v-if="specs(m).length"

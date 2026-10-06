@@ -59,6 +59,8 @@ function specLines(
   return [
     equipment && `${field('model')}: ${equipment}`,
     p.serial && `${field('serial')}: ${p.serial}`,
+    p.installed_by && `${field('installedBy')}: ${p.installed_by}`,
+    p.removed_at && p.removed_by && `${field('removedBy')}: ${p.removed_by}`,
     p.power_source &&
       `${field('powerSource')}: ${resolvePowerSourceLabel(p.power_source, t)}`,
     p.intake_depth != null &&

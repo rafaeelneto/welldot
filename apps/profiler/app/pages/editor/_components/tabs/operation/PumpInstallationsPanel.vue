@@ -267,6 +267,21 @@ function equipmentName(p: PumpInstallation): string {
           </span>
         </div>
 
+        <!-- crew -->
+        <div
+          v-if="p.installed_by || (p.removed_at && p.removed_by)"
+          class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-content-300"
+        >
+          <span v-if="p.installed_by">
+            {{ t('editor.operation.pump.fields.installedBy') }}:
+            {{ p.installed_by }}
+          </span>
+          <span v-if="p.removed_at && p.removed_by">
+            {{ t('editor.operation.pump.fields.removedBy') }}:
+            {{ p.removed_by }}
+          </span>
+        </div>
+
         <!-- specs -->
         <div
           v-if="specs(p).length"

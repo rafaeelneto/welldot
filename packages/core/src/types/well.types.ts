@@ -379,6 +379,10 @@ export type PumpInstallation = {
   installed_at: string;
   /** RFC 3339 instant when it left. Absent means currently installed. */
   removed_at?: string;
+  /** Person or company that installed the pump. */
+  installed_by?: string;
+  /** Person or company that removed the pump. Only meaningful with `removed_at`. */
+  removed_by?: string;
   /** Pump type. Recommended: `submersible`, `vertical_turbine`, `jet`, `progressive_cavity`, `hand_pump`, `compressor_airlift`. */
   type: string;
   /** Power source. Recommended: `grid`, `solar`, `diesel`, `hybrid`. */
@@ -603,6 +607,10 @@ export type Meter = {
   installed_at: string;
   /** RFC 3339 instant when it left. Absent means currently installed. */
   removed_at?: string;
+  /** Person or company that installed the meter. */
+  installed_by?: string;
+  /** Person or company that removed the meter. Only meaningful with `removed_at`. */
+  removed_by?: string;
   /** Meter type. Recommended: `mechanical`, `electromagnetic`, `ultrasonic`. */
   type?: string;
   manufacturer?: string;

@@ -112,4 +112,27 @@ describe('buildMeterSection', () => {
     expect(serialized).toContain('install-photo.jpg');
     expect(serialized).toContain('nota-fiscal.pdf');
   });
+
+  it('lists who installed and removed the unit', () => {
+    const list: Meter[] = [
+      {
+        id: 'old',
+        installed_at: '2020-01-01T12:00:00-03:00',
+        removed_at: '2024-01-01T12:00:00-03:00',
+        installed_by: 'Perfurações Silva',
+        removed_by: 'Hidro Serviços',
+      },
+      {
+        id: 'current',
+        installed_at: '2024-01-01T13:00:00-03:00',
+        removed_by: 'Ignored Crew',
+      },
+    ];
+    const serialized = JSON.stringify(
+      buildMeterSection(baseWell({ meters: list }), baseOptions, t),
+    );
+    expect(serialized).toContain('installedBy: Perfurações Silva');
+    expect(serialized).toContain('removedBy: Hidro Serviços');
+    expect(serialized).not.toContain('Ignored Crew');
+  });
 });

@@ -27,6 +27,8 @@ const form = reactive({
   type: null as string | null,
   installedAt: null as Date | null,
   removedAt: null as Date | null,
+  installedBy: '',
+  removedBy: '',
   manufacturer: '',
   model: '',
   serial: '',
@@ -60,6 +62,8 @@ function seedForm(m: Meter | null) {
   form.type = m?.type ?? null;
   form.installedAt = m ? new Date(m.installed_at) : new Date();
   form.removedAt = m?.removed_at ? new Date(m.removed_at) : null;
+  form.installedBy = m?.installed_by ?? '';
+  form.removedBy = m?.removed_by ?? '';
   form.manufacturer = m?.manufacturer ?? '';
   form.model = m?.model ?? '';
   form.serial = m?.serial ?? '';
@@ -95,6 +99,9 @@ function save() {
     id: model.value?.id ?? crypto.randomUUID(),
     installed_at: form.installedAt!.toISOString(),
     removed_at: form.removedAt?.toISOString(),
+    installed_by: optionalText(form.installedBy),
+    // Who removed the unit only means something once it has been removed.
+    removed_by: form.removedAt ? optionalText(form.removedBy) : undefined,
     type: optionalText(form.type),
     manufacturer: optionalText(form.manufacturer),
     model: optionalText(form.model),
@@ -166,6 +173,17 @@ function save() {
             class="w-full"
             :invalid="removedBeforeInstalled"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
+          />
+        </LabeledField>
+
+        <LabeledField :label="t('editor.operation.meter.fields.installedBy')">
+          <InputText v-model="form.installedBy" class="w-full" />
+        </LabeledField>
+        <LabeledField :label="t('editor.operation.meter.fields.removedBy')">
+          <InputText
+            v-model="form.removedBy"
+            :disabled="!form.removedAt"
+            class="w-full"
           />
         </LabeledField>
       </div>

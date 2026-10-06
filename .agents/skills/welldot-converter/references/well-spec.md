@@ -462,6 +462,7 @@ One entry per installation of a pump. The current pump is the entry without `rem
 | `id`                                 | string  | yes      | Unique within `pump_installations`.                                                                                                                             |
 | `installed_at`                       | string  | yes      | RFC 3339 instant with UTC offset. If the report gives only a date, use `T00:00:00` with the site's offset.                                                      |
 | `removed_at`                         | string  | no       | RFC 3339 instant. Absent = currently installed.                                                                                                                 |
+| `installed_by`, `removed_by`         | string  | no       | Person or company that installed / removed the unit (e.g. the driller or pump installer named in the report). Set `removed_by` only with `removed_at`.          |
 | `type`                               | string  | yes      | `submersible`, `vertical_turbine`, `jet`, `progressive_cavity`, `hand_pump`, `compressor_airlift` (`x-` for others). Solar is a `power_source`, never a `type`. |
 | `power_source`                       | string  | no       | `grid`, `solar`, `diesel`, `hybrid`.                                                                                                                            |
 | `manufacturer`, `model`, `serial`    | string  | no       |                                                                                                                                                                 |
@@ -534,18 +535,19 @@ One entry per installation of a totalizer (hidrômetro). Device facts only — r
 `production`, including the readings at installation and removal (`datetime` = `installed_at` /
 `removed_at`).
 
-| Field                                | Type   | Required | Notes                                                                       |
-| ------------------------------------ | ------ | -------- | --------------------------------------------------------------------------- |
-| `id`                                 | string | yes      | Unique within `meters`.                                                     |
-| `installed_at`                       | string | yes      | RFC 3339 instant with UTC offset.                                           |
-| `removed_at`                         | string | no       | RFC 3339 instant. Absent = currently installed.                             |
-| `type`                               | string | no       | `mechanical`, `electromagnetic`, `ultrasonic` (`x-` for others).            |
-| `manufacturer`                       | string | no       |                                                                             |
-| `model`                              | string | no       |                                                                             |
-| `serial`                             | string | no       |                                                                             |
-| `nominal_diameter`                   | number | no       | mm (DN).                                                                    |
-| `max_reading`                        | number | no       | Register capacity in **m³**, > 0 — only if stated. Used to detect rollover. |
-| `notes`, `updated_at`, `attachments` |        | no       |                                                                             |
+| Field                                | Type   | Required | Notes                                                                                                                                                  |
+| ------------------------------------ | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`                                 | string | yes      | Unique within `meters`.                                                                                                                                |
+| `installed_at`                       | string | yes      | RFC 3339 instant with UTC offset.                                                                                                                      |
+| `removed_at`                         | string | no       | RFC 3339 instant. Absent = currently installed.                                                                                                        |
+| `installed_by`, `removed_by`         | string | no       | Person or company that installed / removed the unit (e.g. the driller or pump installer named in the report). Set `removed_by` only with `removed_at`. |
+| `type`                               | string | no       | `mechanical`, `electromagnetic`, `ultrasonic` (`x-` for others).                                                                                       |
+| `manufacturer`                       | string | no       |                                                                                                                                                        |
+| `model`                              | string | no       |                                                                                                                                                        |
+| `serial`                             | string | no       |                                                                                                                                                        |
+| `nominal_diameter`                   | number | no       | mm (DN).                                                                                                                                               |
+| `max_reading`                        | number | no       | Register capacity in **m³**, > 0 — only if stated. Used to detect rollover.                                                                            |
+| `notes`, `updated_at`, `attachments` |        | no       |                                                                                                                                                        |
 
 ---
 

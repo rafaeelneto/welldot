@@ -56,6 +56,8 @@ function specLines(m: Meter, fmt: PdfFormatters, t: PdfTranslate): string[] {
   return [
     equipment && `${field('model')}: ${equipment}`,
     m.serial && `${field('serial')}: ${m.serial}`,
+    m.installed_by && `${field('installedBy')}: ${m.installed_by}`,
+    m.removed_at && m.removed_by && `${field('removedBy')}: ${m.removed_by}`,
     m.nominal_diameter != null &&
       `${field('nominalDiameter')}: ${fmt.formatDiameter(m.nominal_diameter)}`,
     m.max_reading != null &&

@@ -101,4 +101,33 @@ describe('buildPumpInstallationSection', () => {
     expect(serialized).toContain('10.00 L/s');
     expect(serialized).toContain('10 cv');
   });
+
+  it('lists who installed and removed the unit', () => {
+    const list: PumpInstallation[] = [
+      {
+        id: 'old',
+        installed_at: '2020-01-01T12:00:00-03:00',
+        removed_at: '2024-01-01T12:00:00-03:00',
+        type: 'submersible',
+        installed_by: 'Perfurações Silva',
+        removed_by: 'Hidro Serviços',
+      },
+      {
+        id: 'current',
+        installed_at: '2024-01-01T13:00:00-03:00',
+        type: 'submersible',
+        removed_by: 'Ignored Crew',
+      },
+    ];
+    const serialized = JSON.stringify(
+      buildPumpInstallationSection(
+        baseWell({ pump_installations: list }),
+        baseOptions,
+        t,
+      ),
+    );
+    expect(serialized).toContain('installedBy: Perfurações Silva');
+    expect(serialized).toContain('removedBy: Hidro Serviços');
+    expect(serialized).not.toContain('Ignored Crew');
+  });
 });
