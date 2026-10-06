@@ -1370,9 +1370,6 @@
             "type": "number",
             "exclusiveMinimum": 0
           },
-          "purpose": {
-            "type": "string"
-          },
           "notes": {
             "type": "string"
           },
@@ -1469,9 +1466,6 @@
                     "minimum": 0
                   },
                   "method": {
-                    "type": "string"
-                  },
-                  "purpose": {
                     "type": "string"
                   }
                 },

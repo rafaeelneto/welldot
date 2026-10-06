@@ -55,7 +55,6 @@ describe('buildMeterSection', () => {
         serial: 'HM-42',
         nominal_diameter: 50,
         max_reading: 99999,
-        purpose: 'production',
       },
     ];
     const serialized = JSON.stringify(

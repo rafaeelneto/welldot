@@ -1030,8 +1030,6 @@
           "nominalDiameterInfo": "Diâmetro nominal (DN) do hidrômetro.",
           "maxReading": "Capacidade do totalizador",
           "maxReadingInfo": "Maior valor exibido antes de o totalizador voltar a zero. Usado para calcular o volume após a virada.",
-          "purpose": "Finalidade contabilizada",
-          "purposeInfo": "A finalidade do poço que este hidrômetro contabiliza. Todas as suas leituras a herdam.",
           "notes": "Observações"
         }
       },
@@ -1089,7 +1087,6 @@
           "volume": "Volume",
           "method": "Método",
           "methodInfo": "Volumes estimados só contam onde nenhuma leitura de hidrômetro cobre o período. Volumes declarados (ao órgão gestor) ficam apenas para comparação e nunca somam ao total.",
-          "purpose": "Finalidade",
           "notes": "Observações"
         },
         "totals": {

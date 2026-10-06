@@ -316,7 +316,7 @@ deadline dates or the permit status — they are derived. Fulfillments are `hist
 Only when the report describes an installed totalizer (hidrômetro). Each entry: `id`, `installed_at`
 (RFC 3339 with offset, required), `removed_at`, `type` (mechanical/electromagnetic/ultrasonic),
 `serial`, `nominal_diameter` (mm, DN), `max_reading` (register capacity in **m³**, > 0 — only if
-stated), `purpose` (a `well_purpose` value the meter accounts for). Device facts only — **never put a
+stated). Device facts only — **never put a
 reading on the meter**; the installation and removal register values are `production` readings with
 `datetime` equal to `installed_at` / `removed_at`.
 
@@ -330,7 +330,7 @@ one retracts — only if the source itself records a correction), `sequence`, `n
   converted `÷ 1000`), `source` (manual/telemetry).
 - `declared_volume` — `period_start`, `period_end` (instants, end later than start), `volume` (m³),
   `method` (`reported` when the report transcribes a volume declared to a regulator; `estimated`
-  when the report itself gives an estimate such as flow × time), `purpose`.
+  when the report itself gives an estimate such as flow × time).
 
 **Never compute or store derived values**: no consumption between readings, no monthly/annual totals,
 no average flow — transcribe register values and declared volumes only. Never fabricate a reading

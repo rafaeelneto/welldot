@@ -2107,7 +2107,6 @@ describe('v2.3 — meters, production, operating_regime and log fields', () => {
         installed_at: '2026-03-05T11:30:00-03:00',
         type: 'electromagnetic',
         nominal_diameter: 50,
-        purpose: 'production',
       },
     ],
     production: [
@@ -2147,7 +2146,6 @@ describe('v2.3 — meters, production, operating_regime and log fields', () => {
         period_end: '2025-04-01T00:00:00-03:00',
         volume: 12000,
         method: 'reported',
-        purpose: 'production',
       },
       {
         id: 'p6',

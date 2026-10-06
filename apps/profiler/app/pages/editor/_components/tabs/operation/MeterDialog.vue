@@ -4,10 +4,6 @@ import {
   METER_TYPE_VALUES,
   resolveMeterTypeLabel,
 } from '~/utils/operationVocab';
-import {
-  WELL_PURPOSE_VALUES,
-  resolveWellPurposeLabel,
-} from '~/utils/wellPurpose';
 
 /** The meter being edited. `null` means "adding a new one". */
 const model = defineModel<Meter | null>({ default: null });
@@ -24,12 +20,6 @@ const typeOptions = computed(() =>
     label: resolveMeterTypeLabel(value, t),
   })),
 );
-const purposeOptions = computed(() =>
-  WELL_PURPOSE_VALUES.map(value => ({
-    value,
-    label: resolveWellPurposeLabel(value, t),
-  })),
-);
 
 /** Local copy — edits never reach the bound value until Save. */
 const form = reactive({
@@ -39,7 +29,6 @@ const form = reactive({
   serial: '',
   nominalDiameter: null as number | null,
   maxReading: null as number | null,
-  purpose: null as string | null,
   notes: '',
 });
 
@@ -70,7 +59,6 @@ function seedForm(m: Meter | null) {
   form.serial = m?.serial ?? '';
   form.nominalDiameter = m?.nominal_diameter ?? null;
   form.maxReading = m?.max_reading ?? null;
-  form.purpose = m?.purpose ?? null;
   form.notes = m?.notes ?? '';
 }
 
@@ -104,7 +92,6 @@ function save() {
     serial: optionalText(form.serial),
     nominal_diameter: optional(form.nominalDiameter),
     max_reading: optional(form.maxReading),
-    purpose: optionalText(form.purpose),
     notes: optionalText(form.notes),
     updated_at: new Date().toISOString(),
   });
@@ -208,20 +195,6 @@ function save() {
             :suffix="` ${volumeUnit}`"
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
-          />
-        </LabeledField>
-        <LabeledField
-          :label="t('editor.operation.meter.fields.purpose')"
-          :info="t('editor.operation.meter.fields.purposeInfo')"
-        >
-          <Select
-            v-model="form.purpose"
-            :options="purposeOptions"
-            option-label="label"
-            option-value="value"
-            editable
-            show-clear
-            class="w-full"
           />
         </LabeledField>
       </div>

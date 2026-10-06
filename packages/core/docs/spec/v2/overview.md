@@ -27,7 +27,7 @@ v2.3 additions:
   durations; renewals are linked with supersedes
 - meters (optional Meter[]): totalizer (hidrômetro) installation
   history; device facts only (type, serial, nominal diameter,
-  max_reading for rollover, accounting purpose)
+  max_reading for rollover)
 - production (optional ProductionEntry[]): append-only ledger of
   meter_reading entries (register values in m³) and declared_volume
   entries (estimated or reported volumes for a period); volumes are

@@ -750,18 +750,17 @@ An installation block: each entry is one installation of a totalizer (hidrômetr
 
 ### `Meter`
 
-| Field              | Type             | Required | Unit | Description                                                                  |
-| ------------------ | ---------------- | -------- | ---- | ---------------------------------------------------------------------------- |
-| `id`               | string           | yes      |      | Unique within `meters`. UUID v4 recommended.                                 |
-| `installed_at`     | string (instant) | yes      |      | RFC 3339 instant when the meter entered service in this well.                |
-| `removed_at`       | string (instant) | no       |      | When it left. Absent means currently installed.                              |
-| `type`             | string           | no       |      | See format-reference.md § `meters[].type`.                                   |
-| `serial`           | string           | no       |      | Links reinstallations of the same unit.                                      |
-| `nominal_diameter` | number           | no       | mm   | Nominal diameter (DN).                                                       |
-| `max_reading`      | number           | no       | m³   | Register capacity, used to detect rollover. Greater than 0.                  |
-| `purpose`          | string           | no       |      | A `well_purpose` value this meter accounts for. All its readings inherit it. |
-| `notes`            | string           | no       |      |                                                                              |
-| `updated_at`       | string (instant) | no       |      | Last edit of this record.                                                    |
+| Field              | Type             | Required | Unit | Description                                                   |
+| ------------------ | ---------------- | -------- | ---- | ------------------------------------------------------------- |
+| `id`               | string           | yes      |      | Unique within `meters`. UUID v4 recommended.                  |
+| `installed_at`     | string (instant) | yes      |      | RFC 3339 instant when the meter entered service in this well. |
+| `removed_at`       | string (instant) | no       |      | When it left. Absent means currently installed.               |
+| `type`             | string           | no       |      | See format-reference.md § `meters[].type`.                    |
+| `serial`           | string           | no       |      | Links reinstallations of the same unit.                       |
+| `nominal_diameter` | number           | no       | mm   | Nominal diameter (DN).                                        |
+| `max_reading`      | number           | no       | m³   | Register capacity, used to detect rollover. Greater than 0.   |
+| `notes`            | string           | no       |      |                                                               |
+| `updated_at`       | string (instant) | no       |      | Last edit of this record.                                     |
 
 The register values at installation and removal are recorded as ordinary `meter_reading` entries in `production`, with `datetime` equal to `installed_at` or `removed_at`. Meter calibrations are `history_logs` entries of category `maintenance` with `maintenance_type: "meter_calibration"` and a `meter_id`.
 
@@ -808,7 +807,6 @@ A totalizer value is cumulative, so telemetry needs no aggregation field: storin
 | `period_end`   | string (instant) | yes      |      | End of the declared period. Later than `period_start`.                                     |
 | `volume`       | number           | yes      | m³   | Volume produced in the period.                                                             |
 | `method`       | string           | no       |      | `estimated` (e.g. flow × time) or `reported` (as declared to a regulator). See Precedence. |
-| `purpose`      | string           | no       |      | A `well_purpose` value.                                                                    |
 
 ### Volume derivation (normative)
 
@@ -828,7 +826,7 @@ Corrected entries are ignored throughout. Readings of each meter are ordered by 
 
 ### Derived values
 
-Volume per period (day, month, year); volume per purpose (a reading inherits its meter's `purpose`); average flow over a period; compliance against `permits[].volume_limits` and `monthly_schedule`. None of these are stored.
+Volume per period (day, month, year); average flow over a period; compliance against `permits[].volume_limits` and `monthly_schedule`. None of these are stored.
 
 ### Validation (warnings, never rejection)
 
@@ -1153,8 +1151,7 @@ A mutable record block: each entry declares how the well is intended to run from
       "type": "electromagnetic",
       "serial": "EM150-55821",
       "nominal_diameter": 150,
-      "max_reading": 99999999,
-      "purpose": "production"
+      "max_reading": 99999999
     }
   ],
 
@@ -1182,7 +1179,6 @@ A mutable record block: each entry declares how the well is intended to run from
       "period_end": "2026-01-01T00:00:00-03:00",
       "volume": 1450000,
       "method": "reported",
-      "purpose": "production",
       "notes": "Declaração anual de uso ao órgão gestor."
     },
     {

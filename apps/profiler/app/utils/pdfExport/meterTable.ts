@@ -2,7 +2,6 @@ import type { Meter, Well } from '@welldot/core';
 import { getCurrentMeters } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { resolveMeterTypeLabel } from '../operationVocab';
-import { resolveWellPurposeLabel } from '../wellPurpose';
 import { createPdfFormatters, type PdfFormatters } from './formatters';
 import type { Content } from './pdfmake.types';
 import { buildEntryDivider } from './sectionTables';
@@ -52,8 +51,6 @@ function specLines(m: Meter, fmt: PdfFormatters, t: PdfTranslate): string[] {
       `${field('nominalDiameter')}: ${fmt.formatDiameter(m.nominal_diameter)}`,
     m.max_reading != null &&
       `${field('maxReading')}: ${fmt.formatVolume(m.max_reading, 0)}`,
-    m.purpose &&
-      `${field('purpose')}: ${resolveWellPurposeLabel(m.purpose, t)}`,
   ].filter((line): line is string => !!line);
 }
 

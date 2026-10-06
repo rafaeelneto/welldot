@@ -531,8 +531,6 @@ export type Meter = {
   nominal_diameter?: number;
   /** Register capacity in m³, used to detect rollover. */
   max_reading?: number;
-  /** A `well_purpose` value this meter accounts for. All its readings inherit it. */
-  purpose?: string;
   notes?: string;
   /** RFC 3339 instant of the last edit of this record. */
   updated_at?: string;
@@ -579,8 +577,6 @@ export type DeclaredVolume = ProductionEntryBase & {
    * means `estimated`.
    */
   method?: string;
-  /** A `well_purpose` value. */
-  purpose?: string;
 };
 
 /**

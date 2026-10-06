@@ -535,7 +535,6 @@ One entry per installation of a totalizer (hidrômetro). Device facts only — r
 | `serial`              | string | no       |                                                                             |
 | `nominal_diameter`    | number | no       | mm (DN).                                                                    |
 | `max_reading`         | number | no       | Register capacity in **m³**, > 0 — only if stated. Used to detect rollover. |
-| `purpose`             | string | no       | A `well_purpose` value the meter accounts for.                              |
 | `notes`, `updated_at` |        | no       |                                                                             |
 
 ---
@@ -547,10 +546,10 @@ the entry this one retracts — only when the source records a correction), `seq
 `notes`. **Never compute or store derived values** — no consumption between readings, no period
 totals, no average flow.
 
-| `type`            | Fields                                                                                                                                                                                                                                              |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `meter_reading`   | `datetime` (instant, required), `meter_id` (a `meters[].id`, required), `reading` (register value in **m³**, required — meters reading in liters are converted `÷ 1000`), `source` (`manual`, `telemetry`).                                         |
-| `declared_volume` | `period_start`, `period_end` (instants, required; end later than start), `volume` (m³, required), `method` (`reported` = as declared to a regulator, never added to totals; `estimated` = flow × time or similar; absent = `estimated`), `purpose`. |
+| `type`            | Fields                                                                                                                                                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `meter_reading`   | `datetime` (instant, required), `meter_id` (a `meters[].id`, required), `reading` (register value in **m³**, required — meters reading in liters are converted `÷ 1000`), `source` (`manual`, `telemetry`).                              |
+| `declared_volume` | `period_start`, `period_end` (instants, required; end later than start), `volume` (m³, required), `method` (`reported` = as declared to a regulator, never added to totals; `estimated` = flow × time or similar; absent = `estimated`). |
 
 Applications derive volumes from consecutive readings of the same meter (with rollover via
 `max_reading`); metered time wins over `estimated` volumes.

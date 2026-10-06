@@ -386,7 +386,6 @@ export const MeterSchema = z.object({
   serial: z.string().optional(),
   nominal_diameter: z.number().nonnegative().optional(),
   max_reading: z.number().positive().optional(),
-  purpose: z.string().optional(),
   notes: z.string().optional(),
   updated_at: rfc3339().optional(),
 });
@@ -413,7 +412,6 @@ export const DeclaredVolumeSchema = ProductionEntryBaseSchema.extend({
   period_end: rfc3339(),
   volume: z.number().nonnegative(),
   method: z.string().optional(),
-  purpose: z.string().optional(),
 });
 
 const PRODUCTION_TYPES = ['meter_reading', 'declared_volume'];

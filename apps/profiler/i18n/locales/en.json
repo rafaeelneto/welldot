@@ -1030,8 +1030,6 @@
           "nominalDiameterInfo": "Nominal diameter (DN) of the meter.",
           "maxReading": "Register capacity",
           "maxReadingInfo": "Largest value the register shows before rolling over to zero. Used to derive the volume across a rollover.",
-          "purpose": "Accounted purpose",
-          "purposeInfo": "The well purpose this meter accounts for. All its readings inherit it.",
           "notes": "Notes"
         }
       },
@@ -1089,7 +1087,6 @@
           "volume": "Volume",
           "method": "Method",
           "methodInfo": "Estimated volumes count only where no meter reading covers the period. Reported volumes (as declared to a regulator) are kept for comparison and never added to the total.",
-          "purpose": "Purpose",
           "notes": "Notes"
         },
         "totals": {

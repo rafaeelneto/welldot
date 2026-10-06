@@ -21,7 +21,6 @@ import {
   resolveReadingSourceLabel,
 } from '~/utils/operationVocab';
 import { getActivePermit } from '~/utils/permitVocab';
-import { resolveWellPurposeLabel } from '~/utils/wellPurpose';
 import ProductionEntryDialog from './ProductionEntryDialog.vue';
 
 const { t } = useI18n();
@@ -285,7 +284,6 @@ function details(e: ProductionEntry): string {
   return [
     `${formatDate(d.period_start, 'dd/MM/yyyy')} → ${formatDate(d.period_end, 'dd/MM/yyyy')}`,
     resolveDeclaredMethodLabel(d.method ?? 'estimated', t),
-    d.purpose ? resolveWellPurposeLabel(d.purpose, t) : null,
   ]
     .filter(Boolean)
     .join(' · ');

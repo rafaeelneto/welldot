@@ -13,10 +13,6 @@ import {
   resolveDeclaredMethodLabel,
   resolveReadingSourceLabel,
 } from '~/utils/operationVocab';
-import {
-  WELL_PURPOSE_VALUES,
-  resolveWellPurposeLabel,
-} from '~/utils/wellPurpose';
 
 /**
  * The entry being corrected. `null` means "adding a new one". `production`
@@ -66,12 +62,6 @@ const methodOptions = computed(() =>
     label: resolveDeclaredMethodLabel(value, t),
   })),
 );
-const purposeOptions = computed(() =>
-  WELL_PURPOSE_VALUES.map(value => ({
-    value,
-    label: resolveWellPurposeLabel(value, t),
-  })),
-);
 
 /** Local copy — nothing reaches the ledger until Save. */
 const form = reactive({
@@ -84,7 +74,6 @@ const form = reactive({
   periodEnd: null as Date | null,
   volume: null as number | null,
   method: null as string | null,
-  purpose: null as string | null,
   notes: '',
 });
 
@@ -139,7 +128,6 @@ function seedForm(e: ProductionEntry | null) {
   form.periodEnd = declared ? new Date(declared.period_end) : null;
   form.volume = declared?.volume ?? null;
   form.method = declared?.method ?? null;
-  form.purpose = declared?.purpose ?? null;
   form.notes = e?.notes ?? '';
 }
 
@@ -157,13 +145,7 @@ const optionalText = (v: string | null) => v?.trim() || undefined;
 /** Fields owned by each entry type, stripped when the type changes. */
 const TYPE_FIELDS: Record<EntryType, string[]> = {
   meter_reading: ['datetime', 'meter_id', 'reading', 'source'],
-  declared_volume: [
-    'period_start',
-    'period_end',
-    'volume',
-    'method',
-    'purpose',
-  ],
+  declared_volume: ['period_start', 'period_end', 'volume', 'method'],
 };
 
 /**
@@ -196,7 +178,6 @@ function save() {
           period_end: formatISO(form.periodEnd!),
           volume: form.volume!,
           method: optionalText(form.method),
-          purpose: optionalText(form.purpose),
         };
 
   const next = compact({
@@ -362,19 +343,6 @@ function save() {
             <Select
               v-model="form.method"
               :options="methodOptions"
-              option-label="label"
-              option-value="value"
-              editable
-              show-clear
-              class="w-full"
-            />
-          </LabeledField>
-          <LabeledField
-            :label="t('editor.operation.production.fields.purpose')"
-          >
-            <Select
-              v-model="form.purpose"
-              :options="purposeOptions"
               option-label="label"
               option-value="value"
               editable

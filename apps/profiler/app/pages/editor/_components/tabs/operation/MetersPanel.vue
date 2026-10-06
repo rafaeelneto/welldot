@@ -8,7 +8,6 @@ import {
 } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
 import { resolveMeterTypeLabel } from '~/utils/operationVocab';
-import { resolveWellPurposeLabel } from '~/utils/wellPurpose';
 import MeterDialog from './MeterDialog.vue';
 
 const { t } = useI18n();
@@ -133,10 +132,6 @@ function specs(m: Meter) {
     {
       label: t('editor.operation.meter.fields.maxReading'),
       value: m.max_reading != null ? formatVolume(m.max_reading, 0) : null,
-    },
-    {
-      label: t('editor.operation.meter.fields.purpose'),
-      value: m.purpose ? resolveWellPurposeLabel(m.purpose, t) : null,
     },
     {
       label: t('editor.operation.meter.lastReading'),
