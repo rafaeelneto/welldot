@@ -10,6 +10,11 @@ import TabHydrodynamicEvents from './_components/tabs/TabHydrodynamicEvents.vue'
 import TabOperation from './_components/tabs/TabOperation.vue';
 import TabPermits from './_components/tabs/TabPermits.vue';
 import TabWaterQuality from './_components/tabs/TabWaterQuality.vue';
+import {
+  EDITOR_TAB,
+  isEditorTabKey,
+  type EditorTabKey,
+} from './_components/tabs/summary/navigate';
 
 definePageMeta({ layout: 'editor' });
 
@@ -29,12 +34,58 @@ onMounted(() => showStartupTip());
 
 const isMobile = computed(() => viewport.isLessThan('lg'));
 const mobileView = ref<'profile' | 'data'>('data');
-// The summary (value '3') is listed first and opens by default.
-const activeTabKey = ref<string>('3');
+const profileStore = useProfileStore();
+
+// ─── Active tab ↔ URL hash ────────────────────────────────────────────────────
+// The active tab lives in the URL hash (`/editor#permits`) so a reload keeps
+// it; the default tab (summary) has no hash. Opening or clearing a well goes
+// back to the summary. The hash is written with `history.replaceState` (no
+// router navigation): a hash-only route change would make Nuxt's
+// scrollBehavior look for an element with that id.
+
+const activeTabKey = ref<EditorTabKey>(EDITOR_TAB.summary);
+
+function tabFromHash(): EditorTabKey | null {
+  const hash = decodeURIComponent(window.location.hash.slice(1));
+  return isEditorTabKey(hash) ? hash : null;
+}
+
+function writeHash(tab: EditorTabKey) {
+  const hash = tab === EDITOR_TAB.summary ? '' : `#${tab}`;
+  if (window.location.hash === hash) return;
+  const { pathname, search } = window.location;
+  // Keep vue-router's history.state, which it relies on for navigation.
+  window.history.replaceState(
+    window.history.state,
+    '',
+    pathname + search + hash,
+  );
+}
+
+function onHashChange() {
+  activeTabKey.value = tabFromHash() ?? EDITOR_TAB.summary;
+}
+
+onMounted(() => {
+  // Read after hydration: the hash never reaches the server render.
+  activeTabKey.value = tabFromHash() ?? EDITOR_TAB.summary;
+  window.addEventListener('hashchange', onHashChange);
+});
+
+onBeforeUnmount(() => window.removeEventListener('hashchange', onHashChange));
+
+watch(activeTabKey, tab => {
+  if (import.meta.client) writeHash(tab);
+});
+
+watch(
+  () => profileStore.wellSession,
+  () => (activeTabKey.value = EDITOR_TAB.summary),
+);
 
 const tabs = computed<
   {
-    value: string;
+    value: EditorTabKey;
     label: string;
     shortLabel: string;
     /** Icon-only tab: the label goes to the tooltip / aria-label. */
@@ -44,48 +95,48 @@ const tabs = computed<
   }[]
 >(() => [
   {
-    value: '3',
+    value: EDITOR_TAB.summary,
     label: t('editor.tabs.summary'),
     shortLabel: t('editor.tabs.summary'),
     icon: 'ph:squares-four-duotone',
   },
   {
-    value: '0',
+    value: EDITOR_TAB.general,
     label: t('editor.tabs.general'),
     shortLabel: t('editor.tabs.general'),
   },
   {
-    value: '1',
+    value: EDITOR_TAB.construction,
     label: t('editor.tabs.construction'),
     shortLabel: t('editor.tabs.constructionShort'),
   },
   {
-    value: '2',
+    value: EDITOR_TAB.geological,
     label: t('editor.tabs.geological'),
     shortLabel: t('editor.tabs.geological'),
   },
   {
-    value: '4',
+    value: EDITOR_TAB.historyLog,
     label: t('editor.tabs.historyLog'),
     shortLabel: t('editor.tabs.historyLog'),
   },
   {
-    value: '5',
+    value: EDITOR_TAB.hydrodynamicEvents,
     label: t('editor.tabs.hydrodynamicEvents'),
     shortLabel: t('editor.tabs.hydro'),
   },
   {
-    value: '6',
+    value: EDITOR_TAB.operation,
     label: t('editor.tabs.operation'),
     shortLabel: t('editor.tabs.operation'),
   },
   {
-    value: '7',
+    value: EDITOR_TAB.permits,
     label: t('editor.tabs.permits'),
     shortLabel: t('editor.tabs.permits'),
   },
   {
-    value: '8',
+    value: EDITOR_TAB.waterQuality,
     label: t('editor.tabs.waterQuality'),
     shortLabel: t('editor.tabs.waterQualityShort'),
   },
@@ -145,17 +196,23 @@ const tabs = computed<
           </Tab>
         </TabList>
         <TabPanels>
-          <TabPanel value="0"><TabGeneral /></TabPanel>
-          <TabPanel value="1"><TabConstruction /></TabPanel>
-          <TabPanel value="2"><TabGeological /></TabPanel>
-          <TabPanel value="3">
+          <TabPanel :value="EDITOR_TAB.summary">
             <TabSummary @navigate="key => (activeTabKey = key)" />
           </TabPanel>
-          <TabPanel value="4"><TabHistoryLog /></TabPanel>
-          <TabPanel value="5"><TabHydrodynamicEvents /></TabPanel>
-          <TabPanel value="6"><TabOperation /></TabPanel>
-          <TabPanel value="7"><TabPermits /></TabPanel>
-          <TabPanel value="8"><TabWaterQuality /></TabPanel>
+          <TabPanel :value="EDITOR_TAB.general"><TabGeneral /></TabPanel>
+          <TabPanel :value="EDITOR_TAB.construction"
+            ><TabConstruction
+          /></TabPanel>
+          <TabPanel :value="EDITOR_TAB.geological"><TabGeological /></TabPanel>
+          <TabPanel :value="EDITOR_TAB.historyLog"><TabHistoryLog /></TabPanel>
+          <TabPanel :value="EDITOR_TAB.hydrodynamicEvents"
+            ><TabHydrodynamicEvents
+          /></TabPanel>
+          <TabPanel :value="EDITOR_TAB.operation"><TabOperation /></TabPanel>
+          <TabPanel :value="EDITOR_TAB.permits"><TabPermits /></TabPanel>
+          <TabPanel :value="EDITOR_TAB.waterQuality"
+            ><TabWaterQuality
+          /></TabPanel>
         </TabPanels>
       </Tabs>
     </div>

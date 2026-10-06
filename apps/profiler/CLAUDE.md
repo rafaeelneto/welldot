@@ -31,6 +31,10 @@ app/                      ← srcDir
                              `useAquiferState`, latest water sample, permit in force,
                              alerts/latest event/recent logs, construction tables) whose
                              cards switch tabs through the `summaryNavigateKey` inject.
+                             Tab keys are semantic (`EDITOR_TAB` in summary/navigate.ts) and
+                             the active one is kept in the URL hash (`/editor#permits`,
+                             none for summary); `profileStore.wellSession` (bumped by
+                             `loadWell`/`clear`) sends the editor back to the summary.
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)

@@ -225,6 +225,13 @@ export const useProfileStore = defineStore(
 
     // ── Actions ────────────────────────────────────────────────────────────
 
+    /**
+     * Bumped whenever a different well starts being edited (`loadWell`,
+     * `clear`) — not by edits. Session-only (not persisted); lets the UI
+     * reset per-well view state such as the active editor tab.
+     */
+    const wellSession = ref(0);
+
     /** Load a well from a JSON string (v1 or v2 format). Resets history. */
     function loadWell(json: string): boolean {
       try {
@@ -236,6 +243,7 @@ export const useProfileStore = defineStore(
         _reset(parsed);
         errors.value = {};
         isDirty.value = false;
+        wellSession.value++;
         return true;
       } catch (e) {
         errors.value = {
@@ -336,6 +344,7 @@ export const useProfileStore = defineStore(
       _reset(emptyWell());
       errors.value = {};
       isDirty.value = false;
+      wellSession.value++;
     }
 
     function markClean(): void {
@@ -462,6 +471,8 @@ export const useProfileStore = defineStore(
       flowingArtesian,
       latestTransmissivity,
       latestSpecificCapacity,
+
+      wellSession,
 
       // ── Actions
       loadWell,
