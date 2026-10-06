@@ -20,6 +20,7 @@ export const useUiStore = defineStore(
     const coordinateFormat = ref<CoordinateFormat>('DD');
     // Ids of startup tips the user chose not to see again.
     const dismissedTips = ref<string[]>([]);
+    const waterQualityLimitSet = ref<string | null>(null);
 
     return {
       lengthUnit,
@@ -29,6 +30,7 @@ export const useUiStore = defineStore(
       volumeUnit,
       coordinateFormat,
       dismissedTips,
+      waterQualityLimitSet,
     };
   },
   {

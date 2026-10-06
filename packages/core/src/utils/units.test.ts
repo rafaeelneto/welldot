@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  concentrationFromCanonical,
+  concentrationToCanonical,
   cubicMeterPerHourToLitersPerSecond,
   cubicMeterPerHourToUsGallonsPerMinute,
   cubicMetersToLiters,
   cvToKilowatts,
   decimalDegreesToDms,
   dmsToDecimalDegrees,
+  expandedToStandardUncertainty,
   feetToMeters,
   flowFromCanonical,
   flowToCanonical,
@@ -19,15 +22,19 @@ import {
   litersPerSecondToCubicMeterPerHour,
   litersToCubicMeters,
   metersToFeet,
+  milliSiemensPerCmToMicroSiemensPerCm,
+  milliSiemensPerMeterToMicroSiemensPerCm,
   minutesToHours,
   mmToInches,
   mmToSlotNumber,
+  normalizeColorUnit,
   powerFromCanonical,
   powerToCanonical,
   psiToKilopascal,
   slotNumberToMm,
   squareMeterPerDayToSquareMeterPerSecond,
   squareMeterPerSecondToSquareMeterPerDay,
+  turbidityCodeForUnit,
   usGallonsPerMinuteToCubicMeterPerHour,
   volumeFromCanonical,
   volumeToCanonical,
@@ -328,5 +335,36 @@ describe('volumeFromCanonical / volumeToCanonical', () => {
         volumeToCanonical(volumeFromCanonical(42.5, unit), unit),
       ).toBeCloseTo(42.5, 9);
     }
+  });
+});
+
+describe('water quality units', () => {
+  it('converts concentrations to and from mg/L', () => {
+    expect(concentrationToCanonical(5, 'ug/L')).toBeCloseTo(0.005);
+    expect(concentrationToCanonical(2, 'g/L')).toBe(2000);
+    expect(concentrationFromCanonical(0.001, 'ug/L')).toBeCloseTo(1);
+    expect(concentrationToCanonical(500, 'ng/L')).toBeCloseTo(0.0005);
+  });
+
+  it('converts conductivity to µS/cm', () => {
+    expect(milliSiemensPerMeterToMicroSiemensPerCm(12.4)).toBeCloseTo(124);
+    expect(milliSiemensPerCmToMicroSiemensPerCm(1.24)).toBeCloseTo(1240);
+  });
+
+  it('normalizes color and turbidity unit names', () => {
+    expect(normalizeColorUnit('mg Pt-Co/L')).toBe('uH');
+    expect(normalizeColorUnit('PCU')).toBe('uH');
+    expect(normalizeColorUnit('NTU')).toBeUndefined();
+    expect(turbidityCodeForUnit('uT')).toBe('turbidity');
+    expect(turbidityCodeForUnit('FTU')).toBe('turbidity');
+    expect(turbidityCodeForUnit('fnu')).toBe('turbidity_fnu');
+    expect(turbidityCodeForUnit('NTU')).toBe('turbidity_ntu');
+    expect(turbidityCodeForUnit('FAU')).toBe('turbidity_fau');
+    expect(turbidityCodeForUnit('JTU')).toBeUndefined();
+  });
+
+  it('divides expanded uncertainty by the coverage factor', () => {
+    expect(expandedToStandardUncertainty(0.4)).toBeCloseTo(0.2);
+    expect(expandedToStandardUncertainty(0.3, 3)).toBeCloseTo(0.1);
   });
 });

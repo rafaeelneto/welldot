@@ -10,13 +10,15 @@ Provides computational helpers for analyzing `.well` profiles: depth calculation
 
 ```
 src/
-  index.ts              ← re-exports everything from profile, permit, operation, shared and number utils
+  index.ts              ← re-exports everything from profile, permit, operation, waterQuality, shared and number utils
   profile.utils.ts      ← profile analysis functions
   profile.utils.test.ts ← Vitest tests (comprehensive coverage)
   permit.utils.ts       ← v2.3 permits: calendar-date math, status, condition deadlines, warnings
   permit.utils.test.ts  ← Vitest tests (spec examples included)
   operation.utils.ts    ← v2.3 meters, production ledger volumes, operating regime, well status, operation warnings
   operation.utils.test.ts ← Vitest tests (spec complete example golden test included)
+  waterQuality.utils.ts ← v2.3 water_samples: ledger, sample depth, ion balance, Piper/Stiff, QA/QC, exceedances, warnings
+  waterQuality.utils.test.ts ← Vitest tests (spec complete example golden test included)
   shared.utils.ts       ← getRetractedIds + instantLocalDate, shared by the modules above (avoids import cycles)
   number.utils.ts       ← formatNumber (locale-aware number display formatting)
   number.utils.test.ts  ← Vitest tests (comprehensive coverage)
@@ -59,6 +61,18 @@ src/
 | `getCurrentRegime(well, at?)`                                         | `operating_regime` entry in force at an instant                       |
 | `getCurrentWellStatus(well)` / `getCurrentWellStatusEntry(well)`      | Latest `status_change` status (undefined = unknown) / its log entry   |
 | `getOperationWarnings(well, today?)`                                  | v2.3 meters/production/regime/history_logs/analysis warnings          |
+| `getEffectiveWaterSamples(well)` / `getRetractedSampleIds(well)`      | v2.3 water_samples ledger (sorted) / ids retracted via `corrects`     |
+| `getLatestResult(well, code)` / `isResultUsable(result)`              | Latest usable result by `parameterKey` / rejected-result filter       |
+| `getSampleDepth(well, sample)` / `isFormationWater(well, sample)`     | Sample depth (pump intake aware) / inside screen + below static       |
+| `getIonBalance` / `getStiffValues` / `getPiperCoordinates`            | Hydrochemistry from mg/L → meq/L (vocabulary molar mass)              |
+| `getHydrochemicalFacies(sample)`                                      | Dominant cation / anion (> 50 meq %), else `mixed`                    |
+| `getRelativePercentDifferences(well, sampleId)`                       | RPD per parameter between duplicate/split and its parent              |
+| `getBlankContamination(well)`                                         | Substances detected in field/trip/equipment blanks                    |
+| `getHoldingTimes(sample)` / `getReceivedTemperatureCompliance`        | Collection → analysis hours (day resolution) / receipt ≤ 6 °C         |
+| `getPurgeStabilization(purge, criteria?, window?)`                    | Purge readings stabilized over the last `window` readings             |
+| `getAcidDrainageIndicators(sample)`                                   | Net alkalinity and sulfate/chloride ratio                             |
+| `getExceedances(sample, limits)`                                      | Results vs a core `LimitSet` (turbidity rule, censoring, presence)    |
+| `getWaterSampleWarnings(well)`                                        | v2.3 water_samples validation warnings                                |
 | `isFlowingArtesian(well)`                                             | Latest static level is above ground (v2.1 artesian detection)         |
 | `getCentralizerDepths(centralizer)`                                   | Individual centralizer depths from interval + spacing                 |
 | `getLatestAquiferAnalysisField(well, field)`                          | Most recent value of a named field from aquifer_analysis              |

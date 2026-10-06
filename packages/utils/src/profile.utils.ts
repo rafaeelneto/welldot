@@ -392,6 +392,33 @@ export function getCurrentPump(well: Well): PumpInstallation | undefined {
 }
 
 /**
+ * Returns the pump installed in the well at `instant`: the entry with
+ * `installed_at <= instant` and no `removed_at` or `removed_at > instant`
+ * (latest installed if several overlap). Use it to link a record dated in the
+ * past (e.g. a water sample collected at the pump) to the pump in place then.
+ *
+ * @param well - The well.
+ * @param instant - RFC 3339 instant (or a `Date`).
+ * @returns The installation in place at `instant`, or `undefined`.
+ */
+export function getPumpInstalledAt(
+  well: Well,
+  instant: string | Date,
+): PumpInstallation | undefined {
+  const t = instant instanceof Date ? instant.getTime() : toTime(instant);
+  if (Number.isNaN(t)) return undefined;
+  const inPlace = (well.pump_installations ?? []).filter(
+    p =>
+      toTime(p.installed_at) <= t &&
+      (!p.removed_at || toTime(p.removed_at) > t),
+  );
+  if (inPlace.length === 0) return undefined;
+  return inPlace.reduce((latest, p) =>
+    toTime(p.installed_at) > toTime(latest.installed_at) ? p : latest,
+  );
+}
+
+/**
  * Returns the most recent water level (m) measured during pumping: the last
  * reading of the last step of the most recent non-retracted pumping event
  * (`spot_measurement`, `constant_rate`, `step_drawdown`). Airlift events are

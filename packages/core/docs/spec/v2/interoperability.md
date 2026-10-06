@@ -1,6 +1,6 @@
 # `.well` File Format Specification — Version 2.3: Interoperability
 
-**See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md)
+**See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [water-quality.md](./water-quality.md)
 
 ---
 
@@ -63,6 +63,8 @@ Adds mappings for `well_purpose`, `centralizers`, `hydrodynamic_events`, `aquife
 
 Adds mappings for `attachments`, `Attachment.document_type`, `pump_installations`, `PumpInstallation` and `PumpElectrical` fields, `permits` (`Permit`, `VolumeLimit`, `MonthlyGrant`, `PermitCondition`) with the `permit_condition` log fields, `meters` (`Meter`), `production` (`MeterReading`, `DeclaredVolume`, with `production[].corrects`), `operating_regime` (`OperatingRegime`), the `maintenance` and `status_change` log fields, and `hydrodynamic_events[].corrects`. Permit dates map to `xsd:date` and condition durations to `xsd:duration`; `supersedes` is a succession relation between two instruments, distinct from `corrects`. `corrects` maps to a retraction relation between two observation or ledger records; installation, reading and regime instants map to `xsd:dateTime`; attachments alias to `schema:MediaObject` (`uri` → `schema:contentUrl`, `media_type` → `schema:encodingFormat`, `sha256` → `schema:sha256`). Units bind to QUDT (`unit:KiloW`, `unit:V`, `unit:MilliM2`, `unit:M3` for meter readings and volumes, `unit:M3-PER-HR` for regime flow rates, `unit:HR` for daily operating time, `unit:MilliM` for meter nominal diameter). This phase ships alongside the v2.3 spec revision.
 
+The v2.3 water quality terms ship in the same phase: `water_samples` (`WaterSample`, `SamplingPoint`, `Purge`, `PurgeReading`, `Laboratory`, `Result`, `Parameter`, `Filtration`, `Validation`) and `history_logs[].sample_id`. Collection, receipt, analysis and validation instants map to `xsd:dateTime`; a `_resolution: "day"` sibling maps the value to `xsd:date` semantics. Each `welldot` parameter code gets a term URI under `https://welldot.org/vocab/water-quality/` (versioned with the published vocabulary), aligned where verified to the corresponding observable property in QUDT, ChEBI or the SOSA/SSN observable-property pattern. A `cas` parameter maps to the CAS Common Chemistry URI of its registry number, for example `{ "code": "71-43-2", "vocabulary": "cas" }` → `https://commonchemistry.cas.org/detail?cas_rn=71-43-2`; a `welldot` code with a published CAS equivalence carries an `owl:sameAs`-style link to the same URI. `x-` vocabularies are left unmapped. Units bind to QUDT (`unit:MilliGM-PER-L`, `unit:MicroS-PER-CentiM`, `unit:DEG_C`, `unit:MilliV`, `unit:BQ-PER-L`, `unit:MicroM`); turbidity, color and microbiological count units without a QUDT term keep their UCUM code as a literal.
+
 ### Versioning and stability
 
 - The Phase-0 document is replaced in-place as phases ship, but term URIs under `welldot:vocab/v2#` are append-only and never re-purposed within v2.
@@ -103,7 +105,7 @@ GWML2 defines its model in three stages — a conceptual UML schema, a logical U
 | GWML2 Module           | Namespace                                          | `.well` coverage                                                                                         |
 | ---------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | GWML2-Main             | `http://www.opengis.net/gwml-main/2.2`             | Out of scope (aquifers, fluid bodies, hydrogeological units as standalone features)                      |
-| GWML2-Constituent      | `http://www.opengis.net/gwml-constituent/2.2`      | Out of scope; reserved for v3 (water quality)                                                            |
+| GWML2-Constituent      | `http://www.opengis.net/gwml-constituent/2.2`      | Partially covered (`water_samples`, v2.3): measured constituents and properties of sampled water         |
 | GWML2-Flow             | `http://www.opengis.net/gwml-flow/2.2`             | Out of scope (recharge, discharge, inter-flow)                                                           |
 | GWML2-Well             | `http://www.opengis.net/gwml-well/2.2`             | Covered: top-level well identity, `location`, `well_id`, well-as-sampling-feature semantics              |
 | GWML2-WellConstruction | `http://www.opengis.net/gwml-wellconstruction/2.2` | Covered: `bore_hole`, `well_case`, `well_screen`, `reduction`, `surface_case`, `hole_fill`, `cement_pad` |
@@ -119,34 +121,37 @@ A `.well` `Lithology` array corresponds to a GWML2 **`GW_GeologyLogCoverage`**, 
 
 The mapping below is **informative, not normative**. Class names in italics are verified against published GWML2 documentation (the OGC 16-032r2 specification, the _Hydrogeology Journal_ and _Open Geospatial Data, Software and Standards_ papers, and the OGC Hydrology DWG wiki). Class names marked with `?` are **approximate** — they describe the GWML2 module a `.well` construct belongs to but the exact class name was not verified at the time of writing this draft. Implementers building converters should verify these against the authoritative XSDs at `http://schemas.opengis.net/gwml/2.2/` before relying on them.
 
-| `.well` construct                | GWML2 module           | Class / property                                                   |
-| -------------------------------- | ---------------------- | ------------------------------------------------------------------ |
-| Well (top-level)                 | GWML2-Well             | _`GW_Well`_ (specializes `O&M:SF_SamplingCurve`)                   |
-| `well_id[]`                      | GWML2-Well             | `GW_Well` identifier property (?)                                  |
-| `location`                       | GWML2-Well             | `GW_Well` shape / position property (?)                            |
-| `bore_hole[]`                    | GWML2-WellConstruction | `Borehole` (?)                                                     |
-| `well_case[]`                    | GWML2-WellConstruction | `Casing` (?)                                                       |
-| `surface_case[]`                 | GWML2-WellConstruction | `Casing` with surface depth range (?)                              |
-| `well_screen[]`                  | GWML2-WellConstruction | `Screen` (?)                                                       |
-| `reduction[]`                    | GWML2-WellConstruction | No direct equivalent — casing transition                           |
-| `hole_fill[]`                    | GWML2-WellConstruction | Annular fill / gravel pack / seal (?)                              |
-| `cement_pad`                     | GWML2-WellConstruction | No direct equivalent — wellhead furniture                          |
-| `centralizers[]`                 | GWML2-WellConstruction | No verified equivalent — casing accessory (?)                      |
-| `well_purpose[]`                 | GWML2-Well             | `GW_Well` purpose / use property (?)                               |
-| `lithology[]`                    | GWML2-Well             | _`GW_GeologyLogCoverage`_ (realizes `CV_DiscreteCoverage`)         |
-| `lithology[].geologic_unit`      | GWML2-Main             | _`GW_HydrogeologicalUnit`_ (specializes GeoSciML `GeologicUnit`)   |
-| `fractures[]`                    | GWML2-Well             | Fracture log interval (?)                                          |
-| `caves[]`                        | GWML2-Well             | Void / cavity log interval (?)                                     |
-| `hydrodynamic_events[]`          | GWML2-AquiferTest      | `GW_AquiferTest` (?) plus `OM_Observation` series via TimeseriesML |
-| `aquifer_analysis[]`             | GWML2-AquiferTest      | Aquifer test result properties (?)                                 |
-| `history_logs[]`                 | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
-| `pump_installations[]`           | GWML2-WellConstruction | Pump / wellhead equipment (?) — pending check against the XSD      |
-| `permits[]`                      | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
-| `meters[]`                       | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
-| `production[]`                   | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
-| `operating_regime[]`             | n/a                    | No direct equivalent — operational record outside GWML2 scope      |
-| `attachments[]` (root)           | n/a                    | No direct equivalent — documents referenced by URL                 |
-| `hydrodynamic_events[].corrects` | n/a                    | No direct equivalent — ledger correction outside GWML2 scope       |
+| `.well` construct                | GWML2 module           | Class / property                                                      |
+| -------------------------------- | ---------------------- | --------------------------------------------------------------------- |
+| Well (top-level)                 | GWML2-Well             | _`GW_Well`_ (specializes `O&M:SF_SamplingCurve`)                      |
+| `well_id[]`                      | GWML2-Well             | `GW_Well` identifier property (?)                                     |
+| `location`                       | GWML2-Well             | `GW_Well` shape / position property (?)                               |
+| `bore_hole[]`                    | GWML2-WellConstruction | `Borehole` (?)                                                        |
+| `well_case[]`                    | GWML2-WellConstruction | `Casing` (?)                                                          |
+| `surface_case[]`                 | GWML2-WellConstruction | `Casing` with surface depth range (?)                                 |
+| `well_screen[]`                  | GWML2-WellConstruction | `Screen` (?)                                                          |
+| `reduction[]`                    | GWML2-WellConstruction | No direct equivalent — casing transition                              |
+| `hole_fill[]`                    | GWML2-WellConstruction | Annular fill / gravel pack / seal (?)                                 |
+| `cement_pad`                     | GWML2-WellConstruction | No direct equivalent — wellhead furniture                             |
+| `centralizers[]`                 | GWML2-WellConstruction | No verified equivalent — casing accessory (?)                         |
+| `well_purpose[]`                 | GWML2-Well             | `GW_Well` purpose / use property (?)                                  |
+| `lithology[]`                    | GWML2-Well             | _`GW_GeologyLogCoverage`_ (realizes `CV_DiscreteCoverage`)            |
+| `lithology[].geologic_unit`      | GWML2-Main             | _`GW_HydrogeologicalUnit`_ (specializes GeoSciML `GeologicUnit`)      |
+| `fractures[]`                    | GWML2-Well             | Fracture log interval (?)                                             |
+| `caves[]`                        | GWML2-Well             | Void / cavity log interval (?)                                        |
+| `hydrodynamic_events[]`          | GWML2-AquiferTest      | `GW_AquiferTest` (?) plus `OM_Observation` series via TimeseriesML    |
+| `aquifer_analysis[]`             | GWML2-AquiferTest      | Aquifer test result properties (?)                                    |
+| `history_logs[]`                 | n/a                    | No direct equivalent — operational record outside GWML2 scope         |
+| `pump_installations[]`           | GWML2-WellConstruction | Pump / wellhead equipment (?) — pending check against the XSD         |
+| `permits[]`                      | n/a                    | No direct equivalent — operational record outside GWML2 scope         |
+| `meters[]`                       | n/a                    | No direct equivalent — operational record outside GWML2 scope         |
+| `production[]`                   | n/a                    | No direct equivalent — operational record outside GWML2 scope         |
+| `operating_regime[]`             | n/a                    | No direct equivalent — operational record outside GWML2 scope         |
+| `attachments[]` (root)           | n/a                    | No direct equivalent — documents referenced by URL                    |
+| `hydrodynamic_events[].corrects` | n/a                    | No direct equivalent — ledger correction outside GWML2 scope          |
+| `water_samples[]`                | GWML2-Constituent      | `SF_Specimen` (?) — the sample taken from the `GW_Well`               |
+| `water_samples[].results[]`      | GWML2-Constituent      | `OM_Measurement` (?) on the specimen, observed property = `parameter` |
+| `water_samples[].corrects`       | n/a                    | No direct equivalent — ledger correction outside GWML2 scope          |
 
 A complete, normative mapping will be published as a separate document once the GWML2 XSDs have been read directly and each verified class name and property path has been confirmed. Until then, this table is a structural guide and not a conversion specification.
 
@@ -155,6 +160,7 @@ A complete, normative mapping will be published as a separate document once the 
 - **Wells vs. boreholes in GWML2.** GWML2 distinguishes a `GW_Well` (the construction with hydrogeological purpose) from a `Borehole` (the physical hole). A single `.well` document conflates both since it describes one composite installation. A `.well → GWML2` converter must emit both features and link them; a `GWML2 → .well` converter must merge them.
 - **Aquifer tests in GWML2.** GWML2-AquiferTest uses TimeseriesML (OGC 15-042r2) for time-series readings and O&M's `OM_Observation` pattern for individual measurements. The `.well` event types (`spot_measurement`, `constant_rate`, `step_drawdown`, `airlift`, `recovery_only`) are pragmatic field-record categories with no direct GWML2 counterpart; a converter must decompose each into one or more `GW_AquiferTest` features with appropriate `OM_Observation` results.
 - **Hydrogeological units.** `.well` stores `lithology[].geologic_unit` and `aquifer_unit` as free-text strings. In GWML2 these resolve to references to `GW_HydrogeologicalUnit` features, which in real GWML2 deployments are typically catalogued in national registries (e.g. French BDLISA, Canadian GIN). A `.well → GWML2` converter SHOULD resolve these strings to authoritative unit URIs when a national vocabulary is available; absent that, it emits inline `GW_HydrogeologicalUnit` features with `gml:name` set to the string value.
+- **Water samples as specimens.** A `water_samples` entry corresponds to an O&M `SF_Specimen` taken from the well (the sampled feature), with `datetime` as the sampling time and `sampling_point` as the sampling location along the well. Each result is an `OM_Measurement` whose observed property is the parameter (a CAS or `welldot` term URI), whose result is the value in the code's canonical unit, and whose procedure is `method`. GWML2-Constituent describes the constituents of a fluid body rather than individual analyses, so a converter maps `.well` results to O&M observations on the specimen and derives constituent statements only when needed. Censoring (`qualifier`), detection and quantification limits, `lab_flags` and `validation` have no direct GWML2 counterpart and travel as result quality metadata or `x-` extensions. Field QA/QC links (`parent_sample_id`), purge data and chain of custody are outside GWML2 scope. Limits and exceedances are never part of the file and have no mapping.
 - **History logs are outside GWML2 scope.** GWML2 models the well as a static feature and its observations as a time-series. Maintenance interventions, incidents, status changes (`status_change`), permit condition fulfillment, and operational events are not represented. The same holds for the v2.3 operational blocks (`permits`, `meters`, `production`, `operating_regime`): metered production is an abstraction record, not an aquifer observation. A converter SHOULD preserve `.well` `history_logs` in a GeoSciML observation event sequence or as an `x-` extension on the GWML2 side, but full lossless round-trip is not guaranteed.
 
 ### Profiles for regulatory adoption

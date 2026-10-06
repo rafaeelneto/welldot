@@ -14,6 +14,7 @@ import {
   resolveMaintenanceTypeLabel,
   resolveWellStatusLabel,
 } from '~/utils/operationVocab';
+import { sampleLabel } from '~/utils/waterQualityVocab';
 import LogEntryDialog from './historyLog/LogEntryDialog.vue';
 
 const { t } = useI18n();
@@ -77,6 +78,15 @@ function toggleCategory(cat: string) {
   activeCategory.value = activeCategory.value === cat ? null : cat;
 }
 
+/** Linked water sample (`sample_id`, .well v2.3), or the raw id when unresolved. */
+function sampleRef(entry: HistoryLogEntry): string | null {
+  if (!entry.sample_id) return null;
+  const sample = profileStore.well.water_samples?.find(
+    s => s.id === entry.sample_id,
+  );
+  return sample ? sampleLabel(sample, t) : entry.sample_id;
+}
+
 // ─── permit_condition references ─────────────────────────────────────────────
 
 /** "Permit 1234/2025 · condition text · due 11/05/2025" for fulfillment logs. */
@@ -91,6 +101,7 @@ function permitConditionRef(entry: HistoryLogEntry): string | null {
       entry.due_date
         ? `${t('editor.operation.permit.fulfill.deadline')} ${formatCalendarDate(entry.due_date)}`
         : null,
+      sampleRef(entry),
     ]
       .filter(Boolean)
       .join(' · ') || null
@@ -122,6 +133,7 @@ function maintenanceRef(entry: HistoryLogEntry): string | null {
       event
         ? `${eventTypeLabel(event.type)} · ${formatDate(event.datetime, 'dd/MM/yyyy')}`
         : entry.event_id,
+      sampleRef(entry),
     ]
       .filter(Boolean)
       .join(' · ') || null

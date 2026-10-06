@@ -108,6 +108,7 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
         powerUnit: uiStore.powerUnit,
         volumeUnit: uiStore.volumeUnit,
         coordinateFormat: uiStore.coordinateFormat,
+        waterQualityLimitSet: uiStore.waterQualityLimitSet,
         locale: locale.value,
         baseUrl,
         shareUrl: share ? `${baseUrl}/editor?share=${share.id}` : undefined,
@@ -201,6 +202,7 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
         powerUnit: uiStore.powerUnit,
         volumeUnit: uiStore.volumeUnit,
         coordinateFormat: uiStore.coordinateFormat,
+        waterQualityLimitSet: uiStore.waterQualityLimitSet,
       }),
       () => {
         void generate();

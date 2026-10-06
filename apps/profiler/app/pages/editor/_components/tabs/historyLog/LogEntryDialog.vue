@@ -10,6 +10,7 @@ import {
   resolveMaintenanceTypeLabel,
   resolveWellStatusLabel,
 } from '~/utils/operationVocab';
+import { sampleLabel } from '~/utils/waterQualityVocab';
 
 /** The entry being edited. `null` means "adding a new one". */
 const model = defineModel<HistoryLogEntry | null>({ default: null });
@@ -59,6 +60,14 @@ const eventOptions = computed(() =>
     })),
 );
 
+const sampleOptions = computed(() =>
+  [...(profileStore.well.water_samples ?? [])]
+    .sort(
+      (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+    )
+    .map(s => ({ value: s.id, label: `${sampleLabel(s, t)} (${s.id})` })),
+);
+
 /** Local copy — edits never reach the bound value until Save. */
 const form = reactive({
   category: '' as string,
@@ -72,9 +81,20 @@ const form = reactive({
   pumpInstallationId: null as string | null,
   meterId: null as string | null,
   eventId: null as string | null,
+  // `maintenance` (water_sampling) and `permit_condition`
+  sampleId: null as string | null,
   // `status_change`
   status: null as WellStatus | null,
 });
+
+/** Sample link: water sampling tasks and condition fulfillments (.well v2.3). */
+const showSampleField = computed(
+  () =>
+    (sampleOptions.value.length || !!form.sampleId) &&
+    ((form.category === 'maintenance' &&
+      (form.maintenanceType === 'water_sampling' || !!form.sampleId)) ||
+      form.category === 'permit_condition'),
+);
 
 /**
  * `permit_condition` entries are created from the Operation › Permits tab,
@@ -116,6 +136,7 @@ function seedForm(entry: HistoryLogEntry | null) {
   form.pumpInstallationId = entry?.pump_installation_id ?? null;
   form.meterId = entry?.meter_id ?? null;
   form.eventId = entry?.event_id ?? null;
+  form.sampleId = entry?.sample_id ?? null;
   form.status = entry?.status ?? null;
 }
 
@@ -150,6 +171,9 @@ function saveEntry() {
     next.meter_id = form.meterId || undefined;
     next.event_id = form.eventId || undefined;
   }
+  if (next.category === 'maintenance' || next.category === 'permit_condition') {
+    next.sample_id = form.sampleId || undefined;
+  }
   if (next.category === 'status_change') {
     next.status = form.status ?? undefined;
   }
@@ -167,6 +191,7 @@ function saveEntry() {
   }
   if (next.category !== 'maintenance' && next.category !== 'permit_condition') {
     delete next.event_id;
+    delete next.sample_id;
   }
   for (const key of Object.keys(next) as (keyof HistoryLogEntry)[]) {
     if (next[key] === undefined) delete next[key];
@@ -272,6 +297,23 @@ function saveEntry() {
           />
         </LabeledField>
       </div>
+
+      <!-- ── maintenance (water_sampling) / permit_condition: sample link ── -->
+      <LabeledField
+        v-if="showSampleField"
+        :label="t('editor.historyLog.logs.fields.sample')"
+        :info="t('editor.historyLog.logs.fields.sampleInfo')"
+      >
+        <Select
+          v-model="form.sampleId"
+          :options="sampleOptions"
+          option-label="label"
+          option-value="value"
+          show-clear
+          filter
+          class="w-full"
+        />
+      </LabeledField>
 
       <!-- ── status_change: required status (closed vocabulary) ─────────── -->
       <LabeledField

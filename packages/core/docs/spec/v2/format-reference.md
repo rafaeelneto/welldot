@@ -1,6 +1,6 @@
 # `.well` File Format Specification — Version 2.3: Format Reference
 
-**See also:** [overview.md](./overview.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md)
+**See also:** [overview.md](./overview.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
 
 ---
 
@@ -45,7 +45,9 @@
   "permits": [ ... ],
   "meters": [ ... ],
   "production": [ ... ],
-  "operating_regime": [ ... ]
+  "operating_regime": [ ... ],
+
+  "water_samples": [ ... ]
 }
 ```
 
@@ -60,7 +62,7 @@
 
 Minor revisions (`2.1`, `2.3`, …) are additive and do not change the `version` integer: a v2.3 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
 
-The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `hydrodynamic_events[].corrects`, the category-specific fields of `history_logs` (`maintenance`, `status_change`, `permit_condition`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
+The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `water_samples`, `hydrodynamic_events[].corrects`, the category-specific fields of `history_logs` (`maintenance`, `status_change`, `permit_condition`, including `sample_id`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
 
 ### Parser version handling
 
@@ -71,7 +73,7 @@ The `version` field is an integer and must always be present.
 - Either parser encountering an unrecognized integer version MUST reject the file with a clear error.
 - A file without a `version` field SHOULD be rejected. Parsers MAY emit a warning and attempt to read the file as v1 if all required v1 fields are present and no v2-specific blocks are detected, but this fallback behavior is implementation-specific and not guaranteed by the spec.
 
-Files with `version: 1` MUST NOT contain any v2-only blocks (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `profiles`, `well_id` as array, `location` object, `@context`). A v1 file containing such fields is malformed.
+Files with `version: 1` MUST NOT contain any v2-only blocks (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `water_samples`, `profiles`, `well_id` as array, `location` object, `@context`). A v1 file containing such fields is malformed.
 
 ---
 
@@ -165,16 +167,17 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 | `meters`             | `Meter[]`            | no       | Totalizer (hidrômetro) installation history (installation block). See object-schemas.md § `meters[]`.                                 |
 | `production`         | `ProductionEntry[]`  | no       | Append-only ledger of meter readings and declared volumes (ledger block). See object-schemas.md § `production[]`.                     |
 | `operating_regime`   | `OperatingRegime[]`  | no       | Declared operating regimes, each in force from `effective_from` (mutable record block). See object-schemas.md § `operating_regime[]`. |
+| `water_samples`      | `WaterSample[]`      | no       | Water samples and their field and laboratory results (ledger block). See water-quality.md.                                            |
 
 ### Block kinds _(since v2.3)_
 
 Every top-level array is one of three kinds. The kind decides how records are corrected.
 
-| Kind           | Blocks                                        | Correction                                                                               | Edit tracking                           |
-| -------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
-| Ledger         | `hydrodynamic_events`, `production`           | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
-| Mutable record | `history_logs`, `permits`, `operating_regime` | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
-| Installation   | `pump_installations`, `meters`                | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Kind           | Blocks                                               | Correction                                                                               | Edit tracking                           |
+| -------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
+| Ledger         | `hydrodynamic_events`, `production`, `water_samples` | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
+| Mutable record | `history_logs`, `permits`, `operating_regime`        | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Installation   | `pump_installations`, `meters`                       | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
 
 Constructive and geologic arrays describe the well as built and are edited in place. `aquifer_analysis` entries are interpretations: a new interpretation is a new entry, and earlier ones coexist.
 
@@ -214,10 +217,23 @@ The `.well` format distinguishes two kinds of temporal values:
 - `meters[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
 - `production[].datetime` (`meter_reading`); `production[].period_start`, `period_end` (`declared_volume`) _(since v2.3)_
 - `operating_regime[].effective_from`, `updated_at` _(since v2.3)_
+- `water_samples[].datetime`, `laboratory.received_at`, `results[].analyzed_at`, `results[].validation.validated_at` _(since v2.3)_
 
 Validity and deadline checks compare calendar dates, never UTC instants. When an instant must be compared with a calendar date — for example a `permit_condition` log's `datetime` against its `due_date` — the instant's local date is the date part of the string, in the offset it carries. Producers SHOULD therefore write such instants in the well site's local offset.
 
 Relative deadlines and recurrences are ISO 8601 date durations (`P90D`, `P6M`, `P1Y6M`); see object-schemas.md § Date duration.
+
+### Instants known only by date _(since v2.3)_
+
+Laboratory reports often give only the date of receipt or analysis. Such an instant is written at 00:00 local time at the well site, and a sibling field named after it with the `_resolution` suffix is set to `"day"`:
+
+```json
+{ "analyzed_at": "2026-09-17T00:00:00-03:00", "analyzed_at_resolution": "day" }
+```
+
+- Consumers MUST ignore the time of day when `_resolution` is `day`. Ordering, holding-time and deadline calculations on that field use day resolution.
+- `day` is the only allowed value; any other value is malformed. An absent `_resolution` means the instant is exact.
+- In v2.3 the convention applies to `water_samples[].laboratory.received_at` and `water_samples[].results[].analyzed_at`. It is the candidate general convention for any instant known only by its date.
 
 A datetime without an offset (naked `YYYY-MM-DDTHH:MM:SS`) is malformed and parsers MUST reject it. Time zone abbreviations (`EST`, `BRT`) are not RFC 3339 and MUST NOT be used.
 
@@ -353,17 +369,21 @@ Non-canonical values SHOULD use the `x-` prefix.
 
 An absent `method` is treated as `estimated`.
 
+## `water_samples[]` — Recommended values _(since v2.3)_
+
+Recommended values for `sample_type`, `sampling_method`, `sampling_point.type` and `sampling_point.device` are listed in [water-quality.md](water-quality.md) § Recommended values.
+
 ## `history_logs[].category` — Recommended values
 
-| Value              | Portuguese (BR)              | Category-specific fields                                                          |
-| ------------------ | ---------------------------- | --------------------------------------------------------------------------------- |
-| `maintenance`      | Manutenção                   | `maintenance_type`, `pump_installation_id`, `meter_id`, `event_id` _(since v2.3)_ |
-| `inspection`       | Inspeção                     | —                                                                                 |
-| `incident`         | Incidente                    | —                                                                                 |
-| `event`            | Evento                       | —                                                                                 |
-| `change_of_use`    | Mudança de uso               | — _(since v2.1)_                                                                  |
-| `status_change`    | Mudança de situação          | `status` _(since v2.3)_                                                           |
-| `permit_condition` | Cumprimento de condicionante | `permit_id`, `condition_id`, `due_date`, `event_id` _(since v2.3)_                |
+| Value              | Portuguese (BR)              | Category-specific fields                                                                       |
+| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| `maintenance`      | Manutenção                   | `maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`, `sample_id` _(since v2.3)_ |
+| `inspection`       | Inspeção                     | —                                                                                              |
+| `incident`         | Incidente                    | —                                                                                              |
+| `event`            | Evento                       | —                                                                                              |
+| `change_of_use`    | Mudança de uso               | — _(since v2.1)_                                                                               |
+| `status_change`    | Mudança de situação          | `status` _(since v2.3)_                                                                        |
+| `permit_condition` | Cumprimento de condicionante | `permit_id`, `condition_id`, `due_date`, `event_id`, `sample_id` _(since v2.3)_                |
 
 Descriptions are in object-schemas.md § `history_logs[]`. Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -400,19 +420,19 @@ The well's current status is the `status` of the `status_change` entry with the 
 
 ## `Attachment.document_type` — Recommended values _(since v2.3)_
 
-| Value                | Portuguese (BR)                             | Typical location           |
-| -------------------- | ------------------------------------------- | -------------------------- |
-| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                       |
-| `as_built_drawing`   | Perfil construtivo as-built                 | Root                       |
-| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                       |
-| `photo`              | Fotografia                                  | Any                        |
-| `permit_document`    | Portaria / certificado de outorga           | `permits`                  |
-| `condition_evidence` | Comprovante de cumprimento de condicionante | `history_logs`             |
-| `pump_curve`         | Curva da bomba                              | `pump_installations`       |
-| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events`      |
-| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`         |
-| `lab_report`         | Laudo laboratorial                          | Reserved for water quality |
-| `invoice`            | Nota fiscal                                 | Any                        |
+| Value                | Portuguese (BR)                             | Typical location      |
+| -------------------- | ------------------------------------------- | --------------------- |
+| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                  |
+| `as_built_drawing`   | Perfil construtivo as-built                 | Root                  |
+| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                  |
+| `photo`              | Fotografia                                  | Any                   |
+| `permit_document`    | Portaria / certificado de outorga           | `permits`             |
+| `condition_evidence` | Comprovante de cumprimento de condicionante | `history_logs`        |
+| `pump_curve`         | Curva da bomba                              | `pump_installations`  |
+| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events` |
+| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`    |
+| `lab_report`         | Laudo laboratorial                          | `water_samples`       |
+| `invoice`            | Nota fiscal                                 | Any                   |
 
 The vocabulary is open; non-canonical values SHOULD use the `x-` prefix.
 
@@ -513,24 +533,33 @@ All numeric values in a `.well` file are in **SI**. The format does not encode u
 
 ### Canonical units
 
-| Quantity                 | Unit                     | UCUM   | Stored as                                |
-| ------------------------ | ------------------------ | ------ | ---------------------------------------- |
-| Depth, length, elevation | meter                    | `m`    | number                                   |
-| Diameter                 | millimeter               | `mm`   | number                                   |
-| Volumetric flow rate     | cubic meter per hour     | `m3/h` | number                                   |
-| Elapsed time, duration   | minute                   | `min`  | number                                   |
-| Daily operating time     | hour                     | `h`    | number (0–24)                            |
-| Volume                   | cubic meter              | `m3`   | number                                   |
-| Power                    | kilowatt                 | `kW`   | number                                   |
-| Voltage                  | volt                     | `V`    | number                                   |
-| Cross-sectional area     | square millimeter        | `mm2`  | number                                   |
-| Transmissivity           | square meter per second  | `m2/s` | number                                   |
-| Hydraulic conductivity   | meter per second         | `m/s`  | number                                   |
-| Pressure                 | kilopascal               | `kPa`  | number                                   |
-| Angle (azimuth, dip)     | degree                   | `deg`  | number (0–360 for azimuth, 0–90 for dip) |
-| Geographic coordinates   | decimal degree (WGS84)   | `deg`  | number                                   |
-| Calendar date            | ISO 8601                 | —      | string `YYYY-MM-DD`                      |
-| Instant                  | RFC 3339 with UTC offset | —      | string                                   |
+| Quantity                 | Unit                                               | UCUM                                           | Stored as                                |
+| ------------------------ | -------------------------------------------------- | ---------------------------------------------- | ---------------------------------------- |
+| Depth, length, elevation | meter                                              | `m`                                            | number                                   |
+| Diameter                 | millimeter                                         | `mm`                                           | number                                   |
+| Volumetric flow rate     | cubic meter per hour                               | `m3/h`                                         | number                                   |
+| Elapsed time, duration   | minute                                             | `min`                                          | number                                   |
+| Daily operating time     | hour                                               | `h`                                            | number (0–24)                            |
+| Volume                   | cubic meter                                        | `m3`                                           | number                                   |
+| Power                    | kilowatt                                           | `kW`                                           | number                                   |
+| Voltage                  | volt                                               | `V`                                            | number                                   |
+| Cross-sectional area     | square millimeter                                  | `mm2`                                          | number                                   |
+| Mass concentration       | milligram per liter                                | `mg/L`                                         | number _(since v2.3)_                    |
+| Electrical conductivity  | microsiemens per centimeter at 25 °C               | `uS/cm`                                        | number _(since v2.3)_                    |
+| Temperature              | degree Celsius                                     | `Cel`                                          | number _(since v2.3)_                    |
+| Redox potential          | millivolt                                          | `mV`                                           | number _(since v2.3)_                    |
+| Turbidity                | NTU, FNU, FAU, FTU (by parameter code)             | —                                              | number _(since v2.3)_                    |
+| Color                    | Hazen unit (uH = mg Pt-Co/L)                       | —                                              | number _(since v2.3)_                    |
+| Microbiological count    | MPN/100 mL, CFU/100 mL, CFU/mL (by parameter code) | `{MPN}/(100.mL)`, `{CFU}/(100.mL)`, `{CFU}/mL` | number _(since v2.3)_                    |
+| Activity concentration   | becquerel per liter                                | `Bq/L`                                         | number _(since v2.3)_                    |
+| Filter pore size         | micrometer                                         | `um`                                           | number _(since v2.3)_                    |
+| Transmissivity           | square meter per second                            | `m2/s`                                         | number                                   |
+| Hydraulic conductivity   | meter per second                                   | `m/s`                                          | number                                   |
+| Pressure                 | kilopascal                                         | `kPa`                                          | number                                   |
+| Angle (azimuth, dip)     | degree                                             | `deg`                                          | number (0–360 for azimuth, 0–90 for dip) |
+| Geographic coordinates   | decimal degree (WGS84)                             | `deg`                                          | number                                   |
+| Calendar date            | ISO 8601                                           | —                                              | string `YYYY-MM-DD`                      |
+| Instant                  | RFC 3339 with UTC offset                           | —                                              | string                                   |
 
 UCUM is the **Unified Code for Units of Measure**, the international machine-parseable unit standard used by OGC SWE and the scientific community. The UCUM column above documents the canonical encoding of each unit for use in JSON-LD contexts, profile schemas, and downstream interoperability — it is not encoded in `.well` files themselves.
 
@@ -558,6 +587,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `aquifer_analysis[].aquifer_thickness`
 - `location.elevation`, `location.properties.elevation_precision`
 - `pump_installations[].intake_depth`, `rated_head`, `electrical.cable_length` _(since v2.3)_
+- `water_samples[].sampling_point.depth`, `depth_precision`, `from`, `to` _(since v2.3)_
 
 **Millimeter (`mm`)** — all diameters and slot openings:
 
@@ -579,18 +609,21 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `pump_installations[].rated_flow_rate` _(since v2.3)_
 - `permits[].flow_rate`, `permits[].monthly_schedule[].flow_rate` _(since v2.3)_
 - `operating_regime[].flow_rate` _(since v2.3)_
+- `water_samples[].purge.flow_rate` _(since v2.3)_
 
 **Minute (`min`)** — all elapsed times and durations:
 
 - `PumpingStep.duration`
 - `LevelReading.elapsed`
 - `recovery_only.pumping_duration`
+- `water_samples[].purge.duration`, `purge.readings[].elapsed` _(since v2.3)_
 
 **Cubic meter (`m3`)** — volume _(since v2.3)_:
 
 - `permits[].volume_limits[].volume`
 - `meters[].max_reading`
 - `production[].reading` (`meter_reading`), `production[].volume` (`declared_volume`)
+- `water_samples[].purge.volume`
 
 **Hour (`h`)** — daily operating time _(since v2.3)_:
 
@@ -623,6 +656,16 @@ The minute remains the canonical unit for elapsed time and durations. The hour i
 
 - `pump_installations[].electrical.cable_section`
 
+**Degree Celsius (`Cel`)** — temperature _(since v2.3)_:
+
+- `water_samples[].laboratory.received_temperature`
+
+**Micrometer (`um`)** — filter pore size _(since v2.3)_:
+
+- `water_samples[].results[].filtration.pore_size`
+
+**Unit by parameter code** _(since v2.3)_ — `water_samples[].results[].value`, `detection_limit`, `quantification_limit`, `value_precision` and `purge.readings[].value` are in the canonical unit of the result's parameter (see water-quality.md § Units).
+
 **Degree (`deg`)** — angles and geographic coordinates:
 
 - `fractures[].azimuth`, `fractures[].dip`
@@ -638,6 +681,10 @@ The minute remains the canonical unit for elapsed time and durations. The hour i
 - `pump_installations[].stages`, `electrical.phases` (counts)
 - `permits[].monthly_schedule[].month`, `days`; `permits[].conditions[].occurrences` (counts)
 - `operating_regime[].days_per_week` (count, 1–7)
+
+### Water quality units _(since v2.3)_
+
+Water quality results take their unit from the parameter code; only `x-` vocabulary codes declare `unit` (UCUM). The unit-by-code rule and regional unit normalization are specified in [water-quality.md](water-quality.md) § Units.
 
 ### Level sign convention
 
@@ -657,7 +704,13 @@ An interchange format with configurable units multiplies the number of valid enc
 
 Producers receiving non-SI source data (imperial drilling reports, US gpm flow measurements, inch casing designations, slot-number screens) MUST convert to SI before writing. Consumers presenting the data to users in non-SI units MUST convert on read.
 
-Conversion utilities for the common transformations are provided in `@welldot/core` under the `units` module — m ↔ ft, mm ↔ in, m³/h ↔ L/s, m³/h ↔ US gpm, m²/s ↔ m²/d, DD ↔ DMS, slot-number ↔ mm, cv/hp ↔ kW, L / ft³ / US gal ↔ m³, and similar.
+Conversion utilities for the common transformations are provided in `@welldot/core` under the `units` module — m ↔ ft, mm ↔ in, m³/h ↔ L/s, m³/h ↔ US gpm, m²/s ↔ m²/d, DD ↔ DMS, slot-number ↔ mm, cv/hp ↔ kW, L / ft³ / US gal ↔ m³, µg/L ↔ mg/L, mS/m ↔ µS/cm, and similar.
+
+---
+
+## Water quality parameter vocabulary _(since v2.3)_
+
+The `welldot` parameter vocabulary (98 codes), its rules, the CAS equivalences and the treatment of limit sets are specified in [water-quality.md](water-quality.md) § Parameter vocabulary.
 
 ---
 
@@ -678,6 +731,10 @@ An optional array of HTTPS URLs declaring formal extensions to the spec that the
 - The schema SHOULD extend the canonical `.well` v2 schema via `allOf` + `$ref`, but this is not required.
 - The schema MAY link to human documentation via its `description` field or a custom `x-documentation` field pointing to a Markdown or PDF URL.
 - Profiles MAY impose additional required fields, constrain vocabulary values, or mandate the use of specific `x-` extensions for a regulatory context.
+
+### Example: a regulatory water quality profile _(since v2.3)_
+
+See [water-quality.md](water-quality.md) § Regulatory profiles.
 
 ### Profile validation
 
@@ -714,14 +771,14 @@ Top-level blocks not defined in this spec MUST use the `x-` prefix. Parsers MUST
 ```json
 {
   "version": 2,
-  "x-water_quality": [ ... ],
+  "x-gas_monitoring": [ ... ],
   "x-geophysical_logs": [ ... ]
 }
 ```
 
 ### Custom vocabulary values — `x-` prefix
 
-Open vocabulary fields in this spec (`type` in `hydrodynamic_events`, `category` in `history_logs`, `vocabulary` in `texture`, `method` in `aquifer_analysis`, `well_type`, and any other field documented as accepting any string; not closed vocabularies such as `history_logs[].status`) SHOULD use the `x-` prefix when the value is non-canonical — i.e. not listed in the recommended vocabulary of this spec.
+Open vocabulary fields in this spec (`type` in `hydrodynamic_events`, `category` in `history_logs`, `vocabulary` in `texture` and in water quality `parameter` (as `x-…` vocabularies), `method` in `aquifer_analysis`, `well_type`, and any other field documented as accepting any string; not closed vocabularies such as `history_logs[].status`) SHOULD use the `x-` prefix when the value is non-canonical — i.e. not listed in the recommended vocabulary of this spec.
 
 Parsers MUST treat `x-` prefixed vocabulary values as valid. Promotion from `x-` form to canonical form follows the Deprecation Policy (see § Deprecation Policy — Vocabulary value promotion).
 
@@ -751,7 +808,8 @@ Each ID-bearing array maintains its **own uniqueness scope**. The ID namespaces 
 - `meters[].id` — unique within `meters` _(since v2.3)_
 - `production[].id` — unique within `production` _(since v2.3)_
 - `operating_regime[].id` — unique within `operating_regime`; `operating_regime[].effective_from` is also unique within the block _(since v2.3)_
-- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis`). The same id may appear under different records.
+- `water_samples[].id` — unique within `water_samples` _(since v2.3)_
+- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis`, `water_samples`). The same id may appear under different records.
 - `well_id[]` — uniqueness is on the composite key `(authority, id)`, not on `id` alone
 
 An ID value MAY repeat across different arrays without conflict (e.g. an event and an analysis MAY both use the ID `"001"`), though distinct values are recommended for clarity.
@@ -760,21 +818,26 @@ An ID value MAY repeat across different arrays without conflict (e.g. an event a
 
 The following fields hold references to IDs in other arrays:
 
-| Reference field                             | Points to                                                      | Resolution scope |
-| ------------------------------------------- | -------------------------------------------------------------- | ---------------- |
-| `aquifer_analysis[].source_event_ids[]`     | `hydrodynamic_events[].id`                                     | Same file only   |
-| `aquifer_analysis[].static_level_source_id` | `hydrodynamic_events[].id`                                     | Same file only   |
-| `hydrodynamic_events[].corrects`            | `hydrodynamic_events[].id`                                     | Same file only   |
-| `production[].corrects`                     | `production[].id`                                              | Same file only   |
-| `production[].meter_id`                     | `meters[].id`                                                  | Same file only   |
-| `permits[].supersedes`                      | `permits[].id`                                                 | Same file only   |
-| `history_logs[].pump_installation_id`       | `pump_installations[].id`                                      | Same file only   |
-| `history_logs[].meter_id`                   | `meters[].id`                                                  | Same file only   |
-| `history_logs[].permit_id`                  | `permits[].id`                                                 | Same file only   |
-| `history_logs[].condition_id`               | `permits[].conditions[].id` within the referenced permit       | Same file only   |
-| `history_logs[].event_id`                   | `hydrodynamic_events[].id` (`maintenance`, `permit_condition`) | Same file only   |
+| Reference field                                       | Points to                                                      | Resolution scope |
+| ----------------------------------------------------- | -------------------------------------------------------------- | ---------------- |
+| `aquifer_analysis[].source_event_ids[]`               | `hydrodynamic_events[].id`                                     | Same file only   |
+| `aquifer_analysis[].static_level_source_id`           | `hydrodynamic_events[].id`                                     | Same file only   |
+| `hydrodynamic_events[].corrects`                      | `hydrodynamic_events[].id`                                     | Same file only   |
+| `production[].corrects`                               | `production[].id`                                              | Same file only   |
+| `production[].meter_id`                               | `meters[].id`                                                  | Same file only   |
+| `permits[].supersedes`                                | `permits[].id`                                                 | Same file only   |
+| `history_logs[].pump_installation_id`                 | `pump_installations[].id`                                      | Same file only   |
+| `history_logs[].meter_id`                             | `meters[].id`                                                  | Same file only   |
+| `history_logs[].permit_id`                            | `permits[].id`                                                 | Same file only   |
+| `history_logs[].condition_id`                         | `permits[].conditions[].id` within the referenced permit       | Same file only   |
+| `history_logs[].event_id`                             | `hydrodynamic_events[].id` (`maintenance`, `permit_condition`) | Same file only   |
+| `history_logs[].sample_id`                            | `water_samples[].id` (`maintenance`, `permit_condition`)       | Same file only   |
+| `water_samples[].corrects`                            | `water_samples[].id`                                           | Same file only   |
+| `water_samples[].parent_sample_id`                    | `water_samples[].id`                                           | Same file only   |
+| `water_samples[].static_level_event_id`               | `hydrodynamic_events[].id`                                     | Same file only   |
+| `water_samples[].sampling_point.pump_installation_id` | `pump_installations[].id`                                      | Same file only   |
 
-Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events` or `aquifer_analysis` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
+Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
 
 Cross-file references are not supported in v2.
 
@@ -817,18 +880,22 @@ The precision field name is the measurement field name suffixed with `_precision
 
 ### Supported precision fields
 
-| Measurement     | Precision field           | Defined on                 |
-| --------------- | ------------------------- | -------------------------- |
-| `lat`           | `lat_precision`           | `LocationProperties`       |
-| `lng`           | `lng_precision`           | `LocationProperties`       |
-| `elevation`     | `elevation_precision`     | `LocationProperties`       |
-| `static_level`  | `static_level_precision`  | events, `AquiferAnalysis`  |
-| `dynamic_level` | `dynamic_level_precision` | `AquiferAnalysis`          |
-| `depth`         | `depth_precision`         | `LevelReading`, `Fracture` |
-| `rate`          | `rate_precision`          | `PumpingStep`              |
-| `flow_rate`     | `flow_rate_precision`     | `AquiferAnalysis`          |
+| Measurement     | Precision field           | Defined on                            |
+| --------------- | ------------------------- | ------------------------------------- |
+| `lat`           | `lat_precision`           | `LocationProperties`                  |
+| `lng`           | `lng_precision`           | `LocationProperties`                  |
+| `elevation`     | `elevation_precision`     | `LocationProperties`                  |
+| `static_level`  | `static_level_precision`  | events, `AquiferAnalysis`             |
+| `dynamic_level` | `dynamic_level_precision` | `AquiferAnalysis`                     |
+| `depth`         | `depth_precision`         | `LevelReading`, `Fracture`            |
+| `rate`          | `rate_precision`          | `PumpingStep`                         |
+| `flow_rate`     | `flow_rate_precision`     | `AquiferAnalysis`                     |
+| `depth`         | `depth_precision`         | `SamplingPoint` _(since v2.3)_        |
+| `value`         | `value_precision`         | water quality `Result` _(since v2.3)_ |
 
 All precision fields are optional. When omitted, the measurement value carries no documented precision. Precision is the one-sigma standard deviation in the same unit as the measurement.
+
+Laboratory reports usually give an expanded uncertainty U with a coverage factor k (typically k = 2). Converters store `value_precision = U / k`, never U itself.
 
 ```json
 { "depth": 44.8, "depth_precision": 0.01 }

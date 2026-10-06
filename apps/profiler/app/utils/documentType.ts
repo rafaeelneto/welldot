@@ -26,6 +26,7 @@ export const DOCUMENT_TYPE_SUGGESTIONS = {
   condition: ['condition_evidence', 'photo'],
   event: ['field_sheet', 'photo'],
   history: ['condition_evidence', 'photo', 'invoice'],
+  sample: ['lab_report', 'field_sheet', 'photo', 'condition_evidence'],
 } as const satisfies Record<string, readonly DocumentTypeValue[]>;
 
 export type DocumentTypeContext = keyof typeof DOCUMENT_TYPE_SUGGESTIONS;

@@ -667,6 +667,185 @@ export type HistoryLogEntry = {
    * (`maintenance`) or that satisfied the obligation (`permit_condition`).
    */
   event_id?: string;
+  /**
+   * `water_samples[].id` collected by the task (`maintenance` with
+   * `maintenance_type: "water_sampling"`) or that satisfied the obligation
+   * (`permit_condition`, e.g. a `water_quality_analysis` condition).
+   */
+  sample_id?: string;
+};
+
+// ─── Water quality objects (since v2.3) ───────────────────────────────────────
+
+/**
+ * Instant resolution marker. `day` means only the date is known: the instant
+ * is recorded at 00:00 local time and consumers MUST ignore the time of day.
+ */
+export type TimeResolution = 'day';
+
+/**
+ * Identity of a measured parameter. `vocabulary` is `welldot` (the core
+ * parameter vocabulary), `cas` (a CAS Registry Number, always the substance
+ * itself in mg/L) or an `x-…` custom vocabulary (which then requires `unit`).
+ */
+export type Parameter = {
+  code: string;
+  vocabulary: string;
+};
+
+/** Where and how a sample was taken. Depths in meters from ground level. */
+export type SamplingPoint = {
+  /** Recommended: `pump_discharge`, `wellhead_tap`, `in_well`. `x-` for others. */
+  type: string;
+  /** Point depth of the sampler intake (m). Mutually exclusive with `from`/`to`. */
+  depth?: number;
+  /** One-sigma uncertainty of `depth` (m). */
+  depth_precision?: number;
+  /** Top of the isolated interval (m). */
+  from?: number;
+  /** Bottom of the isolated interval (m). */
+  to?: number;
+  /**
+   * Recommended: `bailer`, `discrete_depth_sampler`, `passive_diffusion_bag`,
+   * `grab_sleeve`, `low_flow_pump`, `packer_pump`. `x-` for others.
+   */
+  device?: string;
+  /** `pump_installations[].id` when sampled at the production pump. */
+  pump_installation_id?: string;
+};
+
+/** One stabilization reading taken during purging. */
+export type PurgeReading = {
+  /** Minutes since purge start. */
+  elapsed: number;
+  parameter: Parameter;
+  /** Value in the parameter's canonical unit. */
+  value: number;
+};
+
+/** Purge performed before sample collection. */
+export type Purge = {
+  /** Purge duration in minutes. */
+  duration?: number;
+  /** Purged volume in m³. */
+  volume?: number;
+  /** Purge flow rate in m³/h. */
+  flow_rate?: number;
+  /** Field parameters were stabilized before collection. */
+  stabilized?: boolean;
+  readings?: PurgeReading[];
+};
+
+/** Laboratory that received and analyzed the sample. */
+export type Laboratory = {
+  name: string;
+  /** ISO/IEC 17025 (or equivalent) accreditation identifier. */
+  accreditation?: string;
+  /** Lab report number, preserved as issued. */
+  report_number?: string;
+  /** Lab batch or work order. */
+  batch_id?: string;
+  /** The lab's own sample identifier. */
+  sample_id?: string;
+  /** RFC 3339 instant the sample was received. */
+  received_at?: string;
+  received_at_resolution?: TimeResolution;
+  /** Sample temperature on receipt, °C. */
+  received_temperature?: number;
+};
+
+/** Filtration applied before analysis. */
+export type Filtration = {
+  /** Filter pore size in µm (e.g. 0.45). */
+  pore_size?: number;
+  location?: 'field' | 'lab';
+};
+
+/** Data validation by a reviewer. Absent equals `unvalidated`. */
+export type ResultValidation = {
+  status: 'unvalidated' | 'validated' | 'qualified' | 'rejected';
+  /** Code from the validation guideline applied (e.g. `J`, `UJ`, `R`). */
+  qualifier?: string;
+  /** Guideline used, free text. */
+  guideline?: string;
+  validated_by?: string;
+  /** RFC 3339 instant. */
+  validated_at?: string;
+};
+
+/** Censoring / estimation qualifier of a result. */
+export type ResultQualifier = '<' | '>' | 'not_detected' | 'estimated';
+
+/**
+ * One measured result. Exactly one value form (`value`, `presence` or
+ * `text`) is present, except `qualifier: "not_detected"` which has none.
+ * Numeric fields are in the parameter's canonical unit (the vocabulary unit,
+ * or `unit` for `x-` vocabularies).
+ */
+export type WaterQualityResult = {
+  parameter: Parameter;
+  value?: number;
+  presence?: boolean;
+  text?: string;
+  qualifier?: ResultQualifier;
+  /** UCUM unit. Required for `x-` vocabularies, forbidden otherwise. */
+  unit?: string;
+  detection_limit?: number;
+  quantification_limit?: number;
+  /** One-sigma uncertainty. */
+  value_precision?: number;
+  fraction?: 'total' | 'dissolved' | 'suspended';
+  filtration?: Filtration;
+  measured_in?: 'field' | 'lab';
+  /** Analytical method, e.g. `ISO 7027`, `US EPA 200.8`. */
+  method?: string;
+  /** RFC 3339 instant of analysis. */
+  analyzed_at?: string;
+  analyzed_at_resolution?: TimeResolution;
+  /** Lab flags as issued, uninterpreted. */
+  lab_flags?: string[];
+  validation?: ResultValidation;
+  notes?: string;
+};
+
+/**
+ * One water sample and its results. `water_samples` is a ledger: corrected
+ * reports and data revalidation are new samples with `corrects`. Since v2.3.
+ */
+export type WaterSample = {
+  id: string;
+  /** RFC 3339 instant of collection. */
+  datetime: string;
+  /**
+   * Recommended: `routine`, `field_duplicate`, `split_sample`, `field_blank`,
+   * `trip_blank`, `equipment_blank`. `x-` for others.
+   */
+  sample_type: string;
+  /** Original sample of a `field_duplicate` or `split_sample`. */
+  parent_sample_id?: string;
+  /** Tie-break among samples at the same instant. */
+  sequence?: number;
+  /** Free sampling campaign identifier. */
+  campaign?: string;
+  /** Recommended: `low_flow`, `volumetric_purge`, `no_purge`, `pump_discharge`. */
+  sampling_method?: string;
+  sampling_point?: SamplingPoint;
+  purge?: Purge;
+  /** `hydrodynamic_events[].id` with the level measured at collection. */
+  static_level_event_id?: string;
+  collected_by?: string;
+  /** Preservation and packaging, free text. */
+  preservation?: string;
+  /** Chain of custody number. */
+  chain_of_custody?: string;
+  laboratory?: Laboratory;
+  /** `water_samples[].id` of the record this one corrects. */
+  corrects?: string;
+  notes?: string;
+  /** Lab report with `document_type: "lab_report"`. */
+  attachments?: Attachment[];
+  /** At least one. */
+  results: WaterQualityResult[];
 };
 
 // ─── Well root ────────────────────────────────────────────────────────────────
@@ -739,6 +918,8 @@ export type Well = {
   production?: ProductionEntry[];
   /** Declared operating regimes, each in force from `effective_from`. Since v2.3. */
   operating_regime?: OperatingRegime[];
+  /** Ledger of water samples and their field/lab results. Since v2.3. */
+  water_samples?: WaterSample[];
 };
 
 /** Geologic section of a well (lithology, fractures, caves). */
@@ -767,7 +948,8 @@ export type SectionKey =
   | 'geology'
   | 'hydrodynamic'
   | 'history'
-  | 'operation';
+  | 'operation'
+  | 'water_quality';
 
 /** Per-section visibility, keyed by `SectionKey`. `true` = included. */
 export type SectionVisibility = Record<SectionKey, boolean>;

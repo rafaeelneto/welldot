@@ -10,22 +10,24 @@ This is a condensed reference for extraction. The normative source is
 
 ## Units (all SI, no per-file declaration)
 
-| Measure                                                                                                                           | Unit                                                                                                                                                   |
-| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Depths, lengths, elevation                                                                                                        | meters                                                                                                                                                 |
-| Diameters, screen slot                                                                                                            | millimeters                                                                                                                                            |
-| Coordinates                                                                                                                       | WGS84 decimal degrees                                                                                                                                  |
-| Volumetric flow rate                                                                                                              | m³/h                                                                                                                                                   |
-| Elapsed time, duration                                                                                                            | minutes                                                                                                                                                |
-| Transmissivity                                                                                                                    | m²/s                                                                                                                                                   |
-| Hydraulic conductivity                                                                                                            | m/s                                                                                                                                                    |
-| Pressure                                                                                                                          | kPa                                                                                                                                                    |
-| Azimuth (0–360), dip (0–90)                                                                                                       | degrees                                                                                                                                                |
-| Volume (meter readings, declared volumes, permit limits)                                                                          | m³ (convert liters `÷ 1000`)                                                                                                                           |
-| Daily operating time                                                                                                              | hours (0–24)                                                                                                                                           |
-| Power                                                                                                                             | kW                                                                                                                                                     |
-| Calendar dates: `construction_date`, `permits[]` dates, condition `first_due`/`last_due`, `history_logs[].due_date`               | ISO 8601 calendar date, `YYYY-MM-DD` — no time, no offset                                                                                              |
-| Every other datetime (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, installations, `production`, `operating_regime`) | RFC 3339 instant with **mandatory UTC offset**, e.g. `2006-03-14T08:00:00-03:00` or `...Z`. A naked timestamp with no offset is malformed — reject it. |
+| Measure                                                                                                                                            | Unit                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Depths, lengths, elevation                                                                                                                         | meters                                                                                                                                                   |
+| Diameters, screen slot                                                                                                                             | millimeters                                                                                                                                              |
+| Coordinates                                                                                                                                        | WGS84 decimal degrees                                                                                                                                    |
+| Volumetric flow rate                                                                                                                               | m³/h                                                                                                                                                     |
+| Elapsed time, duration                                                                                                                             | minutes                                                                                                                                                  |
+| Transmissivity                                                                                                                                     | m²/s                                                                                                                                                     |
+| Hydraulic conductivity                                                                                                                             | m/s                                                                                                                                                      |
+| Pressure                                                                                                                                           | kPa                                                                                                                                                      |
+| Azimuth (0–360), dip (0–90)                                                                                                                        | degrees                                                                                                                                                  |
+| Volume (meter readings, declared volumes, permit limits)                                                                                           | m³ (convert liters `÷ 1000`)                                                                                                                             |
+| Daily operating time                                                                                                                               | hours (0–24)                                                                                                                                             |
+| Power                                                                                                                                              | kW                                                                                                                                                       |
+| Water quality results (v2.3)                                                                                                                       | Unit fixed by the parameter code — substances always mg/L, conductivity µS/cm at 25 °C, temperature °C, ORP mV; never write `unit` except for `x-` codes |
+| Filter pore size (v2.3)                                                                                                                            | µm                                                                                                                                                       |
+| Calendar dates: `construction_date`, `permits[]` dates, condition `first_due`/`last_due`, `history_logs[].due_date`                                | ISO 8601 calendar date, `YYYY-MM-DD` — no time, no offset                                                                                                |
+| Every other datetime (`hydrodynamic_events`, `aquifer_analysis`, `history_logs`, installations, `production`, `operating_regime`, `water_samples`) | RFC 3339 instant with **mandatory UTC offset**, e.g. `2006-03-14T08:00:00-03:00` or `...Z`. A naked timestamp with no offset is malformed — reject it.   |
 
 ---
 
@@ -57,7 +59,9 @@ This is a condensed reference for extraction. The normative source is
   "hydrodynamic_events": [...], "aquifer_analysis": [...], "history_logs": [...],
 
   "attachments": [...], "pump_installations": [...], "permits": [...],
-  "meters": [...], "production": [...], "operating_regime": [...]
+  "meters": [...], "production": [...], "operating_regime": [...],
+
+  "water_samples": [...]
 }
 ```
 
@@ -429,16 +433,16 @@ Mutable chronological record of interventions/inspections/incidents — distinct
 
 Category-specific fields (v2.3) — only on entries of that category, never elsewhere:
 
-| Category           | Fields                                                                                                                                                                                                                                                                                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `maintenance`      | `maintenance_type` (`inspection`, `cleaning`, `redevelopment`, `disinfection`, `pump_service`, `meter_calibration`, `video_inspection`, `level_measurement`, `pump_test`, `water_sampling`); optional `pump_installation_id`, `meter_id`, `event_id` (the `hydrodynamic_events` entry holding the data the task produced). Never copy measured values into the log. |
-| `status_change`    | `status` (closed enum — any other value is rejected): `active`, `maintenance`, `inactive`, `decommissioned`, `abandoned`. Only when the report states the change and its date. No `status_change` = status unknown — never infer one.                                                                                                                               |
-| `permit_condition` | `permit_id`, `condition_id`, `due_date`, `event_id` — see § `permits[]`.                                                                                                                                                                                                                                                                                            |
+| Category           | Fields                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maintenance`      | `maintenance_type` (`inspection`, `cleaning`, `redevelopment`, `disinfection`, `pump_service`, `meter_calibration`, `video_inspection`, `level_measurement`, `pump_test`, `water_sampling`); optional `pump_installation_id`, `meter_id`, `event_id` (the `hydrodynamic_events` entry holding the data the task produced), `sample_id` (the `water_samples` entry a `water_sampling` task collected). Never copy measured values into the log. |
+| `status_change`    | `status` (closed enum — any other value is rejected): `active`, `maintenance`, `inactive`, `decommissioned`, `abandoned`. Only when the report states the change and its date. No `status_change` = status unknown — never infer one.                                                                                                                                                                                                          |
+| `permit_condition` | `permit_id`, `condition_id`, `due_date`, `event_id`, `sample_id` — see § `permits[]`.                                                                                                                                                                                                                                                                                                                                                          |
 
 ### `Attachment` (common type since v2.3)
 
 Allowed at the root (`attachments[]`, documents about the whole well) and on `history_logs`,
-`permits`, `pump_installations`, `hydrodynamic_events` and `aquifer_analysis` entries.
+`permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` and `water_samples` entries.
 
 | Field                               | Type   | Required | Notes                                                                                                                                                                                                    |
 | ----------------------------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -571,6 +575,145 @@ Each entry is the declared regime in force from `effective_from`; a change of re
 
 An absent field means unknown — never write `0`. A stopped well is a `history_logs` `status_change`,
 not a regime with `flow_rate: 0`. Granted (permit) values belong in `permits`, not here.
+
+---
+
+## `water_samples[]` (v2.3, optional — omit entirely if the report has no water quality results)
+
+Ledger of water samples: one entry per collection, each with its field and laboratory results.
+Never edit a sample — a corrected laudo is a new sample with `corrects` = the original's `id`.
+
+| Field                                                       | Type   | Required    | Notes                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------- | ------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`                                                        | string | yes         | Unique within `water_samples`.                                                                                                                                                                                                                                                                                                                   |
+| `datetime`                                                  | string | yes         | RFC 3339 instant of **collection**, with offset.                                                                                                                                                                                                                                                                                                 |
+| `sample_type`                                               | string | yes         | `routine`, `field_duplicate`, `split_sample`, `field_blank`, `trip_blank`, `equipment_blank` (`x-` for others).                                                                                                                                                                                                                                  |
+| `parent_sample_id`                                          | string | conditional | Original sample's `id` — for `field_duplicate` and `split_sample`.                                                                                                                                                                                                                                                                               |
+| `sequence`, `campaign`                                      |        | no          | Tie-breaker (integer) and free campaign id.                                                                                                                                                                                                                                                                                                      |
+| `sampling_method`                                           | string | no          | Purge: `low_flow`, `volumetric_purge`, `no_purge`, `pump_discharge`.                                                                                                                                                                                                                                                                             |
+| `sampling_point`                                            | object | no          | `type` (required: `pump_discharge`, `wellhead_tap`, `in_well`), `depth` + `depth_precision` **or** `from`/`to` (m from ground level, never both), `device` (`bailer`, `discrete_depth_sampler`, `passive_diffusion_bag`, `grab_sleeve`, `low_flow_pump`, `packer_pump`), `pump_installation_id` (sample at the production pump — no depth then). |
+| `purge`                                                     | object | no          | `duration` (min), `volume` (m³), `flow_rate` (m³/h), `stabilized`, `readings[]` (`elapsed` min, `parameter`, `value`).                                                                                                                                                                                                                           |
+| `static_level_event_id`                                     | string | no          | `hydrodynamic_events[].id` of the level measured at collection.                                                                                                                                                                                                                                                                                  |
+| `collected_by`, `preservation`, `chain_of_custody`, `notes` | string | no          |                                                                                                                                                                                                                                                                                                                                                  |
+| `laboratory`                                                | object | no          | `name` (required), `accreditation`, `report_number` (verbatim), `batch_id`, `sample_id` (lab's id), `received_at` (instant), `received_at_resolution` (`"day"`), `received_temperature` (°C).                                                                                                                                                    |
+| `corrects`                                                  | string | no          | `water_samples[].id` this sample retracts.                                                                                                                                                                                                                                                                                                       |
+| `attachments`                                               | array  | no          | The laudo with `document_type: "lab_report"`.                                                                                                                                                                                                                                                                                                    |
+| `results`                                                   | array  | yes         | At least one. See below.                                                                                                                                                                                                                                                                                                                         |
+
+Result (`results[]`):
+
+| Field                                     | Notes                                                                                                            |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `parameter`                               | `{ code, vocabulary }` — `vocabulary` is `welldot`, `cas` or `x-…`. Required.                                    |
+| `value` \| `presence` \| `text`           | **Exactly one.** None only with `qualifier: "not_detected"`.                                                     |
+| `qualifier`                               | `<`, `>`, `estimated` (with `value`), `not_detected` (no value form; give `detection_limit`).                    |
+| `unit`                                    | UCUM, **only** for `x-` codes (required there); forbidden for `welldot`/`cas`.                                   |
+| `detection_limit`, `quantification_limit` | LD / LQ, in the parameter's unit.                                                                                |
+| `value_precision`                         | One sigma — expanded uncertainty ÷ k (usually 2).                                                                |
+| `fraction`                                | `total`, `dissolved`, `suspended`. `dissolved` should come with `filtration`.                                    |
+| `filtration`                              | `{ pore_size (µm), location: "field" \| "lab" }`.                                                                |
+| `measured_in`                             | `field` or `lab`.                                                                                                |
+| `method`                                  | Verbatim, e.g. `SMEWW 4500-NO3 B`, `US EPA 200.8`.                                                               |
+| `analyzed_at`, `analyzed_at_resolution`   | Instant; `"day"` when only the date is known (write `T00:00:00` local offset).                                   |
+| `lab_flags`                               | Lab flag strings verbatim (`J`, `B`, `H`…).                                                                      |
+| `validation`                              | `{ status: unvalidated\|validated\|qualified\|rejected, qualifier?, guideline?, validated_by?, validated_at? }`. |
+| `notes`                                   |                                                                                                                  |
+
+### Import rules (laudos)
+
+Only when the document contains water quality results (laudo de análise, boletim analítico, field
+sheet with pH/conductivity readings). `water_samples` is a **ledger**: never merge or edit samples.
+
+- **One sample per collection.** Each sampling event (date/time + point) is one entry: `id`,
+  `datetime` (instant of **collection**, not of the report), `sample_type` (`routine`,
+  `field_duplicate`, `split_sample`, `field_blank`, `trip_blank`, `equipment_blank`; `x-` for others),
+  `parent_sample_id` (the original sample's `id`, for a duplicate or split), `campaign`, `sequence`,
+  `sampling_method` (`low_flow`, `volumetric_purge`, `no_purge`, `pump_discharge`), `collected_by`,
+  `preservation`, `chain_of_custody`, `notes`. Several samples in one report → several entries.
+- **Sampling point.** `sampling_point.type` (`pump_discharge` + `pump_installation_id` when taken at
+  the production pump — don't repeat the depth; `wellhead_tap`; `in_well`), `device` (`bailer`,
+  `discrete_depth_sampler`, `passive_diffusion_bag`, `grab_sleeve`, `low_flow_pump`, `packer_pump`),
+  and **either** `depth` **or** `from`/`to` (never both — malformed). Depths are meters **from ground
+  level**: convert readings from the top of casing the same way as water levels. A level measured at
+  collection is a `spot_measurement` event referenced by `static_level_event_id`.
+- **Purge.** `purge.duration` (min), `volume` (m³ — convert liters ÷ 1000), `flow_rate` (m³/h —
+  L/min × 0.06), `stabilized`, and `readings[]` (`elapsed` min, `parameter`, `value`) for the
+  stabilization series. The final field values at collection go in `results` with
+  `measured_in: "field"`.
+- **Laboratory.** `laboratory.name` (required), `accreditation`, `report_number` (verbatim),
+  `batch_id`, `sample_id` (the lab's own id), `received_at`, `received_temperature` (°C).
+- **Results.** `results[]` (at least one). Each: `parameter` `{ code, vocabulary }` and **exactly
+  one** of `value` (number), `presence` (boolean, for `total_coliforms`, `e_coli`,
+  `thermotolerant_coliforms`), `text` (odor, taste); plus `qualifier`, `detection_limit`,
+  `quantification_limit`, `value_precision`, `fraction` (`total`/`dissolved`/`suspended`),
+  `filtration` (`pore_size` µm, `location` `field`/`lab`), `measured_in` (`field`/`lab`), `method`
+  (verbatim, e.g. `SMEWW 4500-NO3 B`), `analyzed_at`, `lab_flags`, `validation`, `notes`.
+- **Parameter codes.** Prefer the `welldot` code (table below).
+  If no `welldot` code exists, use the CAS number (`{ "code": "71-43-2", "vocabulary": "cas" }`,
+  value in mg/L). Only when neither fits, use an `x-` vocabulary with `unit` in UCUM
+  (`{ "code": "...", "vocabulary": "x-lab" }, "unit": "ug/L"`). **Never write `unit` for `welldot` or
+  `cas` codes** (malformed) — the unit comes from the code.
+- **Basis of expression is in the code.** Nitrate "como N" → `nitrate_as_n`; "como NO₃⁻" →
+  `nitrate_as_no3` (same for nitrite, ammonia `_as_n`/`_as_nh3`, alkalinity/hardness `_as_caco3`,
+  cyanide `_as_cn`). Never convert between bases; pick the code that matches what the lab reported.
+  If the basis isn't stated, flag it to the user rather than guessing.
+- **Unit normalization.** Substances → **mg/L** (µg/L ÷ 1000, ng/L ÷ 1 000 000, g/L × 1000).
+  Conductivity → **µS/cm** (mS/m × 10, mS/cm × 1000). Turbidity by unit: NTU → `turbidity_ntu`, FNU →
+  `turbidity_fnu`, FAU → `turbidity_fau`, uT / FTU → generic `turbidity`. Color: mg Pt-Co/L, PCU,
+  TCU, Hazen → uH (same number). Microbiology counts: NMP/MPN → `_mpn` codes, UFC/CFU → `_cfu` codes;
+  "ausente/presente" → the presence code with `presence: false/true`. Radioactivity in Bq/L.
+- **Censored values.** `< 0,001` → `"qualifier": "<", "value": 0.001` — keep the reported number,
+  never write 0 or drop it. `> 2419,6` → `"qualifier": ">"`. "N.D." / "não detectado" with no number
+  → `"qualifier": "not_detected"` with **no** value and `detection_limit` (the LD stated by the lab;
+  if absent, flag it). Values between LD and LQ the lab marks as estimated → `"qualifier": "estimated"`.
+- **Uncertainty.** Reports give expanded uncertainty U (usually k = 2): `value_precision = U / k`.
+  If k isn't stated, assume 2 and say so in the summary.
+- **Date-only instants.** When the report gives only the date of receipt or analysis, write
+  `T00:00:00` with the site's local offset and set `received_at_resolution` / `analyzed_at_resolution`
+  to `"day"`. Never invent a time; never put `_resolution` on `datetime` (the collection time).
+- **Lab flags verbatim.** Copy the lab's qualifier letters (`J`, `B`, `H`, `U`…) into `lab_flags`
+  exactly as printed — don't interpret them. `validation` only when the document records a reviewer's
+  data validation (`status`: `unvalidated`/`validated`/`qualified`/`rejected`).
+- **Dissolved needs filtration.** `fraction: "dissolved"` only when the report says dissolved/filtered;
+  record `filtration` (pore size, field vs lab) when stated — otherwise flag it (warning).
+- **Attachments.** The laudo itself, if it has a retrievable HTTPS URL, goes on the sample with
+  `document_type: "lab_report"`.
+- **Never write limits.** VMP / limite / padrão columns, "conforme / não conforme", "acima do
+  permitido" and the legislation cited (Portaria 888, CONAMA 396…) are **not** stored — limits and
+  exceedances are derived by applications. Mention them in the summary if relevant.
+- **Corrected reports.** A retificação / revised laudo is a **new sample** with `corrects` pointing to
+  the original sample's `id` (only when both are in the documents); never overwrite the original.
+
+### Import checklist
+
+- Every sample has ≥ 1 result; each result has exactly one of `value` / `presence` / `text` (none only
+  with `qualifier: "not_detected"`, which carries `detection_limit`); `<`, `>`, `estimated` only with `value`.
+- No `unit` on `welldot`/`cas` codes; a UCUM `unit` on every `x-` code; substances in mg/L, conductivity in µS/cm.
+- `sampling_point` has `depth` or `from`/`to`, never both; depths from ground level.
+- `*_resolution` is only `"day"`; `datetime`, `laboratory.received_at`, `results[].analyzed_at` are instants with offset.
+- `field_duplicate` / `split_sample` have `parent_sample_id`; every `parent_sample_id`, `corrects`,
+  `static_level_event_id`, `sampling_point.pump_installation_id` and `history_logs[].sample_id` resolves.
+- No limits, VMPs, exceedances or conformity verdicts were written.
+
+### Parameter vocabulary
+
+`welldot` codes (unit mg/L and form `value` unless noted):
+
+| Group            | Codes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Physical / field | `temperature` (°C), `ph`, `specific_conductance` (µS/cm), `conductivity_uncompensated` (µS/cm), `dissolved_oxygen`, `orp` (mV), `eh` (mV), `turbidity` (FTU), `turbidity_ntu` (NTU), `turbidity_fnu` (FNU), `turbidity_fau` (FAU), `apparent_color` (uH), `true_color` (uH), `odor` (text), `taste` (text), `total_dissolved_solids`, `total_suspended_solids`, `total_solids`, `free_co2`                                                                                                                                                                                                                                                                            |
+| Aggregate        | `alkalinity_total_as_caco3`, `alkalinity_bicarbonate_as_caco3`, `alkalinity_carbonate_as_caco3`, `alkalinity_hydroxide_as_caco3`, `acidity_total_as_caco3`, `hardness_total_as_caco3`, `hardness_calcium_as_caco3`                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Major ion        | `calcium` (CAS 7440-70-2), `magnesium` (CAS 7439-95-4), `sodium` (CAS 7440-23-5), `potassium` (CAS 7440-09-7), `bicarbonate` (CAS 71-52-3), `carbonate` (CAS 3812-32-6), `chloride` (CAS 16887-00-6), `sulfate` (CAS 14808-79-8), `fluoride` (CAS 16984-48-8), `silica_as_sio2` (CAS 7631-86-9)                                                                                                                                                                                                                                                                                                                                                                       |
+| Nutrient         | `nitrate_as_n`, `nitrate_as_no3` (CAS 14797-55-8), `nitrite_as_n`, `nitrite_as_no2` (CAS 14797-65-0), `ammonia_as_n`, `ammonia_as_nh3` (CAS 7664-41-7), `kjeldahl_nitrogen_as_n`, `phosphorus_total_as_p`, `orthophosphate_as_po4`                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Organic          | `total_organic_carbon`, `cod`, `bod5`, `total_petroleum_hydrocarbons`, `oil_and_grease`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Disinfection     | `free_chlorine`, `total_chlorine`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Mining and redox | `ferrous_iron`, `chromium_hexavalent` (CAS 18540-29-9), `cyanide_total_as_cn`, `cyanide_wad_as_cn`, `cyanide_free_as_cn`, `thiocyanate` (CAS 302-04-5), `sulfide_total_as_s`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Metal / trace    | `iron` (CAS 7439-89-6), `manganese` (CAS 7439-96-5), `aluminum` (CAS 7429-90-5), `antimony` (CAS 7440-36-0), `arsenic` (CAS 7440-38-2), `barium` (CAS 7440-39-3), `beryllium` (CAS 7440-41-7), `boron` (CAS 7440-42-8), `cadmium` (CAS 7440-43-9), `chromium` (CAS 7440-47-3), `cobalt` (CAS 7440-48-4), `copper` (CAS 7440-50-8), `lead` (CAS 7439-92-1), `lithium` (CAS 7439-93-2), `mercury` (CAS 7439-97-6), `molybdenum` (CAS 7439-98-7), `nickel` (CAS 7440-02-0), `selenium` (CAS 7782-49-2), `silver` (CAS 7440-22-4), `strontium` (CAS 7440-24-6), `thallium` (CAS 7440-28-0), `uranium` (CAS 7440-61-1), `vanadium` (CAS 7440-62-2), `zinc` (CAS 7440-66-6) |
+| Microbiology     | `total_coliforms` (presence), `total_coliforms_mpn` (MPN/100 mL), `total_coliforms_cfu` (CFU/100 mL), `e_coli` (presence), `e_coli_mpn` (MPN/100 mL), `e_coli_cfu` (CFU/100 mL), `thermotolerant_coliforms` (presence), `thermotolerant_coliforms_mpn` (MPN/100 mL), `thermotolerant_coliforms_cfu` (CFU/100 mL), `heterotrophic_plate_count` (CFU/mL)                                                                                                                                                                                                                                                                                                                |
+| Radioactivity    | `gross_alpha` (Bq/L), `gross_beta` (Bq/L), `radium_226` (Bq/L, CAS 13982-63-3), `radium_228` (Bq/L, CAS 15262-20-1), `radon_222` (Bq/L, CAS 14859-67-7)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+
+A CAS code listed above is equivalent to its `welldot` code (prefer the `welldot` code). Radionuclides
+are in Bq/L.
 
 ---
 

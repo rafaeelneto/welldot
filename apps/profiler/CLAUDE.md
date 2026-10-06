@@ -24,12 +24,19 @@ app/                      ← srcDir
   pages/
     index.vue             ← landing page
     editor/               ← editor; tabs in _components/tabs/ (General, Construction,
-                             Geological, Summary, History, Hydrodynamic, Operation, Permits)
+                             Geological, Summary, History, Hydrodynamic, Operation, Permits,
+                             Water quality)
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)
                              = permits (condition fulfillment writes `permit_condition`
-                             history logs); History log dialog edits `maintenance`
+                             history logs); Water quality (.well v2.3) = the
+                             `water_samples` ledger (waterQuality/: panel + card,
+                             WaterSampleDialog validated with core `WaterSampleSchema`
+                             before save, ResultsEditor, PurgeReadingsEditor; labels in
+                             utils/waterQualityVocab.ts; "compare against" limit set in
+                             `uiStore.waterQualityLimitSet`; derivations/warnings from
+                             @welldot/utils); History log dialog edits `maintenance`
                              fields and `status_change` status (current well status
                              tag); root `attachments`
                              (general files) live in the General tab below Observations

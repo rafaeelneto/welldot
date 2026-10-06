@@ -272,6 +272,7 @@ export const HistoryLogEntrySchema = z.object({
   condition_id: z.string().optional(),
   due_date: calendarDate().optional(),
   event_id: z.string().optional(),
+  sample_id: z.string().optional(),
 });
 
 export const AquiferAnalysisSchema = z.object({
@@ -437,6 +438,159 @@ export const OperatingRegimeSchema = z.object({
   updated_at: rfc3339().optional(),
 });
 
+// ─── Water quality schemas (since v2.3) ───────────────────────────────────────
+
+// `welldot`, `cas` or a custom `x-…` vocabulary.
+const PARAMETER_VOCABULARY = /^(welldot|cas|x-.+)$/;
+
+export const ParameterSchema = z.object({
+  code: z.string().min(1),
+  vocabulary: z
+    .string()
+    .regex(PARAMETER_VOCABULARY, 'vocabulary must be welldot, cas or x-…'),
+});
+
+export const TimeResolutionSchema = z.literal('day');
+
+export const SamplingPointSchema = z
+  .object({
+    type: z.string(),
+    depth: z.number().nonnegative().optional(),
+    depth_precision: z.number().nonnegative().optional(),
+    from: z.number().nonnegative().optional(),
+    to: z.number().nonnegative().optional(),
+    device: z.string().optional(),
+    pump_installation_id: z.string().optional(),
+  })
+  .refine(
+    p =>
+      !(p.depth !== undefined && (p.from !== undefined || p.to !== undefined)),
+    { message: 'depth and from/to are mutually exclusive' },
+  );
+
+export const PurgeReadingSchema = z.object({
+  elapsed: z.number().nonnegative(),
+  parameter: ParameterSchema,
+  value: z.number(),
+});
+
+export const PurgeSchema = z.object({
+  duration: z.number().nonnegative().optional(),
+  volume: z.number().nonnegative().optional(),
+  flow_rate: z.number().nonnegative().optional(),
+  stabilized: z.boolean().optional(),
+  readings: z.array(PurgeReadingSchema).optional(),
+});
+
+export const LaboratorySchema = z.object({
+  name: z.string(),
+  accreditation: z.string().optional(),
+  report_number: z.string().optional(),
+  batch_id: z.string().optional(),
+  sample_id: z.string().optional(),
+  received_at: rfc3339().optional(),
+  received_at_resolution: TimeResolutionSchema.optional(),
+  received_temperature: z.number().optional(),
+});
+
+export const FiltrationSchema = z.object({
+  pore_size: z.number().positive().optional(),
+  location: z.enum(['field', 'lab']).optional(),
+});
+
+export const ResultValidationSchema = z.object({
+  status: z.enum(['unvalidated', 'validated', 'qualified', 'rejected']),
+  qualifier: z.string().optional(),
+  guideline: z.string().optional(),
+  validated_by: z.string().optional(),
+  validated_at: rfc3339().optional(),
+});
+
+export const ResultQualifierSchema = z.enum([
+  '<',
+  '>',
+  'not_detected',
+  'estimated',
+]);
+
+export const WaterQualityResultSchema = z
+  .object({
+    parameter: ParameterSchema,
+    value: z.number().optional(),
+    presence: z.boolean().optional(),
+    text: z.string().optional(),
+    qualifier: ResultQualifierSchema.optional(),
+    unit: z.string().min(1).optional(),
+    detection_limit: z.number().nonnegative().optional(),
+    quantification_limit: z.number().nonnegative().optional(),
+    value_precision: z.number().nonnegative().optional(),
+    fraction: z.enum(['total', 'dissolved', 'suspended']).optional(),
+    filtration: FiltrationSchema.optional(),
+    measured_in: z.enum(['field', 'lab']).optional(),
+    method: z.string().optional(),
+    analyzed_at: rfc3339().optional(),
+    analyzed_at_resolution: TimeResolutionSchema.optional(),
+    lab_flags: z.array(z.string()).optional(),
+    validation: ResultValidationSchema.optional(),
+    notes: z.string().optional(),
+  })
+  .superRefine((r, ctx) => {
+    const forms = [r.value, r.presence, r.text].filter(
+      v => v !== undefined,
+    ).length;
+    if (r.qualifier === 'not_detected') {
+      if (forms !== 0)
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'not_detected results carry no value form',
+        });
+    } else if (forms !== 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'result must have exactly one of value, presence or text',
+      });
+    } else if (r.qualifier !== undefined && r.value === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `qualifier ${r.qualifier} requires a numeric value`,
+      });
+    }
+    const custom = r.parameter.vocabulary.startsWith('x-');
+    if (custom && r.unit === undefined)
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['unit'],
+        message: 'unit is required for x- vocabularies',
+      });
+    if (!custom && r.unit !== undefined)
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['unit'],
+        message: 'unit is forbidden for welldot and cas parameters',
+      });
+  });
+
+export const WaterSampleSchema = z.object({
+  id: z.string(),
+  datetime: rfc3339(),
+  sample_type: z.string(),
+  parent_sample_id: z.string().optional(),
+  sequence: z.number().int().optional(),
+  campaign: z.string().optional(),
+  sampling_method: z.string().optional(),
+  sampling_point: SamplingPointSchema.optional(),
+  purge: PurgeSchema.optional(),
+  static_level_event_id: z.string().optional(),
+  collected_by: z.string().optional(),
+  preservation: z.string().optional(),
+  chain_of_custody: z.string().optional(),
+  laboratory: LaboratorySchema.optional(),
+  corrects: z.string().optional(),
+  notes: z.string().optional(),
+  attachments: z.array(AttachmentSchema).optional(),
+  results: z.array(WaterQualityResultSchema).min(1),
+});
+
 // ─── Well schema ──────────────────────────────────────────────────────────────
 
 export const WellSchema = z
@@ -490,6 +644,7 @@ export const WellSchema = z
     meters: z.array(MeterSchema).optional(),
     production: z.array(ProductionEntrySchema).optional(),
     operating_regime: z.array(OperatingRegimeSchema).optional(),
+    water_samples: z.array(WaterSampleSchema).optional(),
   })
   .passthrough();
 

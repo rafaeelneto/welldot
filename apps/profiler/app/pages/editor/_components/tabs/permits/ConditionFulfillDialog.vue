@@ -7,6 +7,7 @@ import type {
 } from '@welldot/core';
 import { formatISO } from 'date-fns';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import { sampleLabel } from '~/utils/waterQualityVocab';
 
 /**
  * Records the fulfillment of one condition deadline as a `history_logs`
@@ -24,12 +25,28 @@ const props = defineProps<{
 const emit = defineEmits<{ save: [entry: HistoryLogEntry] }>();
 
 const { t } = useI18n();
+const profileStore = useProfileStore();
+
+/** Samples that can evidence a `water_quality_analysis` condition. */
+const sampleOptions = computed(() =>
+  [...(profileStore.well.water_samples ?? [])]
+    .sort(
+      (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+    )
+    .map(s => ({ value: s.id, label: `${sampleLabel(s, t)} (${s.id})` })),
+);
+const showSampleField = computed(
+  () =>
+    props.condition.category === 'water_quality_analysis' &&
+    sampleOptions.value.length > 0,
+);
 
 const form = reactive({
   datetime: new Date() as Date | null,
   description: '',
   author: '',
   attachments: [] as Attachment[],
+  sampleId: null as string | null,
 });
 
 watch(
@@ -42,6 +59,7 @@ watch(
     });
     form.author = '';
     form.attachments = [];
+    form.sampleId = null;
   },
   { immediate: true },
 );
@@ -63,6 +81,7 @@ function save() {
     condition_id: props.condition.id,
     ...(props.dueDate && { due_date: props.dueDate }),
     ...(form.author.trim() && { author: form.author.trim() }),
+    ...(form.sampleId && { sample_id: form.sampleId }),
     ...(form.attachments.length && {
       attachments: form.attachments.map(a => ({ ...a })),
     }),
@@ -104,6 +123,22 @@ function save() {
           <InputText v-model="form.author" class="w-full" />
         </LabeledField>
       </div>
+
+      <LabeledField
+        v-if="showSampleField"
+        :label="t('editor.historyLog.logs.fields.sample')"
+        :info="t('editor.operation.permit.fulfill.sampleInfo')"
+      >
+        <Select
+          v-model="form.sampleId"
+          :options="sampleOptions"
+          option-label="label"
+          option-value="value"
+          show-clear
+          filter
+          class="w-full"
+        />
+      </LabeledField>
 
       <LabeledField :label="t('editor.operation.permit.fulfill.description')">
         <Textarea v-model="form.description" :rows="3" class="w-full text-sm" />

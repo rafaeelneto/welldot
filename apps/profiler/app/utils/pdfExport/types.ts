@@ -33,6 +33,8 @@ export interface PdfExportOptions {
   /** Display unit for volumes. Defaults to `ft3` when `lengthUnit` is `ft`, else `m3`. */
   volumeUnit?: VolumeUnits;
   coordinateFormat: CoordinateFormat;
+  /** Selected water quality limit set id (`getLimitSet` of `@welldot/core`). Exceedances are marked only when set. */
+  waterQualityLimitSet?: string | null;
   /** Active app locale (`useI18n().locale.value`) — drives the diameter unit symbol (`in.`/`"`) and the embedded profile SVG's language. */
   locale: string;
   /** Origin the PDF is being generated from (e.g. `useRequestURL().origin`). Footer QR/branding fall back to this when there's no `shareUrl`. */

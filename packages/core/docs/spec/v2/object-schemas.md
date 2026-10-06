@@ -1,6 +1,6 @@
 # `.well` File Format Specification — Version 2.3: Object Schemas
 
-**See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [interoperability.md](./interoperability.md)
+**See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
 
 ---
 
@@ -30,8 +30,9 @@ The `.well` format is not a file container. Attachments are referenced by URL. S
 | `pump_installations[].attachments`  | Pump curves, invoices, photos. _(since v2.3)_                               |
 | `hydrodynamic_events[].attachments` | Field sheets, logger exports. _(since v2.3)_                                |
 | `aquifer_analysis[].attachments`    | Interpretation reports. _(since v2.3)_                                      |
+| `water_samples[].attachments`       | Laboratory reports (`lab_report`), field sheets, photos. _(since v2.3)_     |
 
-An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events` or `aquifer_analysis` entries.
+An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries.
 
 `Attachment.id` is unique within its owning array: the root `attachments[]`, or the `attachments` array of one record. The same id may appear under different records.
 
@@ -512,7 +513,7 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
 ### Category-specific fields _(since v2.3)_
 
-Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. They are optional in the schema: a missing required category field (e.g. `maintenance_type` on a `maintenance` entry) surfaces as a warning, never a rejection. `event_id` is shared by `maintenance` and `permit_condition`.
+Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. They are optional in the schema: a missing required category field (e.g. `maintenance_type` on a `maintenance` entry) surfaces as a warning, never a rejection. `event_id` and `sample_id` are shared by `maintenance` and `permit_condition`.
 
 #### `maintenance`
 
@@ -522,8 +523,9 @@ Category-specific fields MUST be absent on entries of other categories; their pr
 | `pump_installation_id` | string | no       | `pump_installations[].id` the task concerns.                       |
 | `meter_id`             | string | no       | `meters[].id` the task concerns (e.g. a `meter_calibration`).      |
 | `event_id`             | string | no       | `hydrodynamic_events[].id` holding the data produced by this task. |
+| `sample_id`            | string | no       | `water_samples[].id` collected by this task (`water_sampling`).    |
 
-A maintenance entry records that the task was done. Measured values belong in their own block and are referenced by id, never copied into the log: a `level_measurement` points to the `spot_measurement` event with `event_id`, a `pump_test` to its `constant_rate` or `step_drawdown` event. A `sample_id` reference for `water_sampling` is reserved for the water quality block (v2.4).
+A maintenance entry records that the task was done. Measured values belong in their own block and are referenced by id, never copied into the log: a `level_measurement` points to the `spot_measurement` event with `event_id`, a `pump_test` to its `constant_rate` or `step_drawdown` event, and a `water_sampling` task to the sample it collected with `sample_id` _(since v2.3)_. Results are never copied into the log.
 
 #### `status_change`
 
@@ -551,8 +553,9 @@ Any non-`status_change` entry dated after a `decommissioned` or `abandoned` stat
 | `condition_id` | string        | yes      | `permits[].conditions[].id` within that permit.                                   |
 | `due_date`     | string (date) | no       | Calendar date of the deadline this entry fulfills. Absent for undated conditions. |
 | `event_id`     | string        | no       | `hydrodynamic_events[].id` that satisfied the obligation, when applicable.        |
+| `sample_id`    | string        | no       | `water_samples[].id` that satisfied the obligation, when applicable.              |
 
-The entry's `datetime` is when the obligation was fulfilled, for example when a report was filed. Each entry fulfills one deadline. Proof of submission goes in `attachments` with `document_type: "condition_evidence"`. See § `permits[]` — Condition fulfillment.
+The entry's `datetime` is when the obligation was fulfilled, for example when a report was filed. Each entry fulfills one deadline. A `water_quality_analysis` condition is fulfilled by pointing to the sample with `sample_id`. Proof of submission goes in `attachments` with `document_type: "condition_evidence"`. See § `permits[]` — Condition fulfillment.
 
 ---
 
@@ -865,6 +868,12 @@ A mutable record block: each entry declares how the well is intended to run from
 
 ---
 
+## `water_samples[]` _(since v2.3)_
+
+A ledger of water samples, each with its field and laboratory results. The full schema — `WaterSample`, `SamplingPoint`, `Purge`, `PurgeReading`, `Laboratory`, `Result`, `Parameter`, `Filtration`, `Validation`, result rules, validation and derived values — is specified in [water-quality.md](water-quality.md).
+
+---
+
 ## Complete Example
 
 ```json
@@ -1033,6 +1042,14 @@ A mutable record block: each entry declares how the well is intended to run from
       "static_level": 31.2,
       "measurement_method": "electric_probe",
       "notes": "Routine annual monitoring."
+    },
+    {
+      "id": "e5f6a7b8-c9d0-1234-efab-567890123456",
+      "type": "spot_measurement",
+      "datetime": "2026-09-15T09:10:00-03:00",
+      "static_level": 33.4,
+      "measurement_method": "electric_probe",
+      "notes": "Level before water sampling."
     }
   ],
 
@@ -1131,6 +1148,13 @@ A mutable record block: each entry declares how the well is intended to run from
           "category": "monitoring_report",
           "first_due": "2025-07-31",
           "recurrence": "P6M"
+        },
+        {
+          "id": "c3",
+          "description": "Análise anual de qualidade da água",
+          "category": "water_quality_analysis",
+          "first_due": "2026-09-30",
+          "recurrence": "P1Y"
         }
       ],
       "attachments": [
@@ -1219,6 +1243,142 @@ A mutable record block: each entry declares how the well is intended to run from
     }
   ],
 
+  "water_samples": [
+    {
+      "id": "ws-2026-09-a",
+      "datetime": "2026-09-15T09:30:00-03:00",
+      "sample_type": "routine",
+      "campaign": "2026-Q3",
+      "sampling_method": "low_flow",
+      "sampling_point": {
+        "type": "in_well",
+        "depth": 65,
+        "device": "low_flow_pump"
+      },
+      "purge": {
+        "duration": 35,
+        "volume": 0.0105,
+        "flow_rate": 0.018,
+        "stabilized": true,
+        "readings": [
+          {
+            "elapsed": 25,
+            "parameter": { "code": "ph", "vocabulary": "welldot" },
+            "value": 4.9
+          },
+          {
+            "elapsed": 30,
+            "parameter": { "code": "ph", "vocabulary": "welldot" },
+            "value": 4.8
+          },
+          {
+            "elapsed": 35,
+            "parameter": { "code": "ph", "vocabulary": "welldot" },
+            "value": 4.8
+          }
+        ]
+      },
+      "static_level_event_id": "e5f6a7b8-c9d0-1234-efab-567890123456",
+      "collected_by": "Field team A",
+      "chain_of_custody": "CC-0918",
+      "laboratory": {
+        "name": "Lab X",
+        "accreditation": "ISO/IEC 17025 #1234",
+        "report_number": "LD-4471/26",
+        "batch_id": "WO-88213",
+        "sample_id": "88213-01",
+        "received_at": "2026-09-15T18:20:00-03:00",
+        "received_temperature": 4.1
+      },
+      "attachments": [
+        {
+          "id": "a1",
+          "uri": "https://files.wellmanager.example.com/wells/pp-01/LD-4471-26.pdf",
+          "media_type": "application/pdf",
+          "document_type": "lab_report"
+        }
+      ],
+      "results": [
+        {
+          "parameter": { "code": "ph", "vocabulary": "welldot" },
+          "value": 4.8,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 1240,
+          "measured_in": "field"
+        },
+        {
+          "parameter": { "code": "turbidity_fnu", "vocabulary": "welldot" },
+          "value": 3.1,
+          "measured_in": "field"
+        },
+        {
+          "parameter": { "code": "sulfate", "vocabulary": "welldot" },
+          "value": 412,
+          "method": "US EPA 300.0",
+          "measured_in": "lab",
+          "analyzed_at": "2026-09-17T00:00:00-03:00",
+          "analyzed_at_resolution": "day",
+          "validation": { "status": "validated", "validated_by": "QA reviewer" }
+        },
+        {
+          "parameter": { "code": "iron", "vocabulary": "welldot" },
+          "value": 18.6,
+          "fraction": "dissolved",
+          "filtration": { "pore_size": 0.45, "location": "field" },
+          "method": "US EPA 200.8",
+          "measured_in": "lab"
+        },
+        {
+          "parameter": { "code": "cyanide_wad_as_cn", "vocabulary": "welldot" },
+          "qualifier": "estimated",
+          "value": 0.004,
+          "detection_limit": 0.002,
+          "quantification_limit": 0.005,
+          "measured_in": "lab",
+          "lab_flags": ["J"],
+          "validation": { "status": "qualified", "qualifier": "J" }
+        },
+        {
+          "parameter": { "code": "71-43-2", "vocabulary": "cas" },
+          "qualifier": "<",
+          "value": 0.001,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": { "code": "e_coli", "vocabulary": "welldot" },
+          "presence": false,
+          "measured_in": "lab",
+          "analyzed_at": "2026-09-15T19:10:00-03:00"
+        }
+      ]
+    },
+    {
+      "id": "ws-2026-09-b",
+      "datetime": "2026-09-15T09:35:00-03:00",
+      "sample_type": "field_duplicate",
+      "parent_sample_id": "ws-2026-09-a",
+      "campaign": "2026-Q3",
+      "sampling_point": {
+        "type": "in_well",
+        "depth": 65,
+        "device": "low_flow_pump"
+      },
+      "results": [
+        {
+          "parameter": { "code": "sulfate", "vocabulary": "welldot" },
+          "value": 398,
+          "measured_in": "lab"
+        }
+      ]
+    }
+  ],
+
   "history_logs": [
     {
       "id": "d0e1f2a3-b4c5-6789-defa-890123456789",
@@ -1274,6 +1434,26 @@ A mutable record block: each entry declares how the well is intended to run from
       "meter_id": "7c8d9e0f-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
       "description": "Aferição do medidor eletromagnético; erro dentro da tolerância.",
       "author": "Metrologia Norte Ltda."
+    },
+    {
+      "id": "a4b5c6d7-e8f9-0123-abcd-456789abcdef",
+      "datetime": "2026-09-15T09:30:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "water_sampling",
+      "sample_id": "ws-2026-09-a",
+      "event_id": "e5f6a7b8-c9d0-1234-efab-567890123456",
+      "description": "Coleta de baixa vazão com duplicata de campo; nível medido antes da coleta.",
+      "author": "Field team A"
+    },
+    {
+      "id": "b5c6d7e8-f9a0-1234-bcde-56789abcdef0",
+      "datetime": "2026-09-22T16:00:00-03:00",
+      "category": "permit_condition",
+      "description": "Laudo LD-4471/26 protocolado no órgão gestor.",
+      "permit_id": "9a8b7c6d-5e4f-3210-abcd-0123456789ab",
+      "condition_id": "c3",
+      "due_date": "2026-09-30",
+      "sample_id": "ws-2026-09-a"
     }
   ]
 }

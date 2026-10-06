@@ -38,6 +38,7 @@ import {
   getProfileDiamValues,
   getProfileLastItemsDepths,
   getPumpInstallationWarnings,
+  getPumpInstalledAt,
   getPumpServiceTime,
   getRetractedEventIds,
   isFlowingArtesian,
@@ -1292,5 +1293,54 @@ describe('getPumpInstallationWarnings', () => {
       code: 'removed_before_installed',
       ids: ['p1'],
     });
+  });
+});
+
+describe('getPumpInstalledAt', () => {
+  const well = {
+    ...emptyWell(),
+    pump_installations: [
+      makePump({
+        id: 'old',
+        installed_at: '2024-01-01T00:00:00Z',
+        removed_at: '2024-06-01T00:00:00Z',
+      }),
+      makePump({ id: 'new', installed_at: '2024-06-01T01:00:00Z' }),
+    ],
+  };
+
+  it('returns the pump in place at the instant', () => {
+    expect(getPumpInstalledAt(well, '2024-03-01T00:00:00Z')?.id).toBe('old');
+    expect(getPumpInstalledAt(well, '2025-01-01T00:00:00-03:00')?.id).toBe(
+      'new',
+    );
+    expect(getPumpInstalledAt(well, new Date('2024-07-01T00:00:00Z'))?.id).toBe(
+      'new',
+    );
+  });
+
+  it('treats removed_at as exclusive and installed_at as inclusive', () => {
+    expect(getPumpInstalledAt(well, '2024-06-01T00:00:00Z')).toBeUndefined();
+    expect(getPumpInstalledAt(well, '2024-06-01T01:00:00Z')?.id).toBe('new');
+  });
+
+  it('returns undefined before any installation or without pumps', () => {
+    expect(getPumpInstalledAt(well, '2023-12-31T00:00:00Z')).toBeUndefined();
+    expect(
+      getPumpInstalledAt(emptyWell(), '2024-03-01T00:00:00Z'),
+    ).toBeUndefined();
+  });
+
+  it('picks the latest installed when installations overlap', () => {
+    const overlapping = {
+      ...emptyWell(),
+      pump_installations: [
+        makePump({ id: 'a', installed_at: '2024-01-01T00:00:00Z' }),
+        makePump({ id: 'b', installed_at: '2024-02-01T00:00:00Z' }),
+      ],
+    };
+    expect(getPumpInstalledAt(overlapping, '2024-03-01T00:00:00Z')?.id).toBe(
+      'b',
+    );
   });
 });

@@ -224,3 +224,94 @@ export function minutesToHours(min: number): number {
 export function hoursToMinutes(h: number): number {
   return h * 60;
 }
+
+// ─── Water quality (since v2.3) ───────────────────────────────────────────────
+
+/** Concentration units accepted by {@link concentrationToCanonical}. */
+export type ConcentrationUnits = 'mg/L' | 'ug/L' | 'ng/L' | 'g/L';
+
+const MG_L_PER_UNIT: Record<ConcentrationUnits, number> = {
+  'g/L': 1_000,
+  'mg/L': 1,
+  'ug/L': 0.001,
+  'ng/L': 0.000_001,
+};
+
+/** Converts a mass concentration to the canonical mg/L. */
+export function concentrationToCanonical(
+  value: number,
+  unit: ConcentrationUnits,
+): number {
+  return value * MG_L_PER_UNIT[unit];
+}
+
+/** Converts a canonical mg/L concentration to `unit`. */
+export function concentrationFromCanonical(
+  mgL: number,
+  unit: ConcentrationUnits,
+): number {
+  return mgL / MG_L_PER_UNIT[unit];
+}
+
+/** Converts conductivity in mS/m to the canonical µS/cm (×10). */
+export function milliSiemensPerMeterToMicroSiemensPerCm(mSm: number): number {
+  return mSm * 10;
+}
+
+/** Converts conductivity in mS/cm to the canonical µS/cm (×1000). */
+export function milliSiemensPerCmToMicroSiemensPerCm(mScm: number): number {
+  return mScm * 1_000;
+}
+
+/**
+ * Normalizes a regional color unit name to the canonical Hazen unit (`uH`).
+ * mg Pt-Co/L, PCU, TCU and Hazen are numerically equal. Returns `undefined`
+ * for unrecognized names.
+ */
+export function normalizeColorUnit(unit: string): 'uH' | undefined {
+  const u = unit.trim().toLowerCase().replace(/\s+/g, '');
+  return ['uh', 'hazen', 'mgpt-co/l', 'mgpt/l', 'pt-co', 'pcu', 'tcu'].includes(
+    u,
+  )
+    ? 'uH'
+    : undefined;
+}
+
+/**
+ * Maps a reported turbidity unit name to the `welldot` turbidity code.
+ * uT and FTU (formazin, method unidentified) map to the generic `turbidity`.
+ * Returns `undefined` for unrecognized names.
+ */
+export function turbidityCodeForUnit(
+  unit: string,
+):
+  | 'turbidity'
+  | 'turbidity_ntu'
+  | 'turbidity_fnu'
+  | 'turbidity_fau'
+  | undefined {
+  switch (unit.trim().toUpperCase()) {
+    case 'NTU':
+      return 'turbidity_ntu';
+    case 'FNU':
+      return 'turbidity_fnu';
+    case 'FAU':
+      return 'turbidity_fau';
+    case 'FTU':
+    case 'UT':
+      return 'turbidity';
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Converts an expanded uncertainty (as reported by labs, usually k = 2) to
+ * the one-sigma `value_precision` stored in `.well` files.
+ */
+export function expandedToStandardUncertainty(
+  expanded: number,
+  coverageFactor = 2,
+): number {
+  return expanded / coverageFactor;
+}

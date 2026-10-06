@@ -16,6 +16,7 @@ import { buildProductionSection } from './productionTable';
 import { buildPumpInstallationSection } from './pumpInstallationTable';
 import { buildSectionTables, withTableTitle } from './sectionTables';
 import type { PdfExportOptions, PdfTranslate, RenderedSvg } from './types';
+import { buildWaterSampleSection } from './waterSampleTable';
 
 const PAGE_WIDTH = 595.28;
 const PAGE_HEIGHT = 841.89;
@@ -117,6 +118,9 @@ export function buildDocDefinition(
 
   const permitSection = buildPermitSection(well, options, t);
   if (permitSection) content.push(permitSection);
+
+  const waterSampleSection = buildWaterSampleSection(well, options, t);
+  if (waterSampleSection) content.push(waterSampleSection);
 
   const footerShare = {
     baseUrl: options.baseUrl,

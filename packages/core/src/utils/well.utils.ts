@@ -18,7 +18,7 @@ type RawJSON = Record<string, unknown>;
 const WELL_FORMAT_VERSION = 2;
 const INCHES_TO_MM = 25.4;
 
-/** Fixed display order for the 6 redactable sections of a well. */
+/** Fixed display order for the 7 redactable sections of a well. */
 export const SECTION_KEYS: readonly SectionKey[] = [
   'general',
   'constructive',
@@ -26,6 +26,7 @@ export const SECTION_KEYS: readonly SectionKey[] = [
   'hydrodynamic',
   'history',
   'operation',
+  'water_quality',
 ];
 
 const EMPTY_WELL: Well = {
@@ -228,6 +229,9 @@ function decodeV2Well(raw: RawJSON): Well {
     ...(raw.operating_regime !== undefined && {
       operating_regime: raw.operating_regime as Well['operating_regime'],
     }),
+    ...(raw.water_samples !== undefined && {
+      water_samples: raw.water_samples as Well['water_samples'],
+    }),
   };
   return mergeWell(decoded, raw) as Well;
 }
@@ -340,6 +344,9 @@ export function serializeWell(well: Well): string {
     ...(well.operating_regime !== undefined && {
       operating_regime: well.operating_regime,
     }),
+    ...(well.water_samples !== undefined && {
+      water_samples: well.water_samples,
+    }),
   };
 
   return JSON.stringify(payload);
@@ -377,7 +384,7 @@ export function isWellEmpty(well: Well | null | undefined): boolean {
  * carried over unchanged. Never mutates `well`.
  *
  * @param well - The well profile to redact.
- * @param visibility - Which of the 6 sections ({@link SECTION_KEYS}) to keep.
+ * @param visibility - Which of the 7 sections ({@link SECTION_KEYS}) to keep.
  * @returns A new {@link Well} with hidden sections emptied.
  */
 export function redactWell(well: Well, visibility: SectionVisibility): Well {
@@ -431,6 +438,10 @@ export function redactWell(well: Well, visibility: SectionVisibility): Well {
     delete redacted.meters;
     delete redacted.production;
     delete redacted.operating_regime;
+  }
+
+  if (!visibility.water_quality) {
+    delete redacted.water_samples;
   }
 
   return redacted;

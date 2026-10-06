@@ -9,6 +9,7 @@ import TabHistoryLog from './_components/tabs/TabHistoryLog.vue';
 import TabHydrodynamicEvents from './_components/tabs/TabHydrodynamicEvents.vue';
 import TabOperation from './_components/tabs/TabOperation.vue';
 import TabPermits from './_components/tabs/TabPermits.vue';
+import TabWaterQuality from './_components/tabs/TabWaterQuality.vue';
 
 definePageMeta({ layout: 'editor' });
 
@@ -79,6 +80,11 @@ const tabs = computed<
     label: t('editor.tabs.permits'),
     shortLabel: t('editor.tabs.permits'),
   },
+  {
+    value: '8',
+    label: t('editor.tabs.waterQuality'),
+    shortLabel: t('editor.tabs.waterQualityShort'),
+  },
 ]);
 </script>
 
@@ -136,6 +142,7 @@ const tabs = computed<
           <TabPanel value="5"><TabHydrodynamicEvents /></TabPanel>
           <TabPanel value="6"><TabOperation /></TabPanel>
           <TabPanel value="7"><TabPermits /></TabPanel>
+          <TabPanel value="8"><TabWaterQuality /></TabPanel>
         </TabPanels>
       </Tabs>
     </div>

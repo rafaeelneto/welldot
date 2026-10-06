@@ -1517,6 +1517,7 @@ describe('redactWell', () => {
     hydrodynamic: true,
     history: true,
     operation: true,
+    water_quality: true,
   };
 
   function fullV2Well(): Well {
@@ -1712,6 +1713,7 @@ describe('v2.1 — centralizers and well_purpose', () => {
       hydrodynamic: true,
       history: true,
       operation: true,
+      water_quality: true,
     };
     const result = redactWell(well, visibility);
     expect(result.well_purpose).toBeUndefined();
@@ -1914,6 +1916,7 @@ describe('v2.3 — attachments and pump_installations', () => {
       hydrodynamic: true,
       history: true,
       operation: false,
+      water_quality: true,
     });
     expect(result.pump_installations).toBeUndefined();
     expect(result.attachments).toEqual(V23_DOC.attachments);
@@ -1929,6 +1932,7 @@ describe('v2.3 — attachments and pump_installations', () => {
       hydrodynamic: true,
       history: true,
       operation: true,
+      water_quality: true,
     });
     expect(result.attachments).toBeUndefined();
     expect(result.pump_installations).toEqual(well.pump_installations);
@@ -2074,6 +2078,7 @@ describe('v2.3 — permits and permit_condition logs', () => {
       hydrodynamic: true,
       history: true,
       operation: false,
+      water_quality: true,
     });
     expect(result.permits).toBeUndefined();
     expect(result.history_logs).toEqual(well.history_logs);
@@ -2271,10 +2276,318 @@ describe('v2.3 — meters, production, operating_regime and log fields', () => {
       hydrodynamic: true,
       history: true,
       operation: false,
+      water_quality: true,
     });
     expect(result.meters).toBeUndefined();
     expect(result.production).toBeUndefined();
     expect(result.operating_regime).toBeUndefined();
+    expect(result.history_logs).toEqual(well.history_logs);
+  });
+});
+
+describe('v2.3 — water_samples', () => {
+  const SAMPLE_A = {
+    id: 'ws-2026-09-a',
+    datetime: '2026-09-15T09:30:00-03:00',
+    sample_type: 'routine',
+    campaign: '2026-Q3',
+    sampling_method: 'low_flow',
+    sampling_point: { type: 'in_well', depth: 42.5, device: 'low_flow_pump' },
+    purge: {
+      duration: 35,
+      volume: 0.0105,
+      flow_rate: 0.018,
+      stabilized: true,
+      readings: [
+        {
+          elapsed: 25,
+          parameter: { code: 'ph', vocabulary: 'welldot' },
+          value: 4.9,
+        },
+        {
+          elapsed: 30,
+          parameter: { code: 'ph', vocabulary: 'welldot' },
+          value: 4.8,
+        },
+        {
+          elapsed: 35,
+          parameter: { code: 'ph', vocabulary: 'welldot' },
+          value: 4.8,
+        },
+      ],
+    },
+    static_level_event_id: 'evt-2026-09-15',
+    collected_by: 'Field team A',
+    chain_of_custody: 'CC-0918',
+    laboratory: {
+      name: 'Lab X',
+      accreditation: 'ISO/IEC 17025 #1234',
+      report_number: 'LD-4471/26',
+      batch_id: 'WO-88213',
+      sample_id: '88213-01',
+      received_at: '2026-09-15T18:20:00-03:00',
+      received_temperature: 4.1,
+    },
+    attachments: [
+      {
+        id: 'a1',
+        uri: 'https://files.example.org/pm01/LD-4471-26.pdf',
+        media_type: 'application/pdf',
+        document_type: 'lab_report',
+      },
+    ],
+    results: [
+      {
+        parameter: { code: 'ph', vocabulary: 'welldot' },
+        value: 4.8,
+        measured_in: 'field',
+      },
+      {
+        parameter: { code: 'specific_conductance', vocabulary: 'welldot' },
+        value: 1240,
+        measured_in: 'field',
+      },
+      {
+        parameter: { code: 'turbidity_fnu', vocabulary: 'welldot' },
+        value: 3.1,
+        measured_in: 'field',
+      },
+      {
+        parameter: { code: 'sulfate', vocabulary: 'welldot' },
+        value: 412,
+        method: 'US EPA 300.0',
+        measured_in: 'lab',
+        analyzed_at: '2026-09-17T00:00:00-03:00',
+        analyzed_at_resolution: 'day',
+        validation: { status: 'validated', validated_by: 'QA reviewer' },
+      },
+      {
+        parameter: { code: 'iron', vocabulary: 'welldot' },
+        value: 18.6,
+        fraction: 'dissolved',
+        filtration: { pore_size: 0.45, location: 'field' },
+        method: 'US EPA 200.8',
+        measured_in: 'lab',
+      },
+      {
+        parameter: { code: 'cyanide_wad_as_cn', vocabulary: 'welldot' },
+        qualifier: 'estimated',
+        value: 0.004,
+        detection_limit: 0.002,
+        quantification_limit: 0.005,
+        measured_in: 'lab',
+        lab_flags: ['J'],
+        validation: { status: 'qualified', qualifier: 'J' },
+      },
+      {
+        parameter: { code: '71-43-2', vocabulary: 'cas' },
+        qualifier: '<',
+        value: 0.001,
+        measured_in: 'lab',
+      },
+      {
+        parameter: { code: 'e_coli', vocabulary: 'welldot' },
+        presence: false,
+        measured_in: 'lab',
+        analyzed_at: '2026-09-15T19:10:00-03:00',
+      },
+    ],
+  };
+
+  const SAMPLE_B = {
+    id: 'ws-2026-09-b',
+    datetime: '2026-09-15T09:35:00-03:00',
+    sample_type: 'field_duplicate',
+    parent_sample_id: 'ws-2026-09-a',
+    campaign: '2026-Q3',
+    sampling_point: { type: 'in_well', depth: 42.5, device: 'low_flow_pump' },
+    results: [
+      {
+        parameter: { code: 'sulfate', vocabulary: 'welldot' },
+        value: 398,
+        measured_in: 'lab',
+      },
+    ],
+  };
+
+  const WQ_DOC = {
+    version: 2,
+    well_type: 'tubular',
+    well_purpose: ['monitoring'],
+    bore_hole: [{ from: 0, to: 60, diameter: 150 }],
+    well_case: [],
+    reduction: [],
+    well_screen: [],
+    surface_case: [],
+    hole_fill: [],
+    lithology: [],
+    fractures: [],
+    caves: [],
+    water_samples: [SAMPLE_A, SAMPLE_B],
+    history_logs: [
+      {
+        id: 'log-1',
+        datetime: '2026-09-15T09:30:00-03:00',
+        category: 'maintenance',
+        description: 'Quarterly sampling',
+        maintenance_type: 'water_sampling',
+        sample_id: 'ws-2026-09-a',
+      },
+    ],
+  };
+
+  const withResult = (result: Record<string, unknown>) =>
+    JSON.stringify({
+      ...WQ_DOC,
+      water_samples: [
+        { ...SAMPLE_B, sample_type: 'routine', results: [result] },
+      ],
+    });
+
+  const withPoint = (sampling_point: Record<string, unknown>) =>
+    JSON.stringify({
+      ...WQ_DOC,
+      water_samples: [{ ...SAMPLE_B, sampling_point }],
+    });
+
+  it('parses the spec example', () => {
+    const well = parseWell(JSON.stringify(WQ_DOC));
+    expect(well.water_samples).toHaveLength(2);
+    expect(well.water_samples![0]!.results).toHaveLength(8);
+    expect(well.history_logs![0]!.sample_id).toBe('ws-2026-09-a');
+  });
+
+  it('round-trips through serialize and deserialize', () => {
+    const well = deserializeWell(JSON.stringify(WQ_DOC))!;
+    expect(well.water_samples).toEqual(WQ_DOC.water_samples);
+    const again = deserializeWell(serializeWell(well))!;
+    expect(again.water_samples).toEqual(WQ_DOC.water_samples);
+  });
+
+  it('accepts not_detected with no value form', () => {
+    expect(() =>
+      parseWell(
+        withResult({
+          parameter: { code: 'arsenic', vocabulary: 'welldot' },
+          qualifier: 'not_detected',
+          detection_limit: 0.001,
+        }),
+      ),
+    ).not.toThrow();
+  });
+
+  it('accepts x- parameters with a unit', () => {
+    expect(() =>
+      parseWell(
+        withResult({
+          parameter: { code: 'pfas_sum', vocabulary: 'x-lab' },
+          value: 12,
+          unit: 'ng/L',
+        }),
+      ),
+    ).not.toThrow();
+  });
+
+  it('rejects an empty results array', () => {
+    expect(() =>
+      parseWell(
+        JSON.stringify({
+          ...WQ_DOC,
+          water_samples: [{ ...SAMPLE_B, results: [] }],
+        }),
+      ),
+    ).toThrow();
+  });
+
+  it.each([
+    ['two value forms', { value: 1, presence: true }],
+    ['no value form', {}],
+    ['not_detected with a value', { qualifier: 'not_detected', value: 0.001 }],
+    ['< without a numeric value', { qualifier: '<', presence: false }],
+    ['unit on a welldot code', { value: 1, unit: 'ug/L' }],
+    [
+      'day resolution with another value',
+      {
+        value: 1,
+        analyzed_at: '2026-09-17T00:00:00-03:00',
+        analyzed_at_resolution: 'hour',
+      },
+    ],
+    [
+      'unknown validation status',
+      { value: 1, validation: { status: 'approved' } },
+    ],
+  ])('rejects a result with %s', (_label, extra) => {
+    expect(() =>
+      parseWell(
+        withResult({
+          parameter: { code: 'sulfate', vocabulary: 'welldot' },
+          ...extra,
+        }),
+      ),
+    ).toThrow();
+  });
+
+  it('rejects an x- code without unit and an unknown vocabulary', () => {
+    expect(() =>
+      parseWell(
+        withResult({
+          parameter: { code: 'foo', vocabulary: 'x-lab' },
+          value: 1,
+        }),
+      ),
+    ).toThrow();
+    expect(() =>
+      parseWell(
+        withResult({
+          parameter: { code: 'foo', vocabulary: 'pubchem' },
+          value: 1,
+        }),
+      ),
+    ).toThrow();
+  });
+
+  it('rejects depth together with from/to', () => {
+    expect(() =>
+      parseWell(withPoint({ type: 'in_well', depth: 40, from: 38, to: 42 })),
+    ).toThrow();
+    expect(() =>
+      parseWell(withPoint({ type: 'in_well', from: 38, to: 42 })),
+    ).not.toThrow();
+  });
+
+  it('rejects received_at_resolution other than day', () => {
+    expect(() =>
+      parseWell(
+        JSON.stringify({
+          ...WQ_DOC,
+          water_samples: [
+            {
+              ...SAMPLE_B,
+              laboratory: {
+                name: 'Lab',
+                received_at: '2026-09-15T00:00:00-03:00',
+                received_at_resolution: 'month',
+              },
+            },
+          ],
+        }),
+      ),
+    ).toThrow();
+  });
+
+  it('redactWell removes water_samples with water_quality', () => {
+    const well = deserializeWell(JSON.stringify(WQ_DOC))!;
+    const result = redactWell(well, {
+      general: true,
+      constructive: true,
+      geology: true,
+      hydrodynamic: true,
+      history: true,
+      operation: true,
+      water_quality: false,
+    });
+    expect(result.water_samples).toBeUndefined();
     expect(result.history_logs).toEqual(well.history_logs);
   });
 });

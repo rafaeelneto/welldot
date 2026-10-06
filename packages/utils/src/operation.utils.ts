@@ -535,16 +535,16 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
  * History logs (ids: [log]):
  * - `log_category_field_mismatch` — maintenance fields on a non-`maintenance`
  *   entry, `status` on a non-`status_change`, `permit_id` / `condition_id` /
- *   `due_date` on a non-`permit_condition`, `event_id` on anything other than
- *   `maintenance` / `permit_condition`.
- * - `log_reference_unresolved` — `pump_installation_id`, `meter_id` or
- *   `event_id` that does not resolve (`permit_id` / `condition_id` are covered
- *   by `getPermitWarnings`).
+ *   `due_date` on a non-`permit_condition`, `event_id` / `sample_id` on
+ *   anything other than `maintenance` / `permit_condition`.
+ * - `log_reference_unresolved` — `pump_installation_id`, `meter_id`,
+ *   `event_id` or `sample_id` (`water_samples[].id`) that does not resolve
+ *   (`permit_id` / `condition_id` are covered by `getPermitWarnings`).
  * - `log_after_decommission` — while the current status is `decommissioned` or
  *   `abandoned`, a non-`status_change` entry dated after the start of that
  *   closed run (the earliest closing entry not followed by a reopening one).
  * - `missing_maintenance_type` — a structured `maintenance` entry (with
- *   `pump_installation_id`, `meter_id` or `event_id`) without
+ *   `pump_installation_id`, `meter_id`, `event_id` or `sample_id`) without
  *   `maintenance_type`. Legacy maintenance entries without references are fine.
  * - `missing_status` — a `status_change` entry without `status`.
  *
@@ -694,6 +694,7 @@ export function getOperationWarnings(
   // ── History logs ──
   const pumpIds = new Set((well.pump_installations ?? []).map(p => p.id));
   const eventIds = new Set((well.hydrodynamic_events ?? []).map(e => e.id));
+  const sampleIds = new Set((well.water_samples ?? []).map(s => s.id));
   const closedSince = getClosedSince(well);
 
   for (const log of well.history_logs ?? []) {
@@ -705,14 +706,15 @@ export function getOperationWarnings(
         PERMIT_CONDITION_FIELDS.some(f => hasField(log, f))) ||
       (c !== 'maintenance' &&
         c !== 'permit_condition' &&
-        hasField(log, 'event_id'));
+        (hasField(log, 'event_id') || hasField(log, 'sample_id')));
     if (mismatch) push('log_category_field_mismatch', [log.id]);
 
     if (
       (log.pump_installation_id !== undefined &&
         !pumpIds.has(log.pump_installation_id)) ||
       (log.meter_id !== undefined && !meterById.has(log.meter_id)) ||
-      (log.event_id !== undefined && !eventIds.has(log.event_id))
+      (log.event_id !== undefined && !eventIds.has(log.event_id)) ||
+      (log.sample_id !== undefined && !sampleIds.has(log.sample_id))
     ) {
       push('log_reference_unresolved', [log.id]);
     }
@@ -730,7 +732,8 @@ export function getOperationWarnings(
       log.maintenance_type === undefined &&
       (log.pump_installation_id !== undefined ||
         log.meter_id !== undefined ||
-        log.event_id !== undefined)
+        log.event_id !== undefined ||
+        log.sample_id !== undefined)
     ) {
       push('missing_maintenance_type', [log.id]);
     }

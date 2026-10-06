@@ -856,6 +856,80 @@ describe('getOperationWarnings', () => {
     expect(flagged).toEqual(['a', 'c']);
   });
 
+  it('accepts sample_id only on maintenance / permit_condition entries', () => {
+    const well = makeWell({
+      water_samples: [
+        {
+          id: 'ws1',
+          datetime: '2025-01-01T00:00:00Z',
+          sample_type: 'routine',
+          results: [
+            { parameter: { code: 'ph', vocabulary: 'welldot' }, value: 7 },
+          ],
+        },
+      ],
+      history_logs: [
+        log({
+          id: 'maint',
+          category: 'maintenance',
+          maintenance_type: 'water_sampling',
+          sample_id: 'ws1',
+        }),
+        log({
+          id: 'cond',
+          category: 'permit_condition',
+          sample_id: 'ws1',
+        }),
+        log({ id: 'bad', category: 'other', sample_id: 'ws1' }),
+      ],
+    });
+    const flagged = getOperationWarnings(well, TODAY)
+      .filter(w => w.code === 'log_category_field_mismatch')
+      .map(w => w.ids[0]);
+    expect(flagged).toEqual(['bad']);
+  });
+
+  it('flags an unresolved sample_id', () => {
+    const well = makeWell({
+      water_samples: [
+        {
+          id: 'ws1',
+          datetime: '2025-01-01T00:00:00Z',
+          sample_type: 'routine',
+          results: [
+            { parameter: { code: 'ph', vocabulary: 'welldot' }, value: 7 },
+          ],
+        },
+      ],
+      history_logs: [
+        log({
+          id: 'ok',
+          category: 'maintenance',
+          maintenance_type: 'water_sampling',
+          sample_id: 'ws1',
+        }),
+        log({
+          id: 'missing',
+          category: 'maintenance',
+          maintenance_type: 'water_sampling',
+          sample_id: 'ws-nope',
+        }),
+        log({ id: 'untyped', category: 'maintenance', sample_id: 'ws1' }),
+      ],
+    });
+    const warnings = getOperationWarnings(well, TODAY);
+    expect(
+      warnings
+        .filter(w => w.code === 'log_reference_unresolved')
+        .map(w => w.ids[0]),
+    ).toEqual(['missing']);
+    expect(
+      warnings
+        .filter(w => w.code === 'missing_maintenance_type')
+        .map(w => w.ids[0]),
+    ).toEqual(['untyped']);
+  });
+
   it('flags entries dated after a decommission still in force', () => {
     const closed = makeWell({
       history_logs: [

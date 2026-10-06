@@ -73,6 +73,7 @@ Derived from pumping-test data. The three marked functions throw `RangeError` ra
 | `getRetractedEventIds(well)`                                       | Ids of hydrodynamic events retracted by another event's `corrects` (v2.3 ledger corrections).                                                                 |
 | `getEffectiveHydrodynamicEvents(well)`                             | Hydrodynamic events that count for derivations — every event not retracted by `corrects`.                                                                     |
 | `getCurrentPump(well)`                                             | The `pump_installations` entry without `removed_at` (latest installed if several). `undefined` if none.                                                       |
+| `getPumpInstalledAt(well, instant)`                                | The `pump_installations` entry in place at `instant` (`installed_at` ≤ instant < `removed_at`; latest installed if several). `undefined` if none.             |
 | `getLatestPumpingDynamicLevel(well)`                               | Most recent water level (m) measured during pumping, falling back to a newer `aquifer_analysis[].dynamic_level`. Airlift and retracted events ignored.        |
 | `calculateSubmergence(well)`                                       | `intake_depth − dynamic_level` (m) of the current pump. Negative when the intake is above the water level.                                                    |
 | `getPumpServiceTime(well, serial, now?)`                           | Total time in service (min) of installations sharing a `serial`; open installations count up to `now`.                                                        |
@@ -91,6 +92,20 @@ Derived from pumping-test data. The three marked functions throw `RangeError` ra
 | `getCurrentRegime(well, at?)`                                      | The `operating_regime` entry in force at `at` (default now). `undefined` before the first one.                                                                |
 | `getCurrentWellStatus(well)` / `getCurrentWellStatusEntry(well)`   | `status` of the latest `status_change` history log (`undefined` = unknown) / that log entry.                                                                  |
 | `getOperationWarnings(well, today?)`                               | v2.3 warnings for meters, production, operating regime, structured history logs and analyses citing retracted events.                                         |
+| `getRetractedSampleIds` / `getEffectiveWaterSamples(well)`         | v2.3 `water_samples` ledger: ids retracted by `corrects` / the samples that count, sorted by `datetime`, `sequence`, file order.                              |
+| `isResultUsable(result)`                                           | `false` for `validation.status: "rejected"`; such results are excluded from every water quality derivation.                                                   |
+| `getLatestResult(well, code)`                                      | Most recent usable result of a parameter (`parameterKey`, CAS resolved) outside blanks, with its sample.                                                      |
+| `getSampleDepth` / `isFormationWater(well, sample)`                | Sample depth (point, interval, or pump `intake_depth`) / whether it lies inside a `well_screen` and below the static level of `static_level_event_id`.        |
+| `getIonBalance(sample)`                                            | Cation and anion sums (meq/L) and charge-balance error (%).                                                                                                   |
+| `getStiffValues` / `getPiperCoordinates(sample)`                   | Major-ion meq/L / Piper triangle meq % and diamond point.                                                                                                     |
+| `getHydrochemicalFacies(sample)`                                   | Dominant cation and anion (> 50 meq %), else `mixed`.                                                                                                         |
+| `getAcidDrainageIndicators(sample)`                                | Net alkalinity (alkalinity − acidity, as CaCO₃) and sulfate/chloride ratio.                                                                                   |
+| `getRelativePercentDifferences(well, sampleId)`                    | RPD per parameter between a duplicate/split and its `parent_sample_id`.                                                                                       |
+| `getBlankContamination(well)`                                      | Substances detected in field, trip and equipment blanks (with `campaign`).                                                                                    |
+| `getHoldingTimes` / `getReceivedTemperatureCompliance(s, maxC?)`   | Collection → analysis hours per result (day resolution honored) / receipt temperature ≤ `maxC` (6 °C).                                                        |
+| `getPurgeStabilization(purge, criteria?, window?)`                 | Stabilization of `purge.readings` over the last `window` readings; `DEFAULT_PURGE_STABILIZATION_CRITERIA` from low-flow guidance.                             |
+| `getExceedances(sample, limits)`                                   | Results outside a `LimitSet` / `Limit[]` from `@welldot/core` (turbidity comparability, censored values, presence limits).                                    |
+| `getWaterSampleWarnings(well)`                                     | v2.3 `water_samples` validation warnings (codes + ids + `result_index`).                                                                                      |
 | `getRetractedIds(entries)` / `instantLocalDate(instant)`           | Generic ledger helpers: ids retracted by `corrects` in any array / local calendar date of an RFC 3339 instant as written.                                     |
 | `isFlowingArtesian(well)`                                          | Whether the most recent static level is above ground (negative). The v2.1 way to detect a flowing artesian well.                                              |
 | `getCentralizerDepths(centralizer)`                                | Individual centralizer depths (m) from `from`, `to`, and `spacing`. Only the endpoints when spacing is unknown.                                               |
@@ -115,6 +130,27 @@ import { getProductionTotal, getCurrentWellStatus } from '@welldot/utils';
 
 getProductionTotal(well); // → { metered: 133550, estimated: 0, total: 133550, reported: 0, unknown_intervals: 0 }
 getCurrentWellStatus(well); // → 'active' (undefined when no status_change exists)
+```
+
+### Water quality (.well v2.3)
+
+`water_samples` is a ledger: corrected reports are new samples with `corrects`, and results with `validation.status: "rejected"` are left out of every derivation. Limits are never stored in the file — pick a limit set from `@welldot/core` at display time.
+
+```ts
+import { WHO_GDWQ_2022 } from '@welldot/core';
+import {
+  getEffectiveWaterSamples,
+  getExceedances,
+  getHoldingTimes,
+  getRelativePercentDifferences,
+  isFormationWater,
+} from '@welldot/utils';
+
+const [sample] = getEffectiveWaterSamples(well);
+getExceedances(sample, WHO_GDWQ_2022); // → [{ result_index, parameter, limit, kind: 'above_max' }, …]
+getHoldingTimes(sample); // → [{ key: 'e_coli', hours: 9.67, resolution: 'instant', … }]
+getRelativePercentDifferences(well, 'ws-2026-09-b'); // → [{ key: 'sulfate', rpd_pct: 3.46, … }]
+isFormationWater(well, sample); // → true (inside a screen, below the static level)
 ```
 
 ## Contributing

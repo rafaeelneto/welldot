@@ -19,13 +19,19 @@ src/
     well.validators.ts      ← Zod schemas mirroring each type; parseWell()
   utils/
     well.utils.ts           ← Serialize/deserialize, profileToWell, isEmpty checks
+    units.ts                ← Unit conversions (incl. water quality import helpers)
     fgdc.textures.ts        ← FGDC_TEXTURES_OPTIONS mapping (code → label/pattern)
+  vocab/
+    waterQuality.vocab.ts   ← WATER_QUALITY_PARAMETERS (98 welldot codes, versioned), getParameterDefinition,
+                               parameterKey, isKnownParameter
+    waterQuality.limits.ts  ← Limit sets (WHO_GDWQ_2022, BR_GM_MS_888_2021, EU_2020_2184), getLimitSet
 ```
 
 ## Key domain concepts
 
-- **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata, the event/analysis/log blocks, and (since v2.3) root `attachments`, `pump_installations`, `permits`, `meters`, `production` and `operating_regime`.
-- **Block kinds** (v2.3) — `hydrodynamic_events` and `production` are ledgers (corrected via `corrects`, never edited); `history_logs`, `permits` and `operating_regime` are mutable records; `pump_installations` and `meters` are installation blocks (`installed_at`/`removed_at`). Permit dates are calendar dates (`YYYY-MM-DD`) and condition offsets are ISO 8601 date durations (`P90D`); everything else is an RFC 3339 instant. `production` is a discriminated union (`meter_reading` | `declared_volume`, `x-` types pass through); register values and volumes are m³ and totals are never stored. `history_logs` category-specific fields are flat optional fields on `HistoryLogEntry`: `maintenance` (`maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`), `status_change` (`status`), `permit_condition` (`permit_id`/`condition_id`/`due_date`/`event_id`). Derivations that honor these rules (current pump, retracted events/production, permit status, condition deadlines, meter volumes, current regime, current well status, operation warnings) live in `@welldot/utils`.
+- **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata, the event/analysis/log blocks, and (since v2.3) root `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime` and `water_samples`.
+- **Block kinds** (v2.3) — `hydrodynamic_events`, `production` and `water_samples` are ledgers (corrected via `corrects`, never edited); `history_logs`, `permits` and `operating_regime` are mutable records; `pump_installations` and `meters` are installation blocks (`installed_at`/`removed_at`). Permit dates are calendar dates (`YYYY-MM-DD`) and condition offsets are ISO 8601 date durations (`P90D`); everything else is an RFC 3339 instant. `production` is a discriminated union (`meter_reading` | `declared_volume`, `x-` types pass through); register values and volumes are m³ and totals are never stored. `history_logs` category-specific fields are flat optional fields on `HistoryLogEntry`: `maintenance` (`maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`), `status_change` (`status`), `permit_condition` (`permit_id`/`condition_id`/`due_date`/`event_id`). Derivations that honor these rules (current pump, retracted events/production, permit status, condition deadlines, meter volumes, current regime, current well status, operation warnings) live in `@welldot/utils`.
+- **Water quality** (v2.3) — `water_samples` is a ledger (corrected via `corrects`) of `WaterSample`s, each with ≥1 `WaterQualityResult`. A result has exactly one of `value`/`presence`/`text` (none only with `qualifier: 'not_detected'`); parameters are `{ code, vocabulary }` with `welldot` | `cas` | `x-…`, and `unit` exists only for `x-` codes (the unit of `welldot`/`cas` codes comes from the vocabulary; substances are always mg/L). `depth` is exclusive with `from`/`to`; `*_resolution` is the literal `'day'`. The vocabulary (`src/vocab/waterQuality.vocab.ts`) is versioned data — bump `WATER_QUALITY_VOCABULARY_VERSION` when codes change and update the vocabulary table in `docs/spec/v2/water-quality.md`. Limit sets (`src/vocab/waterQuality.limits.ts`) are display-time data, never written to files; their values must be verified against the official sources. `HistoryLogEntry.sample_id` links `maintenance`/`permit_condition` entries to a sample. `SectionKey` includes `'water_quality'` (redacted by `redactWell`). Derivations (ion balance, RPD, holding times, exceedances, warnings) live in `@welldot/utils`.
 - **New top-level blocks** must be mapped explicitly in `decodeV2Well`, `serializeWell` (which whitelists fields) and `redactWell`.
 - **`Profile`** — backward-compat alias for `Well`; used in the legacy Next.js app.
 - All depth values are **meters from ground level** (0 = surface, increasing downward).
@@ -58,6 +64,8 @@ docs/
                                Extensibility, Cross-reference & uniqueness rules
       object-schemas.md     ← All object schemas + hydrodynamic_events + aquifer_analysis +
                                history_logs + Complete Example JSON
+      water-quality.md      ← water_samples schemas, result rules, recommended values, unit rules,
+                               parameter vocabulary table, regulatory profiles (since v2.3)
       interoperability.md   ← JSON-LD Context, GWML2 relationship, Schema Validation
   schema/
     v1/                     ← stub; v1 schema TBD
@@ -103,6 +111,16 @@ Update when:
 - The Complete Example JSON no longer validates against the current types.
 
 What to update: the field table for the changed type and the Complete Example JSON if the change affects it.
+
+### `docs/spec/v2/water-quality.md`
+
+Update when:
+
+- A field is added, removed, or renamed on `WaterSample`, `SamplingPoint`, `Purge`, `PurgeReading`, `Laboratory`, `WaterQualityResult`, `Parameter`, `Filtration` or `ResultValidation`.
+- A code is added to or changed in `WATER_QUALITY_PARAMETERS` (keep the vocabulary table in sync and bump `WATER_QUALITY_VOCABULARY_VERSION`).
+- A water quality validation rule, recommended value or unit rule changes.
+
+Cross-cutting rows (datetime, canonical units, cross-references, precision) stay in `format-reference.md`; the Complete Example stays in `object-schemas.md`.
 
 ### `docs/schema/v2/well.schema.json`
 
