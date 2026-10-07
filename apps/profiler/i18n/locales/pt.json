@@ -1722,7 +1722,34 @@
       "editTooltip": "Editar no próprio registro — só para erros de digitação",
       "editWarning": "A edição altera o registro original, sem guardar o que ele dizia antes. Use apenas para corrigir erros de digitação na entrada dos dados. Para laudo retificado ou revalidação de dados, use Retificar: isso salva uma nova amostra que substitui esta e preserva o histórico.",
       "editConfirm": "Sobrescrever a amostra original?",
-      "editConfirmInfo": "As alterações substituem o que estava registrado nesta amostra, e os valores anteriores não são guardados. Continue só se estiver corrigindo erros de digitação; para laudo retificado, cancele e use Retificar."
+      "editConfirmInfo": "As alterações substituem o que estava registrado nesta amostra, e os valores anteriores não são guardados. Continue só se estiver corrigindo erros de digitação; para laudo retificado, cancele e use Retificar.",
+      "view": {
+        "open": "Visualizar",
+        "close": "Fechar",
+        "tabs": {
+          "sample": "Coleta",
+          "results": "Resultados",
+          "links": "Vínculos"
+        },
+        "sections": {
+          "collection": "Coleta",
+          "notes": "Observações e documentos"
+        },
+        "columns": {
+          "limits": "Limites",
+          "ql": "LQ"
+        },
+        "comparingWith": "Comparando com {set}. Valores em vermelho excedem o limite.",
+        "links": {
+          "corrects": "Retifica",
+          "correctedBy": "Retificada por",
+          "parent": "Amostra original",
+          "children": "Duplicatas e splits",
+          "historyLogs": "Entradas do histórico",
+          "missing": "Registro não encontrado: {id}",
+          "empty": "Nenhum vínculo com outros registros."
+        }
+      }
     }
   },
   "tips": {

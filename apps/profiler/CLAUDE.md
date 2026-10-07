@@ -53,7 +53,12 @@ app/                      ← srcDir
                              from the Summary permit card); Water quality (.well v2.3) = the
                              `water_samples` ledger (waterQuality/: panel + card,
                              WaterSampleDialog validated with core `WaterSampleSchema`
-                             before save, ResultsEditor, PurgeReadingsEditor; labels in
+                             before save, ResultsEditor, PurgeReadingsEditor;
+                             WaterSampleViewDialog in tabs — collection, full results,
+                             ledger links (corrections, duplicates/splits, history logs) —
+                             whose open sample lives in `useWaterSampleView()` and the
+                             hash `#water-quality/<id>`, also opened from the Summary
+                             water card; card and view share `useSampleDerived()`; labels in
                              utils/waterQualityVocab.ts; "compare against" limit set in
                              `uiStore.waterQualityLimitSet`; derivations/warnings from
                              @welldot/utils); History log dialog edits `maintenance`

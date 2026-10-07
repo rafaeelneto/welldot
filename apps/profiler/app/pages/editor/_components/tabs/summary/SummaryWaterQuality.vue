@@ -15,6 +15,7 @@ const { t } = useI18n();
 const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const uiStore = useUiStore();
+const waterSampleView = useWaterSampleView();
 const { formatNumber } = useNumberFormat();
 
 const fmt = (n: number, digits = 4) =>
@@ -162,6 +163,18 @@ const exceedances = computed(() => {
       <p v-else class="m-0 text-xs text-content-400">
         {{ t('editor.summary.waterQuality.noLimitSet') }}
       </p>
+      <Button
+        severity="secondary"
+        text
+        size="small"
+        class="self-start"
+        :label="t('editor.waterQuality.view.open')"
+        @click="waterSampleView.open(sample.id)"
+      >
+        <template #icon>
+          <Icon name="ph:eye-duotone" />
+        </template>
+      </Button>
     </template>
     <SummaryEmpty v-else :text="t('editor.summary.waterQuality.empty')" />
   </SummaryCard>

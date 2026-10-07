@@ -1,37 +1,12 @@
 <script setup lang="ts">
-import type {
-  Attachment,
-  LimitSet,
-  WaterQualityResult,
-  WaterSample,
-} from '@welldot/core';
-import {
-  SAMPLE_TYPES,
-  SAMPLING_DEVICES,
-  SAMPLING_METHODS,
-  SAMPLING_POINT_TYPES,
-} from '@welldot/core';
-import {
-  getExceedances,
-  getHoldingTimes,
-  getHydrochemicalFacies,
-  getIonBalance,
-  getPurgeStabilization,
-  getReceivedTemperatureCompliance,
-  getRelativePercentDifferences,
-  getSampleDepth,
-  isFormationWater,
-} from '@welldot/utils';
+import type { Attachment, LimitSet, WaterSample } from '@welldot/core';
+import { SAMPLE_TYPES } from '@welldot/core';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import RecordCard, {
   type RecordAction,
 } from '~/components/records/RecordCard.vue';
-import { pumpInstallationLabel } from '~/utils/operationVocab';
 import {
-  BLANK_SAMPLE_TYPES,
-  PARENT_SAMPLE_TYPES,
   VALIDATION_STATUS_SEVERITY,
-  formatResultValue,
   parameterUnitSymbol,
   resolveFractionLabel,
   resolveMeasuredInLabel,
@@ -40,6 +15,7 @@ import {
   sampleLabel,
 } from '~/utils/waterQualityVocab';
 import type { SampleWarning } from './resultDraft';
+import { useSampleDerived } from './useSampleDerived';
 
 const props = defineProps<{
   sample: WaterSample;
@@ -51,6 +27,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  view: [id: string];
   correct: [sample: WaterSample];
   edit: [sample: WaterSample];
   delete: [id: string];
@@ -59,273 +36,26 @@ const emit = defineEmits<{
 const { t, locale } = useI18n();
 const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
-const { formatLength } = useUnitFormat();
-const { formatNumber } = useNumberFormat();
 
-const fmt = (n: number, digits = 4) =>
-  formatNumber(n, { maximumFractionDigits: digits });
-
-// ─── Header ───────────────────────────────────────────────────────────────────
-
-const typeSeverity = computed(() =>
-  props.sample.sample_type === 'routine'
-    ? 'info'
-    : PARENT_SAMPLE_TYPES.includes(props.sample.sample_type) ||
-        BLANK_SAMPLE_TYPES.includes(props.sample.sample_type)
-      ? 'warn'
-      : 'secondary',
+const {
+  typeSeverity,
+  parent,
+  dateLine,
+  pointLine,
+  formation,
+  labLine,
+  exceedances,
+  valueText,
+  isRejected,
+  derived,
+  warningMessages,
+} = useSampleDerived(
+  () => props.sample,
+  () => props.limitSet,
+  () => props.warnings,
 );
-
-const parent = computed(() =>
-  props.sample.parent_sample_id
-    ? profileStore.well.water_samples?.find(
-        s => s.id === props.sample.parent_sample_id,
-      )
-    : undefined,
-);
-
-function scrollToSample(id: string) {
-  document
-    .getElementById(`ws-card-${id}`)
-    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-// ─── Sampling point ───────────────────────────────────────────────────────────
-
-const pointLine = computed(() => {
-  const p = props.sample.sampling_point;
-  const depth = getSampleDepth(profileStore.well, props.sample);
-  const pump = p?.pump_installation_id
-    ? profileStore.well.pump_installations?.find(
-        i => i.id === p.pump_installation_id,
-      )
-    : undefined;
-  return [
-    p?.type ? vocabLabel(SAMPLING_POINT_TYPES, p.type) : null,
-    p?.device ? vocabLabel(SAMPLING_DEVICES, p.device) : null,
-    depth?.kind === 'point'
-      ? `${formatLength(depth.depth)}${
-          p?.depth === undefined && p?.pump_installation_id
-            ? ` (${t('editor.waterQuality.card.pumpIntake')})`
-            : ''
-        }`
-      : depth?.kind === 'interval'
-        ? `${formatLength(depth.from)} – ${formatLength(depth.to)}`
-        : null,
-    pump
-      ? pumpInstallationLabel(pump, locale.value)
-      : (p?.pump_installation_id ?? null),
-    props.sample.sampling_method
-      ? vocabLabel(SAMPLING_METHODS, props.sample.sampling_method)
-      : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-});
-
-const formation = computed(() =>
-  isFormationWater(profileStore.well, props.sample),
-);
-
-const labLine = computed(() => {
-  const l = props.sample.laboratory;
-  if (!l) return '';
-  return [
-    l.name,
-    l.report_number
-      ? `${t('editor.waterQuality.laboratory.reportNumber')} ${l.report_number}`
-      : null,
-    l.received_at
-      ? `${t('editor.waterQuality.laboratory.receivedAt')} ${formatDate(
-          l.received_at,
-          l.received_at_resolution === 'day'
-            ? 'dd/MM/yyyy'
-            : 'dd/MM/yyyy HH:mm',
-        )}`
-      : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-});
-
-// ─── Results ──────────────────────────────────────────────────────────────────
-
-/** Exceedances per result index for the selected limit set. */
-const exceedances = computed(() => {
-  const map = new Map<number, string[]>();
-  if (!props.limitSet) return map;
-  for (const e of getExceedances(props.sample, props.limitSet)) {
-    const r = props.sample.results[e.result_index];
-    const unit = r ? parameterUnitSymbol(r) : '';
-    const text =
-      e.kind === 'presence'
-        ? t('editor.waterQuality.exceedsPresence')
-        : e.kind === 'above_max'
-          ? t('editor.waterQuality.exceedsMax', {
-              limit: `${fmt(e.limit.max ?? 0, 6)} ${unit}`.trim(),
-            })
-          : t('editor.waterQuality.exceedsMin', {
-              limit: `${fmt(e.limit.min ?? 0, 6)} ${unit}`.trim(),
-            });
-    const list = map.get(e.result_index) ?? [];
-    list.push(
-      `${props.limitSet.name}: ${text}${e.limit.note ? ` (${e.limit.note})` : ''}`,
-    );
-    map.set(e.result_index, list);
-  }
-  return map;
-});
-
-function valueText(r: WaterQualityResult): string {
-  return formatResultValue(r, t, n => fmt(n, 6));
-}
-
-function isRejected(r: WaterQualityResult): boolean {
-  return r.validation?.status === 'rejected';
-}
-
-// ─── Derived strip ────────────────────────────────────────────────────────────
-
-type Chip = { key: string; label: string; severity: string; info?: string };
-
-const derived = computed<Chip[]>(() => {
-  const chips: Chip[] = [];
-  const s = props.sample;
-
-  const ion = getIonBalance(s);
-  if (ion) {
-    const bad = Math.abs(ion.error_pct) > 10;
-    chips.push({
-      key: 'ion',
-      label: t('editor.waterQuality.derived.ionBalance', {
-        pct: fmt(ion.error_pct, 1),
-      }),
-      severity: bad ? 'warn' : 'success',
-      info: t('editor.waterQuality.derived.ionBalanceInfo', {
-        cations: fmt(ion.cations_meq, 2),
-        anions: fmt(ion.anions_meq, 2),
-      }),
-    });
-  }
-
-  if (s.parent_sample_id) {
-    const rpds = getRelativePercentDifferences(profileStore.well, s.id);
-    if (rpds.length) {
-      const worst = rpds.reduce((a, b) => (b.rpd_pct > a.rpd_pct ? b : a));
-      chips.push({
-        key: 'rpd',
-        label: t('editor.waterQuality.derived.rpd', {
-          pct: fmt(worst.rpd_pct, 1),
-          name: resolveParameterLabel(worst.parameter, t),
-        }),
-        severity: worst.rpd_pct > 20 ? 'warn' : 'success',
-        info: rpds
-          .map(
-            r =>
-              `${resolveParameterLabel(r.parameter, t)}: ${fmt(r.rpd_pct, 1)}%`,
-          )
-          .join('\n'),
-      });
-    }
-  }
-
-  const holding = getHoldingTimes(s);
-  if (holding.length) {
-    const longest = holding.reduce((a, b) => (b.hours > a.hours ? b : a));
-    const hoursText = (h: { hours: number; resolution?: string }) =>
-      h.resolution === 'day'
-        ? t('editor.waterQuality.derived.days', { n: fmt(h.hours / 24, 0) })
-        : t('editor.waterQuality.derived.hours', { n: fmt(h.hours, 1) });
-    chips.push({
-      key: 'holding',
-      label: t('editor.waterQuality.derived.holdingTime', {
-        time: hoursText(longest),
-      }),
-      severity: 'secondary',
-      info: holding
-        .map(h => {
-          const r = s.results[h.result_index];
-          return `${r ? resolveParameterLabel(r.parameter, t) : h.key}: ${hoursText(h)}`;
-        })
-        .join('\n'),
-    });
-  }
-
-  const temp = getReceivedTemperatureCompliance(s);
-  if (temp !== undefined) {
-    chips.push({
-      key: 'temp',
-      label: temp
-        ? t('editor.waterQuality.derived.receivedTempOk')
-        : t('editor.waterQuality.derived.receivedTempHigh'),
-      severity: temp ? 'success' : 'warn',
-      info:
-        s.laboratory?.received_temperature != null
-          ? `${fmt(s.laboratory.received_temperature, 1)} °C`
-          : undefined,
-    });
-  }
-
-  const purge = s.purge ? getPurgeStabilization(s.purge) : undefined;
-  if (purge) {
-    const unstable = purge.parameters.filter(p => !p.stabilized);
-    chips.push({
-      key: 'purge',
-      label: purge.stabilized
-        ? t('editor.waterQuality.derived.purgeStabilized')
-        : t('editor.waterQuality.derived.purgeNotStabilized'),
-      severity: purge.stabilized ? 'success' : 'warn',
-      info: unstable.length
-        ? unstable
-            .map(p =>
-              resolveParameterLabel({ code: p.key, vocabulary: 'welldot' }, t),
-            )
-            .join(', ')
-        : undefined,
-    });
-  }
-
-  const facies = getHydrochemicalFacies(s);
-  if (facies) {
-    const ionLabel = (code: string) =>
-      t(`editor.waterQuality.derived.faciesIons.${code}`);
-    chips.push({
-      key: 'facies',
-      label: t('editor.waterQuality.derived.facies', {
-        facies: `${ionLabel(facies.cation)} – ${ionLabel(facies.anion)}`,
-      }),
-      severity: 'info',
-    });
-  }
-
-  return chips;
-});
-
-// ─── Warnings ─────────────────────────────────────────────────────────────────
-
-const warningMessages = computed(() => {
-  const seen = new Set<string>();
-  return props.warnings.flatMap(w => {
-    const r =
-      w.result_index !== undefined
-        ? props.sample.results[w.result_index]
-        : undefined;
-    const msg = t(`editor.waterQuality.warnings.${w.code}`);
-    const text = r ? `${resolveParameterLabel(r.parameter, t)}: ${msg}` : msg;
-    if (seen.has(text)) return [];
-    seen.add(text);
-    return [text];
-  });
-});
 
 // ─── Header / footer ──────────────────────────────────────────────────────────
-
-const dateLine = computed(() => {
-  const date = formatDate(props.sample.datetime, 'dd/MM/yyyy HH:mm');
-  return props.sample.sequence != null
-    ? `${date} · #${props.sample.sequence}`
-    : date;
-});
 
 const meta = computed(() => [
   !!props.sample.collected_by &&
@@ -333,6 +63,12 @@ const meta = computed(() => [
 ]);
 
 const actions = computed<RecordAction[]>(() => [
+  {
+    key: 'view',
+    label: t('editor.waterQuality.view.open'),
+    icon: 'ph:eye-duotone',
+    onClick: () => emit('view', props.sample.id),
+  },
   ...(props.retracted
     ? []
     : [
@@ -416,7 +152,7 @@ function setAttachments(list: Attachment[]) {
       v-if="sample.parent_sample_id"
       type="button"
       class="flex items-center gap-1.5 self-start text-xs text-primary-500 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-      @click="scrollToSample(sample.parent_sample_id)"
+      @click="emit('view', sample.parent_sample_id)"
     >
       <Icon name="ph:link-duotone" class="size-3.5" />
       {{

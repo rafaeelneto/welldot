@@ -10,6 +10,7 @@ import { useConfirm } from 'primevue/useconfirm';
 import type { SampleWarning } from './resultDraft';
 import WaterSampleCard from './WaterSampleCard.vue';
 import WaterSampleDialog from './WaterSampleDialog.vue';
+import WaterSampleViewDialog from './WaterSampleViewDialog.vue';
 
 const { t } = useI18n();
 const { vocabLabel } = useVocab();
@@ -145,6 +146,28 @@ function saveSample(s: WaterSample) {
   });
 }
 
+// ─── Read-only view ───────────────────────────────────────────────────────────
+
+const sampleView = useWaterSampleView();
+const viewVisible = computed({
+  get: () =>
+    !!sampleView.sampleId.value &&
+    samples.value.some(s => s.id === sampleView.sampleId.value),
+  set: open => {
+    if (!open) sampleView.close();
+  },
+});
+
+function editFromView(s: WaterSample) {
+  sampleView.close();
+  editSample(s);
+}
+
+function correctFromView(s: WaterSample) {
+  sampleView.close();
+  correctSample(s);
+}
+
 function deleteSample(id: string) {
   if (referencedIds.value.has(id)) return;
   confirm.require({
@@ -270,6 +293,7 @@ function deleteSample(id: string) {
         :referenced="referencedIds.has(s.id)"
         :warnings="warningsById.get(s.id) ?? []"
         :limit-set="limitSet"
+        @view="sampleView.open"
         @correct="correctSample"
         @edit="editSample"
         @delete="deleteSample"
@@ -286,6 +310,17 @@ function deleteSample(id: string) {
     v-model:visible="dialogVisible"
     :mode="dialogMode"
     @save="saveSample"
+  />
+
+  <WaterSampleViewDialog
+    v-if="viewVisible && sampleView.sampleId.value"
+    v-model:visible="viewVisible"
+    :sample-id="sampleView.sampleId.value"
+    :retracted="retractedIds.has(sampleView.sampleId.value)"
+    :warnings="warningsById.get(sampleView.sampleId.value) ?? []"
+    :limit-set="limitSet"
+    @edit="editFromView"
+    @correct="correctFromView"
   />
 </template>
 

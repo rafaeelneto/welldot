@@ -1722,7 +1722,34 @@
       "editTooltip": "Edit in place — only to fix typing errors",
       "editWarning": "Editing changes the original record in place, with no trace of what it said before. Use it only to fix typing errors made when entering the data. For an amended lab report or a data revalidation, use Correct instead: it saves a new sample that retracts this one and keeps the history.",
       "editConfirm": "Overwrite the original sample?",
-      "editConfirmInfo": "The changes replace what was recorded for this sample, and the previous values are not kept. Continue only if you are fixing typing errors; for an amended report, cancel and use Correct."
+      "editConfirmInfo": "The changes replace what was recorded for this sample, and the previous values are not kept. Continue only if you are fixing typing errors; for an amended report, cancel and use Correct.",
+      "view": {
+        "open": "View",
+        "close": "Close",
+        "tabs": {
+          "sample": "Sampling",
+          "results": "Results",
+          "links": "Links"
+        },
+        "sections": {
+          "collection": "Collection",
+          "notes": "Notes and documents"
+        },
+        "columns": {
+          "limits": "Limits",
+          "ql": "QL"
+        },
+        "comparingWith": "Comparing against {set}. Values in red exceed the limit.",
+        "links": {
+          "corrects": "Corrects",
+          "correctedBy": "Corrected by",
+          "parent": "Original sample",
+          "children": "Duplicates and splits",
+          "historyLogs": "History log entries",
+          "missing": "Record not found: {id}",
+          "empty": "No links to other records."
+        }
+      }
     }
   },
   "tips": {

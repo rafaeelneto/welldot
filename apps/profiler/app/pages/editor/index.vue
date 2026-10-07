@@ -38,29 +38,35 @@ const profileStore = useProfileStore();
 
 // ─── Active tab ↔ URL hash ────────────────────────────────────────────────────
 // The active tab lives in the URL hash (`/editor#permits`) so a reload keeps
-// it; the default tab (summary) has no hash. The permit open in the read-only
-// permit view is appended to the permits tab (`/editor#permits/<id>`).
+// it; the default tab (summary) has no hash. The record open in a read-only
+// view is appended to its tab: the permit view (`/editor#permits/<id>`) and
+// the water sample view (`/editor#water-quality/<id>`).
 // Opening or clearing a well goes back to the summary. The hash is written
 // with `history.replaceState` (no router navigation): a hash-only route change
 // would make Nuxt's scrollBehavior look for an element with that id.
 
 const activeTabKey = ref<EditorTabKey>(EDITOR_TAB.summary);
 const permitView = usePermitView();
+const waterSampleView = useWaterSampleView();
 
-function readHash(): { tab: EditorTabKey | null; permitId: string | null } {
+/** Tabs whose hash can carry the id of the record open in their view. */
+const recordViews = [
+  { tab: EDITOR_TAB.permits, id: permitView.permitId },
+  { tab: EDITOR_TAB.waterQuality, id: waterSampleView.sampleId },
+] as const;
+
+function readHash(): { tab: EditorTabKey | null; recordId: string | null } {
   const hash = decodeURIComponent(window.location.hash.slice(1));
   const [tab = '', ...rest] = hash.split('/');
-  if (!isEditorTabKey(tab)) return { tab: null, permitId: null };
-  const permitId =
-    tab === EDITOR_TAB.permits && rest.length ? rest.join('/') : null;
-  return { tab, permitId };
+  if (!isEditorTabKey(tab)) return { tab: null, recordId: null };
+  const hasView = recordViews.some(v => v.tab === tab);
+  return { tab, recordId: hasView && rest.length ? rest.join('/') : null };
 }
 
-function writeHash(tab: EditorTabKey, permitId: string | null) {
+function writeHash(tab: EditorTabKey) {
   let hash = tab === EDITOR_TAB.summary ? '' : `#${tab}`;
-  if (tab === EDITOR_TAB.permits && permitId) {
-    hash += `/${encodeURIComponent(permitId)}`;
-  }
+  const recordId = recordViews.find(v => v.tab === tab)?.id.value;
+  if (recordId) hash += `/${encodeURIComponent(recordId)}`;
   if (window.location.hash === hash) return;
   const { pathname, search } = window.location;
   // Keep vue-router's history.state, which it relies on for navigation.
@@ -72,9 +78,11 @@ function writeHash(tab: EditorTabKey, permitId: string | null) {
 }
 
 function applyHash() {
-  const { tab, permitId } = readHash();
+  const { tab, recordId } = readHash();
   activeTabKey.value = tab ?? EDITOR_TAB.summary;
-  permitView.permitId.value = permitId;
+  for (const v of recordViews) {
+    v.id.value = v.tab === tab ? recordId : null;
+  }
 }
 
 onMounted(() => {
@@ -85,23 +93,31 @@ onMounted(() => {
 
 onBeforeUnmount(() => window.removeEventListener('hashchange', applyHash));
 
-// Opening a permit from another tab (e.g. the summary) switches to Permits;
-// leaving Permits closes it.
-watch(permitView.permitId, id => {
-  if (id) activeTabKey.value = EDITOR_TAB.permits;
-});
+// Opening a record view from another tab (e.g. the summary) switches to its
+// tab; leaving the tab closes it.
+for (const v of recordViews) {
+  watch(v.id, id => {
+    if (id) activeTabKey.value = v.tab;
+  });
+}
 watch(activeTabKey, tab => {
-  if (tab !== EDITOR_TAB.permits) permitView.close();
+  for (const v of recordViews) {
+    if (v.tab !== tab) v.id.value = null;
+  }
 });
 
-watch([activeTabKey, permitView.permitId], ([tab, permitId]) => {
-  if (import.meta.client) writeHash(tab, permitId);
-});
+watch(
+  [activeTabKey, permitView.permitId, waterSampleView.sampleId],
+  ([tab]) => {
+    if (import.meta.client) writeHash(tab);
+  },
+);
 
 watch(
   () => profileStore.wellSession,
   () => {
     permitView.close();
+    waterSampleView.close();
     activeTabKey.value = EDITOR_TAB.summary;
   },
 );
