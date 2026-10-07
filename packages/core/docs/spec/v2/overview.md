@@ -97,6 +97,9 @@ v2.3 clarifications:
   across two meters, unknown (never zero or negative) where readings
   do not cover; metered volume takes precedence over estimated
   declared volumes, and reported volumes are never added to totals
+- history_logs category change_of_use is no longer a recommended
+  value; a change of use is an event entry (the current use lives in
+  well_purpose)
 - Jurisdiction neutrality: water quality limits, exceedances and
   national rules are never written to the file; limit sets (WHO, EU,
   Brazil…) are data in @welldot/core and local requirements enter

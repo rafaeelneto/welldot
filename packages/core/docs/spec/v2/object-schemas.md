@@ -483,8 +483,7 @@ These timestamps may differ substantially: a maintenance intervention `datetime`
 | `maintenance`   | Manutenção          | Physical intervention or service task: pump replacement, casing repair, cleaning, redevelopment, meter calibration. Carries the category-specific fields below _(since v2.3)_. |
 | `inspection`    | Inspeção            | Site visit without physical alteration: visual survey, camera inspection, sample collection.                                                                                   |
 | `incident`      | Incidente           | Unplanned event: partial collapse, contamination, prolonged drought, vandalism.                                                                                                |
-| `event`         | Evento              | Generic milestone: construction completion, commissioning, deactivation, reactivation, ownership transfer, rehabilitation, data-integrity repair.                              |
-| `change_of_use` | Mudança de uso      | _(since v2.1)_ The well's purpose changed (e.g. production → monitoring). Update `well_purpose` to the new use and log the change here.                                        |
+| `event`         | Evento              | Generic milestone: construction completion, commissioning, change of use, ownership transfer, rehabilitation, data-integrity repair.                                           |
 | `status_change` | Mudança de situação | _(since v2.3)_ The well's operating status changed (e.g. active → inactive). Carries the category-specific fields below.                                                       |
 
 Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.

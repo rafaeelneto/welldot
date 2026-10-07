@@ -11,7 +11,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   incident: 'ph:warning-duotone',
   event: 'ph:flag-duotone',
   status_change: 'ph:traffic-signal-duotone',
-  change_of_use: 'ph:swap-duotone',
 };
 
 export function useHistoryLogCategories() {
@@ -43,7 +42,6 @@ export function useHistoryLogCategories() {
       incident: 'danger',
       event: 'secondary',
       status_change: 'info',
-      change_of_use: 'secondary',
     };
     return map[category] ?? 'secondary';
   }

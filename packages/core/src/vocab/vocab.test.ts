@@ -218,10 +218,6 @@ describe('recommended vocabularies', () => {
       );
     },
   );
-
-  it('offers history log category change_of_use', () => {
-    expect(vocabValues(HISTORY_LOG_CATEGORIES)).toContain('change_of_use');
-  });
 });
 
 describe('getVocabLabel', () => {

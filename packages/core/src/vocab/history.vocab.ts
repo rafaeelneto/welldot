@@ -10,10 +10,6 @@ export const HISTORY_LOG_CATEGORIES = [
     value: 'status_change',
     label: { en: 'Status change', pt: 'Mudança de situação' },
   },
-  {
-    value: 'change_of_use',
-    label: { en: 'Change of use', pt: 'Mudança de uso' },
-  },
 ] as const satisfies readonly VocabEntry[];
 
 export type HistoryLogCategory =

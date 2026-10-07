@@ -271,7 +271,7 @@ Non-canonical values SHOULD use the `x-` prefix (e.g. `x-radial_collector`).
 
 ## `well_purpose` — Recommended values _(since v2.1)_
 
-`well_purpose` is an optional array of strings giving the well's current intended use(s). A well may have more than one purpose (e.g. `["production", "monitoring"]`). Changes of use over time belong in `history_logs` (category `change_of_use`). Non-canonical values SHOULD use the `x-` prefix.
+`well_purpose` is an optional array of strings giving the well's current intended use(s). A well may have more than one purpose (e.g. `["production", "monitoring"]`). Changes of use over time belong in `history_logs` (category `event`). Non-canonical values SHOULD use the `x-` prefix.
 
 | Value                   | Portuguese (BR)                 | Description                                                      |
 | ----------------------- | ------------------------------- | ---------------------------------------------------------------- |
@@ -484,7 +484,6 @@ Non-canonical values SHOULD use the `x-` prefix.
 | `inspection`    | Inspeção            | —                                                                                              |
 | `incident`      | Incidente           | —                                                                                              |
 | `event`         | Evento              | —                                                                                              |
-| `change_of_use` | Mudança de uso      | — _(since v2.1)_                                                                               |
 | `status_change` | Mudança de situação | `status` _(since v2.3)_                                                                        |
 
 Descriptions are in object-schemas.md § `history_logs[]`. Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. Non-canonical values SHOULD use the `x-` prefix.
