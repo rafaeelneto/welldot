@@ -74,24 +74,16 @@ const form = reactive({
   author: '',
   severity: '' as string,
   attachments: [] as Attachment[],
+  // Data links, any category
+  hydrodynamicEventIds: [] as string[],
+  sampleIds: [] as string[],
   // `maintenance`
   maintenanceType: null as string | null,
   pumpInstallationId: null as string | null,
   meterId: null as string | null,
-  eventId: null as string | null,
-  // `maintenance` (water_sampling)
-  sampleId: null as string | null,
   // `status_change`
   status: null as WellStatus | null,
 });
-
-/** Sample link: water sampling tasks (.well v2.3). */
-const showSampleField = computed(
-  () =>
-    (sampleOptions.value.length || !!form.sampleId) &&
-    form.category === 'maintenance' &&
-    (form.maintenanceType === 'water_sampling' || !!form.sampleId),
-);
 
 const isFormValid = computed(
   () =>
@@ -117,11 +109,11 @@ function seedForm(entry: HistoryLogEntry | null) {
   form.author = entry?.author ?? '';
   form.severity = entry?.severity ?? '';
   form.attachments = (entry?.attachments ?? []).map(a => ({ ...a }));
+  form.hydrodynamicEventIds = [...(entry?.hydrodynamic_event_ids ?? [])];
+  form.sampleIds = [...(entry?.sample_ids ?? [])];
   form.maintenanceType = entry?.maintenance_type ?? null;
   form.pumpInstallationId = entry?.pump_installation_id ?? null;
   form.meterId = entry?.meter_id ?? null;
-  form.eventId = entry?.event_id ?? null;
-  form.sampleId = entry?.sample_id ?? null;
   form.status = entry?.status ?? null;
 }
 
@@ -147,14 +139,16 @@ function saveEntry() {
     attachments: form.attachments.length
       ? form.attachments.map(a => ({ ...a }))
       : undefined,
+    hydrodynamic_event_ids: form.hydrodynamicEventIds.length
+      ? [...form.hydrodynamicEventIds]
+      : undefined,
+    sample_ids: form.sampleIds.length ? [...form.sampleIds] : undefined,
     updated_at: new Date().toISOString(),
   };
   if (next.category === 'maintenance') {
     next.maintenance_type = form.maintenanceType?.trim() || undefined;
     next.pump_installation_id = form.pumpInstallationId || undefined;
     next.meter_id = form.meterId || undefined;
-    next.event_id = form.eventId || undefined;
-    next.sample_id = form.sampleId || undefined;
   }
   if (next.category === 'status_change') {
     next.status = form.status ?? undefined;
@@ -164,8 +158,6 @@ function saveEntry() {
     delete next.maintenance_type;
     delete next.pump_installation_id;
     delete next.meter_id;
-    delete next.event_id;
-    delete next.sample_id;
   }
   if (next.category !== 'status_change') delete next.status;
   for (const key of Object.keys(next) as (keyof HistoryLogEntry)[]) {
@@ -256,37 +248,33 @@ function saveEntry() {
             class="w-full"
           />
         </LabeledField>
-        <LabeledField
-          v-if="eventOptions.length"
-          :label="t('editor.historyLog.logs.fields.event')"
-          :info="t('editor.historyLog.logs.fields.eventInfo')"
-          class="sm:col-span-2"
-        >
-          <Select
-            v-model="form.eventId"
-            :options="eventOptions"
-            option-label="label"
-            option-value="value"
-            show-clear
-            class="w-full"
-          />
-        </LabeledField>
       </div>
 
-      <!-- ── maintenance (water_sampling): sample link ── -->
+      <!-- ── data links (any category, .well v2.3) ─────────────────────── -->
       <LabeledField
-        v-if="showSampleField"
-        :label="t('editor.historyLog.logs.fields.sample')"
-        :info="t('editor.historyLog.logs.fields.sampleInfo')"
+        v-if="eventOptions.length || form.hydrodynamicEventIds.length"
+        :label="t('editor.historyLog.logs.fields.events')"
+        :info="t('editor.historyLog.logs.fields.eventsInfo')"
       >
-        <Select
-          v-model="form.sampleId"
-          :options="sampleOptions"
-          option-label="label"
-          option-value="value"
-          show-clear
+        <TagSelect
+          v-model="form.hydrodynamicEventIds"
+          :options="eventOptions"
+          :placeholder="t('editor.historyLog.logs.fields.addEvent')"
+          :remove-label="t('editor.historyLog.logs.fields.removeLink')"
           filter
-          class="w-full"
+        />
+      </LabeledField>
+      <LabeledField
+        v-if="sampleOptions.length || form.sampleIds.length"
+        :label="t('editor.historyLog.logs.fields.samples')"
+        :info="t('editor.historyLog.logs.fields.samplesInfo')"
+      >
+        <TagSelect
+          v-model="form.sampleIds"
+          :options="sampleOptions"
+          :placeholder="t('editor.historyLog.logs.fields.addSample')"
+          :remove-label="t('editor.historyLog.logs.fields.removeLink')"
+          filter
         />
       </LabeledField>
 

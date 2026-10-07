@@ -82,18 +82,28 @@ function toggleCategory(cat: string) {
   activeCategory.value = activeCategory.value === cat ? null : cat;
 }
 
-/** Linked water sample (`sample_id`, .well v2.3), or the raw id when unresolved. */
-function sampleRef(entry: HistoryLogEntry): string | null {
-  if (!entry.sample_id) return null;
-  const sample = profileStore.well.water_samples?.find(
-    s => s.id === entry.sample_id,
-  );
-  return sample ? sampleLabel(sample, locale.value) : entry.sample_id;
+/**
+ * Linked events and samples (`hydrodynamic_event_ids` / `sample_ids`, .well
+ * v2.3), any category; unresolved ids are shown raw.
+ */
+function linksRef(entry: HistoryLogEntry): string | null {
+  const well = profileStore.well;
+  const events = (entry.hydrodynamic_event_ids ?? []).map(id => {
+    const event = well.hydrodynamic_events?.find(e => e.id === id);
+    return event
+      ? `${eventTypeLabel(event.type)} · ${formatDate(event.datetime, 'dd/MM/yyyy')}`
+      : id;
+  });
+  const samples = (entry.sample_ids ?? []).map(id => {
+    const sample = well.water_samples?.find(s => s.id === id);
+    return sample ? sampleLabel(sample, locale.value) : id;
+  });
+  return [...events, ...samples].join(' · ') || null;
 }
 
 // ─── maintenance / status_change (.well v2.3) ────────────────────────────────
 
-/** "Pump service · Submersible Acme · 01/02/2024 · Constant rate · 03/02/2024". */
+/** "Pump service · Submersible Acme · 01/02/2024 · Meter …". */
 function maintenanceRef(entry: HistoryLogEntry): string | null {
   if (entry.category !== 'maintenance') return null;
   const well = profileStore.well;
@@ -102,9 +112,6 @@ function maintenanceRef(entry: HistoryLogEntry): string | null {
     : undefined;
   const meter = entry.meter_id
     ? well.meters?.find(m => m.id === entry.meter_id)
-    : undefined;
-  const event = entry.event_id
-    ? well.hydrodynamic_events?.find(e => e.id === entry.event_id)
     : undefined;
   return (
     [
@@ -115,10 +122,6 @@ function maintenanceRef(entry: HistoryLogEntry): string | null {
         ? pumpInstallationLabel(pump, locale.value)
         : entry.pump_installation_id,
       meter ? meterLabel(meter, t, locale.value) : entry.meter_id,
-      event
-        ? `${eventTypeLabel(event.type)} · ${formatDate(event.datetime, 'dd/MM/yyyy')}`
-        : entry.event_id,
-      sampleRef(entry),
     ]
       .filter(Boolean)
       .join(' · ') || null
@@ -389,6 +392,13 @@ function entryActions(entry: HistoryLogEntry): RecordAction[] {
             >
               <Icon name="ph:wrench-duotone" class="size-3.5 shrink-0" />
               {{ maintenanceRef(entry) }}
+            </span>
+            <span
+              v-if="linksRef(entry)"
+              class="flex items-center gap-1.5 text-xs text-content-400"
+            >
+              <Icon name="ph:link-duotone" class="size-3.5 shrink-0" />
+              {{ linksRef(entry) }}
             </span>
             <p
               class="text-sm leading-relaxed whitespace-pre-line m-0 transition-all"

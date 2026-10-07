@@ -264,12 +264,12 @@ export const HistoryLogEntrySchema = z.object({
   author: z.string().optional(),
   severity: z.string().optional(),
   attachments: z.array(AttachmentSchema).optional(),
+  hydrodynamic_event_ids: z.array(z.string()).optional(),
+  sample_ids: z.array(z.string()).optional(),
   maintenance_type: z.string().optional(),
   pump_installation_id: z.string().optional(),
   meter_id: z.string().optional(),
   status: WellStatusSchema.optional(),
-  event_id: z.string().optional(),
-  sample_id: z.string().optional(),
 });
 
 export const AquiferAnalysisSchema = z.object({

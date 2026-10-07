@@ -490,16 +490,18 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
 ### `HistoryLogEntry`
 
-| Field         | Type           | Required | Description                                                                                                                                                                                                              |
-| ------------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `id`          | string         | yes      | Unique within `history_logs`.                                                                                                                                                                                            |
-| `datetime`    | string         | yes      | RFC 3339 datetime with mandatory UTC offset. When the logged event occurred.                                                                                                                                             |
-| `updated_at`  | string         | no       | RFC 3339 datetime with mandatory UTC offset. When this entry was most recently created or edited. When omitted, treated as equal to `datetime`. Producers SHOULD set this field whenever they create or modify an entry. |
-| `category`    | string         | yes      | Event category.                                                                                                                                                                                                          |
-| `description` | string         | yes      | Free-text account: work performed, findings, or incident narrative.                                                                                                                                                      |
-| `author`      | string         | no       | Person or company responsible for the record.                                                                                                                                                                            |
-| `severity`    | string         | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `history_logs[].severity`.                                                                                                                             |
-| `attachments` | `Attachment[]` | no       | Supporting documents or photos. See § Attachment.                                                                                                                                                                        |
+| Field                    | Type           | Required | Description                                                                                                                                                                                                              |
+| ------------------------ | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`                     | string         | yes      | Unique within `history_logs`.                                                                                                                                                                                            |
+| `datetime`               | string         | yes      | RFC 3339 datetime with mandatory UTC offset. When the logged event occurred.                                                                                                                                             |
+| `updated_at`             | string         | no       | RFC 3339 datetime with mandatory UTC offset. When this entry was most recently created or edited. When omitted, treated as equal to `datetime`. Producers SHOULD set this field whenever they create or modify an entry. |
+| `category`               | string         | yes      | Event category.                                                                                                                                                                                                          |
+| `description`            | string         | yes      | Free-text account: work performed, findings, or incident narrative.                                                                                                                                                      |
+| `author`                 | string         | no       | Person or company responsible for the record.                                                                                                                                                                            |
+| `severity`               | string         | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `history_logs[].severity`.                                                                                                                             |
+| `attachments`            | `Attachment[]` | no       | Supporting documents or photos. See § Attachment.                                                                                                                                                                        |
+| `hydrodynamic_event_ids` | string[]       | no       | _(since v2.3)_ `hydrodynamic_events[].id`s holding the data produced or observed by this entry. Valid on every category. See § Data links.                                                                               |
+| `sample_ids`             | string[]       | no       | _(since v2.3)_ `water_samples[].id`s collected or concerned by this entry. Valid on every category. See § Data links.                                                                                                    |
 
 ### `updated_at` semantics
 
@@ -510,6 +512,12 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
 `Attachment` is a common type since v2.3; see § Common Types — `Attachment`.
 
+### Data links _(since v2.3)_
+
+A log entry records that something was done or observed; measured values belong in their own block and are referenced by id, never copied into the log. `hydrodynamic_event_ids` and `sample_ids` link an entry of any category to that data: a `level_measurement` maintenance points to its `spot_measurement` event, a `pump_test` to its `constant_rate` or `step_drawdown` event, a `water_sampling` task or an `inspection` visit to the samples it collected (a sample, its field duplicate and a blank are three ids), and an `incident` to the sample that revealed a contamination. The log keeps what the data block does not: crew, cost, invoices and the narrative of the task.
+
+Both fields are arrays of distinct ids from this same file. An id that does not resolve emits a warning. A link to a ledger entry that was later retracted (`corrects`) is not rewritten; consumers resolve it to the entry in force when needed.
+
 ### Category-specific fields _(since v2.3)_
 
 Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. They are optional in the schema: a missing required category field (e.g. `maintenance_type` on a `maintenance` entry) surfaces as a warning, never a rejection.
@@ -518,15 +526,13 @@ Permit condition fulfillment is not a log category: it is recorded on the condit
 
 #### `maintenance`
 
-| Field                  | Type   | Required | Description                                                        |
-| ---------------------- | ------ | -------- | ------------------------------------------------------------------ |
-| `maintenance_type`     | string | yes      | See format-reference.md § `history_logs[].maintenance_type`.       |
-| `pump_installation_id` | string | no       | `pump_installations[].id` the task concerns.                       |
-| `meter_id`             | string | no       | `meters[].id` the task concerns (e.g. a `meter_calibration`).      |
-| `event_id`             | string | no       | `hydrodynamic_events[].id` holding the data produced by this task. |
-| `sample_id`            | string | no       | `water_samples[].id` collected by this task (`water_sampling`).    |
+| Field                  | Type   | Required | Description                                                   |
+| ---------------------- | ------ | -------- | ------------------------------------------------------------- |
+| `maintenance_type`     | string | yes      | See format-reference.md § `history_logs[].maintenance_type`.  |
+| `pump_installation_id` | string | no       | `pump_installations[].id` the task concerns.                  |
+| `meter_id`             | string | no       | `meters[].id` the task concerns (e.g. a `meter_calibration`). |
 
-A maintenance entry records that the task was done. Measured values belong in their own block and are referenced by id, never copied into the log: a `level_measurement` points to the `spot_measurement` event with `event_id`, a `pump_test` to its `constant_rate` or `step_drawdown` event, and a `water_sampling` task to the sample it collected with `sample_id` _(since v2.3)_. Results are never copied into the log.
+The data a task produced is linked with `hydrodynamic_event_ids` / `sample_ids` (see § Data links), never copied into the log.
 
 #### `status_change`
 
@@ -1535,8 +1541,8 @@ A ledger of water samples, each with its field and laboratory results. The full 
       "datetime": "2026-09-15T09:30:00-03:00",
       "category": "maintenance",
       "maintenance_type": "water_sampling",
-      "sample_id": "ws-2026-09-a",
-      "event_id": "e5f6a7b8-c9d0-1234-efab-567890123456",
+      "sample_ids": ["ws-2026-09-a", "ws-2026-09-b"],
+      "hydrodynamic_event_ids": ["e5f6a7b8-c9d0-1234-efab-567890123456"],
       "description": "Coleta de baixa vazão com duplicata de campo; nível medido antes da coleta.",
       "author": "Field team A"
     }

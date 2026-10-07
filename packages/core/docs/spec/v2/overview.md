@@ -45,8 +45,10 @@ v2.3 additions:
   maintenance, inactive, decommissioned, abandoned): the well's
   operating status; current status is unknown without one
 - history_logs category maintenance gains maintenance_type,
-  pump_installation_id, meter_id and event_id: references to the data
-  a task produced, never copies of measured values
+  pump_installation_id and meter_id
+- history_logs gains hydrodynamic_event_ids and sample_ids (any
+  category): references to the data an entry produced or observed,
+  never copies of measured values
 - hydrodynamic_events[].corrects: retracts an earlier event (ledger
   correction)
 - hydrodynamic_events[].attachments, aquifer_analysis[].attachments
@@ -71,9 +73,8 @@ v2.3 additions:
 - _resolution convention: analyzed_at_resolution and
   laboratory.received_at_resolution set to "day" mark an instant
   known only by its date; consumers MUST ignore the time of day
-- history_logs gains sample_id (maintenance with maintenance_type
-  water_sampling); permit condition fulfillments gain sample_id (e.g.
-  a water-quality monitoring condition)
+- permit condition fulfillments gain sample_id (e.g. a water-quality
+  monitoring condition)
 - Recommended vocabularies for drilling_method, construction materials
   (well_case / well_screen / reduction type, riser_material),
   centralizer steels, cement_pad.type, history_logs severity,

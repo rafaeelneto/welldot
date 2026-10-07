@@ -62,7 +62,7 @@
 
 Minor revisions (`2.1`, `2.3`, …) are additive and do not change the `version` integer: a v2.3 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
 
-The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `water_samples`, `hydrodynamic_events[].corrects`, the category-specific fields of `history_logs` (`maintenance`, `status_change`, including `sample_id`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
+The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `water_samples`, `hydrodynamic_events[].corrects`, the `history_logs` data links (`hydrodynamic_event_ids`, `sample_ids`) and category-specific fields (`maintenance`, `status_change`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
 
 ### Parser version handling
 
@@ -478,13 +478,13 @@ Non-canonical values SHOULD use the `x-` prefix.
 
 ## `history_logs[].category` — Recommended values
 
-| Value           | Portuguese (BR)     | Category-specific fields                                                                       |
-| --------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
-| `maintenance`   | Manutenção          | `maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`, `sample_id` _(since v2.3)_ |
-| `inspection`    | Inspeção            | —                                                                                              |
-| `incident`      | Incidente           | —                                                                                              |
-| `event`         | Evento              | —                                                                                              |
-| `status_change` | Mudança de situação | `status` _(since v2.3)_                                                                        |
+| Value           | Portuguese (BR)     | Category-specific fields                                              |
+| --------------- | ------------------- | --------------------------------------------------------------------- |
+| `maintenance`   | Manutenção          | `maintenance_type`, `pump_installation_id`, `meter_id` _(since v2.3)_ |
+| `inspection`    | Inspeção            | —                                                                     |
+| `incident`      | Incidente           | —                                                                     |
+| `event`         | Evento              | —                                                                     |
+| `status_change` | Mudança de situação | `status` _(since v2.3)_                                               |
 
 Descriptions are in object-schemas.md § `history_logs[]`. Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -932,24 +932,24 @@ An ID value MAY repeat across different arrays without conflict (e.g. an event a
 
 The following fields hold references to IDs in other arrays:
 
-| Reference field                                       | Points to                                  | Resolution scope |
-| ----------------------------------------------------- | ------------------------------------------ | ---------------- |
-| `aquifer_analysis[].source_event_ids[]`               | `hydrodynamic_events[].id`                 | Same file only   |
-| `aquifer_analysis[].static_level_source_id`           | `hydrodynamic_events[].id`                 | Same file only   |
-| `hydrodynamic_events[].corrects`                      | `hydrodynamic_events[].id`                 | Same file only   |
-| `production[].corrects`                               | `production[].id`                          | Same file only   |
-| `production[].meter_id`                               | `meters[].id`                              | Same file only   |
-| `permits[].supersedes`                                | `permits[].id`                             | Same file only   |
-| `history_logs[].pump_installation_id`                 | `pump_installations[].id`                  | Same file only   |
-| `history_logs[].meter_id`                             | `meters[].id`                              | Same file only   |
-| `history_logs[].event_id`                             | `hydrodynamic_events[].id` (`maintenance`) | Same file only   |
-| `history_logs[].sample_id`                            | `water_samples[].id` (`maintenance`)       | Same file only   |
-| `permits[].conditions[].fulfillments[].event_id`      | `hydrodynamic_events[].id`                 | Same file only   |
-| `permits[].conditions[].fulfillments[].sample_id`     | `water_samples[].id`                       | Same file only   |
-| `water_samples[].corrects`                            | `water_samples[].id`                       | Same file only   |
-| `water_samples[].parent_sample_id`                    | `water_samples[].id`                       | Same file only   |
-| `water_samples[].static_level_event_id`               | `hydrodynamic_events[].id`                 | Same file only   |
-| `water_samples[].sampling_point.pump_installation_id` | `pump_installations[].id`                  | Same file only   |
+| Reference field                                       | Points to                  | Resolution scope |
+| ----------------------------------------------------- | -------------------------- | ---------------- |
+| `aquifer_analysis[].source_event_ids[]`               | `hydrodynamic_events[].id` | Same file only   |
+| `aquifer_analysis[].static_level_source_id`           | `hydrodynamic_events[].id` | Same file only   |
+| `hydrodynamic_events[].corrects`                      | `hydrodynamic_events[].id` | Same file only   |
+| `production[].corrects`                               | `production[].id`          | Same file only   |
+| `production[].meter_id`                               | `meters[].id`              | Same file only   |
+| `permits[].supersedes`                                | `permits[].id`             | Same file only   |
+| `history_logs[].pump_installation_id`                 | `pump_installations[].id`  | Same file only   |
+| `history_logs[].meter_id`                             | `meters[].id`              | Same file only   |
+| `history_logs[].hydrodynamic_event_ids[]`             | `hydrodynamic_events[].id` | Same file only   |
+| `history_logs[].sample_ids[]`                         | `water_samples[].id`       | Same file only   |
+| `permits[].conditions[].fulfillments[].event_id`      | `hydrodynamic_events[].id` | Same file only   |
+| `permits[].conditions[].fulfillments[].sample_id`     | `water_samples[].id`       | Same file only   |
+| `water_samples[].corrects`                            | `water_samples[].id`       | Same file only   |
+| `water_samples[].parent_sample_id`                    | `water_samples[].id`       | Same file only   |
+| `water_samples[].static_level_event_id`               | `hydrodynamic_events[].id` | Same file only   |
+| `water_samples[].sampling_point.pump_installation_id` | `pump_installations[].id`  | Same file only   |
 
 Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
 

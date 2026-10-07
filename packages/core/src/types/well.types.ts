@@ -762,6 +762,13 @@ export type HistoryLogEntry = {
   /** Recommended values: {@link HISTORY_LOG_SEVERITIES}. */
   severity?: OpenVocab<HistoryLogSeverity>;
   attachments?: Attachment[];
+  /**
+   * `hydrodynamic_events[].id`s holding the data produced or observed by the
+   * entry (any category). Since v2.3.
+   */
+  hydrodynamic_event_ids?: string[];
+  /** `water_samples[].id`s collected or concerned by the entry (any category). Since v2.3. */
+  sample_ids?: string[];
 
   // Category-specific fields (since v2.3). MUST be absent on entries of
   // other categories.
@@ -773,13 +780,6 @@ export type HistoryLogEntry = {
   pump_installation_id?: string;
   /** `meters[].id` the task concerns. */
   meter_id?: string;
-  /** `hydrodynamic_events[].id` holding the data produced by the task. */
-  event_id?: string;
-  /**
-   * `water_samples[].id` collected by the task (`maintenance_type:
-   * "water_sampling"`).
-   */
-  sample_id?: string;
 
   // `status_change`
   /** The well's situation from this entry on. Closed vocabulary. */

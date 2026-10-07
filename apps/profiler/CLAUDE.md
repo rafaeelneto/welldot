@@ -62,8 +62,9 @@ app/                      ← srcDir
                              utils/waterQualityVocab.ts; "compare against" limit set in
                              `uiStore.waterQualityLimitSet`; derivations/warnings from
                              @welldot/utils); History log dialog edits `maintenance`
-                             fields and `status_change` status (current well status
-                             tag); root `attachments`
+                             fields, `status_change` status (current well status
+                             tag) and the `hydrodynamic_event_ids` / `sample_ids` links
+                             of any category (`TagSelect`: chips above a Select); root `attachments`
                              (general files) live in the General tab below Observations
   layouts/
     landing.vue           ← layout for the landing page

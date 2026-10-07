@@ -305,7 +305,7 @@ const children = computed(() =>
 
 const historyLogs = computed(() =>
   (profileStore.well.history_logs ?? [])
-    .filter(l => l.sample_id === props.sampleId)
+    .filter(l => l.sample_ids?.includes(props.sampleId))
     .sort(
       (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
     ),

@@ -26,7 +26,7 @@ const retractedIds = computed(() => getRetractedSampleIds(profileStore.well));
 
 /**
  * Samples another record points to (`corrects`, `parent_sample_id`,
- * `history_logs[].sample_id`) — deleting them would leave dangling references.
+ * `history_logs[].sample_ids`) — deleting them would leave dangling references.
  */
 const referencedIds = computed(() => {
   const ids = new Set<string>();
@@ -35,7 +35,7 @@ const referencedIds = computed(() => {
     if (s.parent_sample_id) ids.add(s.parent_sample_id);
   }
   for (const log of profileStore.well.history_logs ?? []) {
-    if (log.sample_id) ids.add(log.sample_id);
+    for (const id of log.sample_ids ?? []) ids.add(id);
   }
   return ids;
 });

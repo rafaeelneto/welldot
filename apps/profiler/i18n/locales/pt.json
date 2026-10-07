@@ -862,12 +862,16 @@
           "maintenanceType": "Tipo de manutenção",
           "pumpInstallation": "Instalação de bomba",
           "meter": "Hidrômetro",
-          "event": "Evento hidrodinâmico",
-          "eventInfo": "Evento com os dados produzidos por esta tarefa, ex. o nível medido ou o teste de bombeamento realizado.",
+          "events": "Eventos hidrodinâmicos",
+          "eventsInfo": "Eventos com os dados produzidos ou observados neste registro, ex. o nível medido ou o teste de bombeamento realizado.",
+          "addEvent": "Adicionar evento…",
           "status": "Situação",
           "statusInfo": "A mudança de situação mais recente define a situação atual do poço.",
           "sample": "Amostra de água",
-          "sampleInfo": "Amostra de água coletada nesta tarefa ou que cumpriu a condicionante."
+          "samples": "Amostras de água",
+          "samplesInfo": "Amostras de água coletadas ou relacionadas a este registro.",
+          "addSample": "Adicionar amostra…",
+          "removeLink": "Remover vínculo"
         }
       },
       "events": {

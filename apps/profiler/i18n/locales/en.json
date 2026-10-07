@@ -862,12 +862,16 @@
           "maintenanceType": "Maintenance type",
           "pumpInstallation": "Pump installation",
           "meter": "Meter",
-          "event": "Hydrodynamic event",
-          "eventInfo": "Event holding the data produced by this task, e.g. the level measured or the pumping test performed.",
+          "events": "Hydrodynamic events",
+          "eventsInfo": "Events holding the data produced or observed in this entry, e.g. the level measured or the pumping test performed.",
+          "addEvent": "Add event…",
           "status": "Status",
           "statusInfo": "The latest status change sets the current status of the well.",
           "sample": "Water sample",
-          "sampleInfo": "Water sample collected by this task, or that fulfilled the condition."
+          "samples": "Water samples",
+          "samplesInfo": "Water samples collected or concerned by this entry.",
+          "addSample": "Add sample…",
+          "removeLink": "Remove link"
         }
       },
       "events": {

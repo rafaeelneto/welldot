@@ -1014,6 +1014,18 @@
               "$ref": "#/properties/hydrodynamic_events/items/anyOf/0/anyOf/0/properties/attachments/items"
             }
           },
+          "hydrodynamic_event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sample_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "maintenance_type": {
             "type": "string"
           },
@@ -1032,12 +1044,6 @@
               "decommissioned",
               "abandoned"
             ]
-          },
-          "event_id": {
-            "type": "string"
-          },
-          "sample_id": {
-            "type": "string"
           }
         },
         "required": [

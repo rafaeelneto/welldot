@@ -2242,7 +2242,7 @@ describe('v2.3 — meters, production, operating_regime and log fields', () => {
         maintenance_type: 'meter_calibration',
         meter_id: 'hm-01',
         pump_installation_id: 'pump-02',
-        event_id: 'ev-1',
+        hydrodynamic_event_ids: ['ev-1'],
       },
     ],
   };
@@ -2486,7 +2486,7 @@ describe('v2.3 — water_samples', () => {
         category: 'maintenance',
         description: 'Quarterly sampling',
         maintenance_type: 'water_sampling',
-        sample_id: 'ws-2026-09-a',
+        sample_ids: ['ws-2026-09-a', 'ws-2026-09-b'],
       },
     ],
   };
@@ -2509,7 +2509,10 @@ describe('v2.3 — water_samples', () => {
     const well = parseWell(JSON.stringify(WQ_DOC));
     expect(well.water_samples).toHaveLength(2);
     expect(well.water_samples![0]!.results).toHaveLength(8);
-    expect(well.history_logs![0]!.sample_id).toBe('ws-2026-09-a');
+    expect(well.history_logs![0]!.sample_ids).toEqual([
+      'ws-2026-09-a',
+      'ws-2026-09-b',
+    ]);
   });
 
   it('round-trips through serialize and deserialize', () => {

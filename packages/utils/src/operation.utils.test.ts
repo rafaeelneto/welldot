@@ -796,26 +796,20 @@ describe('getOperationWarnings', () => {
           id: 'p',
           category: 'status_change',
           status: 'active',
-          sample_id: 'x',
-        }),
-        log({
-          id: 'e',
-          category: 'status_change',
-          status: 'active',
-          event_id: 'e1',
+          pump_installation_id: 'x',
         }),
         log({
           id: 'ok',
           category: 'maintenance',
           maintenance_type: 'pump_test',
-          event_id: 'e1',
+          hydrodynamic_event_ids: ['e1'],
         }),
       ],
     });
     const flagged = getOperationWarnings(well, TODAY)
       .filter(w => w.code === 'log_category_field_mismatch')
       .map(w => w.ids[0]);
-    expect(flagged).toEqual(['m', 's', 'p', 'e']);
+    expect(flagged).toEqual(['m', 's', 'p']);
   });
 
   it('flags unresolved pump, meter and event references', () => {
@@ -838,7 +832,7 @@ describe('getOperationWarnings', () => {
           id: 'c',
           category: 'maintenance',
           maintenance_type: 'pump_test',
-          event_id: 'nope',
+          hydrodynamic_event_ids: ['nope'],
         }),
       ],
     });
@@ -848,8 +842,15 @@ describe('getOperationWarnings', () => {
     expect(flagged).toEqual(['a', 'c']);
   });
 
-  it('accepts sample_id only on maintenance entries', () => {
+  it('accepts event and sample links on every category', () => {
     const well = makeWell({
+      hydrodynamic_events: [
+        {
+          id: 'e1',
+          type: 'spot_measurement',
+          datetime: '2025-01-01T00:00:00Z',
+        },
+      ] as HydrodynamicEvent[],
       water_samples: [
         {
           id: 'ws1',
@@ -865,18 +866,23 @@ describe('getOperationWarnings', () => {
           id: 'maint',
           category: 'maintenance',
           maintenance_type: 'water_sampling',
-          sample_id: 'ws1',
+          sample_ids: ['ws1'],
         }),
-        log({ id: 'bad', category: 'other', sample_id: 'ws1' }),
+        log({ id: 'insp', category: 'inspection', sample_ids: ['ws1'] }),
+        log({
+          id: 'inc',
+          category: 'incident',
+          hydrodynamic_event_ids: ['e1'],
+          sample_ids: ['ws1'],
+        }),
       ],
     });
-    const flagged = getOperationWarnings(well, TODAY)
-      .filter(w => w.code === 'log_category_field_mismatch')
-      .map(w => w.ids[0]);
-    expect(flagged).toEqual(['bad']);
+    const codes = getOperationWarnings(well, TODAY).map(w => w.code);
+    expect(codes).not.toContain('log_category_field_mismatch');
+    expect(codes).not.toContain('log_reference_unresolved');
   });
 
-  it('flags an unresolved sample_id', () => {
+  it('flags an unresolved id in sample_ids', () => {
     const well = makeWell({
       water_samples: [
         {
@@ -893,15 +899,15 @@ describe('getOperationWarnings', () => {
           id: 'ok',
           category: 'maintenance',
           maintenance_type: 'water_sampling',
-          sample_id: 'ws1',
+          sample_ids: ['ws1'],
         }),
         log({
           id: 'missing',
           category: 'maintenance',
           maintenance_type: 'water_sampling',
-          sample_id: 'ws-nope',
+          sample_ids: ['ws1', 'ws-nope'],
         }),
-        log({ id: 'untyped', category: 'maintenance', sample_id: 'ws1' }),
+        log({ id: 'untyped', category: 'maintenance', sample_ids: ['ws1'] }),
       ],
     });
     const warnings = getOperationWarnings(well, TODAY);
@@ -910,11 +916,10 @@ describe('getOperationWarnings', () => {
         .filter(w => w.code === 'log_reference_unresolved')
         .map(w => w.ids[0]),
     ).toEqual(['missing']);
-    expect(
-      warnings
-        .filter(w => w.code === 'missing_maintenance_type')
-        .map(w => w.ids[0]),
-    ).toEqual(['untyped']);
+    // Links are not maintenance fields: they don't call for maintenance_type.
+    expect(warnings.filter(w => w.code === 'missing_maintenance_type')).toEqual(
+      [],
+    );
   });
 
   it('flags entries dated after a decommission still in force', () => {
