@@ -1,0 +1,78 @@
+{
+  "name": "@welldot/pdf",
+  "version": "0.1.0",
+  "description": "Customizable PDF report export for .well water well profiles, built on pdfmake",
+  "license": "Apache-2.0",
+  "keywords": [
+    "pdf",
+    "pdfmake",
+    "geology",
+    "well",
+    "report",
+    "lithology",
+    "well-profiler"
+  ],
+  "author": {
+    "name": "Rafael Neto",
+    "email": "rafaelneto.g@gmail.com"
+  },
+  "homepage": "https://github.com/rafaeelneto/welldot#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafaeelneto/welldot.git",
+    "directory": "packages/pdf"
+  },
+  "bugs": {
+    "url": "https://github.com/rafaeelneto/welldot/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./fonts": {
+      "types": "./dist/fonts.d.ts",
+      "import": "./dist/fonts.js",
+      "require": "./dist/fonts.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm run build && pnpm run test"
+  },
+  "dependencies": {
+    "@welldot/core": "workspace:*",
+    "@welldot/render": "workspace:*",
+    "@welldot/utils": "workspace:*",
+    "date-fns": "^4.1.0",
+    "pdfmake": "^0.3.7",
+    "uqr": "^0.1.3"
+  },
+  "devDependencies": {
+    "@welldot/lint": "workspace:*",
+    "jsdom": "^23.2.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.3.3",
+    "vite": "^8.0.9",
+    "vitest": "^4.1.5"
+  }
+}

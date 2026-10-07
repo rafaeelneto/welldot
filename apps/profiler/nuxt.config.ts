@@ -139,7 +139,15 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      include: ['@vueuse/core', 'd3', 'd3-tip', 'textures', 'sanitize-html'],
+      include: [
+        '@vueuse/core',
+        'd3',
+        'd3-tip',
+        'textures',
+        'sanitize-html',
+        // CJS browser build lazy-loaded by @welldot/pdf.
+        '@welldot/pdf > pdfmake/build/pdfmake',
+      ],
     },
   },
 

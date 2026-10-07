@@ -406,15 +406,6 @@
         "fit": "Fit",
         "empty": "Load a profile to see the PDF preview",
         "error": "Couldn't generate the PDF preview. Try again or adjust the export options."
-      },
-      "content": {
-        "total": "Total",
-        "volumeTotal": "Total volume",
-        "slot": "Slot",
-        "footerTagline": "See this profile\nonline",
-        "footerTaglineFallback": "See more wells\nonline",
-        "footerValidUntilLabel": "Expires",
-        "page": "Page"
       }
     },
     "zoom": {

@@ -406,15 +406,6 @@
         "fit": "Ajustar",
         "empty": "Carregue um perfil para ver a pré-visualização do PDF",
         "error": "Não foi possível gerar a pré-visualização do PDF. Tente novamente ou ajuste as opções de exportação."
-      },
-      "content": {
-        "total": "Total",
-        "volumeTotal": "Volume total",
-        "slot": "Ranhura",
-        "footerTagline": "veja esse perfil\nonline",
-        "footerTaglineFallback": "veja mais poços\nonline",
-        "footerValidUntilLabel": "Expira",
-        "page": "Página"
       }
     },
     "zoom": {

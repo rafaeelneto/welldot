@@ -5,32 +5,25 @@ import {
   redactWell,
   serializeWell,
 } from '@welldot/core';
-import { format } from 'date-fns';
+import type {
+  CreateWellPdfOptions,
+  ResolvedInfoItem,
+  TCreatedPdf,
+} from '@welldot/pdf';
+import { buildDefaultPdfFilename, createWellPdf } from '@welldot/pdf';
 import type { Ref } from 'vue';
 import type { PdfInfoItem } from '~/stores/pdfExport.store';
-import { buildDocDefinition } from '~/utils/pdfExport/buildDocDefinition';
-import {
-  buildSvgProfiles,
-  computeFirstPageAvailableHeight,
-} from '~/utils/pdfExport/buildSvgProfiles';
-import { registerPdfFonts } from '~/utils/pdfExport/pdfFonts';
-import type { TCreatedPdf } from '~/utils/pdfExport/pdfmake.types';
-import type {
-  PdfExportOptions,
-  ResolvedInfoItem,
-} from '~/utils/pdfExport/types';
 
 /**
  * Orchestrates PDF preview generation (debounced, client-only), download,
- * and print — all built from the same `buildDocDefinition` document, so
- * preview/download/print are always byte-identical.
+ * and print through `createWellPdf` from `@welldot/pdf` — all from the same
+ * document, so preview/download/print are always byte-identical.
  *
  * `draftContainer` must resolve to a mounted, hidden element scoped to the
- * caller's own lifecycle — `buildSvgProfiles` draws into `<svg>` children
- * appended to it.
+ * caller's own lifecycle — the profile SVGs are drawn into it.
  */
 export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
-  const { t, locale } = useI18n();
+  const { locale } = useI18n();
   const profileStore = useProfileStore();
   const pdfExportStore = usePdfExportStore();
   const shareVisibilityStore = useShareVisibilityStore();
@@ -95,18 +88,21 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
         : await useProfileShare()
             .getShare()
             .catch(() => null);
-      const options: PdfExportOptions = {
-        header: pdfExportStore.header,
+      const options: CreateWellPdfOptions = {
+        container,
+        title: pdfExportStore.header,
         breakPages: pdfExportStore.breakPages,
         scale: pdfExportStore.scale,
         metadataPosition: pdfExportStore.metadataPosition,
         headingInfo: resolveInfoItems(pdfExportStore.headingInfo),
         endInfo: resolveInfoItems(pdfExportStore.endInfo),
-        lengthUnit: uiStore.lengthUnit,
-        diameterUnit: uiStore.diameterUnit,
-        flowUnit: uiStore.flowUnit,
-        powerUnit: uiStore.powerUnit,
-        volumeUnit: uiStore.volumeUnit,
+        units: {
+          length: uiStore.lengthUnit,
+          diameter: uiStore.diameterUnit,
+          flow: uiStore.flowUnit,
+          power: uiStore.powerUnit,
+          volume: uiStore.volumeUnit,
+        },
         coordinateFormat: uiStore.coordinateFormat,
         waterQualityLimitSet: uiStore.waterQualityLimitSet,
         locale: locale.value,
@@ -114,39 +110,14 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
         shareUrl: share ? `${baseUrl}/editor?share=${share.id}` : undefined,
         shareExpiresAt: share?.expiresAt,
         omitShareBlock: applyRedaction,
+        isCancelled: () => token !== renderToken,
       };
 
-      const firstPageAvailableHeight = computeFirstPageAvailableHeight({
-        headingInfoCount: options.headingInfo.length,
-        metadataPosition: options.metadataPosition,
-      });
+      const result = await createWellPdf(well, options);
+      if (!result || token !== renderToken) return null;
 
-      const { svgs, legendSvg } = await buildSvgProfiles(well, container, {
-        breakPages: options.breakPages,
-        scale: options.scale,
-        firstPageAvailableHeight,
-        units: {
-          length: options.lengthUnit,
-          diameter: options.diameterUnit,
-          power: options.powerUnit,
-        },
-        locale: options.locale,
-      });
-      if (token !== renderToken) return null;
-
-      const { default: pdfMake } = await import('pdfmake/build/pdfmake');
-      await registerPdfFonts(pdfMake);
-      if (token !== renderToken) return null;
-
-      const docDefinition = buildDocDefinition(
-        well,
-        svgs,
-        legendSvg,
-        options,
-        t,
-      );
-      const pdfDoc = pdfMake.createPdf(docDefinition);
-      const blob = await pdfDoc.getBlob();
+      const pdfDoc = result.pdf;
+      const blob = await result.getBlob();
       if (token !== renderToken) return null;
 
       if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
@@ -173,9 +144,9 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
   async function download(): Promise<void> {
     const pdfDoc = await ensureCurrentPdf();
     if (!pdfDoc) return;
-    const name = profileStore.getExportableWell()?.name || 'well';
-    const filename = `welldot_${name.trim().replace(/\s+/g, '_').toLowerCase()}_${format(new Date(), 'dd_MM_yyyy_HH_mm')}.pdf`;
-    await pdfDoc.download(filename);
+    await pdfDoc.download(
+      buildDefaultPdfFilename(profileStore.getExportableWell()),
+    );
   }
 
   async function print(): Promise<void> {
@@ -196,11 +167,13 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
         endInfo: pdfExportStore.endInfo,
         useCustomVisibility: pdfExportStore.useCustomVisibility,
         visibility: shareVisibilityStore.visibility,
-        lengthUnit: uiStore.lengthUnit,
-        diameterUnit: uiStore.diameterUnit,
-        flowUnit: uiStore.flowUnit,
-        powerUnit: uiStore.powerUnit,
-        volumeUnit: uiStore.volumeUnit,
+        units: {
+          length: uiStore.lengthUnit,
+          diameter: uiStore.diameterUnit,
+          flow: uiStore.flowUnit,
+          power: uiStore.powerUnit,
+          volume: uiStore.volumeUnit,
+        },
         coordinateFormat: uiStore.coordinateFormat,
         waterQualityLimitSet: uiStore.waterQualityLimitSet,
       }),
