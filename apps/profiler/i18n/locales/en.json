@@ -345,7 +345,32 @@
         "history": "History",
         "operation": "Operation",
         "water_quality": "Water quality"
-      }
+      },
+      "fields": {
+        "identification": "Identification",
+        "location": "Location",
+        "obs": "Observations",
+        "attachments": "Attachments",
+        "bore_hole": "Bore hole",
+        "surface_case": "Surface casing",
+        "well_case": "Casing",
+        "reduction": "Reductions",
+        "well_screen": "Screens",
+        "hole_fill": "Hole fill",
+        "centralizers": "Centralizers",
+        "cement_pad": "Cement pad",
+        "lithology": "Lithology",
+        "fractures": "Fractures",
+        "caves": "Caves",
+        "hydrodynamic_events": "Pumping tests and level readings",
+        "aquifer_analysis": "Aquifer analyses",
+        "pump_installations": "Pump installations",
+        "meters": "Meters",
+        "operating_regime": "Operating regime",
+        "production": "Production",
+        "permits": "Permits"
+      },
+      "lastVisibleHint": "At least one item must stay visible."
     },
     "exportPdfDialog": {
       "title": "Export PDF",

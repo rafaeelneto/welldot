@@ -5,7 +5,10 @@ import {
   Location,
   SectionKey,
   SectionVisibility,
+  VisibilityFieldKey,
+  VisibilityKey,
   Well,
+  WellVisibility,
 } from '../types/well.types';
 import { mergeWell } from '../validators/well.validators';
 
@@ -28,6 +31,46 @@ export const SECTION_KEYS: readonly SectionKey[] = [
   'operation',
   'water_quality',
 ];
+
+/**
+ * Fields of each section that can be hidden one by one, in display order.
+ * Sections with no entries (`history`, `water_quality`) toggle as a whole.
+ */
+export const VISIBILITY_TREE: Readonly<
+  Record<SectionKey, readonly VisibilityFieldKey[]>
+> = {
+  general: ['identification', 'location', 'obs', 'attachments'],
+  constructive: [
+    'bore_hole',
+    'surface_case',
+    'well_case',
+    'reduction',
+    'well_screen',
+    'hole_fill',
+    'centralizers',
+    'cement_pad',
+  ],
+  geology: ['lithology', 'fractures', 'caves'],
+  hydrodynamic: ['hydrodynamic_events', 'aquifer_analysis'],
+  history: [],
+  operation: [
+    'pump_installations',
+    'meters',
+    'operating_regime',
+    'production',
+    'permits',
+  ],
+  water_quality: [],
+};
+
+/**
+ * The finest toggles of {@link VISIBILITY_TREE}, in display order: every
+ * field, plus each section that has no fields.
+ */
+export const VISIBILITY_LEAF_KEYS: readonly VisibilityKey[] =
+  SECTION_KEYS.flatMap<VisibilityKey>(section =>
+    VISIBILITY_TREE[section].length ? VISIBILITY_TREE[section] : [section],
+  );
 
 const EMPTY_WELL: Well = {
   version: 2,
@@ -378,71 +421,92 @@ export function isWellEmpty(well: Well | null | undefined): boolean {
 }
 
 /**
- * Returns a copy of `well` with hidden sections cleared: array fields become
- * `[]` and optional fields become `undefined`, so the result stays a
- * schema-valid {@link Well}. Sections marked visible in `visibility` are
- * carried over unchanged. Never mutates `well`.
+ * Returns a copy of `well` with hidden sections and fields cleared: array
+ * fields become `[]` and optional fields become `undefined`, so the result
+ * stays a schema-valid {@link Well}. Never mutates `well`.
+ *
+ * A field is hidden when its key or its section's key is `false` in
+ * `visibility` (see {@link VISIBILITY_TREE}); missing keys are visible.
+ * `well_depth` is dropped only when the whole `constructive` section is
+ * hidden. Hiding a record type does not rewrite references to it held by
+ * visible records (e.g. a production entry's `meter_id`).
  *
  * @param well - The well profile to redact.
- * @param visibility - Which of the 7 sections ({@link SECTION_KEYS}) to keep.
- * @returns A new {@link Well} with hidden sections emptied.
+ * @param visibility - Section and/or field visibility. A {@link SectionVisibility} works as-is.
+ * @returns A new {@link Well} with hidden parts emptied.
+ *
+ * @example
+ * redactWell(well, { operation: false });              // whole section
+ * redactWell(well, { meters: false, permits: false }); // single fields
  */
-export function redactWell(well: Well, visibility: SectionVisibility): Well {
+export function redactWell(
+  well: Well,
+  visibility: WellVisibility | SectionVisibility,
+): Well {
+  const v = visibility as WellVisibility;
   const redacted: Well = { ...well };
 
-  if (!visibility.general) {
+  const sectionOf = (field: VisibilityFieldKey): SectionKey =>
+    SECTION_KEYS.find(s => VISIBILITY_TREE[s].includes(field))!;
+  const hidden = (key: VisibilityKey): boolean =>
+    v[key] === false ||
+    (!SECTION_KEYS.includes(key as SectionKey) &&
+      v[sectionOf(key as VisibilityFieldKey)] === false);
+  const sectionHidden = (section: SectionKey): boolean =>
+    v[section] === false ||
+    (VISIBILITY_TREE[section].length > 0 &&
+      VISIBILITY_TREE[section].every(f => v[f] === false));
+
+  // general
+  if (hidden('identification')) {
     delete redacted.well_id;
-    delete redacted.location;
     delete redacted.well_type;
     delete redacted.well_purpose;
     delete redacted.name;
     delete redacted.well_driller;
     delete redacted.construction_date;
-    delete redacted.obs;
-    delete redacted.attachments;
+  }
+  if (hidden('location')) {
+    delete redacted.location;
     delete redacted.lat;
     delete redacted.lng;
     delete redacted.elevation;
   }
+  if (hidden('obs')) delete redacted.obs;
+  if (hidden('attachments')) delete redacted.attachments;
 
-  if (!visibility.constructive) {
-    redacted.bore_hole = [];
-    redacted.well_case = [];
-    redacted.reduction = [];
-    redacted.well_screen = [];
-    redacted.surface_case = [];
-    redacted.hole_fill = [];
-    delete redacted.centralizers;
-    delete redacted.cement_pad;
-    delete redacted.well_depth;
-  }
+  // constructive
+  if (hidden('bore_hole')) redacted.bore_hole = [];
+  if (hidden('surface_case')) redacted.surface_case = [];
+  if (hidden('well_case')) redacted.well_case = [];
+  if (hidden('reduction')) redacted.reduction = [];
+  if (hidden('well_screen')) redacted.well_screen = [];
+  if (hidden('hole_fill')) redacted.hole_fill = [];
+  if (hidden('centralizers')) delete redacted.centralizers;
+  if (hidden('cement_pad')) delete redacted.cement_pad;
+  if (sectionHidden('constructive')) delete redacted.well_depth;
 
-  if (!visibility.geology) {
-    redacted.lithology = [];
-    redacted.fractures = [];
-    redacted.caves = [];
-  }
+  // geology
+  if (hidden('lithology')) redacted.lithology = [];
+  if (hidden('fractures')) redacted.fractures = [];
+  if (hidden('caves')) redacted.caves = [];
 
-  if (!visibility.hydrodynamic) {
-    redacted.hydrodynamic_events = [];
-    redacted.aquifer_analysis = [];
-  }
+  // hydrodynamic
+  if (hidden('hydrodynamic_events')) redacted.hydrodynamic_events = [];
+  if (hidden('aquifer_analysis')) redacted.aquifer_analysis = [];
 
-  if (!visibility.history) {
-    redacted.history_logs = [];
-  }
+  // history
+  if (hidden('history')) redacted.history_logs = [];
 
-  if (!visibility.operation) {
-    delete redacted.pump_installations;
-    delete redacted.permits;
-    delete redacted.meters;
-    delete redacted.production;
-    delete redacted.operating_regime;
-  }
+  // operation
+  if (hidden('pump_installations')) delete redacted.pump_installations;
+  if (hidden('meters')) delete redacted.meters;
+  if (hidden('operating_regime')) delete redacted.operating_regime;
+  if (hidden('production')) delete redacted.production;
+  if (hidden('permits')) delete redacted.permits;
 
-  if (!visibility.water_quality) {
-    delete redacted.water_samples;
-  }
+  // water quality
+  if (hidden('water_quality')) delete redacted.water_samples;
 
   return redacted;
 }

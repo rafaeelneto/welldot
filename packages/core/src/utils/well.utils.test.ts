@@ -7,7 +7,10 @@ import {
   isWellEmpty,
   profileToWell,
   redactWell,
+  SECTION_KEYS,
   serializeWell,
+  VISIBILITY_LEAF_KEYS,
+  VISIBILITY_TREE,
 } from './well.utils';
 
 import { parseWell } from '../validators/well.validators';
@@ -1628,6 +1631,104 @@ describe('redactWell', () => {
     expect(result.lithology).toEqual([]);
     expect(result.hydrodynamic_events).toEqual([]);
     expect(result.history_logs).toEqual([]);
+  });
+
+  describe('field-level visibility', () => {
+    function operationalWell(): Well {
+      return {
+        ...fullV2Well(),
+        attachments: [{ uri: 'https://example.test/a.pdf' }],
+        pump_installations: [{ id: 'p1' }],
+        meters: [{ id: 'm1' }],
+        operating_regime: [{ id: 'r1' }],
+        production: [{ id: 'e1', meter_id: 'm1' }],
+        permits: [{ id: 'o1' }],
+        water_samples: [{ id: 's1' }],
+      } as unknown as Well;
+    }
+
+    it('hides single operation fields and keeps their siblings', () => {
+      const result = redactWell(operationalWell(), {
+        meters: false,
+        permits: false,
+      });
+      expect(result.meters).toBeUndefined();
+      expect(result.permits).toBeUndefined();
+      expect(result.pump_installations).toHaveLength(1);
+      expect(result.operating_regime).toHaveLength(1);
+      // References from visible records are left as-is.
+      expect(result.production).toEqual([{ id: 'e1', meter_id: 'm1' }]);
+    });
+
+    it('treats a hidden section as hiding all of its fields', () => {
+      const result = redactWell(operationalWell(), {
+        operation: false,
+        meters: true,
+      });
+      expect(result.meters).toBeUndefined();
+      expect(result.pump_installations).toBeUndefined();
+      expect(result.production).toBeUndefined();
+    });
+
+    it('splits general into identification, location, obs and attachments', () => {
+      const result = redactWell(operationalWell(), {
+        location: false,
+        attachments: false,
+      });
+      expect(result.location).toBeUndefined();
+      expect(result.lat).toBeUndefined();
+      expect(result.attachments).toBeUndefined();
+      expect(result.name).toBe('Well-01');
+      expect(result.well_id).toHaveLength(1);
+      expect(result.obs).toBe(operationalWell().obs);
+
+      const noId = redactWell(operationalWell(), { identification: false });
+      expect(noId.name).toBeUndefined();
+      expect(noId.well_id).toBeUndefined();
+      expect(noId.lat).toBe(-1.4558);
+    });
+
+    it('keeps well_depth until every constructive field is hidden', () => {
+      expect(
+        redactWell(operationalWell(), { bore_hole: false }).well_depth,
+      ).toBe(145.5);
+      const allHidden = Object.fromEntries(
+        VISIBILITY_TREE.constructive.map(k => [k, false]),
+      );
+      const result = redactWell(operationalWell(), allHidden);
+      expect(result.well_depth).toBeUndefined();
+      expect(result.bore_hole).toEqual([]);
+      expect(result.cement_pad).toBeUndefined();
+    });
+
+    it('hides single geology and hydrodynamic fields', () => {
+      const result = redactWell(operationalWell(), {
+        fractures: false,
+        aquifer_analysis: false,
+      });
+      expect(result.fractures).toEqual([]);
+      expect(result.lithology).toHaveLength(1);
+      expect(result.aquifer_analysis).toEqual([]);
+      expect(result.hydrodynamic_events).toHaveLength(1);
+    });
+
+    it('returns an equal well for an empty visibility object', () => {
+      const well = operationalWell();
+      expect(redactWell(well, {})).toEqual(well);
+    });
+  });
+
+  describe('VISIBILITY_TREE / VISIBILITY_LEAF_KEYS', () => {
+    it('covers every section, with field-less sections as leaves', () => {
+      expect(Object.keys(VISIBILITY_TREE)).toEqual([...SECTION_KEYS]);
+      expect(VISIBILITY_LEAF_KEYS).toContain('history');
+      expect(VISIBILITY_LEAF_KEYS).toContain('water_quality');
+      expect(VISIBILITY_LEAF_KEYS).toContain('meters');
+      expect(VISIBILITY_LEAF_KEYS).not.toContain('operation');
+      expect(new Set(VISIBILITY_LEAF_KEYS).size).toBe(
+        VISIBILITY_LEAF_KEYS.length,
+      );
+    });
   });
 });
 

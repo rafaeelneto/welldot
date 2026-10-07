@@ -52,6 +52,8 @@ export type {
   SurfaceCase,
   Texture,
   TimeResolution,
+  VisibilityFieldKey,
+  VisibilityKey,
   VolumeLimit,
   WaterQualityResult,
   WaterSample,
@@ -60,6 +62,7 @@ export type {
   WellId,
   WellScreen,
   WellStatus,
+  WellVisibility,
 } from './types/well.types';
 
 export type {
@@ -136,6 +139,8 @@ export {
 // Format utilities (serialise/deserialise .well format only)
 export {
   SECTION_KEYS,
+  VISIBILITY_LEAF_KEYS,
+  VISIBILITY_TREE,
   checkIfProfileIsEmpty,
   convertProfileFromJSON,
   deserializeWell,

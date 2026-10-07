@@ -1058,3 +1058,47 @@ export type SectionKey =
 
 /** Per-section visibility, keyed by `SectionKey`. `true` = included. */
 export type SectionVisibility = Record<SectionKey, boolean>;
+
+/**
+ * A redactable part of a section (see `VISIBILITY_TREE`). Mostly the `Well`
+ * field it controls; `identification` and `location` group several
+ * `general` fields.
+ */
+export type VisibilityFieldKey =
+  // general
+  | 'identification'
+  | 'location'
+  | 'obs'
+  | 'attachments'
+  // constructive
+  | 'bore_hole'
+  | 'surface_case'
+  | 'well_case'
+  | 'reduction'
+  | 'well_screen'
+  | 'hole_fill'
+  | 'centralizers'
+  | 'cement_pad'
+  // geology
+  | 'lithology'
+  | 'fractures'
+  | 'caves'
+  // hydrodynamic
+  | 'hydrodynamic_events'
+  | 'aquifer_analysis'
+  // operation
+  | 'pump_installations'
+  | 'meters'
+  | 'operating_regime'
+  | 'production'
+  | 'permits';
+
+/** A section or one of its fields. */
+export type VisibilityKey = SectionKey | VisibilityFieldKey;
+
+/**
+ * Visibility per section and/or field. `false` hides; missing keys are
+ * visible. A field is kept only when neither it nor its section is `false`.
+ * A plain {@link SectionVisibility} is a valid `WellVisibility`.
+ */
+export type WellVisibility = Partial<Record<VisibilityKey, boolean>>;

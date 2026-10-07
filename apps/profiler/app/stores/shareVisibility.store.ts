@@ -1,44 +1,56 @@
-import type { SectionKey, SectionVisibility } from '@welldot/core';
-import { SECTION_KEYS } from '@welldot/core';
+import type { VisibilityKey, WellVisibility } from '@welldot/core';
+import { VISIBILITY_LEAF_KEYS } from '@welldot/core';
 import { defineStore } from 'pinia';
+import type { LeafVisibility } from '~/utils/visibility';
+import {
+  allVisible,
+  countVisible,
+  normalizeVisibility,
+} from '~/utils/visibility';
 
+/**
+ * What gets shared/exported, one boolean per section field
+ * (`VISIBILITY_LEAF_KEYS` of `@welldot/core`). Pass `visibility` straight to
+ * `redactWell`. Used by share links, `.well` export and the PDF export.
+ */
 export const useShareVisibilityStore = defineStore(
   'shareVisibility',
   () => {
-    const visibility = ref<SectionVisibility>({
-      general: true,
-      constructive: true,
-      geology: true,
-      hydrodynamic: true,
-      history: true,
-      operation: true,
-      water_quality: true,
-    });
+    const visibility = ref<LeafVisibility>(allVisible());
 
-    const visibleCount = computed(
-      () => SECTION_KEYS.filter(key => visibility.value[key]).length,
+    const visibleCount = computed(() => countVisible(visibility.value));
+    const hasHidden = computed(
+      () => visibleCount.value < VISIBILITY_LEAF_KEYS.length,
     );
-    const hasHidden = computed(() => visibleCount.value < SECTION_KEYS.length);
 
-    /** Sets a section's visibility. No-ops if it would hide the last visible section. */
-    function setVisible(key: SectionKey, value: boolean): void {
-      if (!value && visibleCount.value <= 1 && visibility.value[key]) return;
-      visibility.value[key] = value;
+    /**
+     * Replaces the whole visibility. No-ops (returns `false`) if it would
+     * hide everything.
+     */
+    function setVisibility(next: LeafVisibility): boolean {
+      if (countVisible(next) === 0) return false;
+      visibility.value = { ...next };
+      return true;
     }
 
-    return { visibility, visibleCount, hasHidden, setVisible };
+    /** Sets one leaf. No-ops if it would hide the last visible leaf. */
+    function setVisible(key: VisibilityKey, value: boolean): void {
+      setVisibility({ ...visibility.value, [key]: value });
+    }
+
+    return { visibility, visibleCount, hasHidden, setVisibility, setVisible };
   },
   {
     persist: {
       key: 'welldot_share_visibility',
-      // Sections added after the state was first persisted (e.g. `operation`,
-      // `water_quality`, .well v2.3) default to visible instead of being silently hidden.
+      // Migrates the pre-tree per-section shape (`{ operation: false, … }`)
+      // and fills leaves added later (new sections or fields) as visible.
       afterHydrate(ctx) {
-        const stored = ctx.store.visibility as Partial<SectionVisibility>;
-        for (const key of SECTION_KEYS) {
-          if (typeof stored[key] !== 'boolean')
-            ctx.store.visibility[key] = true;
-        }
+        const normalized = normalizeVisibility(
+          ctx.store.visibility as WellVisibility,
+        );
+        ctx.store.visibility =
+          countVisible(normalized) > 0 ? normalized : allVisible();
       },
     },
   },
