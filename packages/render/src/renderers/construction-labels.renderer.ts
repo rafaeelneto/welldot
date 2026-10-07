@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 
 import type { WellCase, WellScreen } from '@welldot/core';
+import { CONSTRUCTION_MATERIALS, getVocabLabel } from '@welldot/core';
 import { getProfileDiamValues } from '@welldot/utils';
 import type { DrawContext } from '~/types/render.types';
 import { formatDiameter, getDiameterUnit } from '~/utils/format.utils';
@@ -24,6 +25,8 @@ export function drawConstructionLabels(
   const fmtD = (mm: number) =>
     formatDiameter(mm, ctx.units.diameter, ctx.locale);
   const dUnit = getDiameterUnit(ctx.units.diameter, ctx.locale);
+  const material = (value: string) =>
+    getVocabLabel(CONSTRUCTION_MATERIALS, value, ctx.locale);
 
   const maxXValues = getProfileDiamValues(ctx.constructionData);
   const xScale = d3
@@ -109,7 +112,7 @@ export function drawConstructionLabels(
     .forEach(d =>
       placeLabel(
         d,
-        `${clc.labels.wellCasePrefix} ${fmtD(d.diameter)}${dUnit} ${d.type}`,
+        `${clc.labels.wellCasePrefix} ${fmtD(d.diameter)}${dUnit} ${material(d.type)}`,
       ),
     );
 
@@ -125,7 +128,7 @@ export function drawConstructionLabels(
     .forEach((d: WellScreen) =>
       placeLabel(
         d,
-        `${clc.labels.wellScreenPrefix} ${fmtD(d.diameter)}${dUnit} ${d.type} ${clc.labels.wellScreenSlotPrefix} ${fmtD((d as WellScreen).screen_slot)}${dUnit}`,
+        `${clc.labels.wellScreenPrefix} ${fmtD(d.diameter)}${dUnit} ${material(d.type)} ${clc.labels.wellScreenSlotPrefix} ${fmtD((d as WellScreen).screen_slot)}${dUnit}`,
       ),
     );
 }

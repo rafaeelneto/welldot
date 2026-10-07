@@ -4,7 +4,7 @@ import AppChip from '~/components/AppChip.vue';
 import EventCard from './hydrodynamicEvents/EventCard.vue';
 import EventDialog from './hydrodynamicEvents/EventDialog.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const profileStore = useProfileStore();
 const { toFlow, flowUnit, toSpecificCapacity, specificCapacityUnit } =
   useUnitFormat();
@@ -44,7 +44,7 @@ const analysesCount = computed(
 // ─── Display helpers ──────────────────────────────────────────────────────────
 
 function methodLabel(method?: string): string {
-  return aquiferMethodLabel(method);
+  return aquiferMethodLabel(method, locale.value);
 }
 
 function formatTransmissivityMantissa(val: number): string {

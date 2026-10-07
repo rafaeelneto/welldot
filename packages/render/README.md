@@ -144,7 +144,7 @@ Does nothing if the profile contains no fractures or caves.
 | `formatDiameter`     | `(mm: number, units: DiameterUnits) => string`                 | Diameter in mm → unit-aware string                                                      |
 | `getLengthUnit`      | `(units: LengthUnits) => string`                               | Returns `'m'` or `'ft'`                                                                 |
 | `getDiameterUnit`    | `(units: DiameterUnits, locale?: 'en' \| 'pt') => string`      | Returns `'mm'`, or `'"'`/`'in.'` for `inches` depending on `locale` (defaults to `'"'`) |
-| `resolveRenderLabel` | `(value: RenderLocalizedText, locale: 'en' \| 'pt') => string` | Resolves a paired-locale label to a plain string, falling back to `pt`                  |
+| `resolveRenderLabel` | `(value: RenderLocalizedText, locale: 'en' \| 'pt') => string` | Resolves a label (core `resolveLanguageText` with `pt` as fallback) to a plain string   |
 
 ---
 
@@ -166,7 +166,7 @@ const renderer = new WellRenderer(svgs, {
 });
 ```
 
-`applyRenderLocale(config, locale)` returns a copy of `config` with `constructionLabels.labels`, `legend.labels`, `tooltipLabels`, and `labels.typeLabels` resolved from the package's canonical `RENDER_LABELS` pack — every other field of `config` is unchanged. `RENDER_LABELS` (and the `RenderLocalizedText`/`RenderLabelPack`/`TooltipLabels` types describing its shape) are also exported directly for consumers who want to resolve labels themselves. Omitting `locale`/`applyRenderLocale` entirely preserves the package's historical Portuguese-only output.
+`applyRenderLocale(config, locale)` returns a copy of `config` with `constructionLabels.labels`, `legend.labels`, `tooltipLabels`, and `labels.typeLabels` resolved from the package's canonical `RENDER_LABELS` pack — every other field of `config` is unchanged. `RENDER_LABELS` (and the `RenderLocalizedText` — a core `LanguageText<'pt'>` or a plain string —/`RenderLabelPack`/`TooltipLabels` types describing its shape) are also exported directly for consumers who want to resolve labels themselves. Omitting `locale`/`applyRenderLocale` entirely preserves the package's historical Portuguese-only output.
 
 ---
 

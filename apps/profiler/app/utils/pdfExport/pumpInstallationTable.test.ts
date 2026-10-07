@@ -72,8 +72,8 @@ describe('buildPumpInstallationSection', () => {
         t,
       ),
     );
-    expect(serialized.indexOf('submersible')).toBeLessThan(
-      serialized.indexOf('jet'),
+    expect(serialized.indexOf('Submersible pump')).toBeLessThan(
+      serialized.indexOf('Jet pump'),
     );
     expect(serialized).toContain('current');
     expect(serialized).toContain('Acme SP-5');

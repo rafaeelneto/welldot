@@ -1,38 +1,24 @@
 import type { Attachment, HistoryLogEntry, Well } from '@welldot/core';
-import { format, parseISO } from 'date-fns';
 import {
-  resolveMaintenanceTypeLabel,
-  resolveWellStatusLabel,
-} from '../operationVocab';
+  HISTORY_LOG_CATEGORIES,
+  HISTORY_LOG_SEVERITIES,
+  MAINTENANCE_TYPES,
+  getVocabLabel,
+} from '@welldot/core';
+import { format, parseISO } from 'date-fns';
+import { resolveWellStatusLabel } from '../operationVocab';
 import type { Content } from './pdfmake.types';
 import { buildEntryDivider } from './sectionTables';
 import type { PdfExportOptions, PdfTranslate } from './types';
 
-const KNOWN_CATEGORIES = [
-  'maintenance',
-  'inspection',
-  'incident',
-  'event',
-  'status_change',
-];
-const KNOWN_SEVERITIES = ['low', 'medium', 'high', 'critical'];
-
-function categoryLabel(category: string, t: PdfTranslate): string {
-  return KNOWN_CATEGORIES.includes(category)
-    ? t(`editor.historyLog.logs.categories.${category}`)
-    : category;
-}
-
-function severityLabel(severity: string, t: PdfTranslate): string {
-  return KNOWN_SEVERITIES.includes(severity)
-    ? t(`editor.historyLog.logs.severity.${severity}`)
-    : severity;
-}
-
 /** `maintenance_type` or `status_change` status, when present (.well v2.3). */
-function categoryDetail(entry: HistoryLogEntry, t: PdfTranslate): string {
+function categoryDetail(
+  entry: HistoryLogEntry,
+  t: PdfTranslate,
+  locale: string,
+): string {
   if (entry.category === 'maintenance' && entry.maintenance_type) {
-    return resolveMaintenanceTypeLabel(entry.maintenance_type, t);
+    return getVocabLabel(MAINTENANCE_TYPES, entry.maintenance_type, locale);
   }
   if (entry.category === 'status_change' && entry.status) {
     return resolveWellStatusLabel(entry.status, t);
@@ -47,21 +33,27 @@ function attachmentName(attachment: Attachment): string {
 }
 
 /** The category/severity/date header line — short and height-bounded, so it's safe to bind to the section title. */
-function buildLogEntryHeader(entry: HistoryLogEntry, t: PdfTranslate): Content {
+function buildLogEntryHeader(
+  entry: HistoryLogEntry,
+  t: PdfTranslate,
+  locale: string,
+): Content {
+  const detail = categoryDetail(entry, t, locale);
   return {
     columns: [
       {
         text: [
-          { text: categoryLabel(entry.category, t), style: 'tableHeader' },
           {
-            text: categoryDetail(entry, t)
-              ? ` · ${categoryDetail(entry, t)}`
-              : '',
+            text: getVocabLabel(HISTORY_LOG_CATEGORIES, entry.category, locale),
+            style: 'tableHeader',
+          },
+          {
+            text: detail ? ` · ${detail}` : '',
             style: 'tableHeader',
           },
           {
             text: entry.severity
-              ? `   ${severityLabel(entry.severity, t)}`
+              ? `   ${getVocabLabel(HISTORY_LOG_SEVERITIES, entry.severity, locale)}`
               : '',
             style: 'metadataLabel',
           },
@@ -113,9 +105,16 @@ function buildLogEntryBody(entry: HistoryLogEntry, t: PdfTranslate): Content[] {
   return blocks;
 }
 
-function buildLogEntry(entry: HistoryLogEntry, t: PdfTranslate): Content {
+function buildLogEntry(
+  entry: HistoryLogEntry,
+  t: PdfTranslate,
+  locale: string,
+): Content {
   return {
-    stack: [buildLogEntryHeader(entry, t), ...buildLogEntryBody(entry, t)],
+    stack: [
+      buildLogEntryHeader(entry, t, locale),
+      ...buildLogEntryBody(entry, t),
+    ],
   };
 }
 
@@ -133,7 +132,7 @@ function buildLogEntry(entry: HistoryLogEntry, t: PdfTranslate): Content {
  */
 export function buildHistoryLogSection(
   well: Well,
-  _options: PdfExportOptions,
+  options: PdfExportOptions,
   t: PdfTranslate,
 ): Content | null {
   const logs = well.history_logs;
@@ -149,7 +148,7 @@ export function buildHistoryLogSection(
       stack: [
         { text: ' ' },
         { text: t('editor.historyLog.logs.title'), style: 'title' },
-        buildLogEntryHeader(first!, t),
+        buildLogEntryHeader(first!, t, options.locale),
       ],
       unbreakable: true,
     },
@@ -157,7 +156,7 @@ export function buildHistoryLogSection(
   ];
   rest.forEach(entry => {
     items.push(buildEntryDivider());
-    items.push(buildLogEntry(entry, t));
+    items.push(buildLogEntry(entry, t, options.locale));
   });
 
   return { stack: items };

@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { WELL_PURPOSES, WELL_TYPES } from '@welldot/core';
 import SummaryCard from './SummaryCard.vue';
 import SummaryField from './SummaryField.vue';
 import { EDITOR_TAB } from './navigate';
 
 const { t } = useI18n();
+const { vocabLabel, vocabList } = useVocab();
 const profileStore = useProfileStore();
 
 const well = computed(() => profileStore.well);
@@ -26,11 +28,11 @@ const wellIds = computed(() =>
     <dl class="m-0 grid grid-cols-2 gap-x-4 gap-y-3">
       <SummaryField
         :label="t('editor.general.wellType')"
-        :value="well.well_type ? resolveWellTypeLabel(well.well_type, t) : null"
+        :value="well.well_type ? vocabLabel(WELL_TYPES, well.well_type) : null"
       />
       <SummaryField
         :label="t('editor.general.wellPurpose')"
-        :value="formatWellPurposes(well.well_purpose, t)"
+        :value="vocabList(WELL_PURPOSES, well.well_purpose)"
       />
       <SummaryField
         :label="t('editor.general.driller')"

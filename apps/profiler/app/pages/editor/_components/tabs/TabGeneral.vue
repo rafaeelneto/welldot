@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { Attachment } from '@welldot/core';
+import { WELL_PURPOSES, WELL_TYPES, isVocabValue } from '@welldot/core';
 import { getCurrentWellStatus } from '@welldot/utils';
 import AppChip from '~/components/AppChip.vue';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 
 const { t } = useI18n();
+const { vocabLabel, vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 
 /** Current status (.well v2.3), derived from `status_change` history logs. */
@@ -86,15 +88,9 @@ function setPrimary(index: number) {
 
 // Deprecated values (e.g. `artesian`) are never offered, but stay visible as
 // an option while the loaded well still uses one, so the Select shows it.
-const wellTypeOptions = computed(() => {
-  const current = profileStore.well.well_type;
-  const values: string[] = [...WELL_TYPE_VALUES];
-  if (current && isDeprecatedWellType(current)) values.push(current);
-  return values.map(value => ({
-    label: resolveWellTypeLabel(value, t),
-    value,
-  }));
-});
+const wellTypeOptions = computed(() =>
+  vocabOptions(WELL_TYPES, profileStore.well.well_type),
+);
 
 const hasDeprecatedWellType = computed(() =>
   isDeprecatedWellType(profileStore.well.well_type),
@@ -105,12 +101,12 @@ const hasDeprecatedWellType = computed(() =>
 const wellPurposeOptions = computed(() => {
   // Keep non-canonical values (e.g. `x-` prefixed) from loaded files visible.
   const extra = (profileStore.well.well_purpose ?? []).filter(
-    v => !(WELL_PURPOSE_VALUES as readonly string[]).includes(v),
+    v => !isVocabValue(WELL_PURPOSES, v),
   );
-  return [...WELL_PURPOSE_VALUES, ...extra].map(value => ({
-    label: resolveWellPurposeLabel(value, t),
-    value,
-  }));
+  return [
+    ...vocabOptions(WELL_PURPOSES),
+    ...extra.map(value => ({ value, label: vocabLabel(WELL_PURPOSES, value) })),
+  ];
 });
 
 const wellPurpose = computed({

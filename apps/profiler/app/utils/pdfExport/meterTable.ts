@@ -1,7 +1,7 @@
 import type { Attachment, Meter, Well } from '@welldot/core';
+import { METER_TYPES } from '@welldot/core';
 import { getCurrentMeters } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
-import { resolveMeterTypeLabel } from '../operationVocab';
 import { createPdfFormatters, type PdfFormatters } from './formatters';
 import type { Content } from './pdfmake.types';
 import { buildEntryDivider } from './sectionTables';
@@ -21,14 +21,19 @@ function formatPeriod(m: Meter): string {
 }
 
 /** Type label, a "current" marker for open installations, and the period. */
-function buildHeader(m: Meter, isCurrent: boolean, t: PdfTranslate): Content {
+function buildHeader(
+  m: Meter,
+  isCurrent: boolean,
+  fmt: PdfFormatters,
+  t: PdfTranslate,
+): Content {
   return {
     columns: [
       {
         text: [
           {
             text: m.type
-              ? resolveMeterTypeLabel(m.type, t)
+              ? fmt.vocab(METER_TYPES, m.type)
               : t('editor.operation.meter.untyped'),
             style: 'tableHeader',
           },
@@ -117,7 +122,7 @@ export function buildMeterSection(
       stack: [
         { text: ' ' },
         { text: t('editor.operation.meter.title'), style: 'title' },
-        buildHeader(first!, currentIds.has(first!.id), t),
+        buildHeader(first!, currentIds.has(first!.id), fmt, t),
       ],
       unbreakable: true,
     },
@@ -126,7 +131,10 @@ export function buildMeterSection(
   rest.forEach(m => {
     items.push(buildEntryDivider());
     items.push({
-      stack: [buildHeader(m, currentIds.has(m.id), t), ...buildBody(m, fmt, t)],
+      stack: [
+        buildHeader(m, currentIds.has(m.id), fmt, t),
+        ...buildBody(m, fmt, t),
+      ],
     });
   });
 

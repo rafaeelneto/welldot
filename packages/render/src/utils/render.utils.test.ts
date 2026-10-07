@@ -901,7 +901,7 @@ describe('populateTooltips', () => {
       expect(html).toContain('CENTRALIZADOR');
       expect(html).toContain('18');
       expect(html).toContain('Espaçamento:');
-      expect(html).toContain('spring_bow');
+      expect(html).toContain('Mola (spring bow)');
     });
 
     it('centralizer tooltip omits the interval line for a single centralizer', () => {

@@ -94,8 +94,8 @@ the user explicitly asks.
 field is only acceptable when it drops **zero** detail or data — no lost measurements, materials,
 brand/equipment names, or qualifiers. When in doubt, transcribe closer to the original rather than
 condense it. This applies with extra weight to `hole_fill[].description`, and to `well_case.type`,
-`well_screen.type`, `reduction.type`, and `cement_pad.type` — see § Vocabulary tiers below for why those
-four are treated as description-like text rather than enums.
+`well_screen.type`, `reduction.type`, and `cement_pad.type` — see § Vocabulary tiers below: their
+recommended keys apply only when the report's wording maps to them losslessly.
 
 ---
 
@@ -173,20 +173,23 @@ own wording maps to it losslessly (no dropped nuance/brand/equipment/shape detai
 transcribe the report's own phrase verbatim, in its own language:
 
 - `bore_hole[].drilling_method`: rotary, percussion, cable_tool, auger, air_hammer
-- `cement_pad.type`: material and/or shape, e.g. "concrete", "circular" (may combine both)
+- `cement_pad.type`: concrete, reinforced_concrete, cement, mortar — or the report's material and/or
+  shape wording (e.g. "circular") when a key would drop detail
+- `well_case[].type`, `reduction[].type`, `well_screen[].type`, `pump_installations[].riser_material`
+  (construction materials): pvc, geomechanical_pvc, carbon_steel, galvanized_steel, stainless_steel,
+  fiberglass — never invent others (`steel`, `hdpe`, `wire_wound`); keep the report's phrase when it
+  carries more (standard, wall class, screen construction)
 - `well_type`: tubular, hand_dug, horizontal, infiltration_gallery (use `x-` prefix if none fit). This is
   the **construction method only** — never emit `artesian` (deprecated in v2.1); "artesiano/jorrante" is a
   hydraulic condition, recorded as a negative `static_level` in a `spot_measurement` when the report gives one
 - `well_purpose` (array): production, monitoring, piezometer, water_level_indicator (INA), observation,
   exploration, injection, dewatering — only when the report states the use
-- `centralizers[].type`: spring_bow, rigid, semi_rigid, polymer
+- `centralizers[].type`: spring_bow, rigid, semi_rigid, polymer, carbon_steel, galvanized_steel,
+  stainless_steel
 
-**Tier 2 — pure free text, NO recommended vocabulary exists for these at all.** Never invent or
-apply an enum. Always transcribe the report's own wording verbatim, in its own language:
-
-- `well_case[].type` (casing material — do NOT use steel/pvc/hdpe/fiberglass as an enum)
-- `reduction[].type`
-- `well_screen[].type` (do NOT use wire_wound/bridge_slot/louvered/pvc_slotted as an enum)
+**Tier 2 — pure free text, NO recommended vocabulary.** Never invent or apply an enum. Always
+transcribe the report's own wording verbatim, in its own language: `hole_fill[].description`,
+`description`/`notes`/`obs` fields, `well_id[].authority`, `permits[].authority`.
 
 **Tier 3 — real closed enum, must classify into exactly one value:**
 

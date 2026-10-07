@@ -1,7 +1,11 @@
 import type { Attachment, PumpInstallation, Well } from '@welldot/core';
+import {
+  CONSTRUCTION_MATERIALS,
+  POWER_SOURCES,
+  PUMP_TYPES,
+} from '@welldot/core';
 import { getCurrentPump } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
-import { resolvePowerSourceLabel, resolvePumpTypeLabel } from '../pumpVocab';
 import { createPdfFormatters, type PdfFormatters } from './formatters';
 import type { Content } from './pdfmake.types';
 import { buildEntryDivider } from './sectionTables';
@@ -24,13 +28,14 @@ function formatPeriod(p: PumpInstallation): string {
 function buildHeader(
   p: PumpInstallation,
   isCurrent: boolean,
+  fmt: PdfFormatters,
   t: PdfTranslate,
 ): Content {
   return {
     columns: [
       {
         text: [
-          { text: resolvePumpTypeLabel(p.type, t), style: 'tableHeader' },
+          { text: fmt.vocab(PUMP_TYPES, p.type), style: 'tableHeader' },
           {
             text: isCurrent ? `   ${t('editor.operation.pump.current')}` : '',
             style: 'metadataLabel',
@@ -62,7 +67,7 @@ function specLines(
     p.installed_by && `${field('installedBy')}: ${p.installed_by}`,
     p.removed_at && p.removed_by && `${field('removedBy')}: ${p.removed_by}`,
     p.power_source &&
-      `${field('powerSource')}: ${resolvePowerSourceLabel(p.power_source, t)}`,
+      `${field('powerSource')}: ${fmt.vocab(POWER_SOURCES, p.power_source)}`,
     p.intake_depth != null &&
       `${field('intakeDepth')}: ${fmt.formatLength(p.intake_depth)}`,
     p.rated_flow_rate != null &&
@@ -72,7 +77,7 @@ function specLines(
     p.rated_power != null &&
       `${field('ratedPower')}: ${fmt.formatPower(p.rated_power)}`,
     p.riser_diameter != null &&
-      `${field('riserDiameter')}: ${fmt.formatDiameter(p.riser_diameter)}${p.riser_material ? ` · ${p.riser_material}` : ''}`,
+      `${field('riserDiameter')}: ${fmt.formatDiameter(p.riser_diameter)}${p.riser_material ? ` · ${fmt.vocab(CONSTRUCTION_MATERIALS, p.riser_material)}` : ''}`,
   ].filter((line): line is string => !!line);
 }
 
@@ -133,7 +138,7 @@ export function buildPumpInstallationSection(
       stack: [
         { text: ' ' },
         { text: t('editor.operation.pump.title'), style: 'title' },
-        buildHeader(first!, first!.id === currentId, t),
+        buildHeader(first!, first!.id === currentId, fmt, t),
       ],
       unbreakable: true,
     },
@@ -142,7 +147,10 @@ export function buildPumpInstallationSection(
   rest.forEach(p => {
     items.push(buildEntryDivider());
     items.push({
-      stack: [buildHeader(p, p.id === currentId, t), ...buildBody(p, fmt, t)],
+      stack: [
+        buildHeader(p, p.id === currentId, fmt, t),
+        ...buildBody(p, fmt, t),
+      ],
     });
   });
 

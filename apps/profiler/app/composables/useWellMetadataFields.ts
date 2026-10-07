@@ -1,4 +1,5 @@
 import type { Well } from '@welldot/core';
+import { WELL_PURPOSES, WELL_TYPES } from '@welldot/core';
 import { calculatedWellDepth } from '~/utils/wellDepth';
 
 export type WellMetadataFieldKey =
@@ -15,6 +16,7 @@ export type WellMetadataFieldKey =
 
 export function useWellMetadataFields() {
   const { t } = useI18n();
+  const { vocabLabel, vocabList } = useVocab();
 
   const metadataFields = computed<
     { key: WellMetadataFieldKey; label: string }[]
@@ -69,9 +71,9 @@ export function useWellMetadataFields() {
           ? String(well.location.elevation)
           : '';
       case 'well_type':
-        return well.well_type ? resolveWellTypeLabel(well.well_type, t) : '';
+        return well.well_type ? vocabLabel(WELL_TYPES, well.well_type) : '';
       case 'well_purpose':
-        return formatWellPurposes(well.well_purpose, t);
+        return vocabList(WELL_PURPOSES, well.well_purpose);
       case 'well_depth':
         return String(well.well_depth ?? calculatedWellDepth(well));
       default:

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PUMP_TYPES } from '@welldot/core';
 import {
   calculateSubmergence,
   getCurrentPump,
@@ -11,6 +12,7 @@ import SummaryField from './SummaryField.vue';
 import { EDITOR_TAB } from './navigate';
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const { formatLength, formatFlow, formatPower } = useUnitFormat();
 const { formatNumber } = useNumberFormat();
@@ -81,7 +83,7 @@ const regimeSummary = computed(() => {
     <template v-if="pump">
       <div class="flex flex-col gap-0.5">
         <span class="text-sm font-medium text-content-0">
-          {{ resolvePumpTypeLabel(pump.type, t) }}
+          {{ vocabLabel(PUMP_TYPES, pump.type) }}
           <span v-if="equipment" class="font-normal text-content-300">
             · {{ equipment }}
           </span>

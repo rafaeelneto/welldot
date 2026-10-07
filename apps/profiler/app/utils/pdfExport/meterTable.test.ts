@@ -60,8 +60,8 @@ describe('buildMeterSection', () => {
     const serialized = JSON.stringify(
       buildMeterSection(baseWell({ meters }), baseOptions, t),
     );
-    expect(serialized.indexOf('electromagnetic')).toBeLessThan(
-      serialized.indexOf('mechanical'),
+    expect(serialized.indexOf('Electromagnetic')).toBeLessThan(
+      serialized.indexOf('Mechanical'),
     );
     expect(serialized).toContain('current');
     expect(serialized).toContain('HM-42');

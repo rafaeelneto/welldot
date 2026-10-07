@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Attachment, Permit, PermitCondition } from '@welldot/core';
+import { CONDITION_CATEGORIES, PERMIT_TYPES, WATER_USES } from '@welldot/core';
 import {
   getConditionDeadlineStates,
   getOverduePermitHistory,
@@ -19,15 +20,13 @@ import {
   DEADLINE_STATUS_SEVERITY,
   PERMIT_STATUS_SEVERITY,
   permitLabel,
-  resolveConditionCategoryLabel,
-  resolvePermitTypeLabel,
-  resolveWaterUseLabel,
 } from '~/utils/permitVocab';
 import ConditionFulfillDialog from './ConditionFulfillDialog.vue';
 import PermitDialog from './PermitDialog.vue';
 import PermitViewDialog from './PermitViewDialog.vue';
 
 const { t, locale } = useI18n();
+const { vocabLabel } = useVocab();
 const confirm = useConfirm();
 const profileStore = useProfileStore();
 const { formatFlow, formatVolume } = useUnitFormat();
@@ -327,7 +326,7 @@ function scheduleSummary(p: Permit): string | null {
             class="text-[11px]"
           />
           <span class="text-sm font-medium text-content-0">
-            {{ resolvePermitTypeLabel(p.type, t) }}
+            {{ vocabLabel(PERMIT_TYPES, p.type) }}
           </span>
         </template>
 
@@ -380,7 +379,7 @@ function scheduleSummary(p: Permit): string | null {
           <Tag
             v-for="use in p.water_use"
             :key="use"
-            :value="resolveWaterUseLabel(use, t)"
+            :value="vocabLabel(WATER_USES, use)"
             severity="secondary"
             class="text-[11px]"
           />
@@ -437,7 +436,7 @@ function scheduleSummary(p: Permit): string | null {
                 class="flex flex-col items-end text-[11px] text-content-400 shrink-0"
               >
                 <span v-if="c.category">
-                  {{ resolveConditionCategoryLabel(c.category, t) }}
+                  {{ vocabLabel(CONDITION_CATEGORIES, c.category) }}
                 </span>
                 <span v-if="c.responsible" class="flex items-center gap-1">
                   <Icon name="ph:user-duotone" class="size-3" />

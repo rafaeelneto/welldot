@@ -6,7 +6,13 @@ import type {
   SamplingPoint,
   WaterSample,
 } from '@welldot/core';
-import { WaterSampleSchema } from '@welldot/core';
+import {
+  SAMPLE_TYPES,
+  SAMPLING_DEVICES,
+  SAMPLING_METHODS,
+  SAMPLING_POINT_TYPES,
+  WaterSampleSchema,
+} from '@welldot/core';
 import { getPumpInstalledAt } from '@welldot/utils';
 import { formatISO } from 'date-fns';
 import { useConfirm } from 'primevue/useconfirm';
@@ -14,15 +20,7 @@ import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import { pumpInstallationLabel } from '~/utils/operationVocab';
 import {
   PARENT_SAMPLE_TYPES,
-  SAMPLE_TYPE_VALUES,
-  SAMPLING_DEVICE_VALUES,
-  SAMPLING_METHOD_VALUES,
-  SAMPLING_POINT_TYPE_VALUES,
-  resolveDeviceLabel,
   resolveParameterLabel,
-  resolveSampleTypeLabel,
-  resolveSamplingMethodLabel,
-  resolveSamplingPointTypeLabel,
   sampleLabel,
 } from '~/utils/waterQualityVocab';
 import PurgeReadingsEditor from './PurgeReadingsEditor.vue';
@@ -56,7 +54,8 @@ const visible = defineModel<boolean>('visible', { default: false });
 
 const emit = defineEmits<{ save: [sample: WaterSample] }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { vocabOptions } = useVocab();
 const confirm = useConfirm();
 const profileStore = useProfileStore();
 const { eventTypeLabel } = useHydrodynamicEventTypes();
@@ -66,37 +65,20 @@ const { lengthUnit, volumeUnit, flowUnit } = useUnitFormat();
 
 const samples = computed(() => profileStore.well.water_samples ?? []);
 
-const sampleTypeOptions = computed(() =>
-  SAMPLE_TYPE_VALUES.map(value => ({
-    value,
-    label: resolveSampleTypeLabel(value, t),
-  })),
-);
-const methodOptions = computed(() =>
-  SAMPLING_METHOD_VALUES.map(value => ({
-    value,
-    label: resolveSamplingMethodLabel(value, t),
-  })),
-);
-const pointTypeOptions = computed(() =>
-  SAMPLING_POINT_TYPE_VALUES.map(value => ({
-    value,
-    label: resolveSamplingPointTypeLabel(value, t),
-  })),
-);
-const deviceOptions = computed(() =>
-  SAMPLING_DEVICE_VALUES.map(value => ({
-    value,
-    label: resolveDeviceLabel(value, t),
-  })),
-);
+const sampleTypeOptions = computed(() => vocabOptions(SAMPLE_TYPES));
+const methodOptions = computed(() => vocabOptions(SAMPLING_METHODS));
+const pointTypeOptions = computed(() => vocabOptions(SAMPLING_POINT_TYPES));
+const deviceOptions = computed(() => vocabOptions(SAMPLING_DEVICES));
 const parentOptions = computed(() =>
   [...samples.value]
     .filter(s => s.id !== model.value?.id)
     .sort(
       (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
     )
-    .map(s => ({ value: s.id, label: `${sampleLabel(s, t)} (${s.id})` })),
+    .map(s => ({
+      value: s.id,
+      label: `${sampleLabel(s, locale.value)} (${s.id})`,
+    })),
 );
 const campaignOptions = computed(
   () =>
@@ -107,7 +89,7 @@ const campaignOptions = computed(
 const pumpOptions = computed(() =>
   (profileStore.well.pump_installations ?? []).map(p => ({
     value: p.id,
-    label: pumpInstallationLabel(p, t),
+    label: pumpInstallationLabel(p, locale.value),
   })),
 );
 /** Pump in place when the sample was collected — offered as a one-click link. */
@@ -671,7 +653,7 @@ function commit(sample: WaterSample) {
               v-if="suggestPumpLink"
               :label="
                 t('editor.waterQuality.samplingPoint.linkPumpAtCollection', {
-                  pump: pumpInstallationLabel(pumpAtCollection!, t),
+                  pump: pumpInstallationLabel(pumpAtCollection!, locale),
                 })
               "
               size="small"

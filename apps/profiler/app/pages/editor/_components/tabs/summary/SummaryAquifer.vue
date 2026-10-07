@@ -5,7 +5,7 @@ import SummaryEmpty from './SummaryEmpty.vue';
 import SummaryField from './SummaryField.vue';
 import { EDITOR_TAB } from './navigate';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { formatLength, formatFlow, formatSpecificCapacity } = useUnitFormat();
 const { formatNumber } = useNumberFormat();
 const { state, latestAnalysis } = useAquiferState();
@@ -16,7 +16,7 @@ function sub(v: AquiferValue | null, withMethod = true): string | undefined {
   if (!v) return undefined;
   return [
     formatDate(v.datetime, 'dd/MM/yyyy'),
-    withMethod ? aquiferMethodLabel(v.method) : '',
+    withMethod ? aquiferMethodLabel(v.method, locale.value) : '',
   ]
     .filter(Boolean)
     .join(' · ');

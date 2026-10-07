@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PERMIT_TYPES, WATER_USES } from '@welldot/core';
 import {
   getPermitStartDate,
   getPermitStatus,
@@ -13,6 +14,7 @@ import { EDITOR_TAB } from './navigate';
 const MAX_DEADLINES = 3;
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const permitView = usePermitView();
 const { formatFlow } = useUnitFormat();
@@ -39,7 +41,7 @@ const validity = computed(() => {
 
 const waterUses = computed(() =>
   (permit.value?.water_use ?? [])
-    .map(u => resolveWaterUseLabel(u, t))
+    .map(u => vocabLabel(WATER_USES, u))
     .join(', '),
 );
 
@@ -87,7 +89,7 @@ const deadlines = computed(() => {
     <template v-if="permit">
       <div class="flex flex-col gap-0.5">
         <span class="text-sm font-medium text-content-0">
-          {{ resolvePermitTypeLabel(permit.type, t) }}
+          {{ vocabLabel(PERMIT_TYPES, permit.type) }}
           <span
             v-if="permit.identifier ?? permit.request_identifier"
             class="font-mono font-normal text-content-300"

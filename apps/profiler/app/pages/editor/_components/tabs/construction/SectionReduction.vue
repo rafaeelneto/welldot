@@ -1,19 +1,15 @@
 <script setup lang="ts">
 import type { Well } from '@welldot/core';
+import { CONSTRUCTION_MATERIALS } from '@welldot/core';
 import type { WellGridColumn } from '~/components/DataGrid/types';
-import { materialOptions } from '~/utils/materialOptions';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 
+// Fiberglass reducers are uncommon; the rest of the materials are offered.
 const reductionTypeOptions = computed(() =>
-  materialOptions(t, [
-    'pvc',
-    'geomechanicalPvc',
-    'carbonSteel',
-    'galvanizedSteel',
-    'stainlessSteel',
-  ]),
+  vocabOptions(CONSTRUCTION_MATERIALS).filter(o => o.value !== 'fiberglass'),
 );
 
 const reductionColumns = computed<WellGridColumn[]>(() => [

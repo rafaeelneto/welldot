@@ -1,3 +1,41 @@
+import type { AttachmentDocumentType } from '../vocab/attachment.vocab';
+import type {
+  CementPadType,
+  CentralizerType,
+  ConstructionMaterial,
+  DrillingMethod,
+} from '../vocab/construction.vocab';
+import type { WellPurpose, WellType } from '../vocab/general.vocab';
+import type {
+  HistoryLogCategory,
+  HistoryLogSeverity,
+} from '../vocab/history.vocab';
+import type {
+  AquiferAnalysisMethod,
+  MeasurementMethod,
+} from '../vocab/hydrodynamic.vocab';
+import type {
+  DeclaredMethod,
+  MaintenanceType,
+  MeterType,
+  PowerSource,
+  PumpType,
+  ReadingSource,
+} from '../vocab/operation.vocab';
+import type {
+  ConditionCategory,
+  PermitHistoryType,
+  PermitType,
+  WaterUse,
+} from '../vocab/permit.vocab';
+import type { OpenVocab } from '../vocab/vocab';
+import type {
+  SampleType,
+  SamplingDevice,
+  SamplingMethod,
+  SamplingPointType,
+} from '../vocab/waterSample.vocab';
+
 // ─── Common types ─────────────────────────────────────────────────────────────
 
 /**
@@ -14,12 +52,10 @@ export type Attachment = {
   /** MIME type (e.g. `application/pdf`, `image/jpeg`). */
   media_type: string;
   /**
-   * What the document is. Since v2.3. Recommended: `drilling_report`,
-   * `as_built_drawing`, `registry_record`, `photo`, `permit_document`,
-   * `condition_evidence`, `pump_curve`, `field_sheet`, `test_report`,
-   * `lab_report`, `invoice`. Non-canonical values SHOULD use the `x-` prefix.
+   * What the document is. Since v2.3. Recommended values:
+   * {@link DOCUMENT_TYPES}. Non-canonical values SHOULD use the `x-` prefix.
    */
-  document_type?: string;
+  document_type?: OpenVocab<AttachmentDocumentType>;
   /** Original filename for display. */
   filename?: string;
   /** Caption or content description. */
@@ -62,8 +98,8 @@ export type BoreHole = {
   to: number;
   /** Borehole diameter in millimeters. */
   diameter: number;
-  /** Free text description of the drilling method used (e.g. `rotary`, `percussion`, `cable_tool`). */
-  drilling_method?: string;
+  /** Drilling method. Recommended values: {@link DRILLING_METHODS}. */
+  drilling_method?: OpenVocab<DrillingMethod>;
 };
 
 /** Steel or plastic casing installed inside the borehole. */
@@ -72,8 +108,8 @@ export type WellCase = {
   from: number;
   /** End depth in meters from ground level. */
   to: number;
-  /** Casing material. Recommended: `steel`, `pvc`, `hdpe`, `fiberglass`. Can be free-text. */
-  type: string;
+  /** Casing material. Recommended values: {@link CONSTRUCTION_MATERIALS}. */
+  type: OpenVocab<ConstructionMaterial>;
   /** Casing outer diameter in millimeters. */
   diameter: number;
 };
@@ -88,8 +124,8 @@ export type Reduction = {
   diam_from: number;
   /** Diameter at the bottom of the reducer in millimeters. */
   diam_to: number;
-  /** Reducer shape (e.g. `conical`, `stepped`). Can be free-text. */
-  type: string;
+  /** Reducer material. Recommended values: {@link CONSTRUCTION_MATERIALS}. */
+  type: OpenVocab<ConstructionMaterial>;
 };
 
 /** Slotted or wire-wound screen section that allows water to enter the well. */
@@ -98,8 +134,8 @@ export type WellScreen = {
   from: number;
   /** End depth in meters from ground level. */
   to: number;
-  /** Screen type. Recommended: `wire_wound`, `bridge_slot`, `louvered`, `pvc_slotted`. Can be free-text. */
-  type: string;
+  /** Screen material. Recommended values: {@link CONSTRUCTION_MATERIALS}. */
+  type: OpenVocab<ConstructionMaterial>;
   /** Screen outer diameter in millimeters. */
   diameter: number;
   /** Slot opening size in millimeters. */
@@ -142,8 +178,8 @@ export type Centralizer = {
   to: number;
   /** Spacing between consecutive centralizers in meters. May be omitted when unknown. */
   spacing?: number;
-  /** Centralizer type. Recommended: `spring_bow`, `rigid`, `semi_rigid`, `polymer`. Can be free-text. */
-  type: string;
+  /** Centralizer type. Recommended values: {@link CENTRALIZER_TYPES}. */
+  type: OpenVocab<CentralizerType>;
   /** As-built outer diameter in millimeters. */
   diameter?: number;
   /** Free-text description. */
@@ -152,8 +188,8 @@ export type Centralizer = {
 
 /** Concrete pad installed at ground level (depth 0) around the wellhead. All dimensions in **meters**. */
 export type CementPad = {
-  /** Free text description of the pad, typically its material (e.g. `concrete`) but may also describe its shape (e.g. `circular`) or both. */
-  type: string;
+  /** Pad material. Recommended values: {@link CEMENT_PAD_TYPES}; other free text (e.g. a shape) is allowed. */
+  type: OpenVocab<CementPadType>;
   /** Width in meters. */
   width: number;
   /** Thickness in meters. */
@@ -278,7 +314,8 @@ export type SpotMeasurementEvent = HydrodynamicEventBase & {
   /** Depth to water surface from ground level, in meters. */
   static_level: number;
   static_level_precision?: number;
-  measurement_method?: string;
+  /** Recommended values: {@link MEASUREMENT_METHODS}. */
+  measurement_method?: OpenVocab<MeasurementMethod>;
   /** At most one step — an informal brief pump observation, not a controlled test. */
   steps?: PumpingStep[];
   recovery?: RecoveryPhase;
@@ -329,7 +366,8 @@ export type AquiferAnalysis = {
   datetime: string;
   analyst?: string;
   source_event_ids: string[];
-  method?: string;
+  /** Recommended values: {@link AQUIFER_ANALYSIS_METHODS}. */
+  method?: OpenVocab<AquiferAnalysisMethod>;
   static_level?: number;
   static_level_precision?: number;
   static_level_source_id?: string;
@@ -383,10 +421,10 @@ export type PumpInstallation = {
   installed_by?: string;
   /** Person or company that removed the pump. Only meaningful with `removed_at`. */
   removed_by?: string;
-  /** Pump type. Recommended: `submersible`, `vertical_turbine`, `jet`, `progressive_cavity`, `hand_pump`, `compressor_airlift`. */
-  type: string;
-  /** Power source. Recommended: `grid`, `solar`, `diesel`, `hybrid`. */
-  power_source?: string;
+  /** Pump type. Recommended values: {@link PUMP_TYPES}. */
+  type: OpenVocab<PumpType>;
+  /** Power source. Recommended values: {@link POWER_SOURCES}. */
+  power_source?: OpenVocab<PowerSource>;
   manufacturer?: string;
   model?: string;
   /** Serial number. Links reinstallations of the same unit. */
@@ -403,8 +441,8 @@ export type PumpInstallation = {
   stages?: number;
   /** Riser pipe as-built outer diameter in millimeters. */
   riser_diameter?: number;
-  /** Riser pipe material. Same vocabulary as `well_case.type`. */
-  riser_material?: string;
+  /** Riser pipe material. Recommended values: {@link CONSTRUCTION_MATERIALS}. */
+  riser_material?: OpenVocab<ConstructionMaterial>;
   check_valve?: boolean;
   electrical?: PumpElectrical;
   notes?: string;
@@ -473,10 +511,10 @@ export type PermitCondition = {
   /** Text of the condition as written in the document. */
   description: string;
   /**
-   * Recommended: `monitoring`, `reporting`, `equipment_installation`,
-   * `well_protection`, `environmental`, `legal`.
+   * Recommended values: {@link CONDITION_CATEGORIES}. Non-canonical values
+   * SHOULD use the `x-` prefix.
    */
-  category?: string;
+  category?: OpenVocab<ConditionCategory>;
   /** Calendar date (YYYY-MM-DD) of the first deadline. Mutually exclusive with `due_after`. */
   first_due?: string;
   /** ISO 8601 date duration (e.g. `P90D`) from the permit's start date to the first deadline. */
@@ -520,10 +558,10 @@ export type PermitHistoryEntry = {
   /** Calendar date (YYYY-MM-DD) the step happened. */
   date: string;
   /**
-   * Recommended: `filing`, `process`, `notification`, `fee`, `inspection`,
-   * `decision`, `renewal`. Non-canonical values SHOULD use the `x-` prefix.
+   * Recommended values: {@link PERMIT_HISTORY_TYPES}. Non-canonical values
+   * SHOULD use the `x-` prefix.
    */
-  type?: string;
+  type?: OpenVocab<PermitHistoryType>;
   description: string;
   /** For actionable steps (fee paid, notification answered). Absent means informational. */
   done?: boolean;
@@ -546,10 +584,10 @@ export type Permit = {
   /** Unique within `permits`. UUID v4 recommended. */
   id: string;
   /**
-   * Recommended: `abstraction_permit`, `preliminary_permit`, `exemption`,
-   * `registration`, `dewatering_permit`, `drilling_permit`.
+   * Recommended values: {@link PERMIT_TYPES}. Non-canonical values SHOULD use
+   * the `x-` prefix.
    */
-  type: string;
+  type: OpenVocab<PermitType>;
   /** Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`. */
   authority: string;
   /**
@@ -569,11 +607,8 @@ export type Permit = {
   valid_until?: string;
   /** Calendar date (YYYY-MM-DD) a renewal request was filed. */
   renewal_requested_at?: string;
-  /**
-   * What the abstracted water is for. Recommended: `human_supply`,
-   * `industrial`, `mining`, `irrigation`, `livestock`, `commercial`.
-   */
-  water_use?: string[];
+  /** What the abstracted water is for. Recommended values: {@link WATER_USES}. */
+  water_use?: OpenVocab<WaterUse>[];
   /** Maximum granted flow in m³/h. */
   flow_rate?: number;
   /** Maximum granted daily operating time in hours, 0–24. */
@@ -611,8 +646,8 @@ export type Meter = {
   installed_by?: string;
   /** Person or company that removed the meter. Only meaningful with `removed_at`. */
   removed_by?: string;
-  /** Meter type. Recommended: `mechanical`, `electromagnetic`, `ultrasonic`. */
-  type?: string;
+  /** Meter type. Recommended values: {@link METER_TYPES}. */
+  type?: OpenVocab<MeterType>;
   manufacturer?: string;
   model?: string;
   /** Serial number. Links reinstallations of the same unit. */
@@ -650,8 +685,8 @@ export type MeterReading = ProductionEntryBase & {
   meter_id: string;
   /** Register value in m³. Meters reading in liters are converted on input. */
   reading: number;
-  /** Recommended: `manual`, `telemetry`. */
-  source?: string;
+  /** Recommended values: {@link READING_SOURCES}. */
+  source?: OpenVocab<ReadingSource>;
 };
 
 /** A volume declared for a period, without a meter. Since v2.3. */
@@ -666,9 +701,9 @@ export type DeclaredVolume = ProductionEntryBase & {
   /**
    * `estimated` (e.g. flow × time; counts only where no meter covers) or
    * `reported` (as declared to a regulator; never added to totals). Absent
-   * means `estimated`.
+   * means `estimated`. Recommended values: {@link DECLARED_METHODS}.
    */
-  method?: string;
+  method?: OpenVocab<DeclaredMethod>;
 };
 
 /**
@@ -720,22 +755,20 @@ export type HistoryLogEntry = {
   datetime: string;
   /** RFC 3339 datetime with mandatory UTC offset. When this entry was most recently created or edited. */
   updated_at?: string;
-  category: string;
+  /** Recommended values: {@link HISTORY_LOG_CATEGORIES}. */
+  category: OpenVocab<HistoryLogCategory>;
   description: string;
   author?: string;
-  severity?: string;
+  /** Recommended values: {@link HISTORY_LOG_SEVERITIES}. */
+  severity?: OpenVocab<HistoryLogSeverity>;
   attachments?: Attachment[];
 
   // Category-specific fields (since v2.3). MUST be absent on entries of
   // other categories.
 
   // `maintenance`
-  /**
-   * Recommended: `inspection`, `cleaning`, `redevelopment`, `disinfection`,
-   * `pump_service`, `meter_calibration`, `video_inspection`,
-   * `level_measurement`, `pump_test`, `water_sampling`.
-   */
-  maintenance_type?: string;
+  /** Recommended values: {@link MAINTENANCE_TYPES}. */
+  maintenance_type?: OpenVocab<MaintenanceType>;
   /** `pump_installations[].id` the task concerns. */
   pump_installation_id?: string;
   /** `meters[].id` the task concerns. */
@@ -773,8 +806,8 @@ export type Parameter = {
 
 /** Where and how a sample was taken. Depths in meters from ground level. */
 export type SamplingPoint = {
-  /** Recommended: `pump_discharge`, `wellhead_tap`, `in_well`. `x-` for others. */
-  type: string;
+  /** Recommended values: {@link SAMPLING_POINT_TYPES}. `x-` for others. */
+  type: OpenVocab<SamplingPointType>;
   /** Point depth of the sampler intake (m). Mutually exclusive with `from`/`to`. */
   depth?: number;
   /** One-sigma uncertainty of `depth` (m). */
@@ -783,11 +816,8 @@ export type SamplingPoint = {
   from?: number;
   /** Bottom of the isolated interval (m). */
   to?: number;
-  /**
-   * Recommended: `bailer`, `discrete_depth_sampler`, `passive_diffusion_bag`,
-   * `grab_sleeve`, `low_flow_pump`, `packer_pump`. `x-` for others.
-   */
-  device?: string;
+  /** Recommended values: {@link SAMPLING_DEVICES}. `x-` for others. */
+  device?: OpenVocab<SamplingDevice>;
   /** `pump_installations[].id` when sampled at the production pump. */
   pump_installation_id?: string;
 };
@@ -894,19 +924,16 @@ export type WaterSample = {
   id: string;
   /** RFC 3339 instant of collection. */
   datetime: string;
-  /**
-   * Recommended: `routine`, `field_duplicate`, `split_sample`, `field_blank`,
-   * `trip_blank`, `equipment_blank`. `x-` for others.
-   */
-  sample_type: string;
+  /** Recommended values: {@link SAMPLE_TYPES}. `x-` for others. */
+  sample_type: OpenVocab<SampleType>;
   /** Original sample of a `field_duplicate` or `split_sample`. */
   parent_sample_id?: string;
   /** Tie-break among samples at the same instant. */
   sequence?: number;
   /** Free sampling campaign identifier. */
   campaign?: string;
-  /** Recommended: `low_flow`, `volumetric_purge`, `no_purge`, `pump_discharge`. */
-  sampling_method?: string;
+  /** Recommended values: {@link SAMPLING_METHODS}. */
+  sampling_method?: OpenVocab<SamplingMethod>;
   sampling_point?: SamplingPoint;
   purge?: Purge;
   /** `hydrodynamic_events[].id` with the level measured at collection. */
@@ -939,10 +966,10 @@ export type Well = {
   profiles?: string[];
 
   // Metadata
-  /** Construction method of the well (e.g. `tubular`, `hand_dug`, `horizontal`). `artesian` is deprecated since v2.1. */
-  well_type?: string;
-  /** Intended use(s) of the well (e.g. `production`, `monitoring`, `piezometer`). Since v2.1. */
-  well_purpose?: string[];
+  /** Construction method of the well. Recommended values: {@link WELL_TYPES} (`artesian` is deprecated since v2.1). */
+  well_type?: OpenVocab<WellType>;
+  /** Intended use(s) of the well. Recommended values: {@link WELL_PURPOSES}. Since v2.1. */
+  well_purpose?: OpenVocab<WellPurpose>[];
   /** Well name or local identifier. */
   name?: string;
   /** Name of the drilling company or individual. */

@@ -9,15 +9,12 @@ import type {
   VolumeLimit,
   Well,
 } from '@welldot/core';
+import { PERMIT_TYPES, WATER_USES, vocabValues } from '@welldot/core';
 import AppChip from '~/components/AppChip.vue';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import {
   PERMIT_ADMINISTRATIVE_STATUS_VALUES,
-  PERMIT_TYPE_VALUES,
-  WATER_USE_VALUES,
   permitLabel,
-  resolvePermitTypeLabel,
-  resolveWaterUseLabel,
 } from '~/utils/permitVocab';
 import ConditionEditor from './ConditionEditor.vue';
 import PermitHistoryEditor from './PermitHistoryEditor.vue';
@@ -37,6 +34,7 @@ const props = withDefaults(
 const emit = defineEmits<{ save: [permit: Permit] }>();
 
 const { t, locale } = useI18n();
+const { vocabLabel, vocabOptions } = useVocab();
 const { flowUnit, volumeUnit } = useUnitFormat();
 const profileStore = useProfileStore();
 
@@ -51,12 +49,7 @@ type MonthRow = {
   days: number | null;
 };
 
-const typeOptions = computed(() =>
-  PERMIT_TYPE_VALUES.map(value => ({
-    value,
-    label: resolvePermitTypeLabel(value, t),
-  })),
-);
+const typeOptions = computed(() => vocabOptions(PERMIT_TYPES));
 
 const statusOptions = computed(() =>
   PERMIT_ADMINISTRATIVE_STATUS_VALUES.map(value => ({
@@ -80,12 +73,12 @@ const NOT_GRANTED: readonly PermitAdministrativeStatus[] = [
  */
 const waterUseOptions = computed(() => {
   const values = new Set<string>([
-    ...WATER_USE_VALUES,
+    ...vocabValues(WATER_USES),
     ...(model.value?.water_use ?? []),
   ]);
   return [...values].map(value => ({
     value,
-    label: resolveWaterUseLabel(value, t),
+    label: vocabLabel(WATER_USES, value),
   }));
 });
 
@@ -104,7 +97,7 @@ const supersedesOptions = computed(() =>
     .filter(p => p.id !== model.value?.id)
     .map(p => ({
       value: p.id,
-      label: `${resolvePermitTypeLabel(p.type, t)} · ${permitLabel(p)}`,
+      label: `${vocabLabel(PERMIT_TYPES, p.type)} · ${permitLabel(p)}`,
     })),
 );
 

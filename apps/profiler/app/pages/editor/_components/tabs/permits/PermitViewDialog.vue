@@ -5,6 +5,12 @@ import type {
   PermitHistoryEntry,
 } from '@welldot/core';
 import {
+  CONDITION_CATEGORIES,
+  PERMIT_HISTORY_TYPES,
+  PERMIT_TYPES,
+  WATER_USES,
+} from '@welldot/core';
+import {
   getConditionDeadlineStates,
   getPermitStartDate,
   getPermitStatus,
@@ -19,10 +25,6 @@ import {
   PERMIT_HISTORY_TYPE_ICON,
   PERMIT_STATUS_SEVERITY,
   permitLabel,
-  resolveConditionCategoryLabel,
-  resolvePermitHistoryTypeLabel,
-  resolvePermitTypeLabel,
-  resolveWaterUseLabel,
 } from '~/utils/permitVocab';
 import ConditionDeadlineList from './ConditionDeadlineList.vue';
 import ConditionFulfillDialog from './ConditionFulfillDialog.vue';
@@ -46,6 +48,7 @@ const props = defineProps<{ permitId: string }>();
 const emit = defineEmits<{ edit: [id: string, tab: ViewTab] }>();
 
 const { t, locale } = useI18n();
+const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const permitView = usePermitView();
 const { formatFlow, formatVolume } = useUnitFormat();
@@ -322,7 +325,7 @@ function isActionable(entry: PermitHistoryEntry): boolean {
         <div class="flex items-center flex-wrap gap-2">
           <Icon name="ph:seal-check-duotone" class="size-5 text-content-300" />
           <span class="text-base font-medium text-content-0">
-            {{ resolvePermitTypeLabel(permit.type, t) }}
+            {{ vocabLabel(PERMIT_TYPES, permit.type) }}
           </span>
           <Tag
             v-if="status"
@@ -399,7 +402,7 @@ function isActionable(entry: PermitHistoryEntry): boolean {
                 <Tag
                   v-for="use in permit.water_use"
                   :key="use"
-                  :value="resolveWaterUseLabel(use, t)"
+                  :value="vocabLabel(WATER_USES, use)"
                   severity="secondary"
                   class="text-[11px]"
                 />
@@ -535,7 +538,7 @@ function isActionable(entry: PermitHistoryEntry): boolean {
                       class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-content-400"
                     >
                       <span v-if="c.category">
-                        {{ resolveConditionCategoryLabel(c.category, t) }}
+                        {{ vocabLabel(CONDITION_CATEGORIES, c.category) }}
                       </span>
                       <span
                         v-if="c.responsible"
@@ -644,7 +647,7 @@ function isActionable(entry: PermitHistoryEntry): boolean {
                       <template v-if="item.kind === 'history'">
                         <span v-if="item.entry.type" class="text-content-400">
                           {{
-                            resolvePermitHistoryTypeLabel(item.entry.type, t)
+                            vocabLabel(PERMIT_HISTORY_TYPES, item.entry.type)
                           }}
                         </span>
                         <Tag

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Attachment, HistoryLogEntry } from '@welldot/core';
+import { MAINTENANCE_TYPES } from '@welldot/core';
 import {
   getOperationWarnings,
   type OperationWarningCode,
@@ -14,13 +15,13 @@ import {
   WELL_STATUS_SEVERITY,
   meterLabel,
   pumpInstallationLabel,
-  resolveMaintenanceTypeLabel,
   resolveWellStatusLabel,
 } from '~/utils/operationVocab';
 import { sampleLabel } from '~/utils/waterQualityVocab';
 import LogEntryDialog from './historyLog/LogEntryDialog.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const confirm = useConfirm();
 const {
@@ -87,7 +88,7 @@ function sampleRef(entry: HistoryLogEntry): string | null {
   const sample = profileStore.well.water_samples?.find(
     s => s.id === entry.sample_id,
   );
-  return sample ? sampleLabel(sample, t) : entry.sample_id;
+  return sample ? sampleLabel(sample, locale.value) : entry.sample_id;
 }
 
 // ─── maintenance / status_change (.well v2.3) ────────────────────────────────
@@ -108,10 +109,12 @@ function maintenanceRef(entry: HistoryLogEntry): string | null {
   return (
     [
       entry.maintenance_type
-        ? resolveMaintenanceTypeLabel(entry.maintenance_type, t)
+        ? vocabLabel(MAINTENANCE_TYPES, entry.maintenance_type)
         : null,
-      pump ? pumpInstallationLabel(pump, t) : entry.pump_installation_id,
-      meter ? meterLabel(meter, t) : entry.meter_id,
+      pump
+        ? pumpInstallationLabel(pump, locale.value)
+        : entry.pump_installation_id,
+      meter ? meterLabel(meter, t, locale.value) : entry.meter_id,
       event
         ? `${eventTypeLabel(event.type)} · ${formatDate(event.datetime, 'dd/MM/yyyy')}`
         : entry.event_id,

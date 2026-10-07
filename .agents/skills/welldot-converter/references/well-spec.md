@@ -125,33 +125,35 @@ canonical term just to have a canonical value.
 
 ### `well_case[]`
 
-| Field        | Type        | Required | Notes                        |
-| ------------ | ----------- | -------- | ---------------------------- |
-| `from`, `to` | number (m)  | yes      |                              |
-| `type`       | string      | yes      | **Tier 2 — pure free text.** |
-| `diameter`   | number (mm) | yes      |                              |
+| Field        | Type        | Required | Notes                                           |
+| ------------ | ----------- | -------- | ----------------------------------------------- |
+| `from`, `to` | number (m)  | yes      |                                                 |
+| `type`       | string      | yes      | **Tier 1 — construction materials.** See below. |
+| `diameter`   | number (mm) | yes      |                                                 |
 
-**Tier 2 field — no recommended vocabulary exists in the spec at all.** There is nothing to canonicalize
-toward. Always transcribe the report's material/casing description verbatim in its original language
-(e.g. "aço carbono", "PVC geomecânico"). Do not invent or apply enum values like `steel`/`pvc`/`hdpe` —
-those are not part of the spec.
+**Tier 1 field — construction materials (since v2.3).** Recommended values, shared by `well_case.type`,
+`reduction.type`, `well_screen.type` and `pump_installations[].riser_material`: `pvc`, `geomechanical_pvc`, `carbon_steel`, `galvanized_steel`, `stainless_steel`, `fiberglass`.
+Use a key only when the report's wording maps to it losslessly ("aço carbono" → `carbon_steel`,
+"PVC geomecânico" → `geomechanical_pvc`). When the report adds detail the key would drop (a standard,
+a wall class, "aço carbono SCH 40", a screen construction such as "espiralado"), transcribe the report's
+phrase verbatim instead. Never invent other enum values (`steel`, `hdpe`, `wire_wound`…).
 
 ### `reduction[]`
 
-| Field                  | Type        | Required | Notes                                                       |
-| ---------------------- | ----------- | -------- | ----------------------------------------------------------- |
-| `from`, `to`           | number (m)  | yes      |                                                             |
-| `diam_from`, `diam_to` | number (mm) | yes      |                                                             |
-| `type`                 | string      | yes      | **Tier 2 — pure free text**, same rule as `well_case.type`. |
+| Field                  | Type        | Required | Notes                                                               |
+| ---------------------- | ----------- | -------- | ------------------------------------------------------------------- |
+| `from`, `to`           | number (m)  | yes      |                                                                     |
+| `diam_from`, `diam_to` | number (mm) | yes      |                                                                     |
+| `type`                 | string      | yes      | **Tier 1 — construction materials**, same rule as `well_case.type`. |
 
 ### `well_screen[]`
 
-| Field         | Type        | Required | Notes                                                                                                                                          |
-| ------------- | ----------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `from`, `to`  | number (m)  | yes      |                                                                                                                                                |
-| `type`        | string      | yes      | **Tier 2 — pure free text.** No enforced vocabulary (do not use `wire_wound`/`bridge_slot`/etc. as an enum — transcribe the report's wording). |
-| `diameter`    | number (mm) | yes      |                                                                                                                                                |
-| `screen_slot` | number (mm) | yes      | v2 name — **not** `screen_slot_mm`. Value and unit unchanged from v1, only the field name changed.                                             |
+| Field         | Type        | Required | Notes                                                                                                                         |
+| ------------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `from`, `to`  | number (m)  | yes      |                                                                                                                               |
+| `type`        | string      | yes      | **Tier 1 — construction materials**, same rule as `well_case.type` (a screen construction such as wire-wound stays verbatim). |
+| `diameter`    | number (mm) | yes      |                                                                                                                               |
+| `screen_slot` | number (mm) | yes      | v2 name — **not** `screen_slot_mm`. Value and unit unchanged from v1, only the field name changed.                            |
 
 ### `surface_case[]`
 
@@ -173,23 +175,23 @@ those are not part of the spec.
 
 One entry per interval where centralizers were installed at a regular spacing.
 
-| Field         | Type        | Required | Notes                                                                                                                          |
-| ------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `from`, `to`  | number (m)  | yes      | Depth of the first and last centralizer. `from === to` for a single centralizer.                                               |
-| `spacing`     | number (m)  | no       | "a cada 6 m" → `6`. **Omit if the report doesn't give it** — never infer it from a count. Never store a count.                 |
-| `type`        | string      | yes      | **Tier 1.** Recommended `spring_bow`, `rigid`, `semi_rigid`, `polymer` when the wording maps losslessly; else verbatim phrase. |
-| `diameter`    | number (mm) | no       | As-built outer diameter, only when stated.                                                                                     |
-| `description` | string      | no       | Near-verbatim (material, brand). See § Free-text preservation.                                                                 |
+| Field         | Type        | Required | Notes                                                                                                                                                                                 |
+| ------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `from`, `to`  | number (m)  | yes      | Depth of the first and last centralizer. `from === to` for a single centralizer.                                                                                                      |
+| `spacing`     | number (m)  | no       | "a cada 6 m" → `6`. **Omit if the report doesn't give it** — never infer it from a count. Never store a count.                                                                        |
+| `type`        | string      | yes      | **Tier 1.** Recommended `spring_bow`, `rigid`, `semi_rigid`, `polymer`, `carbon_steel`, `galvanized_steel`, `stainless_steel` when the wording maps losslessly; else verbatim phrase. |
+| `diameter`    | number (mm) | no       | As-built outer diameter, only when stated.                                                                                                                                            |
+| `description` | string      | no       | Near-verbatim (material, brand). See § Free-text preservation.                                                                                                                        |
 
 If the report only says centralizers were used along a string (no depths), use that string's interval
 for `from`/`to` and omit `spacing`.
 
 ### `cement_pad` (single object, optional — omit entirely if not in the report)
 
-| Field                          | Type       | Required | Notes                                                                                                                                                                                                                                                                                         |
-| ------------------------------ | ---------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`                         | string     | yes      | **Tier 1 — recommended, not enforced.** May describe material (e.g. `concrete`), shape (e.g. `circular`), or both. Use a recommended-sounding term only where it captures everything the report says; otherwise transcribe the report's phrase (material + shape together if both are given). |
-| `width`, `length`, `thickness` | number (m) | yes      |                                                                                                                                                                                                                                                                                               |
+| Field                          | Type       | Required | Notes                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------ | ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                         | string     | yes      | **Tier 1 — recommended, not enforced.** Recommended materials: `concrete`, `reinforced_concrete`, `cement`, `mortar`. May also describe shape (e.g. `circular`), or both. Use a recommended-sounding term only where it captures everything the report says; otherwise transcribe the report's phrase (material + shape together if both are given). |
+| `width`, `length`, `thickness` | number (m) | yes      |                                                                                                                                                                                                                                                                                                                                                      |
 
 ---
 
@@ -472,7 +474,7 @@ One entry per installation of a pump. The current pump is the entry without `rem
 | `rated_power`                        | number  | no       | **kW** — convert cv × 0.7355, hp × 0.7457.                                                                                                                      |
 | `stages`                             | integer | no       |                                                                                                                                                                 |
 | `riser_diameter`                     | number  | no       | mm, as-built outer diameter of the riser (edutor).                                                                                                              |
-| `riser_material`                     | string  | no       | Same vocabulary as `well_case.type`.                                                                                                                            |
+| `riser_material`                     | string  | no       | Tier 1 — construction materials, same rule as `well_case.type`.                                                                                                 |
 | `check_valve`                        | boolean | no       |                                                                                                                                                                 |
 | `electrical`                         | object  | no       | `voltage` (V), `phases` (1 or 3), `cable_section` (mm²), `cable_length` (m).                                                                                    |
 | `notes`, `updated_at`, `attachments` |         | no       |                                                                                                                                                                 |

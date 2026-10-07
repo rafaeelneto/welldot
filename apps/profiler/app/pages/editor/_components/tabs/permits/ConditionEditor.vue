@@ -5,11 +5,8 @@ import type {
   PermitCondition,
   Well,
 } from '@welldot/core';
+import { CONDITION_CATEGORIES } from '@welldot/core';
 import { getConditionAnchor, getConditionDeadlines } from '@welldot/utils';
-import {
-  CONDITION_CATEGORY_VALUES,
-  resolveConditionCategoryLabel,
-} from '~/utils/permitVocab';
 import ConditionScheduleDialog from './ConditionScheduleDialog.vue';
 import DurationInput from './DurationInput.vue';
 
@@ -30,15 +27,11 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 
 type DeadlineMode = 'none' | 'fixed' | 'relative';
 
-const categoryOptions = computed(() =>
-  CONDITION_CATEGORY_VALUES.map(value => ({
-    value,
-    label: resolveConditionCategoryLabel(value, t),
-  })),
-);
+const categoryOptions = computed(() => vocabOptions(CONDITION_CATEGORIES));
 const modeOptions = computed(() =>
   (['none', 'fixed', 'relative'] as DeadlineMode[]).map(value => ({
     value,

@@ -53,12 +53,12 @@ Relative deadlines and recurrences (`permits[].conditions[].due_after`, `recurre
 
 A drilled interval of the borehole. Multiple entries describe a telescoping borehole.
 
-| Field             | Type   | Required | Description                                                                                                                                                                                               |
-| ----------------- | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `from`            | number | yes      | Start depth in meters.                                                                                                                                                                                    |
-| `to`              | number | yes      | End depth in meters.                                                                                                                                                                                      |
-| `diameter`        | number | yes      | Borehole diameter in millimeters.                                                                                                                                                                         |
-| `drilling_method` | string | no       | Free text description of the method used (e.g. `rotary`, `percussion`, `cable_tool`, `auger`, `air_hammer`). These example values are common terms, not an enforced enumeration — any free text is valid. |
+| Field             | Type   | Required | Description                                                                                                       |
+| ----------------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `from`            | number | yes      | Start depth in meters.                                                                                            |
+| `to`              | number | yes      | End depth in meters.                                                                                              |
+| `diameter`        | number | yes      | Borehole diameter in millimeters.                                                                                 |
+| `drilling_method` | string | no       | Drilling method. Open vocabulary: see [format-reference.md](format-reference.md) § `bore_hole[].drilling_method`. |
 
 ```json
 { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
@@ -70,12 +70,12 @@ A drilled interval of the borehole. Multiple entries describe a telescoping bore
 
 Steel or plastic casing installed inside the borehole.
 
-| Field      | Type   | Required | Description                           |
-| ---------- | ------ | -------- | ------------------------------------- |
-| `from`     | number | yes      | Start depth in meters.                |
-| `to`       | number | yes      | End depth in meters.                  |
-| `type`     | string | yes      | Casing material. Free Text            |
-| `diameter` | number | yes      | Casing outer diameter in millimeters. |
+| Field      | Type   | Required | Description                                                                                                |
+| ---------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------- |
+| `from`     | number | yes      | Start depth in meters.                                                                                     |
+| `to`       | number | yes      | End depth in meters.                                                                                       |
+| `type`     | string | yes      | Casing material. Open vocabulary: see [format-reference.md](format-reference.md) § Construction materials. |
+| `diameter` | number | yes      | Casing outer diameter in millimeters.                                                                      |
 
 ---
 
@@ -83,13 +83,13 @@ Steel or plastic casing installed inside the borehole.
 
 A transition piece connecting two casing or screen sections of different diameters.
 
-| Field       | Type   | Required | Description                                      |
-| ----------- | ------ | -------- | ------------------------------------------------ |
-| `from`      | number | yes      | Start depth in meters.                           |
-| `to`        | number | yes      | End depth in meters.                             |
-| `diam_from` | number | yes      | Diameter at top in millimeters.                  |
-| `diam_to`   | number | yes      | Diameter at bottom in millimeters.               |
-| `type`      | string | yes      | Reducer type material and description. Free Text |
+| Field       | Type   | Required | Description                                                                                                 |
+| ----------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `from`      | number | yes      | Start depth in meters.                                                                                      |
+| `to`        | number | yes      | End depth in meters.                                                                                        |
+| `diam_from` | number | yes      | Diameter at top in millimeters.                                                                             |
+| `diam_to`   | number | yes      | Diameter at bottom in millimeters.                                                                          |
+| `type`      | string | yes      | Reducer material. Open vocabulary: see [format-reference.md](format-reference.md) § Construction materials. |
 
 ---
 
@@ -97,13 +97,13 @@ A transition piece connecting two casing or screen sections of different diamete
 
 Slotted or wire-wound screen section.
 
-| Field         | Type   | Required | Description                                 |
-| ------------- | ------ | -------- | ------------------------------------------- |
-| `from`        | number | yes      | Start depth in meters.                      |
-| `to`          | number | yes      | End depth in meters.                        |
-| `type`        | string | yes      | Screen type/material description. Free text |
-| `diameter`    | number | yes      | Screen outer diameter in millimeters.       |
-| `screen_slot` | number | yes      | Slot opening size in millimeters.           |
+| Field         | Type   | Required | Description                                                                                                                                                               |
+| ------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `from`        | number | yes      | Start depth in meters.                                                                                                                                                    |
+| `to`          | number | yes      | End depth in meters.                                                                                                                                                      |
+| `type`        | string | yes      | Screen material. Open vocabulary: see [format-reference.md](format-reference.md) § Construction materials; other descriptions (e.g. `wire_wound`) remain valid free text. |
+| `diameter`    | number | yes      | Screen outer diameter in millimeters.                                                                                                                                     |
+| `screen_slot` | number | yes      | Slot opening size in millimeters.                                                                                                                                         |
 
 > **v1 migration:** v1's `screen_slot_mm` field is renamed to `screen_slot` in v2. The value is in millimeters before and after — no conversion needed. See § Units for the rule that screen slot is always in millimeters regardless of any application's display preference.
 
@@ -139,14 +139,14 @@ Material placed in the annular space between casing and borehole wall.
 
 Centralizers clamped to a casing or screen string to keep it concentric in the borehole, so the gravel pack and annular seal have uniform thickness. Each entry describes a depth interval over which centralizers are installed at a regular spacing, which is how drilling reports usually give them.
 
-| Field         | Type   | Required | Description                                                                                                   |
-| ------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------- |
-| `from`        | number | yes      | Start depth in meters (depth of the first centralizer).                                                       |
-| `to`          | number | yes      | End depth in meters (depth of the last centralizer). `from === to` denotes a single centralizer.              |
-| `spacing`     | number | no       | Spacing between consecutive centralizers in meters. Must be positive. Omit when the spacing is unknown.       |
-| `type`        | string | yes      | Centralizer type. Recommended: `spring_bow`, `rigid`, `semi_rigid`, `polymer`. Non-canonical values use `x-`. |
-| `diameter`    | number | no       | As-built outer diameter in millimeters.                                                                       |
-| `description` | string | no       | Free-text description (e.g. material, manufacturer).                                                          |
+| Field         | Type   | Required | Description                                                                                                |
+| ------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------- |
+| `from`        | number | yes      | Start depth in meters (depth of the first centralizer).                                                    |
+| `to`          | number | yes      | End depth in meters (depth of the last centralizer). `from === to` denotes a single centralizer.           |
+| `spacing`     | number | no       | Spacing between consecutive centralizers in meters. Must be positive. Omit when the spacing is unknown.    |
+| `type`        | string | yes      | Centralizer type. Open vocabulary: see [format-reference.md](format-reference.md) § `centralizers[].type`. |
+| `diameter`    | number | no       | As-built outer diameter in millimeters.                                                                    |
+| `description` | string | no       | Free-text description (e.g. material, manufacturer).                                                       |
 
 - The array is **optional**. v2.0 documents without it remain valid.
 - Individual positions are derived from `from`, `to`, and `spacing` (`from`, `from + spacing`, … up to `to`). The count is derived and MUST NOT be stored.
@@ -159,12 +159,12 @@ Centralizers clamped to a casing or screen string to keep it concentric in the b
 
 Concrete wellhead pad. **All dimensions are in meters**.
 
-| Field       | Type   | Required | Description                                                                                                                                                        |
-| ----------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `type`      | string | yes      | Free text description of the pad, typically its material (e.g. `concrete`) but may also describe its shape (e.g. `circular`) or both. Not an enforced enumeration. |
-| `width`     | number | yes      | Width in meters.                                                                                                                                                   |
-| `thickness` | number | yes      | Thickness in meters.                                                                                                                                               |
-| `length`    | number | yes      | Length in meters.                                                                                                                                                  |
+| Field       | Type   | Required | Description                                                                                                                                                         |
+| ----------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`      | string | yes      | Pad material. Open vocabulary: see [format-reference.md](format-reference.md) § `cement_pad.type`; other free text (e.g. a shape such as `circular`) remains valid. |
+| `width`     | number | yes      | Width in meters.                                                                                                                                                    |
+| `thickness` | number | yes      | Thickness in meters.                                                                                                                                                |
+| `length`    | number | yes      | Length in meters.                                                                                                                                                   |
 
 > Note: A typical residential cement pad has dimensions on the order of `1.0` meter. Applications presenting these values in non-metric units (e.g. feet for US users) must convert `cement_pad` dimensions along with all other length fields.
 
@@ -310,7 +310,7 @@ Only `id`, `type`, and `datetime` are required. All others are optional for all 
 | ------------------------ | --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `static_level`           | number          | yes      | Depth to water surface from ground level, in meters. Negative when the level is above ground (flowing artesian). See § Level sign convention. |
 | `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                        |
-| `measurement_method`     | string          | no       | Recommended: `electric_probe`, `pressure_transducer`, `air_line`, `tape`.                                                                     |
+| `measurement_method`     | string          | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `hydrodynamic_events[].measurement_method`.                                 |
 | `steps`                  | `PumpingStep[]` | no       | At most one step. For an informal brief pump observation during the visit — not a controlled test. Use `constant_rate` for a formal test.     |
 | `recovery`               | `RecoveryPhase` | no       | Recovery after the optional pumping step.                                                                                                     |
 
@@ -425,7 +425,7 @@ An array of interpreted aquifer parameter sets. Multiple entries may coexist, re
 
 ### `method` — Recommended values
 
-`cooper_jacob`, `theis`, `neuman`, `hantush`, `birsoy_summers`, `eden_hazel`, `visual_inspection`. Non-canonical values SHOULD use the `x-` prefix.
+`cooper_jacob`, `theis`, `neuman`, `hantush`, `birsoy_summers`, `eden_hazel`, `visual_inspection`; labels in [format-reference.md](format-reference.md) § `aquifer_analysis[].method`. Non-canonical values SHOULD use the `x-` prefix.
 
 ---
 
@@ -499,7 +499,7 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 | `category`    | string         | yes      | Event category.                                                                                                                                                                                                          |
 | `description` | string         | yes      | Free-text account: work performed, findings, or incident narrative.                                                                                                                                                      |
 | `author`      | string         | no       | Person or company responsible for the record.                                                                                                                                                                            |
-| `severity`    | string         | no       | Recommended: `low`, `medium`, `high`, `critical`.                                                                                                                                                                        |
+| `severity`    | string         | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `history_logs[].severity`.                                                                                                                             |
 | `attachments` | `Attachment[]` | no       | Supporting documents or photos. See § Attachment.                                                                                                                                                                        |
 
 ### `updated_at` semantics
@@ -578,7 +578,7 @@ An installation block: each entry is one installation of a pump in the well, pre
 | `rated_power`     | number           | no       | kW   | Motor power.                                                                |
 | `stages`          | integer          | no       |      | Number of stages.                                                           |
 | `riser_diameter`  | number           | no       | mm   | Riser pipe (edutor), as-built outer diameter.                               |
-| `riser_material`  | string           | no       |      | Same vocabulary as `well_case.type`.                                        |
+| `riser_material`  | string           | no       |      | Open vocabulary: see format-reference.md § Construction materials.          |
 | `check_valve`     | boolean          | no       |      | Whether a check valve is installed.                                         |
 | `electrical`      | `PumpElectrical` | no       |      | See below.                                                                  |
 | `notes`           | string           | no       |      |                                                                             |
@@ -964,7 +964,9 @@ A ledger of water samples, each with its field and laboratory results. The full 
   "bore_hole": [
     { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
   ],
-  "well_case": [{ "from": 0, "to": 60, "type": "steel", "diameter": 200 }],
+  "well_case": [
+    { "from": 0, "to": 60, "type": "carbon_steel", "diameter": 200 }
+  ],
   "reduction": [],
   "well_screen": [
     {

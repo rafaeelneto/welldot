@@ -6,6 +6,12 @@ import type {
   WaterSample,
 } from '@welldot/core';
 import {
+  SAMPLE_TYPES,
+  SAMPLING_DEVICES,
+  SAMPLING_METHODS,
+  SAMPLING_POINT_TYPES,
+} from '@welldot/core';
+import {
   getExceedances,
   getHoldingTimes,
   getHydrochemicalFacies,
@@ -27,13 +33,9 @@ import {
   VALIDATION_STATUS_SEVERITY,
   formatResultValue,
   parameterUnitSymbol,
-  resolveDeviceLabel,
   resolveFractionLabel,
   resolveMeasuredInLabel,
   resolveParameterLabel,
-  resolveSampleTypeLabel,
-  resolveSamplingMethodLabel,
-  resolveSamplingPointTypeLabel,
   resolveValidationStatusLabel,
   sampleLabel,
 } from '~/utils/waterQualityVocab';
@@ -54,7 +56,8 @@ const emit = defineEmits<{
   delete: [id: string];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const { formatLength } = useUnitFormat();
 const { formatNumber } = useNumberFormat();
@@ -98,8 +101,8 @@ const pointLine = computed(() => {
       )
     : undefined;
   return [
-    p?.type ? resolveSamplingPointTypeLabel(p.type, t) : null,
-    p?.device ? resolveDeviceLabel(p.device, t) : null,
+    p?.type ? vocabLabel(SAMPLING_POINT_TYPES, p.type) : null,
+    p?.device ? vocabLabel(SAMPLING_DEVICES, p.device) : null,
     depth?.kind === 'point'
       ? `${formatLength(depth.depth)}${
           p?.depth === undefined && p?.pump_installation_id
@@ -109,9 +112,11 @@ const pointLine = computed(() => {
       : depth?.kind === 'interval'
         ? `${formatLength(depth.from)} – ${formatLength(depth.to)}`
         : null,
-    pump ? pumpInstallationLabel(pump, t) : (p?.pump_installation_id ?? null),
+    pump
+      ? pumpInstallationLabel(pump, locale.value)
+      : (p?.pump_installation_id ?? null),
     props.sample.sampling_method
-      ? resolveSamplingMethodLabel(props.sample.sampling_method, t)
+      ? vocabLabel(SAMPLING_METHODS, props.sample.sampling_method)
       : null,
   ]
     .filter(Boolean)
@@ -380,7 +385,7 @@ function setAttachments(list: Attachment[]) {
   >
     <template #tags>
       <Tag
-        :value="resolveSampleTypeLabel(sample.sample_type, t)"
+        :value="vocabLabel(SAMPLE_TYPES, sample.sample_type)"
         :severity="typeSeverity"
         class="text-xs"
       />
@@ -416,7 +421,9 @@ function setAttachments(list: Attachment[]) {
       <Icon name="ph:link-duotone" class="size-3.5" />
       {{
         t('editor.waterQuality.card.parentOf', {
-          sample: parent ? sampleLabel(parent, t) : sample.parent_sample_id,
+          sample: parent
+            ? sampleLabel(parent, locale)
+            : sample.parent_sample_id,
         })
       }}
     </button>

@@ -1,4 +1,5 @@
 import type { HydrodynamicEvent, Well } from '@welldot/core';
+import { HYDRODYNAMIC_EVENT_TYPES, getVocabLabel } from '@welldot/core';
 import { format, parseISO } from 'date-fns';
 import { lastReading, stepRate } from '~/utils/hydrodynamicEvent';
 import { createPdfFormatters } from './formatters';
@@ -7,25 +8,15 @@ import type { Content } from './pdfmake.types';
 import { buildEntryDivider } from './sectionTables';
 import type { PdfExportOptions, PdfTranslate } from './types';
 
-const KNOWN_EVENT_TYPES = [
-  'spot_measurement',
-  'constant_rate',
-  'step_drawdown',
-  'airlift',
-  'recovery_only',
-];
-
-function eventTypeLabel(type: string, t: PdfTranslate): string {
-  return KNOWN_EVENT_TYPES.includes(type)
-    ? t(`editor.hydrodynamicEvents.eventTypes.${type}`)
-    : type;
-}
-
 /** The type/date header line — short and height-bounded, so it's safe to bind to the section title. */
-function buildEventHeader(event: HydrodynamicEvent, t: PdfTranslate): Content {
+function buildEventHeader(event: HydrodynamicEvent, locale: string): Content {
   return {
     columns: [
-      { text: eventTypeLabel(event.type, t), style: 'tableHeader', width: '*' },
+      {
+        text: getVocabLabel(HYDRODYNAMIC_EVENT_TYPES, event.type, locale),
+        style: 'tableHeader',
+        width: '*',
+      },
       {
         text: format(parseISO(event.datetime), 'dd/MM/yyyy HH:mm'),
         style: 'metadataLabel',
@@ -98,7 +89,10 @@ function buildEventEntry(
   t: PdfTranslate,
 ): Content {
   return {
-    stack: [buildEventHeader(event, t), ...buildEventStats(event, options, t)],
+    stack: [
+      buildEventHeader(event, options.locale),
+      ...buildEventStats(event, options, t),
+    ],
   };
 }
 
@@ -129,7 +123,7 @@ export function buildHydrodynamicEventsSection(
       stack: [
         { text: ' ' },
         { text: t('editor.hydrodynamicEvents.title'), style: 'title' },
-        buildEventHeader(first!, t),
+        buildEventHeader(first!, options.locale),
       ],
       unbreakable: true,
     },

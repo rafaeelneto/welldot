@@ -73,8 +73,8 @@ describe('buildSectionTables', () => {
     const sections = buildSectionTables(well, baseOptions, t);
     expect(sections).toHaveLength(1);
     const serialized = JSON.stringify(sections[0]);
-    expect(serialized).toContain('spring_bow');
-    expect(serialized).toContain('rigid');
+    expect(serialized).toContain('Spring bow');
+    expect(serialized).toContain('Rigid');
     expect(serialized).toContain('—');
   });
 

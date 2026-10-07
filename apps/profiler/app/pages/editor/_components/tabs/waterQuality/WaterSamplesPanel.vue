@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import type { WaterSample } from '@welldot/core';
-import { WATER_QUALITY_LIMIT_SETS, getLimitSet } from '@welldot/core';
+import {
+  SAMPLE_TYPES,
+  WATER_QUALITY_LIMIT_SETS,
+  getLimitSet,
+} from '@welldot/core';
 import { getRetractedSampleIds, getWaterSampleWarnings } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
-import { resolveSampleTypeLabel } from '~/utils/waterQualityVocab';
 import type { SampleWarning } from './resultDraft';
 import WaterSampleCard from './WaterSampleCard.vue';
 import WaterSampleDialog from './WaterSampleDialog.vue';
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 const confirm = useConfirm();
 const profileStore = useProfileStore();
 const uiStore = useUiStore();
@@ -50,7 +54,7 @@ const campaignOptions = computed(
 const typeOptions = computed(() =>
   [...new Set(samples.value.map(s => s.sample_type))].map(value => ({
     value,
-    label: resolveSampleTypeLabel(value, t),
+    label: vocabLabel(SAMPLE_TYPES, value),
   })),
 );
 

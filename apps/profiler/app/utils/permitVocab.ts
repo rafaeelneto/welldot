@@ -6,47 +6,6 @@ import {
   todayCalendarDate,
 } from '@welldot/utils';
 
-/**
- * Recommended vocabularies for `permits` (.well spec v2.3) — suggestions
- * only; any free text or `x-` value is valid and stored as-is.
- */
-export const PERMIT_TYPE_VALUES = [
-  'abstraction_permit',
-  'preliminary_permit',
-  'exemption',
-  'registration',
-  'dewatering_permit',
-  'drilling_permit',
-] as const;
-
-export const WATER_USE_VALUES = [
-  'human_supply',
-  'industrial',
-  'mining',
-  'irrigation',
-  'livestock',
-  'commercial',
-] as const;
-
-export const CONDITION_CATEGORY_VALUES = [
-  'monitoring',
-  'reporting',
-  'equipment_installation',
-  'well_protection',
-  'environmental',
-  'legal',
-] as const;
-
-export const PERMIT_HISTORY_TYPE_VALUES = [
-  'filing',
-  'process',
-  'notification',
-  'fee',
-  'inspection',
-  'decision',
-  'renewal',
-] as const;
-
 /** Closed vocabulary of the stored administrative `status` (spec v2.3). */
 export const PERMIT_ADMINISTRATIVE_STATUS_VALUES = [
   'requested',
@@ -67,66 +26,6 @@ export const PERMIT_HISTORY_TYPE_ICON: Record<string, string> = {
   decision: 'ph:gavel-duotone',
   renewal: 'ph:arrow-counter-clockwise-duotone',
 };
-
-export type PermitTypeValue = (typeof PERMIT_TYPE_VALUES)[number];
-export type WaterUseValue = (typeof WATER_USE_VALUES)[number];
-export type ConditionCategoryValue = (typeof CONDITION_CATEGORY_VALUES)[number];
-
-function resolveLabel(
-  values: readonly string[],
-  prefix: string,
-  value: string,
-  t: (_key: string) => string,
-): string {
-  return values.includes(value) ? t(`${prefix}.${value}`) : value;
-}
-
-/** Translated permit `type`, falling back to the raw value. */
-export function resolvePermitTypeLabel(
-  value: string,
-  t: (_key: string) => string,
-): string {
-  return resolveLabel(
-    PERMIT_TYPE_VALUES,
-    'editor.operation.permitTypes',
-    value,
-    t,
-  );
-}
-
-/** Translated `water_use` value, falling back to the raw value. */
-export function resolveWaterUseLabel(
-  value: string,
-  t: (_key: string) => string,
-): string {
-  return resolveLabel(WATER_USE_VALUES, 'editor.operation.waterUses', value, t);
-}
-
-/** Translated condition `category`, falling back to the raw value. */
-export function resolveConditionCategoryLabel(
-  value: string,
-  t: (_key: string) => string,
-): string {
-  return resolveLabel(
-    CONDITION_CATEGORY_VALUES,
-    'editor.operation.conditionCategories',
-    value,
-    t,
-  );
-}
-
-/** Translated permit history `type`, falling back to the raw value. */
-export function resolvePermitHistoryTypeLabel(
-  value: string,
-  t: (_key: string) => string,
-): string {
-  return resolveLabel(
-    PERMIT_HISTORY_TYPE_VALUES,
-    'editor.operation.permit.history.types',
-    value,
-    t,
-  );
-}
 
 /**
  * Short display label of a permit: authority plus `identifier`, else

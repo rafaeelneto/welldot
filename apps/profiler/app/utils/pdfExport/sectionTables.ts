@@ -1,4 +1,9 @@
 import type { Well } from '@welldot/core';
+import {
+  CEMENT_PAD_TYPES,
+  CENTRALIZER_TYPES,
+  CONSTRUCTION_MATERIALS,
+} from '@welldot/core';
 import { calculateHoleFillVolume } from '@welldot/utils';
 import { resolveDiameterUnitLabel } from '~/utils/unitLabel';
 import { createPdfFormatters } from './formatters';
@@ -87,7 +92,7 @@ function buildCementPadSection(
   const pad = well.cement_pad;
   if (!pad?.thickness || !pad?.width) return null;
 
-  const { formatLength } = createPdfFormatters(options);
+  const { formatLength, vocab } = createPdfFormatters(options);
   const body: TableCell[][] = [
     [
       headerCell(t('editor.construction.wellhead.thickness')),
@@ -103,7 +108,7 @@ function buildCementPadSection(
     ],
     [
       headerCell(t('editor.construction.wellhead.type')),
-      rightCell(pad.type ?? '—'),
+      rightCell(pad.type ? vocab(CEMENT_PAD_TYPES, pad.type) : '—'),
     ],
   ];
 
@@ -233,7 +238,7 @@ function buildWellCaseSection(
   const items = well.well_case;
   if (items.length === 0) return null;
 
-  const { formatLength, formatDiameter, diameterUnit, lengthUnit } =
+  const { formatLength, formatDiameter, diameterUnit, lengthUnit, vocab } =
     createPdfFormatters(options);
   const body: TableCell[][] = [
     [
@@ -255,7 +260,7 @@ function buildWellCaseSection(
 
   items.forEach((item, index) => {
     body.push([
-      item.type,
+      vocab(CONSTRUCTION_MATERIALS, item.type),
       rightCell(formatDiameter(item.diameter)),
       rightCell(formatLength(item.from)),
       rightCell(formatLength(item.to)),
@@ -302,7 +307,7 @@ function buildReductionSection(
   const items = well.reduction;
   if (items.length === 0) return null;
 
-  const { formatLength, formatDiameter, diameterUnit, lengthUnit } =
+  const { formatLength, formatDiameter, diameterUnit, lengthUnit, vocab } =
     createPdfFormatters(options);
   const body: TableCell[][] = [
     [
@@ -328,7 +333,7 @@ function buildReductionSection(
 
   for (const item of items) {
     body.push([
-      item.type,
+      vocab(CONSTRUCTION_MATERIALS, item.type),
       rightCell(formatDiameter(item.diam_from)),
       rightCell(formatDiameter(item.diam_to)),
       rightCell(formatLength(item.from)),
@@ -355,7 +360,7 @@ function buildWellScreenSection(
   const items = well.well_screen;
   if (items.length === 0) return null;
 
-  const { formatLength, formatDiameter, diameterUnit, lengthUnit } =
+  const { formatLength, formatDiameter, diameterUnit, lengthUnit, vocab } =
     createPdfFormatters(options);
   const body: TableCell[][] = [
     [
@@ -381,7 +386,7 @@ function buildWellScreenSection(
 
   items.forEach((item, index) => {
     body.push([
-      item.type,
+      vocab(CONSTRUCTION_MATERIALS, item.type),
       rightCell(formatDiameter(item.diameter)),
       rightCell(formatDiameter(item.screen_slot)),
       rightCell(formatLength(item.from)),
@@ -430,7 +435,7 @@ function buildCentralizerSection(
   const items = well.centralizers ?? [];
   if (items.length === 0) return null;
 
-  const { formatLength, formatDiameter, diameterUnit, lengthUnit } =
+  const { formatLength, formatDiameter, diameterUnit, lengthUnit, vocab } =
     createPdfFormatters(options);
   const body: TableCell[][] = [
     [
@@ -456,7 +461,9 @@ function buildCentralizerSection(
 
   for (const item of items) {
     body.push([
-      item.description ? `${item.type} — ${item.description}` : item.type,
+      item.description
+        ? `${vocab(CENTRALIZER_TYPES, item.type)} — ${item.description}`
+        : vocab(CENTRALIZER_TYPES, item.type),
       rightCell(item.diameter != null ? formatDiameter(item.diameter) : '—'),
       rightCell(item.spacing != null ? formatLength(item.spacing) : '—'),
       rightCell(formatLength(item.from)),

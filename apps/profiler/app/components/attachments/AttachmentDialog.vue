@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import type { Attachment } from '@welldot/core';
+import type { Attachment, DocumentTypeContext } from '@welldot/core';
 import {
+  DOCUMENT_TYPES,
   DOCUMENT_TYPE_SUGGESTIONS,
-  DOCUMENT_TYPE_VALUES,
-  resolveDocumentTypeLabel,
-  type DocumentTypeContext,
-} from '~/utils/documentType';
+  vocabValues,
+} from '@welldot/core';
 
 const props = withDefaults(
   defineProps<{
@@ -22,6 +21,7 @@ const visible = defineModel<boolean>('visible', { default: false });
 const emit = defineEmits<{ save: [attachment: Attachment] }>();
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 
 const mediaTypeOptions = computed(() => [
   { label: 'PDF', value: 'application/pdf' },
@@ -43,13 +43,13 @@ const documentTypeOptions = computed(() => {
   const suggested: readonly string[] = DOCUMENT_TYPE_SUGGESTIONS[props.context];
   const ordered = [
     ...suggested,
-    ...DOCUMENT_TYPE_VALUES.filter(v => !suggested.includes(v)),
+    ...vocabValues(DOCUMENT_TYPES).filter(v => !suggested.includes(v)),
   ];
   const current = model.value?.document_type;
   if (current && !ordered.includes(current)) ordered.push(current);
   return ordered.map(value => ({
     value,
-    label: resolveDocumentTypeLabel(value, t),
+    label: vocabLabel(DOCUMENT_TYPES, value),
   }));
 });
 

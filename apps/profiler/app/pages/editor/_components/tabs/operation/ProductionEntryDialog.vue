@@ -5,14 +5,9 @@ import type {
   MeterReading,
   ProductionEntry,
 } from '@welldot/core';
+import { DECLARED_METHODS, READING_SOURCES } from '@welldot/core';
 import { formatISO } from 'date-fns';
-import {
-  DECLARED_METHOD_VALUES,
-  READING_SOURCE_VALUES,
-  meterLabel,
-  resolveDeclaredMethodLabel,
-  resolveReadingSourceLabel,
-} from '~/utils/operationVocab';
+import { meterLabel } from '~/utils/operationVocab';
 
 /**
  * The entry being corrected. `null` means "adding a new one". `production`
@@ -24,7 +19,8 @@ const visible = defineModel<boolean>('visible', { default: false });
 
 const emit = defineEmits<{ save: [entry: ProductionEntry] }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 const { volumeUnit } = useUnitFormat();
 
@@ -48,20 +44,13 @@ const meters = computed<Meter[]>(() =>
   ),
 );
 const meterOptions = computed(() =>
-  meters.value.map(m => ({ value: m.id, label: meterLabel(m, t) })),
-);
-const sourceOptions = computed(() =>
-  READING_SOURCE_VALUES.map(value => ({
-    value,
-    label: resolveReadingSourceLabel(value, t),
+  meters.value.map(m => ({
+    value: m.id,
+    label: meterLabel(m, t, locale.value),
   })),
 );
-const methodOptions = computed(() =>
-  DECLARED_METHOD_VALUES.map(value => ({
-    value,
-    label: resolveDeclaredMethodLabel(value, t),
-  })),
-);
+const sourceOptions = computed(() => vocabOptions(READING_SOURCES));
+const methodOptions = computed(() => vocabOptions(DECLARED_METHODS));
 
 /** Local copy — nothing reaches the ledger until Save. */
 const form = reactive({

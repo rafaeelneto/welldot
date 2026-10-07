@@ -74,10 +74,17 @@ v2.3 additions:
 - history_logs gains sample_id (maintenance with maintenance_type
   water_sampling); permit condition fulfillments gain sample_id (e.g.
   a water-quality monitoring condition)
+- Recommended vocabularies for drilling_method, construction materials
+  (well_case / well_screen / reduction type, riser_material),
+  centralizer steels, cement_pad.type, history_logs severity,
+  measurement_method and aquifer_analysis method; every recommended
+  vocabulary is published by @welldot/core with en/pt labels
 
 v2.3 clarifications:
 - Block kinds: every top-level array is a ledger, a mutable record or
   an installation; the kind decides how records are corrected
+- Open vocabulary values are stored as their key, never as a
+  translated label
 - Datetime families: legal documents use calendar dates (YYYY-MM-DD),
   everything else uses RFC 3339 instants
 - Naming rules: no units in field names; nameplate values use the

@@ -4,7 +4,12 @@ import type {
   WaterSample,
   Well,
 } from '@welldot/core';
-import { getLimitSet } from '@welldot/core';
+import {
+  SAMPLE_TYPES,
+  SAMPLING_DEVICES,
+  SAMPLING_POINT_TYPES,
+  getLimitSet,
+} from '@welldot/core';
 import {
   formatNumber,
   getEffectiveWaterSamples,
@@ -16,12 +21,9 @@ import { format, parseISO } from 'date-fns';
 import {
   formatResultValue,
   parameterUnitSymbol,
-  resolveDeviceLabel,
   resolveFractionLabel,
   resolveMeasuredInLabel,
   resolveParameterLabel,
-  resolveSampleTypeLabel,
-  resolveSamplingPointTypeLabel,
   resolveValidationStatusLabel,
 } from '../waterQualityVocab';
 import { createPdfFormatters, type PdfFormatters } from './formatters';
@@ -60,6 +62,7 @@ function valueText(r: WaterQualityResult, t: PdfTranslate): string {
 function buildHeader(
   sample: WaterSample,
   well: Well,
+  fmt: PdfFormatters,
   t: PdfTranslate,
 ): Content {
   const parent = sample.parent_sample_id
@@ -71,7 +74,7 @@ function buildHeader(
     sample.parent_sample_id &&
       `${field(t, 'parentSampleId')}: ${
         parent
-          ? `${formatInstant(parent.datetime)} (${resolveSampleTypeLabel(parent.sample_type, t)})`
+          ? `${formatInstant(parent.datetime)} (${fmt.vocab(SAMPLE_TYPES, parent.sample_type)})`
           : sample.parent_sample_id
       }`,
   ].filter((v): v is string => !!v);
@@ -81,7 +84,7 @@ function buildHeader(
       {
         text: [
           {
-            text: resolveSampleTypeLabel(sample.sample_type, t),
+            text: fmt.vocab(SAMPLE_TYPES, sample.sample_type),
             style: 'tableHeader',
           },
           ...(details.length
@@ -110,9 +113,9 @@ function samplingPointLine(
   const point = sample.sampling_point;
   const depth = getSampleDepth(well, sample);
   const parts = [
-    point?.type && resolveSamplingPointTypeLabel(point.type, t),
+    point?.type && fmt.vocab(SAMPLING_POINT_TYPES, point.type),
     point?.device &&
-      `${field(t, 'device')}: ${resolveDeviceLabel(point.device, t)}`,
+      `${field(t, 'device')}: ${fmt.vocab(SAMPLING_DEVICES, point.device)}`,
     depth?.kind === 'point' &&
       `${field(t, 'depth')}: ${fmt.formatLength(depth.depth)}`,
     depth?.kind === 'interval' &&
@@ -274,7 +277,7 @@ export function buildWaterSampleSection(
       stack: [
         { text: ' ' },
         { text: pdf(t, 'title'), style: 'title' },
-        buildHeader(first!, well, t),
+        buildHeader(first!, well, fmt, t),
       ],
       unbreakable: true,
     },
@@ -284,7 +287,7 @@ export function buildWaterSampleSection(
     items.push(buildEntryDivider());
     items.push({
       stack: [
-        buildHeader(sample, well, t),
+        buildHeader(sample, well, fmt, t),
         ...buildBody(sample, well, fmt, limitSet, t),
       ],
     });

@@ -435,13 +435,7 @@
         "type": "Tipo",
         "width": "Largura",
         "length": "Comprimento",
-        "thickness": "Espessura",
-        "typeOptions": {
-          "concrete": "Concreto",
-          "reinforcedConcrete": "Concreto Armado",
-          "cement": "Cimento",
-          "mortar": "Argamassa"
-        }
+        "thickness": "Espessura"
       },
       "boreHole": {
         "title": "Poço (Sondagem)",
@@ -452,13 +446,6 @@
         "drillingMethod": "Método",
         "drillingMethodInfo": "Método de perfuração usado para abrir este intervalo do furo. Escolha uma das sugestões — rotativo, percussão, percussão a cabo, trado ou martelo pneumático.",
         "drillingMethodFreeText": "Este campo é livre: se o método não estiver na lista, basta digitá-lo (ex.: circulação reversa, sônico, jateamento) e ele será salvo como escrito.",
-        "drillingMethodOptions": {
-          "rotary": "Rotativo",
-          "percussion": "Percussão",
-          "cableTool": "Percussão a Cabo",
-          "auger": "Trado",
-          "airHammer": "Martelo Pneumático"
-        },
         "addRow": "Adicionar trecho",
         "empty": "Nenhum trecho cadastrado",
         "wellDepth": "Profundidade útil",
@@ -509,13 +496,7 @@
         "description": "Descrição",
         "descriptionInfo": "Observações opcionais sobre estes centralizadores, como fabricante, modelo, material ou forma de instalação.",
         "addRow": "Adicionar centralizadores",
-        "hint": "Uma linha por intervalo. Use a mesma profundidade em De e Até para um único centralizador; deixe o espaçamento vazio se desconhecido.",
-        "types": {
-          "springBow": "Mola (spring bow)",
-          "rigid": "Rígido",
-          "semiRigid": "Semirrígido",
-          "polymer": "Polimérico"
-        }
+        "hint": "Uma linha por intervalo. Use a mesma profundidade em De e Até para um único centralizador; deixe o espaçamento vazio se desconhecido."
       },
       "wellScreen": {
         "title": "Filtro",
@@ -544,14 +525,6 @@
           "gravelPack": "Pré-filtro",
           "seal": "Vedação"
         }
-      },
-      "materials": {
-        "pvc": "PVC",
-        "geomechanicalPvc": "PVC Geomecânico",
-        "carbonSteel": "Aço Carbono",
-        "galvanizedSteel": "Aço Galvanizado",
-        "stainlessSteel": "Aço Inox",
-        "fiberglass": "Fibra de Vidro"
       }
     },
     "geological": {
@@ -623,23 +596,6 @@
       "observationsLabel": "Observações",
       "freeNotes": "Notas livres",
       "metadata": "Metadados",
-      "wellTypes": {
-        "tubular": "Tubular",
-        "artesian": "Artesiano (obsoleto)",
-        "handDug": "Cacimba / poço escavado",
-        "horizontal": "Horizontal",
-        "infiltrationGallery": "Galeria de infiltração"
-      },
-      "wellPurposes": {
-        "production": "Produção / captação",
-        "monitoring": "Poço de monitoramento",
-        "piezometer": "Piezômetro",
-        "waterLevelIndicator": "INA — indicador de nível d'água",
-        "observation": "Poço de observação",
-        "exploration": "Pesquisa / exploratório",
-        "injection": "Injeção / recarga",
-        "dewatering": "Rebaixamento"
-      },
       "wellIds": {
         "title": "Identificadores do Poço",
         "tag": "IDENTIFICADORES",
@@ -893,19 +849,6 @@
         "copyPath": "Copiar caminho",
         "copied": "Copiado",
         "noAttachments": "Nenhum arquivo anexado",
-        "categories": {
-          "maintenance": "Manutenção",
-          "inspection": "Inspeção",
-          "incident": "Incidente",
-          "event": "Evento",
-          "status_change": "Mudança de situação"
-        },
-        "severity": {
-          "low": "Baixa",
-          "medium": "Média",
-          "high": "Alta",
-          "critical": "Crítica"
-        },
         "fields": {
           "category": "Categoria",
           "datetime": "Data / Hora",
@@ -958,13 +901,6 @@
         "flowRate": "VAZÃO Q",
         "noData": "—"
       },
-      "eventTypes": {
-        "spot_measurement": "Medição Pontual",
-        "constant_rate": "Vazão Constante",
-        "step_drawdown": "Escalonada",
-        "airlift": "Air-lift",
-        "recovery_only": "Recuperação"
-      },
       "fields": {
         "type": "Tipo de Evento",
         "datetime": "Data / Hora",
@@ -1000,12 +936,6 @@
         "steps": "degraus",
         "readings": "leituras"
       },
-      "measurementMethods": {
-        "electric_probe": "Sonda elétrica",
-        "pressure_transducer": "Transdutor de pressão",
-        "air_line": "Linha de ar",
-        "tape": "Trena"
-      },
       "addStep": "Adicionar degrau",
       "addReading": "Adicionar leitura",
       "manageReadings": "Gerenciar",
@@ -1026,61 +956,9 @@
       "documentTypeInfo": "O que é o documento (.well v2.3). Opcional — deixe vazio se não tiver certeza.",
       "documentTypePlaceholder": "Não informado",
       "description": "Descrição",
-      "mediaTypeOther": "Outro",
-      "documentTypes": {
-        "drilling_report": "Relatório de perfuração",
-        "as_built_drawing": "Perfil construtivo as-built",
-        "registry_record": "Ficha cadastral",
-        "photo": "Fotografia",
-        "permit_document": "Portaria / outorga",
-        "condition_evidence": "Comprovante de condicionante",
-        "pump_curve": "Curva da bomba",
-        "field_sheet": "Planilha de campo",
-        "test_report": "Relatório de teste de bombeamento",
-        "lab_report": "Laudo laboratorial",
-        "invoice": "Nota fiscal"
-      }
+      "mediaTypeOther": "Outro"
     },
     "operation": {
-      "pumpTypes": {
-        "submersible": "Bomba submersa",
-        "vertical_turbine": "Bomba de eixo vertical",
-        "jet": "Bomba injetora",
-        "progressive_cavity": "Bomba helicoidal",
-        "hand_pump": "Bomba manual",
-        "compressor_airlift": "Compressor (air-lift)"
-      },
-      "powerSources": {
-        "grid": "Rede elétrica",
-        "solar": "Solar",
-        "diesel": "Diesel",
-        "hybrid": "Híbrido"
-      },
-      "meterTypes": {
-        "mechanical": "Mecânico",
-        "electromagnetic": "Eletromagnético",
-        "ultrasonic": "Ultrassônico"
-      },
-      "readingSources": {
-        "manual": "Manual",
-        "telemetry": "Telemetria"
-      },
-      "declaredMethods": {
-        "estimated": "Estimado",
-        "reported": "Declarado"
-      },
-      "maintenanceTypes": {
-        "inspection": "Inspeção",
-        "cleaning": "Limpeza",
-        "redevelopment": "Redesenvolvimento",
-        "disinfection": "Desinfecção",
-        "pump_service": "Manutenção da bomba",
-        "meter_calibration": "Aferição do hidrômetro",
-        "video_inspection": "Filmagem / perfilagem ótica",
-        "level_measurement": "Medição de nível",
-        "pump_test": "Teste de bombeamento",
-        "water_sampling": "Coleta de água"
-      },
       "wellStatuses": {
         "active": "Ativo",
         "maintenance": "Em manutenção",
@@ -1265,30 +1143,6 @@
         "derivedInfo": "Derivada da entrada “Mudança de situação” mais recente do histórico.",
         "since": "desde {date}"
       },
-      "permitTypes": {
-        "abstraction_permit": "Outorga de direito de uso",
-        "preliminary_permit": "Outorga prévia",
-        "exemption": "Dispensa / uso insignificante",
-        "registration": "Cadastro",
-        "dewatering_permit": "Outorga para rebaixamento",
-        "drilling_permit": "Autorização de perfuração"
-      },
-      "waterUses": {
-        "human_supply": "Abastecimento humano",
-        "industrial": "Industrial",
-        "mining": "Mineração",
-        "irrigation": "Irrigação",
-        "livestock": "Dessedentação animal",
-        "commercial": "Comercial / serviços"
-      },
-      "conditionCategories": {
-        "monitoring": "Monitoramento",
-        "reporting": "Relatórios e declarações",
-        "equipment_installation": "Instalação de equipamentos",
-        "well_protection": "Proteção do poço",
-        "environmental": "Ambiental",
-        "legal": "Legal / administrativo"
-      },
       "permit": {
         "title": "Outorgas",
         "intro": "Um registro por instrumento legal. O documento anexado prevalece. Uma renovação é uma nova outorga que substitui a anterior; situação e prazos das condicionantes são calculados.",
@@ -1427,15 +1281,6 @@
           "dueDateInfo": "Para etapas com ação (taxa a pagar, notificação a responder). Vencida e não concluída gera um alerta.",
           "dueOn": "Prazo {date}",
           "overdue": "{n} etapa(s) administrativa(s) com prazo vencido.",
-          "types": {
-            "filing": "Protocolo",
-            "process": "Andamento",
-            "notification": "Notificação",
-            "fee": "Taxa",
-            "inspection": "Vistoria",
-            "decision": "Decisão",
-            "renewal": "Renovação"
-          },
           "addTitle": "Nova etapa",
           "editTitle": "Editar etapa",
           "edit": "Editar etapa",
@@ -1707,33 +1552,6 @@
         "guideline": "Guia",
         "validatedBy": "Validado por",
         "validatedAt": "Validado em"
-      },
-      "sampleTypes": {
-        "routine": "Rotina",
-        "field_duplicate": "Duplicata de campo",
-        "split_sample": "Amostra dividida (split)",
-        "field_blank": "Branco de campo",
-        "trip_blank": "Branco de transporte",
-        "equipment_blank": "Branco de equipamento"
-      },
-      "samplingMethods": {
-        "low_flow": "Purga de baixa vazão (micropurga)",
-        "volumetric_purge": "Purga de volume determinado",
-        "no_purge": "Amostragem sem purga",
-        "pump_discharge": "Bomba de produção em operação"
-      },
-      "samplingPointTypes": {
-        "pump_discharge": "Saída da bomba de produção",
-        "wellhead_tap": "Torneira do cavalete",
-        "in_well": "Dentro do poço"
-      },
-      "devices": {
-        "bailer": "Bailer (amostrador de retenção)",
-        "discrete_depth_sampler": "Amostrador pontual de profundidade",
-        "passive_diffusion_bag": "Bolsa de difusão passiva",
-        "grab_sleeve": "Amostrador passivo tipo luva (HydraSleeve)",
-        "low_flow_pump": "Bomba de baixa vazão",
-        "packer_pump": "Bomba com obturador (packer)"
       },
       "qualifiers": {
         "lt": "< menor que",

@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { CEMENT_PAD_TYPES } from '@welldot/core';
+
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 const uiStore = useUiStore();
 
@@ -36,24 +39,7 @@ function toggleCementPad(enabled: boolean) {
   }
 }
 
-const cementPadTypeOptions = computed(() => [
-  {
-    label: t('editor.construction.wellhead.typeOptions.concrete'),
-    value: 'Concreto',
-  },
-  {
-    label: t('editor.construction.wellhead.typeOptions.reinforcedConcrete'),
-    value: 'Concreto Armado',
-  },
-  {
-    label: t('editor.construction.wellhead.typeOptions.cement'),
-    value: 'Cimento',
-  },
-  {
-    label: t('editor.construction.wellhead.typeOptions.mortar'),
-    value: 'Argamassa',
-  },
-]);
+const cementPadTypeOptions = computed(() => vocabOptions(CEMENT_PAD_TYPES));
 </script>
 
 <template>

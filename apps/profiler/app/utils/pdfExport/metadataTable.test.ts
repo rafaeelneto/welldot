@@ -54,9 +54,7 @@ describe('buildMetadataTable', () => {
     const well = baseWell({ well_purpose: ['production', 'x-custom'] });
     const serialized = JSON.stringify(buildMetadataTable(well, baseOptions, t));
     expect(serialized).toContain('editor.general.wellPurpose');
-    expect(serialized).toContain(
-      'editor.general.wellPurposes.production, x-custom',
-    );
+    expect(serialized).toContain('Produção / captação, x-custom');
   });
 
   it('omits well_purpose when empty', () => {

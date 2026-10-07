@@ -54,8 +54,8 @@ describe('buildHistoryLogSection', () => {
     const serialized = JSON.stringify(
       buildHistoryLogSection(baseWell({ history_logs: logs }), baseOptions, t),
     );
-    expect(serialized).toContain('maintenance');
-    expect(serialized).toContain('medium');
+    expect(serialized).toContain('Maintenance');
+    expect(serialized).toContain('Medium');
     expect(serialized).toContain('Replaced pump seal');
     expect(serialized).toContain('Jane Doe');
   });
@@ -179,8 +179,8 @@ describe('buildHistoryLogSection', () => {
     const serialized = JSON.stringify(
       buildHistoryLogSection(baseWell({ history_logs: logs }), baseOptions, t),
     );
-    expect(serialized).toContain('status_change');
-    expect(serialized).toContain(' · meter_calibration');
+    expect(serialized).toContain('Status change');
+    expect(serialized).toContain(' · Meter calibration');
     expect(serialized).toContain(' · inactive');
   });
 });

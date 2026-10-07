@@ -1,5 +1,7 @@
+import type { VocabEntry } from '@welldot/core';
 import {
   flowFromCanonical,
+  getVocabLabel,
   metersToFeet,
   mmToInches,
   powerFromCanonical,
@@ -11,6 +13,7 @@ import {
   resolveFlowUnitLabel,
   resolveVolumeUnitLabel,
 } from '~/utils/unitLabel';
+import { formatVocabList } from '~/utils/vocab';
 import type { PdfExportOptions } from './types';
 
 export interface PdfFormatters {
@@ -38,6 +41,13 @@ export interface PdfFormatters {
   diameterUnit: PdfExportOptions['diameterUnit'];
   /** Display label of the resolved volume unit (`m³`, `L`, `ft³`, `gal`). */
   volumeUnitLabel: string;
+  /** Label of a core recommended-vocabulary value in the export locale. */
+  vocab(_vocab: readonly VocabEntry[], _value: string): string;
+  /** Comma-separated labels of a multi-valued vocabulary field. */
+  vocabList(
+    _vocab: readonly VocabEntry[],
+    _values: readonly string[] | undefined,
+  ): string;
 }
 
 /**
@@ -117,6 +127,8 @@ export function createPdfFormatters(
   }
 
   return {
+    vocab: (vocab, value) => getVocabLabel(vocab, value, locale),
+    vocabList: (vocab, values) => formatVocabList(vocab, values, locale),
     formatLength,
     formatDiameter,
     formatVolume,

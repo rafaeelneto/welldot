@@ -1,37 +1,17 @@
 <script setup lang="ts">
+import { DRILLING_METHODS } from '@welldot/core';
 import type { WellGridColumn } from '~/components/DataGrid/types';
 import { calculatedWellDepth } from '~/utils/wellDepth';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 const { unit: lengthUnit, toDisplay } = useUnitDisplay('length');
 const { formatNumber } = useNumberFormat();
 
-// Canonical values match the recommended `drilling_method` keys in the
-// .well v2 spec (docs/spec/v2/object-schemas.md) — not an enforced
-// enumeration, just suggestions. Any free text is stored as-is.
-const drillingMethodOptions = computed(() => [
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.rotary'),
-    value: 'rotary',
-  },
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.percussion'),
-    value: 'percussion',
-  },
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.cableTool'),
-    value: 'cable_tool',
-  },
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.auger'),
-    value: 'auger',
-  },
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.airHammer'),
-    value: 'air_hammer',
-  },
-]);
+// Recommended `drilling_method` values (core vocabulary) — suggestions only;
+// any free text is stored as-is.
+const drillingMethodOptions = computed(() => vocabOptions(DRILLING_METHODS));
 
 const boreHoleColumns = computed<WellGridColumn[]>(() => [
   {

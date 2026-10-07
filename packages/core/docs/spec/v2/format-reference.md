@@ -245,6 +245,12 @@ When two events share the same instant, the optional `sequence` integer breaks t
 
 ---
 
+## Recommended vocabularies
+
+Many string fields are **open**: they accept any value, but recommend a vocabulary for interoperability. The sections below list each one. Non-canonical values SHOULD use the `x-` prefix, and tools MUST preserve unrecognized values and display them as-is.
+
+Every recommended vocabulary is also published as data by `@welldot/core` (e.g. `PERMIT_TYPES`, `CONSTRUCTION_MATERIALS`, `SAMPLE_TYPES`), each entry carrying its `value` and display labels keyed by BCP 47 language tag (at least `en` and `pt`). The field types use the `OpenVocab<T>` pattern (`T | (string & {})`): the recommended values are typed while any other string stays valid. The Portuguese column in the tables below may be more descriptive than the short display label.
+
 ## `well_type` — Recommended values
 
 The `well_type` field accepts any string and describes the well's **construction method**. The values below are the recommended vocabulary for interoperability. Tools should treat unrecognized values gracefully.
@@ -277,6 +283,60 @@ Non-canonical values SHOULD use the `x-` prefix (e.g. `x-radial_collector`).
 | `exploration`           | Pesquisa / exploratório         | Investigation or test well                                       |
 | `injection`             | Injeção / recarga               | Managed aquifer recharge or injection                            |
 | `dewatering`            | Rebaixamento                    | Construction or mining dewatering                                |
+
+---
+
+## `bore_hole[].drilling_method` — Recommended values _(since v2.3)_
+
+| Value        | English    | Portuguese (BR)    |
+| ------------ | ---------- | ------------------ |
+| `rotary`     | Rotary     | Rotativo           |
+| `percussion` | Percussion | Percussão          |
+| `cable_tool` | Cable tool | Percussão a cabo   |
+| `auger`      | Auger      | Trado              |
+| `air_hammer` | Air hammer | Martelo pneumático |
+
+Non-canonical values SHOULD use the `x-` prefix.
+
+## Construction materials — Recommended values _(since v2.3)_
+
+Shared by `well_case[].type`, `well_screen[].type`, `reduction[].type` and `pump_installations[].riser_material`.
+
+| Value               | English           | Portuguese (BR) |
+| ------------------- | ----------------- | --------------- |
+| `pvc`               | PVC               | PVC             |
+| `geomechanical_pvc` | Geomechanical PVC | PVC geomecânico |
+| `carbon_steel`      | Carbon steel      | Aço carbono     |
+| `galvanized_steel`  | Galvanized steel  | Aço galvanizado |
+| `stainless_steel`   | Stainless steel   | Aço inox        |
+| `fiberglass`        | Fiberglass        | Fibra de vidro  |
+
+Non-canonical values SHOULD use the `x-` prefix.
+
+## `centralizers[].type` — Recommended values _(since v2.1)_
+
+| Value              | English          | Portuguese (BR)   |
+| ------------------ | ---------------- | ----------------- |
+| `spring_bow`       | Spring bow       | Mola (spring bow) |
+| `rigid`            | Rigid            | Rígido            |
+| `semi_rigid`       | Semi-rigid       | Semirrígido       |
+| `polymer`          | Polymer          | Polimérico        |
+| `carbon_steel`     | Carbon steel     | Aço carbono       |
+| `galvanized_steel` | Galvanized steel | Aço galvanizado   |
+| `stainless_steel`  | Stainless steel  | Aço inox          |
+
+The steel values name rigid centralizers by their material. Non-canonical values SHOULD use the `x-` prefix.
+
+## `cement_pad.type` — Recommended values _(since v2.3)_
+
+| Value                 | English             | Portuguese (BR) |
+| --------------------- | ------------------- | --------------- |
+| `concrete`            | Concrete            | Concreto        |
+| `reinforced_concrete` | Reinforced concrete | Concreto armado |
+| `cement`              | Cement              | Cimento         |
+| `mortar`              | Mortar              | Argamassa       |
+
+`type` describes the pad material; other free text (e.g. a shape) remains valid.
 
 ---
 
@@ -339,6 +399,8 @@ Solar is a `power_source`, never a `type`. Non-canonical values SHOULD use the `
 | `environmental`          | Ambiental                  | Environmental measures, compensation, licensing of the activity            |
 | `legal`                  | Legal / administrativo     | Renewal request, fees, registrations, document submissions                 |
 
+Non-canonical values SHOULD use the `x-` prefix.
+
 ## `permits[].history[].type` — Recommended values _(since v2.3)_
 
 | Value          | Portuguese (BR)                  |
@@ -387,6 +449,33 @@ An absent `method` is treated as `estimated`.
 
 Recommended values for `sample_type`, `sampling_method`, `sampling_point.type` and `sampling_point.device` are listed in [water-quality.md](water-quality.md) § Recommended values.
 
+## `hydrodynamic_events[].measurement_method` — Recommended values
+
+Used by `spot_measurement` events.
+
+| Value                 | English             | Portuguese (BR)       |
+| --------------------- | ------------------- | --------------------- |
+| `electric_probe`      | Electric probe      | Sonda elétrica        |
+| `pressure_transducer` | Pressure transducer | Transdutor de pressão |
+| `air_line`            | Air line            | Linha de ar           |
+| `tape`                | Tape                | Trena                 |
+
+Non-canonical values SHOULD use the `x-` prefix.
+
+## `aquifer_analysis[].method` — Recommended values
+
+| Value               | English           | Portuguese (BR) |
+| ------------------- | ----------------- | --------------- |
+| `cooper_jacob`      | Cooper-Jacob      | Cooper-Jacob    |
+| `theis`             | Theis             | Theis           |
+| `neuman`            | Neuman            | Neuman          |
+| `hantush`           | Hantush           | Hantush         |
+| `birsoy_summers`    | Birsoy-Summers    | Birsoy-Summers  |
+| `eden_hazel`        | Eden-Hazel        | Eden-Hazel      |
+| `visual_inspection` | Visual inspection | Inspeção visual |
+
+Non-canonical values SHOULD use the `x-` prefix.
+
 ## `history_logs[].category` — Recommended values
 
 | Value           | Portuguese (BR)     | Category-specific fields                                                                       |
@@ -399,6 +488,17 @@ Recommended values for `sample_type`, `sampling_method`, `sampling_point.type` a
 | `status_change` | Mudança de situação | `status` _(since v2.3)_                                                                        |
 
 Descriptions are in object-schemas.md § `history_logs[]`. Category-specific fields MUST be absent on entries of other categories; their presence emits a warning. Non-canonical values SHOULD use the `x-` prefix.
+
+## `history_logs[].severity` — Recommended values
+
+| Value      | English  | Portuguese (BR) |
+| ---------- | -------- | --------------- |
+| `low`      | Low      | Baixa           |
+| `medium`   | Medium   | Média           |
+| `high`     | High     | Alta            |
+| `critical` | Critical | Crítica         |
+
+Non-canonical values SHOULD use the `x-` prefix.
 
 ## `history_logs[].maintenance_type` — Recommended values _(since v2.3)_
 

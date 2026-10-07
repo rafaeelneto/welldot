@@ -173,6 +173,98 @@ export type {
   ParameterUnit,
 } from './vocab/waterQuality.vocab';
 
+// Localized text (BCP 47-keyed labels)
+export type { LanguageText, LanguageTextInput } from './types/language.types';
+export { resolveLanguageText } from './utils/language.utils';
+
+// Recommended vocabularies of open (free-text) fields, with en/pt labels
+export {
+  DOCUMENT_TYPES,
+  DOCUMENT_TYPE_SUGGESTIONS,
+} from './vocab/attachment.vocab';
+export type {
+  AttachmentDocumentType,
+  DocumentTypeContext,
+} from './vocab/attachment.vocab';
+export {
+  CEMENT_PAD_TYPES,
+  CENTRALIZER_TYPES,
+  CONSTRUCTION_MATERIALS,
+  DRILLING_METHODS,
+} from './vocab/construction.vocab';
+export type {
+  CementPadType,
+  CentralizerType,
+  ConstructionMaterial,
+  DrillingMethod,
+} from './vocab/construction.vocab';
+export { WELL_PURPOSES, WELL_TYPES } from './vocab/general.vocab';
+export type { WellPurpose, WellType } from './vocab/general.vocab';
+export {
+  HISTORY_LOG_CATEGORIES,
+  HISTORY_LOG_SEVERITIES,
+} from './vocab/history.vocab';
+export type {
+  HistoryLogCategory,
+  HistoryLogSeverity,
+} from './vocab/history.vocab';
+export {
+  AQUIFER_ANALYSIS_METHODS,
+  HYDRODYNAMIC_EVENT_TYPES,
+  MEASUREMENT_METHODS,
+} from './vocab/hydrodynamic.vocab';
+export type {
+  AquiferAnalysisMethod,
+  MeasurementMethod,
+} from './vocab/hydrodynamic.vocab';
+export {
+  DECLARED_METHODS,
+  MAINTENANCE_TYPES,
+  METER_TYPES,
+  POWER_SOURCES,
+  PUMP_TYPES,
+  READING_SOURCES,
+} from './vocab/operation.vocab';
+export type {
+  DeclaredMethod,
+  MaintenanceType,
+  MeterType,
+  PowerSource,
+  PumpType,
+  ReadingSource,
+} from './vocab/operation.vocab';
+export {
+  CONDITION_CATEGORIES,
+  PERMIT_HISTORY_TYPES,
+  PERMIT_TYPES,
+  WATER_USES,
+} from './vocab/permit.vocab';
+export type {
+  ConditionCategory,
+  PermitHistoryType,
+  PermitType,
+  WaterUse,
+} from './vocab/permit.vocab';
+export {
+  getVocabEntry,
+  getVocabLabel,
+  isVocabValue,
+  vocabValues,
+} from './vocab/vocab';
+export type { OpenVocab, VocabEntry } from './vocab/vocab';
+export {
+  SAMPLE_TYPES,
+  SAMPLING_DEVICES,
+  SAMPLING_METHODS,
+  SAMPLING_POINT_TYPES,
+} from './vocab/waterSample.vocab';
+export type {
+  SampleType,
+  SamplingDevice,
+  SamplingMethod,
+  SamplingPointType,
+} from './vocab/waterSample.vocab';
+
 // Backward-compat alias for app migration
 export type { Well as Profile } from './types/well.types';
 

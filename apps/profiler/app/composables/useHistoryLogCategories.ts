@@ -1,52 +1,39 @@
+import {
+  HISTORY_LOG_CATEGORIES,
+  HISTORY_LOG_SEVERITIES,
+  getVocabLabel,
+} from '@welldot/core';
+import { vocabOptions } from '~/utils/vocab';
+
+const CATEGORY_ICONS: Record<string, string> = {
+  maintenance: 'ph:wrench-duotone',
+  inspection: 'ph:eye-duotone',
+  incident: 'ph:warning-duotone',
+  event: 'ph:flag-duotone',
+  status_change: 'ph:traffic-signal-duotone',
+  change_of_use: 'ph:swap-duotone',
+};
+
 export function useHistoryLogCategories() {
-  const { t } = useI18n();
+  const { locale } = useI18n();
 
-  const categoryOptions = computed(() => [
-    {
-      label: t('editor.historyLog.logs.categories.maintenance'),
-      value: 'maintenance',
-      icon: 'ph:wrench-duotone',
-    },
-    {
-      label: t('editor.historyLog.logs.categories.inspection'),
-      value: 'inspection',
-      icon: 'ph:eye-duotone',
-    },
-    {
-      label: t('editor.historyLog.logs.categories.incident'),
-      value: 'incident',
-      icon: 'ph:warning-duotone',
-    },
-    {
-      label: t('editor.historyLog.logs.categories.event'),
-      value: 'event',
-      icon: 'ph:flag-duotone',
-    },
-    {
-      label: t('editor.historyLog.logs.categories.status_change'),
-      value: 'status_change',
-      icon: 'ph:traffic-signal-duotone',
-    },
-  ]);
+  const categoryOptions = computed(() =>
+    vocabOptions(HISTORY_LOG_CATEGORIES, locale.value).map(o => ({
+      ...o,
+      icon: CATEGORY_ICONS[o.value]!,
+    })),
+  );
 
-  const severityOptions = computed(() => [
-    { label: t('editor.historyLog.logs.severity.low'), value: 'low' },
-    { label: t('editor.historyLog.logs.severity.medium'), value: 'medium' },
-    { label: t('editor.historyLog.logs.severity.high'), value: 'high' },
-    { label: t('editor.historyLog.logs.severity.critical'), value: 'critical' },
-  ]);
+  const severityOptions = computed(() =>
+    vocabOptions(HISTORY_LOG_SEVERITIES, locale.value),
+  );
 
   function categoryIcon(category: string): string {
-    return (
-      categoryOptions.value.find(o => o.value === category)?.icon ??
-      'ph:dot-duotone'
-    );
+    return CATEGORY_ICONS[category] ?? 'ph:dot-duotone';
   }
 
   function categoryLabel(category: string): string {
-    return (
-      categoryOptions.value.find(o => o.value === category)?.label ?? category
-    );
+    return getVocabLabel(HISTORY_LOG_CATEGORIES, category, locale.value);
   }
 
   function categorySeverity(category: string): string {
@@ -56,14 +43,13 @@ export function useHistoryLogCategories() {
       incident: 'danger',
       event: 'secondary',
       status_change: 'info',
+      change_of_use: 'secondary',
     };
     return map[category] ?? 'secondary';
   }
 
   function severityLabel(severity: string): string {
-    return (
-      severityOptions.value.find(o => o.value === severity)?.label ?? severity
-    );
+    return getVocabLabel(HISTORY_LOG_SEVERITIES, severity, locale.value);
   }
 
   function severityToChip(severity: string): string {

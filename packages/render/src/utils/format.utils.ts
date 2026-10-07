@@ -1,4 +1,5 @@
 import type { DiameterUnits, LengthUnits } from '@welldot/core';
+import { resolveLanguageText } from '@welldot/core';
 import { formatNumber } from '@welldot/utils';
 import type { RenderLocalizedText } from '~/types/render.types';
 
@@ -53,14 +54,13 @@ export function getDiameterUnit(
 }
 
 /**
- * Resolves a paired-locale render label to a plain string. A bare string is
- * returned as-is (locale-invariant); for the `{ pt, en }` object form, `pt`
- * is always the fallback — mirrors the org-wide `resolveLanguageText()` contract.
+ * Resolves a render label to a plain string: core `resolveLanguageText()`
+ * with `pt` as the fallback locale. A bare string is returned as-is
+ * (locale-invariant).
  */
 export function resolveRenderLabel(
   value: RenderLocalizedText,
   locale: 'en' | 'pt',
 ): string {
-  if (typeof value === 'string') return value;
-  return locale === 'en' && value.en ? value.en : value.pt;
+  return resolveLanguageText(value, locale, 'pt');
 }

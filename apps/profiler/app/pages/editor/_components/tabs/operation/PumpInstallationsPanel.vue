@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import type { Attachment, PumpInstallation } from '@welldot/core';
 import {
+  CONSTRUCTION_MATERIALS,
+  POWER_SOURCES,
+  PUMP_TYPES,
+} from '@welldot/core';
+import {
   calculateSubmergence,
   getCurrentPump,
   getPumpInstallationWarnings,
@@ -10,17 +15,20 @@ import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import RecordCard, {
   type RecordAction,
 } from '~/components/records/RecordCard.vue';
-import {
-  resolvePowerSourceLabel,
-  resolvePumpTypeLabel,
-} from '~/utils/pumpVocab';
 import PumpInstallationDialog from './PumpInstallationDialog.vue';
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 const confirm = useConfirm();
 const profileStore = useProfileStore();
 const { formatLength, formatDiameter, formatFlow, formatPower } =
   useUnitFormat();
+
+function riserMaterial(p: PumpInstallation): string | null {
+  return p.riser_material
+    ? vocabLabel(CONSTRUCTION_MATERIALS, p.riser_material)
+    : null;
+}
 const { formatNumber } = useNumberFormat();
 
 // ─── Installations ────────────────────────────────────────────────────────────
@@ -130,10 +138,10 @@ function specs(p: PumpInstallation) {
       label: t('editor.operation.pump.fields.riser'),
       value:
         p.riser_diameter != null
-          ? [formatDiameter(p.riser_diameter), p.riser_material]
+          ? [formatDiameter(p.riser_diameter), riserMaterial(p)]
               .filter(Boolean)
               .join(' · ')
-          : (p.riser_material ?? null),
+          : riserMaterial(p),
     },
     {
       label: t('editor.operation.pump.fields.electrical'),
@@ -278,14 +286,14 @@ function actions(p: PumpInstallation): RecordAction[] {
             class="text-[11px]"
           />
           <span class="text-sm font-medium text-content-0">
-            {{ resolvePumpTypeLabel(p.type, t) }}
+            {{ vocabLabel(PUMP_TYPES, p.type) }}
           </span>
           <span
             v-if="p.power_source"
             class="text-xs text-content-400 flex items-center gap-1"
           >
             <Icon name="ph:lightning-duotone" class="size-3.5" />
-            {{ resolvePowerSourceLabel(p.power_source, t) }}
+            {{ vocabLabel(POWER_SOURCES, p.power_source) }}
           </span>
         </template>
 

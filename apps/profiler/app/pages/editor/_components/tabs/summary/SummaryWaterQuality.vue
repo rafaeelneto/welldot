@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getLimitSet } from '@welldot/core';
+import { SAMPLE_TYPES, getLimitSet } from '@welldot/core';
 import {
   getExceedances,
   getHydrochemicalFacies,
@@ -12,6 +12,7 @@ import { getLatestWellSample } from './derive';
 import { EDITOR_TAB } from './navigate';
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const uiStore = useUiStore();
 const { formatNumber } = useNumberFormat();
@@ -91,7 +92,7 @@ const exceedances = computed(() => {
         />
         <SummaryField
           :label="t('editor.summary.waterQuality.sampleType')"
-          :value="resolveSampleTypeLabel(sample.sample_type, t)"
+          :value="vocabLabel(SAMPLE_TYPES, sample.sample_type)"
         />
         <SummaryField
           :label="t('editor.summary.waterQuality.laboratory')"

@@ -1,4 +1,5 @@
 import type { AquiferAnalysis, HydrodynamicEvent } from '@welldot/core';
+import { AQUIFER_ANALYSIS_METHODS, getVocabLabel } from '@welldot/core';
 import { getRetractedEventIds } from '@welldot/utils';
 
 type NumericAnalysisField = {
@@ -86,18 +87,11 @@ export function useAquiferState() {
 }
 
 /** Display name of an aquifer analysis method. */
-export function aquiferMethodLabel(method?: string): string {
-  if (!method) return '';
-  const names: Record<string, string> = {
-    cooper_jacob: 'Cooper-Jacob',
-    theis: 'Theis',
-    neuman: 'Neuman',
-    hantush: 'Hantush',
-    birsoy_summers: 'Birsoy-Summers',
-    eden_hazel: 'Eden-Hazel',
-    visual_inspection: 'Visual',
-  };
-  return names[method] ?? method;
+export function aquiferMethodLabel(
+  method: string | undefined,
+  locale: string,
+): string {
+  return method ? getVocabLabel(AQUIFER_ANALYSIS_METHODS, method, locale) : '';
 }
 
 /** Splits a value into scientific notation parts: `1.2 · 10⁻³`. */

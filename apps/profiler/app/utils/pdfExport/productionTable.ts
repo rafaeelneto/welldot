@@ -4,6 +4,7 @@ import type {
   ProductionEntry,
   Well,
 } from '@welldot/core';
+import { DECLARED_METHODS, READING_SOURCES } from '@welldot/core';
 import {
   getProductionByPeriod,
   getProductionTotal,
@@ -11,11 +12,7 @@ import {
   todayCalendarDate,
 } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
-import {
-  meterLabel,
-  resolveDeclaredMethodLabel,
-  resolveReadingSourceLabel,
-} from '../operationVocab';
+import { meterLabel } from '../operationVocab';
 import { getActivePermit } from '../permitVocab';
 import { createPdfFormatters, type PdfFormatters } from './formatters';
 import { packLabelValueRows } from './metadataTable';
@@ -110,6 +107,7 @@ function buildLedgerTable(
   well: Well,
   fmt: PdfFormatters,
   t: PdfTranslate,
+  locale: string,
 ): Content {
   const retracted = getRetractedProductionIds(well);
   const entries = [...(well.production ?? [])].sort(
@@ -137,8 +135,8 @@ function buildLedgerTable(
       const r = e as MeterReading;
       const meter = well.meters?.find(m => m.id === r.meter_id);
       details = [
-        meter ? meterLabel(meter, t) : r.meter_id,
-        r.source ? resolveReadingSourceLabel(r.source, t) : null,
+        meter ? meterLabel(meter, t, locale) : r.meter_id,
+        r.source ? fmt.vocab(READING_SOURCES, r.source) : null,
       ]
         .filter(Boolean)
         .join(' · ');
@@ -147,7 +145,7 @@ function buildLedgerTable(
       const d = e as DeclaredVolume;
       details = [
         `${format(parseISO(d.period_start), 'dd/MM/yyyy')} → ${format(parseISO(d.period_end), 'dd/MM/yyyy')}`,
-        resolveDeclaredMethodLabel(d.method ?? 'estimated', t),
+        fmt.vocab(DECLARED_METHODS, d.method ?? 'estimated'),
       ].join(' · ');
       value = fmt.formatVolume(d.volume, 1);
     } else {
@@ -209,7 +207,7 @@ export function buildProductionSection(
       },
       ...(annual ? [{ text: ' ' }, annual] : []),
       { text: ' ' },
-      buildLedgerTable(well, fmt, t),
+      buildLedgerTable(well, fmt, t, options.locale),
     ],
   };
 }

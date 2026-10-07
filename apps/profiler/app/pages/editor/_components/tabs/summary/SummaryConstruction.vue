@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import {
+  CEMENT_PAD_TYPES,
+  CENTRALIZER_TYPES,
+  CONSTRUCTION_MATERIALS,
+} from '@welldot/core';
+import {
   calculateHoleFillSegmentVolume,
   getCentralizerDepths,
 } from '@welldot/utils';
@@ -9,6 +14,7 @@ import SummaryField from './SummaryField.vue';
 import SummaryEmpty from './SummaryEmpty.vue';
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const { formatLength, formatDiameter, formatVolume } = useUnitFormat();
 const { formatNumber } = useNumberFormat();
@@ -101,7 +107,7 @@ const casingGroups = computed<SummaryGroup[]>(() => {
   );
   const rows = items.map(c => ({
     cells: {
-      type: c.type || '—',
+      type: c.type ? vocabLabel(CONSTRUCTION_MATERIALS, c.type) : '—',
       diameter: formatDiameter(c.diameter),
       from: formatLength(c.from),
       to: formatLength(c.to),
@@ -138,7 +144,7 @@ const screenGroups = computed<SummaryGroup[]>(() => {
   );
   const rows = items.map(s => ({
     cells: {
-      type: s.type || '—',
+      type: s.type ? vocabLabel(CONSTRUCTION_MATERIALS, s.type) : '—',
       diameter: formatDiameter(s.diameter),
       slot:
         s.screen_slot != null
@@ -179,7 +185,7 @@ const reductionGroups = computed<SummaryGroup[]>(() => {
   const items = profileStore.well.reduction;
   const rows = items.map(r => ({
     cells: {
-      type: r.type || '—',
+      type: r.type ? vocabLabel(CONSTRUCTION_MATERIALS, r.type) : '—',
       diamFrom: formatDiameter(r.diam_from),
       diamTo: formatDiameter(r.diam_to),
       from: formatLength(r.from),
@@ -219,7 +225,7 @@ const centralizerGroups = computed<SummaryGroup[]>(() => {
   );
   const rows = items.map((c, i) => ({
     cells: {
-      type: resolveCentralizerTypeLabel(c.type, t) || '—',
+      type: vocabLabel(CENTRALIZER_TYPES, c.type) || '—',
       diameter: c.diameter != null ? formatDiameter(c.diameter) : '—',
       spacing: c.spacing != null ? formatLength(c.spacing) : '—',
       from: formatLength(c.from),
@@ -436,7 +442,7 @@ const hasLithology = computed(() => profileStore.well.lithology.length > 0);
       >
         <SummaryField
           :label="t('editor.summary.cementPad.type')"
-          :value="cementPad.type"
+          :value="vocabLabel(CEMENT_PAD_TYPES, cementPad.type)"
         />
         <SummaryField
           :label="t('editor.summary.cementPad.width')"

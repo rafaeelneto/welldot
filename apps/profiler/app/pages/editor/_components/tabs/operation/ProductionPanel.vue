@@ -5,6 +5,7 @@ import type {
   Permit,
   ProductionEntry,
 } from '@welldot/core';
+import { DECLARED_METHODS, READING_SOURCES } from '@welldot/core';
 import {
   getOperationWarnings,
   getProductionByPeriod,
@@ -18,15 +19,12 @@ import { useConfirm } from 'primevue/useconfirm';
 import RecordCard, {
   type RecordAction,
 } from '~/components/records/RecordCard.vue';
-import {
-  meterLabel,
-  resolveDeclaredMethodLabel,
-  resolveReadingSourceLabel,
-} from '~/utils/operationVocab';
+import { meterLabel } from '~/utils/operationVocab';
 import { getActivePermit } from '~/utils/permitVocab';
 import ProductionEntryDialog from './ProductionEntryDialog.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { vocabLabel } = useVocab();
 const confirm = useConfirm();
 const profileStore = useProfileStore();
 const { formatVolume } = useUnitFormat();
@@ -70,7 +68,7 @@ const meterFilter = ref<string | null>(null);
 const meterFilterOptions = computed(() =>
   (profileStore.well.meters ?? []).map(m => ({
     value: m.id,
-    label: meterLabel(m, t),
+    label: meterLabel(m, t, locale.value),
   })),
 );
 
@@ -270,7 +268,7 @@ function deleteEntry(id: string) {
 
 function meterName(meterId: string): string {
   const meter = profileStore.well.meters?.find(m => m.id === meterId);
-  return meter ? meterLabel(meter, t) : meterId;
+  return meter ? meterLabel(meter, t, locale.value) : meterId;
 }
 
 function details(e: ProductionEntry): string {
@@ -278,7 +276,7 @@ function details(e: ProductionEntry): string {
     const r = e as MeterReading;
     return [
       meterName(r.meter_id),
-      r.source ? resolveReadingSourceLabel(r.source, t) : null,
+      r.source ? vocabLabel(READING_SOURCES, r.source) : null,
     ]
       .filter(Boolean)
       .join(' · ');
@@ -286,7 +284,7 @@ function details(e: ProductionEntry): string {
   const d = e as DeclaredVolume;
   return [
     `${formatDate(d.period_start, 'dd/MM/yyyy')} → ${formatDate(d.period_end, 'dd/MM/yyyy')}`,
-    resolveDeclaredMethodLabel(d.method ?? 'estimated', t),
+    vocabLabel(DECLARED_METHODS, d.method ?? 'estimated'),
   ]
     .filter(Boolean)
     .join(' · ');

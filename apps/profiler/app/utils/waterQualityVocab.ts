@@ -4,22 +4,18 @@ import type {
   WaterQualityResult,
   WaterSample,
 } from '@welldot/core';
-import { getLimitSet, getParameterDefinition } from '@welldot/core';
+import {
+  SAMPLE_TYPES,
+  getLimitSet,
+  getParameterDefinition,
+  getVocabLabel,
+} from '@welldot/core';
 import { formatDate } from './date';
 
 /**
- * Recommended vocabularies for `water_samples` (.well spec v2.3). The open
- * ones (sample type, sampling method, point type, device) are suggestions
- * only — any `x-` value is valid and shown raw. The rest are closed enums.
+ * Water quality vocabularies. The open ones (sample type, sampling method,
+ * point type, device) live in `@welldot/core`; the rest are closed enums.
  */
-export const SAMPLE_TYPE_VALUES = [
-  'routine',
-  'field_duplicate',
-  'split_sample',
-  'field_blank',
-  'trip_blank',
-  'equipment_blank',
-] as const;
 
 /** Sample types that point to an original sample with `parent_sample_id`. */
 export const PARENT_SAMPLE_TYPES: readonly string[] = [
@@ -33,28 +29,6 @@ export const BLANK_SAMPLE_TYPES: readonly string[] = [
   'trip_blank',
   'equipment_blank',
 ];
-
-export const SAMPLING_METHOD_VALUES = [
-  'low_flow',
-  'volumetric_purge',
-  'no_purge',
-  'pump_discharge',
-] as const;
-
-export const SAMPLING_POINT_TYPE_VALUES = [
-  'pump_discharge',
-  'wellhead_tap',
-  'in_well',
-] as const;
-
-export const SAMPLING_DEVICE_VALUES = [
-  'bailer',
-  'discrete_depth_sampler',
-  'passive_diffusion_bag',
-  'grab_sleeve',
-  'low_flow_pump',
-  'packer_pump',
-] as const;
 
 export const QUALIFIER_VALUES = [
   '<',
@@ -101,11 +75,6 @@ export const PARAMETER_GROUP_VALUES: readonly ParameterGroup[] = [
   'radioactivity',
 ];
 
-export type SampleTypeValue = (typeof SAMPLE_TYPE_VALUES)[number];
-export type SamplingMethodValue = (typeof SAMPLING_METHOD_VALUES)[number];
-export type SamplingPointTypeValue =
-  (typeof SAMPLING_POINT_TYPE_VALUES)[number];
-export type SamplingDeviceValue = (typeof SAMPLING_DEVICE_VALUES)[number];
 export type QualifierValue = (typeof QUALIFIER_VALUES)[number];
 export type FractionValue = (typeof FRACTION_VALUES)[number];
 export type MeasuredInValue = (typeof MEASURED_IN_VALUES)[number];
@@ -182,42 +151,6 @@ export function formatResultValue(
   return n;
 }
 
-/** Translated `sample_type`, falling back to the raw value. */
-export function resolveSampleTypeLabel(value: string, t: Translate): string {
-  return resolveLabel(SAMPLE_TYPE_VALUES, `${PREFIX}.sampleTypes`, value, t);
-}
-
-/** Translated `sampling_method`, falling back to the raw value. */
-export function resolveSamplingMethodLabel(
-  value: string,
-  t: Translate,
-): string {
-  return resolveLabel(
-    SAMPLING_METHOD_VALUES,
-    `${PREFIX}.samplingMethods`,
-    value,
-    t,
-  );
-}
-
-/** Translated `sampling_point.type`, falling back to the raw value. */
-export function resolveSamplingPointTypeLabel(
-  value: string,
-  t: Translate,
-): string {
-  return resolveLabel(
-    SAMPLING_POINT_TYPE_VALUES,
-    `${PREFIX}.samplingPointTypes`,
-    value,
-    t,
-  );
-}
-
-/** Translated `sampling_point.device`, falling back to the raw value. */
-export function resolveDeviceLabel(value: string, t: Translate): string {
-  return resolveLabel(SAMPLING_DEVICE_VALUES, `${PREFIX}.devices`, value, t);
-}
-
 /** Translated result `qualifier`, falling back to the raw value. */
 export function resolveQualifierLabel(value: string, t: Translate): string {
   const key = { '<': 'lt', '>': 'gt' }[value] ?? value;
@@ -263,9 +196,9 @@ export function resolveLimitSetLabel(id: string): string {
 }
 
 /** "Routine · 15/09/2026 09:30 · LD-4471/26" — identifies one sample. */
-export function sampleLabel(sample: WaterSample, t: Translate): string {
+export function sampleLabel(sample: WaterSample, locale: string): string {
   return [
-    resolveSampleTypeLabel(sample.sample_type, t),
+    getVocabLabel(SAMPLE_TYPES, sample.sample_type, locale),
     formatDate(sample.datetime, 'dd/MM/yyyy HH:mm'),
     sample.laboratory?.report_number ?? sample.campaign ?? null,
   ]

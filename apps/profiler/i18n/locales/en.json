@@ -435,13 +435,7 @@
         "type": "Type",
         "width": "Width",
         "length": "Length",
-        "thickness": "Thickness",
-        "typeOptions": {
-          "concrete": "Concrete",
-          "reinforcedConcrete": "Reinforced Concrete",
-          "cement": "Cement",
-          "mortar": "Mortar"
-        }
+        "thickness": "Thickness"
       },
       "boreHole": {
         "title": "Bore Hole",
@@ -452,13 +446,6 @@
         "drillingMethod": "Method",
         "drillingMethodInfo": "Drilling method used to open this bore hole interval. Pick one of the suggestions — rotary, percussion, cable tool, auger or air hammer.",
         "drillingMethodFreeText": "This field is free text: if the method is not in the list, just type it (e.g. reverse circulation, sonic, jetting) and it will be saved as-is.",
-        "drillingMethodOptions": {
-          "rotary": "Rotary",
-          "percussion": "Percussion",
-          "cableTool": "Cable Tool",
-          "auger": "Auger",
-          "airHammer": "Air Hammer"
-        },
         "addRow": "Add bore hole",
         "empty": "No bore hole intervals yet",
         "wellDepth": "Well depth",
@@ -509,13 +496,7 @@
         "description": "Description",
         "descriptionInfo": "Optional notes about these centralizers, such as manufacturer, model, material or how they were installed.",
         "addRow": "Add centralizers",
-        "hint": "One row per interval. Use the same depth in From and To for a single centralizer; leave spacing empty if unknown.",
-        "types": {
-          "springBow": "Spring bow",
-          "rigid": "Rigid",
-          "semiRigid": "Semi-rigid",
-          "polymer": "Polymer"
-        }
+        "hint": "One row per interval. Use the same depth in From and To for a single centralizer; leave spacing empty if unknown."
       },
       "wellScreen": {
         "title": "Screen",
@@ -544,14 +525,6 @@
           "gravelPack": "Gravel Pack",
           "seal": "Seal"
         }
-      },
-      "materials": {
-        "pvc": "PVC",
-        "geomechanicalPvc": "Geomechanical PVC",
-        "carbonSteel": "Carbon Steel",
-        "galvanizedSteel": "Galvanized Steel",
-        "stainlessSteel": "Stainless Steel",
-        "fiberglass": "Fiberglass"
       }
     },
     "geological": {
@@ -623,23 +596,6 @@
       "observationsLabel": "Observations",
       "freeNotes": "Free notes",
       "metadata": "Metadata",
-      "wellTypes": {
-        "tubular": "Tubular",
-        "artesian": "Artesian (deprecated)",
-        "handDug": "Hand dug",
-        "horizontal": "Horizontal",
-        "infiltrationGallery": "Infiltration gallery"
-      },
-      "wellPurposes": {
-        "production": "Production",
-        "monitoring": "Monitoring well",
-        "piezometer": "Piezometer",
-        "waterLevelIndicator": "Water level indicator",
-        "observation": "Observation well",
-        "exploration": "Exploration",
-        "injection": "Injection / recharge",
-        "dewatering": "Dewatering"
-      },
       "wellIds": {
         "title": "Well Identifiers",
         "tag": "IDENTIFIERS",
@@ -893,19 +849,6 @@
         "copyPath": "Copy path",
         "copied": "Copied",
         "noAttachments": "No files attached",
-        "categories": {
-          "maintenance": "Maintenance",
-          "inspection": "Inspection",
-          "incident": "Incident",
-          "event": "Event",
-          "status_change": "Status change"
-        },
-        "severity": {
-          "low": "Low",
-          "medium": "Medium",
-          "high": "High",
-          "critical": "Critical"
-        },
         "fields": {
           "category": "Category",
           "datetime": "Date / Time",
@@ -958,13 +901,6 @@
         "flowRate": "FLOW RATE Q",
         "noData": "—"
       },
-      "eventTypes": {
-        "spot_measurement": "Spot Measurement",
-        "constant_rate": "Constant Rate",
-        "step_drawdown": "Step Drawdown",
-        "airlift": "Air-lift",
-        "recovery_only": "Recovery Only"
-      },
       "fields": {
         "type": "Event Type",
         "datetime": "Date / Time",
@@ -1000,12 +936,6 @@
         "steps": "steps",
         "readings": "readings"
       },
-      "measurementMethods": {
-        "electric_probe": "Electric probe",
-        "pressure_transducer": "Pressure transducer",
-        "air_line": "Air line",
-        "tape": "Tape"
-      },
       "addStep": "Add step",
       "addReading": "Add reading",
       "manageReadings": "Manage",
@@ -1026,61 +956,9 @@
       "documentTypeInfo": "What the document is (.well v2.3). Optional — leave empty when unsure.",
       "documentTypePlaceholder": "Not specified",
       "description": "Description",
-      "mediaTypeOther": "Other",
-      "documentTypes": {
-        "drilling_report": "Drilling report",
-        "as_built_drawing": "As-built drawing",
-        "registry_record": "Registry record",
-        "photo": "Photo",
-        "permit_document": "Permit document",
-        "condition_evidence": "Condition evidence",
-        "pump_curve": "Pump curve",
-        "field_sheet": "Field sheet",
-        "test_report": "Pumping test report",
-        "lab_report": "Lab report",
-        "invoice": "Invoice"
-      }
+      "mediaTypeOther": "Other"
     },
     "operation": {
-      "pumpTypes": {
-        "submersible": "Submersible pump",
-        "vertical_turbine": "Vertical turbine pump",
-        "jet": "Jet pump",
-        "progressive_cavity": "Progressive cavity pump",
-        "hand_pump": "Hand pump",
-        "compressor_airlift": "Compressor (air-lift)"
-      },
-      "powerSources": {
-        "grid": "Grid",
-        "solar": "Solar",
-        "diesel": "Diesel",
-        "hybrid": "Hybrid"
-      },
-      "meterTypes": {
-        "mechanical": "Mechanical",
-        "electromagnetic": "Electromagnetic",
-        "ultrasonic": "Ultrasonic"
-      },
-      "readingSources": {
-        "manual": "Manual",
-        "telemetry": "Telemetry"
-      },
-      "declaredMethods": {
-        "estimated": "Estimated",
-        "reported": "Reported"
-      },
-      "maintenanceTypes": {
-        "inspection": "Inspection",
-        "cleaning": "Cleaning",
-        "redevelopment": "Redevelopment",
-        "disinfection": "Disinfection",
-        "pump_service": "Pump service",
-        "meter_calibration": "Meter calibration",
-        "video_inspection": "Video inspection / optical logging",
-        "level_measurement": "Level measurement",
-        "pump_test": "Pumping test",
-        "water_sampling": "Water sampling"
-      },
       "wellStatuses": {
         "active": "Active",
         "maintenance": "Under maintenance",
@@ -1265,30 +1143,6 @@
         "derivedInfo": "Derived from the latest “Status change” entry in the history log.",
         "since": "since {date}"
       },
-      "permitTypes": {
-        "abstraction_permit": "Abstraction permit",
-        "preliminary_permit": "Preliminary permit",
-        "exemption": "Exemption",
-        "registration": "Registration",
-        "dewatering_permit": "Dewatering permit",
-        "drilling_permit": "Drilling permit"
-      },
-      "waterUses": {
-        "human_supply": "Human supply",
-        "industrial": "Industrial",
-        "mining": "Mining",
-        "irrigation": "Irrigation",
-        "livestock": "Livestock",
-        "commercial": "Commercial"
-      },
-      "conditionCategories": {
-        "monitoring": "Monitoring",
-        "reporting": "Reporting",
-        "equipment_installation": "Equipment installation",
-        "well_protection": "Well protection",
-        "environmental": "Environmental",
-        "legal": "Legal / administrative"
-      },
       "permit": {
         "title": "Permits",
         "intro": "One entry per legal instrument. The attached document is authoritative. A renewal is a new permit that supersedes the previous one; status and condition deadlines are derived.",
@@ -1427,15 +1281,6 @@
           "dueDateInfo": "For actionable steps (a fee to pay, a notification to answer). Past due and not done raises an alert.",
           "dueOn": "Due {date}",
           "overdue": "{n} administrative step(s) past due.",
-          "types": {
-            "filing": "Filing",
-            "process": "Process",
-            "notification": "Notification",
-            "fee": "Fee",
-            "inspection": "Inspection",
-            "decision": "Decision",
-            "renewal": "Renewal"
-          },
           "addTitle": "New step",
           "editTitle": "Edit step",
           "edit": "Edit step",
@@ -1707,33 +1552,6 @@
         "guideline": "Guideline",
         "validatedBy": "Validated by",
         "validatedAt": "Validated at"
-      },
-      "sampleTypes": {
-        "routine": "Routine",
-        "field_duplicate": "Field duplicate",
-        "split_sample": "Split sample",
-        "field_blank": "Field blank",
-        "trip_blank": "Trip blank",
-        "equipment_blank": "Equipment blank"
-      },
-      "samplingMethods": {
-        "low_flow": "Low flow",
-        "volumetric_purge": "Volumetric purge",
-        "no_purge": "No purge",
-        "pump_discharge": "Pump discharge"
-      },
-      "samplingPointTypes": {
-        "pump_discharge": "Pump discharge",
-        "wellhead_tap": "Wellhead tap",
-        "in_well": "In well"
-      },
-      "devices": {
-        "bailer": "Bailer",
-        "discrete_depth_sampler": "Discrete depth sampler",
-        "passive_diffusion_bag": "Passive diffusion bag",
-        "grab_sleeve": "Grab sleeve (HydraSleeve)",
-        "low_flow_pump": "Low-flow pump",
-        "packer_pump": "Packer pump"
       },
       "qualifiers": {
         "lt": "< less than",

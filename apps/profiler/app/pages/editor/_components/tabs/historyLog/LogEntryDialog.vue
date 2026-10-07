@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import type { Attachment, HistoryLogEntry, WellStatus } from '@welldot/core';
+import { MAINTENANCE_TYPES } from '@welldot/core';
 import { formatISO } from 'date-fns';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import {
-  MAINTENANCE_TYPE_VALUES,
   WELL_STATUS_VALUES,
   meterLabel,
   pumpInstallationLabel,
-  resolveMaintenanceTypeLabel,
   resolveWellStatusLabel,
 } from '~/utils/operationVocab';
 import { sampleLabel } from '~/utils/waterQualityVocab';
@@ -18,19 +17,15 @@ const visible = defineModel<boolean>('visible', { default: false });
 
 const emit = defineEmits<{ save: [entry: HistoryLogEntry] }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { vocabOptions } = useVocab();
 const { categoryOptions, severityOptions } = useHistoryLogCategories();
 const { eventTypeLabel } = useHydrodynamicEventTypes();
 const profileStore = useProfileStore();
 
 // ─── Category-specific options (.well v2.3) ──────────────────────────────────
 
-const maintenanceTypeOptions = computed(() =>
-  MAINTENANCE_TYPE_VALUES.map(value => ({
-    value,
-    label: resolveMaintenanceTypeLabel(value, t),
-  })),
-);
+const maintenanceTypeOptions = computed(() => vocabOptions(MAINTENANCE_TYPES));
 const statusOptions = computed(() =>
   WELL_STATUS_VALUES.map(value => ({
     value,
@@ -40,13 +35,13 @@ const statusOptions = computed(() =>
 const pumpOptions = computed(() =>
   (profileStore.well.pump_installations ?? []).map(p => ({
     value: p.id,
-    label: pumpInstallationLabel(p, t),
+    label: pumpInstallationLabel(p, locale.value),
   })),
 );
 const meterOptions = computed(() =>
   (profileStore.well.meters ?? []).map(m => ({
     value: m.id,
-    label: meterLabel(m, t),
+    label: meterLabel(m, t, locale.value),
   })),
 );
 const eventOptions = computed(() =>
@@ -65,7 +60,10 @@ const sampleOptions = computed(() =>
     .sort(
       (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
     )
-    .map(s => ({ value: s.id, label: `${sampleLabel(s, t)} (${s.id})` })),
+    .map(s => ({
+      value: s.id,
+      label: `${sampleLabel(s, locale.value)} (${s.id})`,
+    })),
 );
 
 /** Local copy — edits never reach the bound value until Save. */

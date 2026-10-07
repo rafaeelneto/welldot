@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { CONSTRUCTION_MATERIALS } from '@welldot/core';
 import type { WellGridColumn } from '~/components/DataGrid/types';
-import { materialOptions } from '~/utils/materialOptions';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 
-const screenTypeOptions = computed(() => materialOptions(t));
+const screenTypeOptions = computed(() => vocabOptions(CONSTRUCTION_MATERIALS));
 
 const wellScreenColumns = computed<WellGridColumn[]>(() => [
   {

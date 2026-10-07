@@ -111,10 +111,10 @@ describe('buildPermitSection', () => {
     expect(text).toContain('10/02/2025 → 10/02/2029');
     expect(text).toContain('SEMAS-PA');
     expect(text).toContain('1234/2025');
-    expect(text).toContain('human_supply');
+    expect(text).toContain('Human supply');
     expect(text).toContain('PRT-2024/0099');
     expect(text).toContain(
-      'Install meter (equipment_installation · responsible: Ops team) — fulfilled 11/05/2025',
+      'Install meter (Equipment installation · responsible: Ops team) — fulfilled 11/05/2025',
     );
     expect(text).toContain('deadline 11/05/2025 · J. Silva · Meter installed');
     expect(text).toContain('overdue: 31/07/2025, 31/01/2026, 31/07/2026');
@@ -126,8 +126,8 @@ describe('buildPermitSection', () => {
     const text = JSON.stringify(
       buildPermitSection(well, baseOptions, t, '2026-10-03'),
     );
-    expect(text).toContain('04/11/2024 · filing · Request filed');
-    expect(text).toContain('15/12/2024 · fee · Analysis fee · (done)');
+    expect(text).toContain('04/11/2024 · Filing · Request filed');
+    expect(text).toContain('15/12/2024 · Fee · Analysis fee · (done)');
     expect(text.indexOf('Request filed')).toBeLessThan(
       text.indexOf('Analysis fee'),
     );

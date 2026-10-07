@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import type { PermitHistoryEntry } from '@welldot/core';
+import { PERMIT_HISTORY_TYPES } from '@welldot/core';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
-import {
-  PERMIT_HISTORY_TYPE_VALUES,
-  resolvePermitHistoryTypeLabel,
-} from '~/utils/permitVocab';
 
 /**
  * Form fields for one permit `history` entry, edited in place on the bound
@@ -15,13 +12,9 @@ import {
 const entry = defineModel<PermitHistoryEntry>({ required: true });
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 
-const typeOptions = computed(() =>
-  PERMIT_HISTORY_TYPE_VALUES.map(value => ({
-    value,
-    label: resolvePermitHistoryTypeLabel(value, t),
-  })),
-);
+const typeOptions = computed(() => vocabOptions(PERMIT_HISTORY_TYPES));
 
 function setDate(key: 'date' | 'due_date', d: Date | null) {
   if (d) entry.value[key] = toCalendarDate(d);

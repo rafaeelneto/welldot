@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { Attachment } from '@welldot/core';
+import type { Attachment, DocumentTypeContext } from '@welldot/core';
+import { DOCUMENT_TYPES } from '@welldot/core';
 import { useConfirm } from 'primevue/useconfirm';
-import { resolveDocumentTypeLabel } from '~/utils/documentType';
-import type { DocumentTypeContext } from '~/utils/documentType';
 import AttachmentDialog from './AttachmentDialog.vue';
 
 /**
@@ -36,6 +35,7 @@ const model = defineModel<Attachment[]>({ default: () => [] });
 const list = computed(() => model.value ?? []);
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 const confirm = useConfirm();
 const {
   attachmentIcon,
@@ -124,7 +124,7 @@ defineExpose({ open });
             v-if="att.document_type"
             class="text-[9px] uppercase tracking-wider text-content-500 truncate"
           >
-            {{ resolveDocumentTypeLabel(att.document_type, t) }}
+            {{ vocabLabel(DOCUMENT_TYPES, att.document_type) }}
           </span>
         </div>
         <div class="flex items-center gap-1 shrink-0">

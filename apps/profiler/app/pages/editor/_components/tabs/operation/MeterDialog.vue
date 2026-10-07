@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import type { Attachment, Meter } from '@welldot/core';
+import { METER_TYPES } from '@welldot/core';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
-import {
-  METER_TYPE_VALUES,
-  resolveMeterTypeLabel,
-} from '~/utils/operationVocab';
 
 /** The meter being edited. `null` means "adding a new one". */
 const model = defineModel<Meter | null>({ default: null });
@@ -13,14 +10,10 @@ const visible = defineModel<boolean>('visible', { default: false });
 const emit = defineEmits<{ save: [meter: Meter] }>();
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const { diameterUnit, volumeUnit } = useUnitFormat();
 
-const typeOptions = computed(() =>
-  METER_TYPE_VALUES.map(value => ({
-    value,
-    label: resolveMeterTypeLabel(value, t),
-  })),
-);
+const typeOptions = computed(() => vocabOptions(METER_TYPES));
 
 /** Local copy — edits never reach the bound value until Save. */
 const form = reactive({

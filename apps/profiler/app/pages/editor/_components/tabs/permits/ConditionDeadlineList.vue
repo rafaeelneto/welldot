@@ -21,7 +21,7 @@ const emit = defineEmits<{
   undo: [fulfillmentId: string];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const profileStore = useProfileStore();
 const { eventTypeLabel } = useHydrodynamicEventTypes();
 
@@ -45,7 +45,7 @@ function evidence(f: ConditionFulfillment): string | null {
       event
         ? `${eventTypeLabel(event.type)} · ${formatDate(event.datetime, 'dd/MM/yyyy')}`
         : f.event_id,
-      sample ? sampleLabel(sample, t) : f.sample_id,
+      sample ? sampleLabel(sample, locale.value) : f.sample_id,
     ]
       .filter(Boolean)
       .join(' · ') || null

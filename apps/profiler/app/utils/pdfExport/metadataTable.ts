@@ -1,9 +1,8 @@
 import type { Well } from '@welldot/core';
+import { WELL_PURPOSES, WELL_TYPES } from '@welldot/core';
 import { format, parseISO } from 'date-fns';
 import { formatCoord } from '~/utils/coords';
 import { calculatedWellDepth } from '~/utils/wellDepth';
-import { formatWellPurposes } from '~/utils/wellPurpose';
-import { resolveWellTypeLabel } from '~/utils/wellType';
 import { createPdfFormatters } from './formatters';
 import type { ContentTable, TableCell } from './pdfmake.types';
 import type { PdfExportOptions, PdfTranslate } from './types';
@@ -54,7 +53,7 @@ export function buildMetadataTable(
   options: PdfExportOptions,
   t: PdfTranslate,
 ): ContentTable | null {
-  const { formatLength } = createPdfFormatters(options);
+  const { formatLength, vocab, vocabList } = createPdfFormatters(options);
 
   const fields: MetaField[] = [];
 
@@ -64,13 +63,13 @@ export function buildMetadataTable(
   if (well.well_type) {
     fields.push({
       label: t('editor.general.wellType'),
-      value: resolveWellTypeLabel(well.well_type, t),
+      value: vocab(WELL_TYPES, well.well_type),
     });
   }
   if (well.well_purpose?.length) {
     fields.push({
       label: t('editor.general.wellPurpose'),
-      value: formatWellPurposes(well.well_purpose, t),
+      value: vocabList(WELL_PURPOSES, well.well_purpose),
     });
   }
   if (well.well_driller) {

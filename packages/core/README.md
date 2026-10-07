@@ -295,6 +295,53 @@ getLimitSet('who_gdwq_2022')?.limits.find(l => l.code === 'arsenic');
 
 Limits are never written to `.well` files (jurisdiction neutrality): consumers pick a set at display time and compare results with the derivation helpers of `@welldot/utils`. **The bundled limit values are transcribed from the cited sources and must be verified against the official documents before any regulatory use.**
 
+## Recommended Vocabularies _(v2.3)_
+
+Many `.well` string fields are **open**: any value (or an `x-` extension) is valid, but the spec recommends a vocabulary. Each one is exported as data, with display labels keyed by BCP 47 language tag (`en` and `pt` always present). Field types use `OpenVocab<T>` (`T | (string & {})`), so the recommended values autocomplete while any string still type-checks.
+
+| Vocabulary                                                                     | Field                                                                                               |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `WELL_TYPES`                                                                   | `well_type` (`artesian` is `deprecated`)                                                            |
+| `WELL_PURPOSES`                                                                | `well_purpose[]`                                                                                    |
+| `DRILLING_METHODS`                                                             | `bore_hole[].drilling_method`                                                                       |
+| `CONSTRUCTION_MATERIALS`                                                       | `well_case[].type`, `well_screen[].type`, `reduction[].type`, `pump_installations[].riser_material` |
+| `CENTRALIZER_TYPES`                                                            | `centralizers[].type`                                                                               |
+| `CEMENT_PAD_TYPES`                                                             | `cement_pad.type`                                                                                   |
+| `PUMP_TYPES`, `POWER_SOURCES`                                                  | `pump_installations[].type`, `.power_source`                                                        |
+| `METER_TYPES`                                                                  | `meters[].type`                                                                                     |
+| `READING_SOURCES`, `DECLARED_METHODS`                                          | `production[].source`, `production[].method`                                                        |
+| `PERMIT_TYPES`, `WATER_USES`                                                   | `permits[].type`, `permits[].water_use[]`                                                           |
+| `CONDITION_CATEGORIES`                                                         | `permits[].conditions[].category`                                                                   |
+| `PERMIT_HISTORY_TYPES`                                                         | `permits[].history[].type`                                                                          |
+| `HISTORY_LOG_CATEGORIES`, `HISTORY_LOG_SEVERITIES`, `MAINTENANCE_TYPES`        | `history_logs[].category`, `.severity`, `.maintenance_type`                                         |
+| `HYDRODYNAMIC_EVENT_TYPES`, `MEASUREMENT_METHODS`                              | `hydrodynamic_events[].type`, `.measurement_method`                                                 |
+| `AQUIFER_ANALYSIS_METHODS`                                                     | `aquifer_analysis[].method`                                                                         |
+| `DOCUMENT_TYPES`, `DOCUMENT_TYPE_SUGGESTIONS`                                  | `attachments[].document_type` (and per-context suggestion order)                                    |
+| `SAMPLE_TYPES`, `SAMPLING_METHODS`, `SAMPLING_POINT_TYPES`, `SAMPLING_DEVICES` | `water_samples[]` sampling fields                                                                   |
+
+Labels are `LanguageText<'en' | 'pt'>`. `LanguageText<L>` is the general localized-text type (`Record<string, string>` keyed by BCP 47 tag), where `L` lists the tags that must be present — `LanguageText` alone requires none. `LanguageTextInput` adds the plain-string, JSON-string and `null`/`undefined` forms accepted by `resolveLanguageText`.
+
+| Helper                                      | Description                                                                                                                                                                                                                                     |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getVocabLabel(vocab, value, locale)`       | Label in `locale` (`pt-BR` → `pt` → `en`); free-text and `x-` values are returned as-is                                                                                                                                                         |
+| `resolveLanguageText(text, locale)`         | Resolves a `LanguageTextInput` with the same fallback: a `LanguageText` object, a plain string (returned as-is), a JSON object string (parsed; malformed JSON stays a plain string) or `null`/`undefined` (`''`); empty labels count as missing |
+| `getVocabEntry` / `isVocabValue`            | Looks up a value's entry / checks whether it is recommended                                                                                                                                                                                     |
+| `vocabValues(vocab, { includeDeprecated })` | The recommended values, deprecated ones left out by default                                                                                                                                                                                     |
+
+```typescript
+import {
+  CONSTRUCTION_MATERIALS,
+  PERMIT_TYPES,
+  getVocabLabel,
+  type OpenVocab,
+  type PermitType,
+} from '@welldot/core';
+
+const type: OpenVocab<PermitType> = 'abstraction_permit'; // or any string
+getVocabLabel(PERMIT_TYPES, type, 'pt'); // 'Outorga de direito de uso'
+getVocabLabel(PERMIT_TYPES, 'x-special', 'pt'); // 'x-special'
+```
+
 ## FGDC Texture Patterns
 
 `FGDC_TEXTURES_OPTIONS` is a typed array of 284 texture pattern entries drawn from the **FGDC Digital Cartographic Standard for Geologic Map Symbolization (FGDC-STD-013-2006)**. Assign a `code` to the `texture` field of a `Lithology` record to attach a standardized fill pattern to a depth interval.

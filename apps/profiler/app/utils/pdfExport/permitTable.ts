@@ -1,5 +1,11 @@
 import type { Attachment, Permit, PermitCondition, Well } from '@welldot/core';
 import {
+  CONDITION_CATEGORIES,
+  PERMIT_HISTORY_TYPES,
+  PERMIT_TYPES,
+  WATER_USES,
+} from '@welldot/core';
+import {
   formatNumber,
   getConditionDeadlineStates,
   getPermitHistory,
@@ -8,13 +14,7 @@ import {
   todayCalendarDate,
 } from '@welldot/utils';
 import { formatCalendarDate, formatDate } from '../date';
-import {
-  permitLabel,
-  resolveConditionCategoryLabel,
-  resolvePermitHistoryTypeLabel,
-  resolvePermitTypeLabel,
-  resolveWaterUseLabel,
-} from '../permitVocab';
+import { permitLabel } from '../permitVocab';
 import { createPdfFormatters, type PdfFormatters } from './formatters';
 import type { Content } from './pdfmake.types';
 import { buildEntryDivider } from './sectionTables';
@@ -39,6 +39,7 @@ function buildHeader(
   p: Permit,
   well: Well,
   today: string,
+  fmt: PdfFormatters,
   t: PdfTranslate,
 ): Content {
   const status = getPermitStatus(well, p, today)!;
@@ -46,7 +47,7 @@ function buildHeader(
     columns: [
       {
         text: [
-          { text: resolvePermitTypeLabel(p.type, t), style: 'tableHeader' },
+          { text: fmt.vocab(PERMIT_TYPES, p.type), style: 'tableHeader' },
           {
             text: `   ${t(`editor.operation.permit.status.${status}`)}`,
             style: 'metadataLabel',
@@ -85,7 +86,7 @@ function specLines(
     p.supersedes &&
       `${field('supersedes')}: ${permitLabel(superseded, p.supersedes)}`,
     p.water_use?.length &&
-      `${field('waterUse')}: ${p.water_use.map(u => resolveWaterUseLabel(u, t)).join(', ')}`,
+      `${field('waterUse')}: ${fmt.vocabList(WATER_USES, p.water_use)}`,
     p.flow_rate != null &&
       `${field('flowRate')}: ${fmt.formatFlow(p.flow_rate, 2)}`,
     p.daily_operating_time != null &&
@@ -112,6 +113,7 @@ function conditionLine(
   c: PermitCondition,
   well: Well,
   today: string,
+  fmt: PdfFormatters,
   t: PdfTranslate,
 ): string {
   const states = getConditionDeadlineStates(well, p, c, { today });
@@ -133,7 +135,7 @@ function conditionLine(
   ].filter(Boolean);
 
   const meta = [
-    c.category && resolveConditionCategoryLabel(c.category, t),
+    c.category && fmt.vocab(CONDITION_CATEGORIES, c.category),
     c.responsible &&
       `${t('editor.operation.permit.conditions.responsible')}: ${c.responsible}`,
   ].filter(Boolean);
@@ -163,6 +165,7 @@ function fulfillmentLines(c: PermitCondition, t: PdfTranslate): string[] {
 /** One line per administrative history step, oldest first. */
 function historyLine(
   h: ReturnType<typeof getPermitHistory>[number],
+  fmt: PdfFormatters,
   t: PdfTranslate,
 ): string {
   const state =
@@ -173,7 +176,7 @@ function historyLine(
         : null;
   return [
     `•  ${formatCalendarDate(h.date)}`,
-    h.type && resolvePermitHistoryTypeLabel(h.type, t),
+    h.type && fmt.vocab(PERMIT_HISTORY_TYPES, h.type),
     h.description,
     state && `(${state})`,
   ]
@@ -205,7 +208,7 @@ function buildBody(
           style: 'metadataLabel',
         },
         ...conditions.flatMap(c => [
-          { text: conditionLine(p, c, well, today, t), fontSize: 9 },
+          { text: conditionLine(p, c, well, today, fmt, t), fontSize: 9 },
           ...fulfillmentLines(c, t).map(text => ({
             text,
             fontSize: 8,
@@ -224,7 +227,7 @@ function buildBody(
           text: t('editor.operation.permit.history.title'),
           style: 'metadataLabel',
         },
-        ...history.map(h => ({ text: historyLine(h, t), fontSize: 9 })),
+        ...history.map(h => ({ text: historyLine(h, fmt, t), fontSize: 9 })),
       ],
       margin: [0, 4, 0, 0],
     });
@@ -271,7 +274,7 @@ export function buildPermitSection(
       stack: [
         { text: ' ' },
         { text: t('editor.operation.permit.title'), style: 'title' },
-        buildHeader(first!, well, today, t),
+        buildHeader(first!, well, today, fmt, t),
       ],
       unbreakable: true,
     },
@@ -281,7 +284,7 @@ export function buildPermitSection(
     items.push(buildEntryDivider());
     items.push({
       stack: [
-        buildHeader(p, well, today, t),
+        buildHeader(p, well, today, fmt, t),
         ...buildBody(p, well, today, fmt, options, t),
       ],
     });

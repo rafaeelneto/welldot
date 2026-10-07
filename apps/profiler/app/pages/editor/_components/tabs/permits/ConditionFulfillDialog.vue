@@ -24,7 +24,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ save: [fulfillment: ConditionFulfillment] }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const profileStore = useProfileStore();
 
 /** Samples that can evidence a `monitoring` condition. */
@@ -33,12 +33,14 @@ const sampleOptions = computed(() =>
     .sort(
       (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
     )
-    .map(s => ({ value: s.id, label: `${sampleLabel(s, t)} (${s.id})` })),
+    .map(s => ({
+      value: s.id,
+      label: `${sampleLabel(s, locale.value)} (${s.id})`,
+    })),
 );
 const showSampleField = computed(
   () =>
-    props.condition.category === 'monitoring' &&
-    sampleOptions.value.length > 0,
+    props.condition.category === 'monitoring' && sampleOptions.value.length > 0,
 );
 
 const form = reactive({

@@ -4,14 +4,12 @@ import type {
   PumpElectrical,
   PumpInstallation,
 } from '@welldot/core';
-import AttachmentField from '~/components/attachments/AttachmentField.vue';
-import { materialOptions } from '~/utils/materialOptions';
 import {
-  POWER_SOURCE_VALUES,
-  PUMP_TYPE_VALUES,
-  resolvePowerSourceLabel,
-  resolvePumpTypeLabel,
-} from '~/utils/pumpVocab';
+  CONSTRUCTION_MATERIALS,
+  POWER_SOURCES,
+  PUMP_TYPES,
+} from '@welldot/core';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
 
 /** The installation being edited. `null` means "adding a new one". */
 const model = defineModel<PumpInstallation | null>({ default: null });
@@ -20,21 +18,14 @@ const visible = defineModel<boolean>('visible', { default: false });
 const emit = defineEmits<{ save: [installation: PumpInstallation] }>();
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const { lengthUnit, diameterUnit, flowUnit, powerUnit } = useUnitFormat();
 
-const typeOptions = computed(() =>
-  PUMP_TYPE_VALUES.map(value => ({
-    value,
-    label: resolvePumpTypeLabel(value, t),
-  })),
+const typeOptions = computed(() => vocabOptions(PUMP_TYPES));
+const powerSourceOptions = computed(() => vocabOptions(POWER_SOURCES));
+const riserMaterialOptions = computed(() =>
+  vocabOptions(CONSTRUCTION_MATERIALS),
 );
-const powerSourceOptions = computed(() =>
-  POWER_SOURCE_VALUES.map(value => ({
-    value,
-    label: resolvePowerSourceLabel(value, t),
-  })),
-);
-const riserMaterialOptions = computed(() => materialOptions(t));
 const phaseOptions = [
   { label: '1φ', value: 1 },
   { label: '3φ', value: 3 },

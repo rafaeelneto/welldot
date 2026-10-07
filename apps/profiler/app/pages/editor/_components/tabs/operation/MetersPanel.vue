@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Attachment, Meter, MeterReading } from '@welldot/core';
+import { METER_TYPES } from '@welldot/core';
 import {
   getCurrentMeters,
   getOperationWarnings,
@@ -11,10 +12,10 @@ import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import RecordCard, {
   type RecordAction,
 } from '~/components/records/RecordCard.vue';
-import { resolveMeterTypeLabel } from '~/utils/operationVocab';
 import MeterDialog from './MeterDialog.vue';
 
 const { t } = useI18n();
+const { vocabLabel } = useVocab();
 const confirm = useConfirm();
 const profileStore = useProfileStore();
 const { formatDiameter, formatVolume } = useUnitFormat();
@@ -257,7 +258,7 @@ function actions(m: Meter): RecordAction[] {
           <span class="text-sm font-medium text-content-0">
             {{
               m.type
-                ? resolveMeterTypeLabel(m.type, t)
+                ? vocabLabel(METER_TYPES, m.type)
                 : t('editor.operation.meter.untyped')
             }}
           </span>

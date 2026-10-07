@@ -4,6 +4,7 @@ import type {
   Constructive,
   Fracture,
   HoleFill,
+  LanguageText,
   Lithology,
   Reduction,
   SurfaceCase,
@@ -295,12 +296,12 @@ export type TooltipKey =
   | 'cave';
 
 /**
- * A paired-locale string for renderer-drawn text, or a bare string when the
- * value doesn't vary by locale. `pt` is the required fallback locale in the
- * object form; `en` is optional. Resolve via `resolveRenderLabel()` — never
- * read `.pt`/`.en` directly, since the value may be a plain string.
+ * Renderer-drawn text: a core `LanguageText` with `pt` required (the fallback
+ * locale; `en` and any other tag optional), or a bare string when the value
+ * doesn't vary by locale. Resolve via `resolveRenderLabel()` — never read a
+ * tag directly, since the value may be a plain string.
  */
-export type RenderLocalizedText = { pt: string; en?: string } | string;
+export type RenderLocalizedText = LanguageText<'pt'> | string;
 
 /**
  * Shape shared by `RenderConfig.tooltipLabels` (resolved, `T = string`) and
