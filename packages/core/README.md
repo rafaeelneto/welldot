@@ -241,6 +241,19 @@ Returns `null` if the parsed data is empty. Throws on unrecognized version numbe
 
 Returns `true` when all constructive and geologic arrays are empty. Accepts `null` and `undefined` (both treated as empty).
 
+#### `calculatedWellDepth(well: Well): number`
+
+Deepest `to` across the constructive arrays (bore hole, casings, screens, reductions, hole fill), ignoring geology. `0` without constructive data. Used as the fallback for a missing `well_depth`.
+
+#### `redactWell(well: Well, visibility: WellVisibility): Well`
+
+Copy of `well` with hidden parts emptied (arrays become `[]`, optional fields are removed), so the result stays schema-valid. `visibility` keys are the 7 `SECTION_KEYS` and/or the fields of `VISIBILITY_TREE` (e.g. `meters`, `permits`, `location`); `false` hides, missing keys are visible, and a hidden section hides all its fields. `VISIBILITY_LEAF_KEYS` lists the finest toggles. References from visible records to hidden ones are left as-is.
+
+```typescript
+redactWell(well, { operation: false }); // whole section
+redactWell(well, { meters: false, location: false }); // single fields
+```
+
 #### Unit conversion
 
 `.well` files always store canonical SI units; these helpers convert for display and input.
@@ -327,6 +340,7 @@ Labels are `LanguageText<'en' | 'pt'>`. `LanguageText<L>` is the general localiz
 | `resolveLanguageText(text, locale)`         | Resolves a `LanguageTextInput` with the same fallback: a `LanguageText` object, a plain string (returned as-is), a JSON object string (parsed; malformed JSON stays a plain string) or `null`/`undefined` (`''`); empty labels count as missing |
 | `getVocabEntry` / `isVocabValue`            | Looks up a value's entry / checks whether it is recommended                                                                                                                                                                                     |
 | `vocabValues(vocab, { includeDeprecated })` | The recommended values, deprecated ones left out by default                                                                                                                                                                                     |
+| `formatVocabList(vocab, values, locale)`    | Comma-separated labels of a multi-valued field (e.g. `well_purpose`), unknown values kept as-is                                                                                                                                                 |
 
 ```typescript
 import {
@@ -341,6 +355,24 @@ const type: OpenVocab<PermitType> = 'abstraction_permit'; // or any string
 getVocabLabel(PERMIT_TYPES, type, 'pt'); // 'Outorga de direito de uso'
 getVocabLabel(PERMIT_TYPES, 'x-special', 'pt'); // 'x-special'
 ```
+
+### Closed vocabularies
+
+Fields whose values the schema fixes (no free text, no `x-`) ship in the same shape as the open vocabularies — `VocabEntry` lists with `en`/`pt` labels — so `getVocabLabel` labels any value without consumer translations. Each list is checked at compile time against its type, so it cannot drift from the schema. The `*_VALUES` lists are the bare values.
+
+| Vocabulary                                         | Field                                         |
+| -------------------------------------------------- | --------------------------------------------- |
+| `WELL_STATUSES` (`WELL_STATUS_VALUES`)             | `history_logs[].status` (`status_change`)     |
+| `PERMIT_ADMINISTRATIVE_STATUSES`                   | `permits[].status`                            |
+| `VOLUME_LIMIT_PERIODS`                             | `permits[].volume_limits[].period`            |
+| `PRODUCTION_ENTRY_TYPES`                           | `production[].type`                           |
+| `RESULT_QUALIFIERS` (`QUALIFIER_VALUES`)           | result `qualifier`                            |
+| `RESULT_FRACTIONS` (`FRACTION_VALUES`)             | result `fraction`                             |
+| `MEASUREMENT_LOCATIONS`                            | result `measured_in`, `filtration.location`   |
+| `VALIDATION_STATUSES` (`VALIDATION_STATUS_VALUES`) | result `validation.status`                    |
+| `PARAMETER_GROUPS` (`PARAMETER_GROUP_VALUES`)      | parameter vocabulary groups, in display order |
+
+Value rules without labels: `NUMERIC_QUALIFIERS`, `PARENT_SAMPLE_TYPES`, `BLANK_SAMPLE_TYPES`. Parameter names: `getParameterLabel(parameter, locale)` (CAS numbers resolve through the published equivalences; unknown codes are returned as-is).
 
 ## FGDC Texture Patterns
 

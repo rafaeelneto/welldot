@@ -1,7 +1,8 @@
-// Default en/pt label pack for @welldot/pdf. Seeded from the profiler app's
-// `editor.*` i18n messages; keys mirror those paths without the `editor.`
-// prefix (`exportPdfDialog.content.*` became `document.*`).
-// Override any leaf through `PdfExportOptions.labels`.
+// Default en/pt document text of @welldot/pdf: section titles, table
+// headers, field names and footer words. Vocabulary values (well status,
+// permit status, result fraction, parameters, …) are not here — their labels
+// come from @welldot/core and @welldot/utils. Override any leaf through
+// `PdfExportOptions.labels`.
 
 /** One default label: required English and Portuguese text. */
 export interface PdfDefaultLabel {
@@ -164,12 +165,6 @@ export const PDF_LABELS = {
     },
     permit: {
       conditions: {
-        deadlineStatus: {
-          fulfilled: { en: 'Fulfilled', pt: 'Cumprida' },
-          fulfilled_late: { en: 'Fulfilled late', pt: 'Cumprida com atraso' },
-          upcoming: { en: 'Upcoming', pt: 'A vencer' },
-          overdue: { en: 'Overdue', pt: 'Atrasada' },
-        },
         responsible: { en: 'Responsible', pt: 'Responsável' },
         title: { en: 'Conditions', pt: 'Condicionantes' },
         undated: { en: 'Undated', pt: 'Sem prazo' },
@@ -241,11 +236,6 @@ export const PDF_LABELS = {
           en: 'Only volumes stated in the document. Volumes implied by flow × time are derived, never stored.',
           pt: 'Somente volumes declarados no documento. Volumes de vazão × tempo são calculados, nunca armazenados.',
         },
-        volumePeriods: {
-          daily: { en: 'Daily', pt: 'Diário' },
-          monthly: { en: 'Monthly', pt: 'Mensal' },
-          annual: { en: 'Annual', pt: 'Anual' },
-        },
         monthlySchedule: { en: 'Monthly schedule', pt: 'Regime mensal' },
         monthlyScheduleInfo: {
           en: 'When a schedule exists, months left empty have no abstraction granted.',
@@ -269,22 +259,6 @@ export const PDF_LABELS = {
         title: { en: 'History', pt: 'Histórico' },
       },
       noExpiry: { en: 'no fixed expiry', pt: 'sem vencimento' },
-      status: {
-        requested: { en: 'Requested', pt: 'Requerida' },
-        granted: { en: 'Granted', pt: 'Concedida' },
-        suspended: { en: 'Suspended', pt: 'Suspensa' },
-        revoked: { en: 'Revoked', pt: 'Revogada' },
-        denied: { en: 'Denied', pt: 'Indeferida' },
-        withdrawn: { en: 'Withdrawn', pt: 'Desistida' },
-        superseded: { en: 'Superseded', pt: 'Substituída' },
-        not_yet_valid: { en: 'Not yet valid', pt: 'Ainda não vigente' },
-        active: { en: 'Active', pt: 'Vigente' },
-        active_pending_renewal: {
-          en: 'Renewal pending',
-          pt: 'Renovação em análise',
-        },
-        expired: { en: 'Expired', pt: 'Vencida' },
-      },
       title: { en: 'Permits', pt: 'Outorgas' },
     },
     production: {
@@ -332,10 +306,6 @@ export const PDF_LABELS = {
           en: 'Volumes declared to a regulator, for comparison only.',
           pt: 'Volumes declarados ao órgão gestor, apenas para comparação.',
         },
-      },
-      types: {
-        meter_reading: { en: 'Meter reading', pt: 'Leitura de hidrômetro' },
-        declared_volume: { en: 'Declared volume', pt: 'Volume declarado' },
       },
       unknownIntervalsLabel: {
         en: 'Unknown intervals',
@@ -410,13 +380,6 @@ export const PDF_LABELS = {
       },
       inForce: { en: 'Regime in force', pt: 'Regime vigente' },
       title: { en: 'Operating regime', pt: 'Regime de operação' },
-    },
-    wellStatuses: {
-      active: { en: 'Active', pt: 'Ativo' },
-      maintenance: { en: 'Under maintenance', pt: 'Em manutenção' },
-      inactive: { en: 'Inactive', pt: 'Paralisado' },
-      decommissioned: { en: 'Decommissioned', pt: 'Desativado' },
-      abandoned: { en: 'Abandoned', pt: 'Abandonado' },
     },
   },
   waterQuality: {
@@ -506,259 +469,9 @@ export const PDF_LABELS = {
       exceedances: { en: 'Exceedances', pt: 'Excedências' },
       limitSet: { en: 'Limit set', pt: 'Conjunto de limites' },
     },
-    parameters: {
-      temperature: { en: 'Temperature', pt: 'Temperatura' },
-      ph: { en: 'pH', pt: 'pH' },
-      specific_conductance: {
-        en: 'Specific conductance at 25 °C',
-        pt: 'Condutividade elétrica a 25 °C',
-      },
-      conductivity_uncompensated: {
-        en: 'Electrical conductivity, uncompensated',
-        pt: 'Condutividade sem compensação',
-      },
-      dissolved_oxygen: { en: 'Dissolved oxygen', pt: 'Oxigênio dissolvido' },
-      orp: {
-        en: 'Oxidation-reduction potential vs. reference electrode',
-        pt: 'Potencial redox vs. eletrodo de referência',
-      },
-      eh: {
-        en: 'Redox potential vs. SHE',
-        pt: 'Potencial redox corrigido vs. EPH',
-      },
-      turbidity: {
-        en: 'Turbidity, formazin, method unspecified',
-        pt: 'Turbidez, formazina sem método identificado',
-      },
-      turbidity_ntu: {
-        en: 'Turbidity, nephelometric white light',
-        pt: 'Turbidez nefelométrica, luz branca',
-      },
-      turbidity_fnu: {
-        en: 'Turbidity, nephelometric infrared (ISO 7027)',
-        pt: 'Turbidez nefelométrica, infravermelho',
-      },
-      turbidity_fau: {
-        en: 'Turbidity, attenuation (ISO 7027)',
-        pt: 'Turbidez por atenuação',
-      },
-      apparent_color: { en: 'Apparent color', pt: 'Cor aparente' },
-      true_color: { en: 'True color', pt: 'Cor verdadeira' },
-      odor: { en: 'Odor', pt: 'Odor' },
-      taste: { en: 'Taste', pt: 'Gosto' },
-      total_dissolved_solids: {
-        en: 'Total dissolved solids',
-        pt: 'Sólidos totais dissolvidos',
-      },
-      total_suspended_solids: {
-        en: 'Total suspended solids',
-        pt: 'Sólidos suspensos totais',
-      },
-      total_solids: { en: 'Total solids', pt: 'Sólidos totais' },
-      free_co2: { en: 'Free carbon dioxide', pt: 'Gás carbônico livre' },
-      alkalinity_total_as_caco3: {
-        en: 'Total alkalinity as CaCO₃',
-        pt: 'Alcalinidade total como CaCO₃',
-      },
-      alkalinity_bicarbonate_as_caco3: {
-        en: 'Bicarbonate alkalinity as CaCO₃',
-        pt: 'Alcalinidade de bicarbonatos como CaCO₃',
-      },
-      alkalinity_carbonate_as_caco3: {
-        en: 'Carbonate alkalinity as CaCO₃',
-        pt: 'Alcalinidade de carbonatos como CaCO₃',
-      },
-      alkalinity_hydroxide_as_caco3: {
-        en: 'Hydroxide alkalinity as CaCO₃',
-        pt: 'Alcalinidade de hidróxidos como CaCO₃',
-      },
-      acidity_total_as_caco3: {
-        en: 'Total acidity as CaCO₃',
-        pt: 'Acidez total como CaCO₃',
-      },
-      hardness_total_as_caco3: {
-        en: 'Total hardness as CaCO₃',
-        pt: 'Dureza total como CaCO₃',
-      },
-      hardness_calcium_as_caco3: {
-        en: 'Calcium hardness as CaCO₃',
-        pt: 'Dureza de cálcio como CaCO₃',
-      },
-      calcium: { en: 'Calcium', pt: 'Cálcio' },
-      magnesium: { en: 'Magnesium', pt: 'Magnésio' },
-      sodium: { en: 'Sodium', pt: 'Sódio' },
-      potassium: { en: 'Potassium', pt: 'Potássio' },
-      bicarbonate: { en: 'Bicarbonate as HCO₃⁻', pt: 'Bicarbonato como HCO₃⁻' },
-      carbonate: { en: 'Carbonate as CO₃²⁻', pt: 'Carbonato como CO₃²⁻' },
-      chloride: { en: 'Chloride', pt: 'Cloreto' },
-      sulfate: { en: 'Sulfate', pt: 'Sulfato' },
-      fluoride: { en: 'Fluoride', pt: 'Fluoreto' },
-      silica_as_sio2: { en: 'Silica as SiO₂', pt: 'Sílica como SiO₂' },
-      nitrate_as_n: { en: 'Nitrate as N', pt: 'Nitrato como N' },
-      nitrate_as_no3: { en: 'Nitrate as NO₃⁻', pt: 'Nitrato como NO₃⁻' },
-      nitrite_as_n: { en: 'Nitrite as N', pt: 'Nitrito como N' },
-      nitrite_as_no2: { en: 'Nitrite as NO₂⁻', pt: 'Nitrito como NO₂⁻' },
-      ammonia_as_n: {
-        en: 'Ammonia nitrogen as N',
-        pt: 'Nitrogênio amoniacal como N',
-      },
-      ammonia_as_nh3: { en: 'Ammonia as NH₃', pt: 'Amônia como NH₃' },
-      kjeldahl_nitrogen_as_n: {
-        en: 'Total Kjeldahl nitrogen as N',
-        pt: 'Nitrogênio Kjeldahl total como N',
-      },
-      phosphorus_total_as_p: {
-        en: 'Total phosphorus as P',
-        pt: 'Fósforo total como P',
-      },
-      orthophosphate_as_po4: {
-        en: 'Orthophosphate as PO₄³⁻',
-        pt: 'Ortofosfato como PO₄³⁻',
-      },
-      total_organic_carbon: {
-        en: 'Total organic carbon',
-        pt: 'Carbono orgânico total',
-      },
-      cod: {
-        en: 'Chemical oxygen demand',
-        pt: 'Demanda química de oxigênio (DQO)',
-      },
-      bod5: {
-        en: 'Biochemical oxygen demand, 5-day',
-        pt: 'Demanda bioquímica de oxigênio (DBO₅)',
-      },
-      total_petroleum_hydrocarbons: {
-        en: 'Total petroleum hydrocarbons (range per method)',
-        pt: 'Hidrocarbonetos totais de petróleo',
-      },
-      oil_and_grease: { en: 'Oil and grease', pt: 'Óleos e graxas' },
-      free_chlorine: {
-        en: 'Free chlorine residual',
-        pt: 'Cloro residual livre',
-      },
-      total_chlorine: {
-        en: 'Total chlorine residual',
-        pt: 'Cloro residual total',
-      },
-      ferrous_iron: { en: 'Ferrous iron (Fe²⁺)', pt: 'Ferro ferroso (Fe²⁺)' },
-      chromium_hexavalent: {
-        en: 'Hexavalent chromium',
-        pt: 'Cromo hexavalente',
-      },
-      cyanide_total_as_cn: {
-        en: 'Total cyanide as CN⁻',
-        pt: 'Cianeto total como CN⁻',
-      },
-      cyanide_wad_as_cn: {
-        en: 'Weak acid dissociable cyanide as CN⁻',
-        pt: 'Cianeto WAD como CN⁻',
-      },
-      cyanide_free_as_cn: {
-        en: 'Free cyanide as CN⁻',
-        pt: 'Cianeto livre como CN⁻',
-      },
-      thiocyanate: { en: 'Thiocyanate', pt: 'Tiocianato' },
-      sulfide_total_as_s: {
-        en: 'Total sulfide as S',
-        pt: 'Sulfeto total como S',
-      },
-      iron: { en: 'Iron', pt: 'Ferro' },
-      manganese: { en: 'Manganese', pt: 'Manganês' },
-      aluminum: { en: 'Aluminium', pt: 'Alumínio' },
-      antimony: { en: 'Antimony', pt: 'Antimônio' },
-      arsenic: { en: 'Arsenic', pt: 'Arsênio' },
-      barium: { en: 'Barium', pt: 'Bário' },
-      beryllium: { en: 'Beryllium', pt: 'Berílio' },
-      boron: { en: 'Boron', pt: 'Boro' },
-      cadmium: { en: 'Cadmium', pt: 'Cádmio' },
-      chromium: { en: 'Chromium, total', pt: 'Cromo total' },
-      cobalt: { en: 'Cobalt', pt: 'Cobalto' },
-      copper: { en: 'Copper', pt: 'Cobre' },
-      lead: { en: 'Lead', pt: 'Chumbo' },
-      lithium: { en: 'Lithium', pt: 'Lítio' },
-      mercury: { en: 'Mercury', pt: 'Mercúrio' },
-      molybdenum: { en: 'Molybdenum', pt: 'Molibdênio' },
-      nickel: { en: 'Nickel', pt: 'Níquel' },
-      selenium: { en: 'Selenium', pt: 'Selênio' },
-      silver: { en: 'Silver', pt: 'Prata' },
-      strontium: { en: 'Strontium', pt: 'Estrôncio' },
-      thallium: { en: 'Thallium', pt: 'Tálio' },
-      uranium: { en: 'Uranium', pt: 'Urânio' },
-      vanadium: { en: 'Vanadium', pt: 'Vanádio' },
-      zinc: { en: 'Zinc', pt: 'Zinco' },
-      total_coliforms: {
-        en: 'Total coliforms in 100 mL',
-        pt: 'Coliformes totais em 100 mL',
-      },
-      total_coliforms_mpn: {
-        en: 'Total coliforms, count',
-        pt: 'Coliformes totais, contagem',
-      },
-      total_coliforms_cfu: {
-        en: 'Total coliforms, count',
-        pt: 'Coliformes totais, contagem',
-      },
-      e_coli: { en: 'E. coli in 100 mL', pt: 'E. coli em 100 mL' },
-      e_coli_mpn: { en: 'E. coli, count', pt: 'E. coli, contagem' },
-      e_coli_cfu: { en: 'E. coli, count', pt: 'E. coli, contagem' },
-      thermotolerant_coliforms: {
-        en: 'Thermotolerant coliforms in 100 mL',
-        pt: 'Coliformes termotolerantes em 100 mL',
-      },
-      thermotolerant_coliforms_mpn: {
-        en: 'Thermotolerant coliforms, count',
-        pt: 'Coliformes termotolerantes, contagem',
-      },
-      thermotolerant_coliforms_cfu: {
-        en: 'Thermotolerant coliforms, count',
-        pt: 'Coliformes termotolerantes, contagem',
-      },
-      heterotrophic_plate_count: {
-        en: 'Heterotrophic plate count',
-        pt: 'Bactérias heterotróficas',
-      },
-      gross_alpha: { en: 'Gross alpha activity', pt: 'Atividade alfa total' },
-      gross_beta: { en: 'Gross beta activity', pt: 'Atividade beta total' },
-      radium_226: { en: 'Radium-226', pt: 'Rádio-226' },
-      radium_228: { en: 'Radium-228', pt: 'Rádio-228' },
-      radon_222: { en: 'Radon-222', pt: 'Radônio-222' },
-    },
     presence: {
       present: { en: 'present', pt: 'presente' },
       absent: { en: 'absent', pt: 'ausente' },
-    },
-    qualifiers: {
-      lt: { en: '< less than', pt: '< menor que' },
-      gt: { en: '> greater than', pt: '> maior que' },
-      not_detected: { en: 'Not detected', pt: 'Não detectado' },
-      estimated: { en: 'Estimated', pt: 'Estimado' },
-    },
-    fractions: {
-      total: { en: 'Total', pt: 'Total' },
-      dissolved: { en: 'Dissolved', pt: 'Dissolvida' },
-      suspended: { en: 'Suspended', pt: 'Suspensa' },
-    },
-    measuredIn: {
-      field: { en: 'Field', pt: 'Campo' },
-      lab: { en: 'Lab', pt: 'Laboratório' },
-    },
-    validationStatuses: {
-      unvalidated: { en: 'Unvalidated', pt: 'Não validado' },
-      validated: { en: 'Validated', pt: 'Validado' },
-      qualified: { en: 'Qualified', pt: 'Qualificado' },
-      rejected: { en: 'Rejected', pt: 'Rejeitado' },
-    },
-    groups: {
-      physical: { en: 'Physical / field', pt: 'Físico / campo' },
-      aggregate: { en: 'Aggregate', pt: 'Agregados' },
-      major_ion: { en: 'Major ions', pt: 'Íons maiores' },
-      nutrient: { en: 'Nutrients', pt: 'Nutrientes' },
-      organic: { en: 'Organic', pt: 'Orgânicos' },
-      disinfection: { en: 'Disinfection', pt: 'Desinfecção' },
-      mining_redox: { en: 'Mining and redox', pt: 'Mineração e redox' },
-      metal: { en: 'Metals / trace', pt: 'Metais / traço' },
-      microbiology: { en: 'Microbiology', pt: 'Microbiologia' },
-      radioactivity: { en: 'Radioactivity', pt: 'Radioatividade' },
     },
     notDetected: { en: 'not detected', pt: 'não detectado' },
     estimatedShort: { en: 'est.', pt: 'est.' },

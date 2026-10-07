@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { WELLDOT_LOGO_SVG } from './assets/welldotLogo';
 import { buildDocDefinition } from './buildDocDefinition';
-import { baseWell, keyT, makeTestContext } from './test-utils';
+import { baseWell, keyLabels, makeTestContext } from './test-utils';
 import type { PdfExportOptions, RenderedSvg } from './types/options.types';
 import type { Content, ContentSvg } from './types/pdfmake.types';
 
@@ -29,7 +29,7 @@ function build(
     well,
     svgs,
     legend,
-    makeTestContext({ ...baseOptions, ...options }, keyT),
+    makeTestContext({ ...baseOptions, ...options }, keyLabels),
   );
 }
 

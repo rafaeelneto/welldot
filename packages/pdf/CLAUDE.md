@@ -6,7 +6,7 @@ Customizable PDF report export for `.well` profiles, built on pdfmake. Depends o
 
 Turns a `Well` into a pdfmake document: header, profile SVG pages (drawn with `@welldot/render`), legend, info grids, general metadata and every content section (construction, hydrodynamic events, history log, pumps, meters, regimes, production, permits, water samples), plus footer with QR code.
 
-Framework-agnostic: no Vue/Nuxt/React, no app i18n. Labels come from the package's own en/pt label pack. Everything visual is configurable: branding (logo, name, subtitle), watermark, page size/orientation/margins, theme fonts/colors/sizes, header/footer, section toggles and order, date formats, label overrides, fonts, profile renderer settings.
+Framework-agnostic and self-contained: no Vue/Nuxt/React, no i18n library, no translations required from the consumer. Document text (titles, headers, field names, footer) ships as an en/pt pack; vocabulary values (statuses, types, fractions, parameters…) take their labels from `@welldot/core` / `@welldot/utils`. Consumers may override any document text. Everything visual is configurable: branding (logo, name, subtitle), watermark, page size/orientation/margins, theme fonts/colors/sizes, header/footer, section toggles and order, date formats, label overrides, fonts, profile renderer settings.
 
 Used by `apps/profiler` (`app/composables/usePdfExport.ts`), which owns stores, redaction, share links and preview debouncing.
 
@@ -29,8 +29,9 @@ src/
     pdfmake-module.d.ts      ← `declare module 'pdfmake/build/pdfmake'`
     svg-module.d.ts          ← `*.svg` imports are raw markup strings
   configs/
-    labels.configs.ts        ← PDF_LABELS: en/pt label pack (seeded from the profiler's i18n)
-    labels.utils.ts          ← resolvePdfLabels, createPdfTranslate
+    labels.configs.ts        ← PDF_LABELS: en/pt document text (no vocabulary values)
+    labels.utils.ts          ← resolvePdfLabels (locale + overrides → typed ResolvedPdfLabels)
+    labels.test.ts           ← label contract: locale fallback, overrides, vocab from core
     theme.configs.ts         ← DEFAULT_PDF_THEME, PDF_PAGE_SIZES, DEFAULT_PDF_MARGIN
     branding.configs.ts      ← WELLDOT_BRANDING, DEFAULT_BASE_URL
   assets/
@@ -44,7 +45,6 @@ src/
   runtime/
     pdfmake.ts               ← loadPdfMake (dynamic import)
     registerFonts.ts         ← registerPdfFonts, loadDefaultPdfFonts
-  helpers/                   ← pure helpers (units, coords, dates, vocab labels) copied from the profiler
   fonts/vfsFontsData.ts      ← base64 TTF data
 ```
 
@@ -63,7 +63,7 @@ await pdf?.download();
 ```
 
 - `PdfExportOptions` is the public, all-optional input. `resolvePdfContext()` turns it into `PdfContext`, which every builder takes.
-- Builders read labels through `ctx.t('<dot.path>')`. Keys mirror the profiler's old `editor.*` i18n paths without `editor.`; `exportPdfDialog.content.*` became `document.*`.
+- Builders read document text as typed properties of `ctx.labels` (`labels.operation.meter.title`), never by string key. Vocabulary values go through `fmt.vocab(LIST, value)` with the lists from `@welldot/core` (`WELL_STATUSES`, `RESULT_FRACTIONS`, `VOLUME_LIMIT_PERIODS`, …) or `@welldot/utils` (`PERMIT_STATUSES`, `CONDITION_DEADLINE_STATUSES`), and parameters through `getParameterLabel`.
 - Low-level: `buildDocDefinition(well, svgs, legend, optionsOrCtx)` is pure; `buildSvgProfiles(well, container, ctx)` needs a DOM.
 
 ## Commands
@@ -80,7 +80,7 @@ pnpm dev        # tsup --watch
 
 ## Constraints
 
-- Never import Vue/Nuxt/i18n or app code. New text goes into `PDF_LABELS` with both `en` and `pt`.
+- Never import Vue/Nuxt/i18n or app code, and never look text up by string key. New document text goes into `PDF_LABELS` with both `en` and `pt`. Labels of a value the .well format or a derivation defines go into the core/utils vocabulary that owns it, not into the pack.
 - Never hardcode colors, fonts, widths (`535`), page sizes or date formats in builders; read `ctx.theme`, `ctx.page`, `ctx.dateFormats`.
 - pdfmake mutates canvas nodes during layout: build rules/dividers with the factories in `layout/tables.ts`, never share one node instance.
 - The font data lives only in the `fonts` entry. `loadDefaultPdfFonts` imports it through the package's own `@welldot/pdf/fonts` subpath, which is external in `tsup.config.ts` — keep it that way or the main bundle grows by 1.7 MB.
@@ -88,3 +88,4 @@ pnpm dev        # tsup --watch
 - `.svg` files import as raw markup: tsup `loader: { '.svg': 'text' }` and the `svg-as-text` plugin in `vitest.config.ts` must agree.
 - DOM tests opt in with `// @vitest-environment jsdom`; `@welldot/render` is mocked there (jsdom lacks SVG geometry APIs).
 - The package targets ES2020: no `Array.prototype.at`.
+- Pure helpers (units, coordinates, dates, readings, permit/meter labels, result formatting) come from `@welldot/utils`; closed value lists and `calculatedWellDepth` / `formatVocabList` from `@welldot/core`. Never copy them here. Words those helpers need (e.g. "not detected", "untyped meter") are passed in as plain strings from `ctx.labels`.

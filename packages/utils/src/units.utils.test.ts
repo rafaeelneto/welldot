@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveDiameterUnitLabel } from './unitLabel';
+import {
+  resolveDiameterUnitLabel,
+  resolveFlowUnitLabel,
+  resolveVolumeUnitLabel,
+} from './units.utils';
 
 describe('resolveDiameterUnitLabel', () => {
   it('returns mm regardless of locale', () => {
@@ -13,5 +17,15 @@ describe('resolveDiameterUnitLabel', () => {
 
   it('returns the double-quote symbol for inches in Portuguese', () => {
     expect(resolveDiameterUnitLabel('inches', 'pt')).toBe('"');
+  });
+});
+
+describe('resolveFlowUnitLabel / resolveVolumeUnitLabel', () => {
+  it('turns storage tokens into display symbols', () => {
+    expect(resolveFlowUnitLabel('m3/h')).toBe('m³/h');
+    expect(resolveFlowUnitLabel('L/s')).toBe('L/s');
+    expect(resolveVolumeUnitLabel('m3')).toBe('m³');
+    expect(resolveVolumeUnitLabel('ft3')).toBe('ft³');
+    expect(resolveVolumeUnitLabel('gal')).toBe('gal');
   });
 });

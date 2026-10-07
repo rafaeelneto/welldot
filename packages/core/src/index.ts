@@ -141,6 +141,7 @@ export {
   SECTION_KEYS,
   VISIBILITY_LEAF_KEYS,
   VISIBILITY_TREE,
+  calculatedWellDepth,
   checkIfProfileIsEmpty,
   convertProfileFromJSON,
   deserializeWell,
@@ -168,6 +169,7 @@ export {
   WATER_QUALITY_UNITS,
   WATER_QUALITY_VOCABULARY_VERSION,
   getParameterDefinition,
+  getParameterLabel,
   isKnownParameter,
   parameterKey,
 } from './vocab/waterQuality.vocab';
@@ -251,12 +253,37 @@ export type {
   WaterUse,
 } from './vocab/permit.vocab';
 export {
+  formatVocabList,
   getVocabEntry,
   getVocabLabel,
   isVocabValue,
   vocabValues,
 } from './vocab/vocab';
 export type { OpenVocab, VocabEntry } from './vocab/vocab';
+
+// Closed vocabularies: schema-fixed values with en/pt labels (since v2.3)
+export {
+  BLANK_SAMPLE_TYPES,
+  FILTRATION_LOCATION_VALUES,
+  FRACTION_VALUES,
+  MEASURED_IN_VALUES,
+  MEASUREMENT_LOCATIONS,
+  NUMERIC_QUALIFIERS,
+  PARAMETER_GROUPS,
+  PARAMETER_GROUP_VALUES,
+  PARENT_SAMPLE_TYPES,
+  PERMIT_ADMINISTRATIVE_STATUSES,
+  PERMIT_ADMINISTRATIVE_STATUS_VALUES,
+  PRODUCTION_ENTRY_TYPES,
+  QUALIFIER_VALUES,
+  RESULT_FRACTIONS,
+  RESULT_QUALIFIERS,
+  VALIDATION_STATUSES,
+  VALIDATION_STATUS_VALUES,
+  VOLUME_LIMIT_PERIODS,
+  WELL_STATUSES,
+  WELL_STATUS_VALUES,
+} from './vocab/closed.vocab';
 export {
   SAMPLE_TYPES,
   SAMPLING_DEVICES,

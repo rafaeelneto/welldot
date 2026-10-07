@@ -1,5 +1,5 @@
 import { resolveLanguageText } from '@welldot/core';
-import type { PdfLabelOverrides, PdfTranslate } from '../types/options.types';
+import type { PdfLabelOverrides } from '../types/options.types';
 import type { PdfLabelPack, PdfLabelTree } from './labels.configs';
 import { PDF_LABELS } from './labels.configs';
 
@@ -49,7 +49,8 @@ function resolveTree(
 
 /**
  * Resolves the label pack for `locale` (exact tag → base language → `pt`),
- * applying `overrides` leaf by leaf.
+ * applying `overrides` leaf by leaf. Builders read the result as typed
+ * properties (`labels.general.name`), never by string key.
  *
  * @example
  * resolvePdfLabels('en', { general: { name: 'Well name' } }).general.name // 'Well name'
@@ -63,20 +64,4 @@ export function resolvePdfLabels(
     overrides as Record<string, unknown> | undefined,
     locale,
   ) as ResolvedPdfLabels;
-}
-
-/** Dot-path lookup in resolved labels. Returns the key itself when it does not resolve to a string. */
-export function createPdfTranslate(labels: ResolvedPdfLabels): PdfTranslate {
-  return key => {
-    const value = key
-      .split('.')
-      .reduce<unknown>(
-        (node, part) =>
-          node && typeof node === 'object'
-            ? (node as Record<string, unknown>)[part]
-            : undefined,
-        labels,
-      );
-    return typeof value === 'string' && value !== '' ? value : key;
-  };
 }

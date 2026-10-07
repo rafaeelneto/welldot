@@ -10,6 +10,7 @@ import {
 import {
   WATER_QUALITY_PARAMETERS,
   getParameterDefinition,
+  getParameterLabel,
   isKnownParameter,
   parameterKey,
 } from './waterQuality.vocab';
@@ -102,5 +103,23 @@ describe('water quality limit sets', () => {
     expect(getLimitSet('br_gm_ms_888_2021')).toBe(BR_GM_MS_888_2021);
     expect(getLimitSet('eu_2020_2184')).toBe(EU_2020_2184);
     expect(getLimitSet('nope')).toBeUndefined();
+  });
+});
+
+describe('getParameterLabel', () => {
+  it('translates welldot codes and CAS equivalents, keeps unknown codes', () => {
+    const def = getParameterDefinition({
+      code: '14808-79-8',
+      vocabulary: 'cas',
+    })!;
+    expect(
+      getParameterLabel({ code: def.code, vocabulary: 'welldot' }, 'en'),
+    ).toBe(def.label);
+    expect(
+      getParameterLabel({ code: '14808-79-8', vocabulary: 'cas' }, 'pt-BR'),
+    ).toBe(def.labels.pt ?? def.label);
+    expect(getParameterLabel({ code: 'foo', vocabulary: 'x-lab' }, 'pt')).toBe(
+      'foo',
+    );
   });
 });

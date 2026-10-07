@@ -8,7 +8,7 @@ import { getCurrentPump } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
 import { buildEntryDivider } from '../layout/tables';
-import type { PdfContext, PdfTranslate } from '../types/options.types';
+import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content } from '../types/pdfmake.types';
 
 function attachmentName(attachment: Attachment): string {
@@ -31,14 +31,14 @@ function buildHeader(
   fmt: PdfFormatters,
   ctx: PdfContext,
 ): Content {
-  const { t } = ctx;
+  const { labels } = ctx;
   return {
     columns: [
       {
         text: [
           { text: fmt.vocab(PUMP_TYPES, p.type), style: 'tableHeader' },
           {
-            text: isCurrent ? `   ${t('operation.pump.current')}` : '',
+            text: isCurrent ? `   ${labels.operation.pump.current}` : '',
             style: 'metadataLabel',
           },
         ],
@@ -57,38 +57,38 @@ function buildHeader(
 function specLines(
   p: PumpInstallation,
   fmt: PdfFormatters,
-  t: PdfTranslate,
+  labels: PdfLabels,
 ): string[] {
-  const field = (key: string) => t(`operation.pump.fields.${key}`);
+  const fields = labels.operation.pump.fields;
   const equipment = [p.manufacturer, p.model].filter(Boolean).join(' ');
 
   return [
-    equipment && `${field('model')}: ${equipment}`,
-    p.serial && `${field('serial')}: ${p.serial}`,
-    p.installed_by && `${field('installedBy')}: ${p.installed_by}`,
-    p.removed_at && p.removed_by && `${field('removedBy')}: ${p.removed_by}`,
+    equipment && `${fields.model}: ${equipment}`,
+    p.serial && `${fields.serial}: ${p.serial}`,
+    p.installed_by && `${fields.installedBy}: ${p.installed_by}`,
+    p.removed_at && p.removed_by && `${fields.removedBy}: ${p.removed_by}`,
     p.power_source &&
-      `${field('powerSource')}: ${fmt.vocab(POWER_SOURCES, p.power_source)}`,
+      `${fields.powerSource}: ${fmt.vocab(POWER_SOURCES, p.power_source)}`,
     p.intake_depth != null &&
-      `${field('intakeDepth')}: ${fmt.formatLength(p.intake_depth)}`,
+      `${fields.intakeDepth}: ${fmt.formatLength(p.intake_depth)}`,
     p.rated_flow_rate != null &&
-      `${field('ratedFlowRate')}: ${fmt.formatFlow(p.rated_flow_rate, 2)}`,
+      `${fields.ratedFlowRate}: ${fmt.formatFlow(p.rated_flow_rate, 2)}`,
     p.rated_head != null &&
-      `${field('ratedHead')}: ${fmt.formatLength(p.rated_head)}`,
+      `${fields.ratedHead}: ${fmt.formatLength(p.rated_head)}`,
     p.rated_power != null &&
-      `${field('ratedPower')}: ${fmt.formatPower(p.rated_power)}`,
+      `${fields.ratedPower}: ${fmt.formatPower(p.rated_power)}`,
     p.riser_diameter != null &&
-      `${field('riserDiameter')}: ${fmt.formatDiameter(p.riser_diameter)}${p.riser_material ? ` · ${fmt.vocab(CONSTRUCTION_MATERIALS, p.riser_material)}` : ''}`,
+      `${fields.riserDiameter}: ${fmt.formatDiameter(p.riser_diameter)}${p.riser_material ? ` · ${fmt.vocab(CONSTRUCTION_MATERIALS, p.riser_material)}` : ''}`,
   ].filter((line): line is string => !!line);
 }
 
 function buildBody(
   p: PumpInstallation,
   fmt: PdfFormatters,
-  t: PdfTranslate,
+  labels: PdfLabels,
 ): Content[] {
   const blocks: Content[] = [];
-  const lines = specLines(p, fmt, t);
+  const lines = specLines(p, fmt, labels);
   if (lines.length) {
     blocks.push({
       text: lines.join('   ·   '),
@@ -137,19 +137,19 @@ export function buildPumpInstallationSection(
     {
       stack: [
         { text: ' ' },
-        { text: ctx.t('operation.pump.title'), style: 'title' },
+        { text: ctx.labels.operation.pump.title, style: 'title' },
         buildHeader(first!, first!.id === currentId, fmt, ctx),
       ],
       unbreakable: true,
     },
-    ...buildBody(first!, fmt, ctx.t),
+    ...buildBody(first!, fmt, ctx.labels),
   ];
   rest.forEach(p => {
     items.push(buildEntryDivider(ctx));
     items.push({
       stack: [
         buildHeader(p, p.id === currentId, fmt, ctx),
-        ...buildBody(p, fmt, ctx.t),
+        ...buildBody(p, fmt, ctx.labels),
       ],
     });
   });

@@ -1,9 +1,9 @@
 import type { Meter, ProductionEntry } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildProductionSection } from './productionTable';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 const meter: Meter = {
   id: 'm1',
@@ -126,7 +126,7 @@ describe('buildProductionSection', () => {
         baseWell({ meters: [meter], production }),
         makeTestContext(
           { dateFormats: { date: 'yyyy-MM-dd', dateTime: 'yyyy-MM-dd HH:mm' } },
-          lastSegmentT,
+          lastSegmentLabels,
         ),
       ),
     );

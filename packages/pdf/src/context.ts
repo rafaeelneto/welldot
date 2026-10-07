@@ -1,5 +1,5 @@
 import { DEFAULT_BASE_URL, WELLDOT_BRANDING } from './configs/branding.configs';
-import { createPdfTranslate, resolvePdfLabels } from './configs/labels.utils';
+import { resolvePdfLabels } from './configs/labels.utils';
 import {
   DEFAULT_PDF_MARGIN,
   DEFAULT_PDF_THEME,
@@ -84,10 +84,10 @@ function resolveSectionOrder(order?: PdfSectionKey[]): PdfSectionKey[] {
  */
 export function resolvePdfContext(options: PdfExportOptions = {}): PdfContext {
   const locale = options.locale ?? 'pt';
-  const t = createPdfTranslate(resolvePdfLabels(locale, options.labels));
+  const labels = resolvePdfLabels(locale, options.labels);
   const theme = options.theme ?? {};
 
-  const title = options.header?.title ?? options.title ?? t('document.title');
+  const title = options.header?.title ?? options.title ?? labels.document.title;
 
   const include = Object.fromEntries(
     PDF_SECTION_KEYS.map(k => [k, options.sections?.include?.[k] ?? true]),
@@ -97,7 +97,7 @@ export function resolvePdfContext(options: PdfExportOptions = {}): PdfContext {
 
   return {
     locale,
-    t,
+    labels,
     title,
     breakPages: options.breakPages ?? true,
     scale: options.scale ?? 500,

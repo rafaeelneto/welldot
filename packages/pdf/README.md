@@ -147,7 +147,7 @@ labels: {
 },
 ```
 
-Every label lives in `PDF_LABELS` with `en` and `pt` text. A locale with no entry falls back to its base language, then Portuguese.
+Document text lives in `PDF_LABELS` with `en` and `pt` text; a locale with no entry falls back to its base language, then Portuguese. Override any entry by its path, as plain text or per language. Vocabulary values (well and permit status, sample type, fraction, parameter names, …) are labeled by `@welldot/core` and `@welldot/utils`, so the PDF reads the same as any other welldot tool and needs no translations from you.
 
 ### Fonts
 
@@ -204,7 +204,7 @@ Applies defaults (`resolvePdfUnits`, `resolvePdfPage`), resolves labels for the 
 
 ### Configs
 
-`PDF_LABELS`, `resolvePdfLabels(locale, overrides?)`, `createPdfTranslate(labels)`, `DEFAULT_PDF_THEME`, `PDF_PAGE_SIZES`, `WELLDOT_BRANDING`, `WELLDOT_LOGO_SVG`, `createPdfFormatters(ctx)`.
+`PDF_LABELS`, `resolvePdfLabels(locale, overrides?)` (typed result, read as `labels.general.name`), `DEFAULT_PDF_THEME`, `PDF_PAGE_SIZES`, `WELLDOT_BRANDING`, `WELLDOT_LOGO_SVG`, `createPdfFormatters(ctx)`.
 
 ---
 

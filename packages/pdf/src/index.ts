@@ -63,7 +63,7 @@ export { buildImageWatermark, buildTextWatermark } from './layout/watermark';
 export { WELLDOT_LOGO_SVG } from './assets/welldotLogo';
 export { DEFAULT_BASE_URL, WELLDOT_BRANDING } from './configs/branding.configs';
 export { PDF_LABELS } from './configs/labels.configs';
-export { createPdfTranslate, resolvePdfLabels } from './configs/labels.utils';
+export { resolvePdfLabels } from './configs/labels.utils';
 export {
   DEFAULT_PDF_MARGIN,
   DEFAULT_PDF_THEME,
@@ -90,6 +90,7 @@ export type {
   PdfFooterOptions,
   PdfHeaderOptions,
   PdfLabelOverrides,
+  PdfLabels,
   PdfLocalizedText,
   PdfLogo,
   PdfPageContentFn,
@@ -102,7 +103,6 @@ export type {
   PdfThemeColors,
   PdfThemeFontSizes,
   PdfThemeFonts,
-  PdfTranslate,
   PdfUnits,
   PdfWatermark,
   RenderedSvg,

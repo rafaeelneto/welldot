@@ -4,7 +4,7 @@ import { getCurrentMeters } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
 import { buildEntryDivider } from '../layout/tables';
-import type { PdfContext, PdfTranslate } from '../types/options.types';
+import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content } from '../types/pdfmake.types';
 
 function attachmentName(attachment: Attachment): string {
@@ -27,7 +27,7 @@ function buildHeader(
   fmt: PdfFormatters,
   ctx: PdfContext,
 ): Content {
-  const { t } = ctx;
+  const { labels } = ctx;
   return {
     columns: [
       {
@@ -35,11 +35,11 @@ function buildHeader(
           {
             text: m.type
               ? fmt.vocab(METER_TYPES, m.type)
-              : t('operation.meter.untyped'),
+              : labels.operation.meter.untyped,
             style: 'tableHeader',
           },
           {
-            text: isCurrent ? `   ${t('operation.meter.current')}` : '',
+            text: isCurrent ? `   ${labels.operation.meter.current}` : '',
             style: 'metadataLabel',
           },
         ],
@@ -55,25 +55,25 @@ function buildHeader(
   };
 }
 
-function specLines(m: Meter, fmt: PdfFormatters, t: PdfTranslate): string[] {
-  const field = (key: string) => t(`operation.meter.fields.${key}`);
+function specLines(m: Meter, fmt: PdfFormatters, labels: PdfLabels): string[] {
+  const fields = labels.operation.meter.fields;
   const equipment = [m.manufacturer, m.model].filter(Boolean).join(' ');
 
   return [
-    equipment && `${field('model')}: ${equipment}`,
-    m.serial && `${field('serial')}: ${m.serial}`,
-    m.installed_by && `${field('installedBy')}: ${m.installed_by}`,
-    m.removed_at && m.removed_by && `${field('removedBy')}: ${m.removed_by}`,
+    equipment && `${fields.model}: ${equipment}`,
+    m.serial && `${fields.serial}: ${m.serial}`,
+    m.installed_by && `${fields.installedBy}: ${m.installed_by}`,
+    m.removed_at && m.removed_by && `${fields.removedBy}: ${m.removed_by}`,
     m.nominal_diameter != null &&
-      `${field('nominalDiameter')}: ${fmt.formatDiameter(m.nominal_diameter)}`,
+      `${fields.nominalDiameter}: ${fmt.formatDiameter(m.nominal_diameter)}`,
     m.max_reading != null &&
-      `${field('maxReading')}: ${fmt.formatVolume(m.max_reading, 0)}`,
+      `${fields.maxReading}: ${fmt.formatVolume(m.max_reading, 0)}`,
   ].filter((line): line is string => !!line);
 }
 
-function buildBody(m: Meter, fmt: PdfFormatters, t: PdfTranslate): Content[] {
+function buildBody(m: Meter, fmt: PdfFormatters, labels: PdfLabels): Content[] {
   const blocks: Content[] = [];
-  const lines = specLines(m, fmt, t);
+  const lines = specLines(m, fmt, labels);
   if (lines.length) {
     blocks.push({
       text: lines.join('   ·   '),
@@ -118,19 +118,19 @@ export function buildMeterSection(well: Well, ctx: PdfContext): Content | null {
     {
       stack: [
         { text: ' ' },
-        { text: ctx.t('operation.meter.title'), style: 'title' },
+        { text: ctx.labels.operation.meter.title, style: 'title' },
         buildHeader(first!, currentIds.has(first!.id), fmt, ctx),
       ],
       unbreakable: true,
     },
-    ...buildBody(first!, fmt, ctx.t),
+    ...buildBody(first!, fmt, ctx.labels),
   ];
   rest.forEach(m => {
     items.push(buildEntryDivider(ctx));
     items.push({
       stack: [
         buildHeader(m, currentIds.has(m.id), fmt, ctx),
-        ...buildBody(m, fmt, ctx.t),
+        ...buildBody(m, fmt, ctx.labels),
       ],
     });
   });

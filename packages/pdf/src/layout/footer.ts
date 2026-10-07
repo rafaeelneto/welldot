@@ -18,7 +18,7 @@ function dateFnsLocale(locale: string) {
 }
 
 function buildTagline(ctx: PdfContext, hasShare: boolean): ContentText {
-  const { t, theme, shareExpiresAt } = ctx;
+  const { labels, theme, shareExpiresAt } = ctx;
   const base: Omit<ContentText, 'text'> = {
     font: theme.fonts.label,
     fontSize: 6,
@@ -27,14 +27,14 @@ function buildTagline(ctx: PdfContext, hasShare: boolean): ContentText {
     width: 46,
   };
   const tagline = hasShare
-    ? t('document.footerTagline')
-    : t('document.footerTaglineFallback');
+    ? labels.document.footerTagline
+    : labels.document.footerTaglineFallback;
 
   if (!hasShare || !shareExpiresAt) {
     return { ...base, text: tagline };
   }
 
-  const validUntil = `${t('document.footerValidUntilLabel')} ${format(
+  const validUntil = `${labels.document.footerValidUntilLabel} ${format(
     new Date(shareExpiresAt),
     'd MMM yyyy',
     { locale: dateFnsLocale(ctx.locale) },

@@ -1,8 +1,9 @@
 import type { HydrodynamicEvent, Well } from '@welldot/core';
 import { HYDRODYNAMIC_EVENT_TYPES, getVocabLabel } from '@welldot/core';
+import { lastReading, stepRate } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters } from '../formatters';
-import { lastReading, stepRate } from '../helpers/hydrodynamicEvent';
+
 import { buildEntryDivider } from '../layout/tables';
 import type { PdfContext } from '../types/options.types';
 import type { Content } from '../types/pdfmake.types';
@@ -32,7 +33,7 @@ function buildEventHeader(
 
 /** The stats row (static/dynamic level, flow rate, operator) — 0 or 1 blocks depending on which fields apply. */
 function buildEventStats(event: HydrodynamicEvent, ctx: PdfContext): Content[] {
-  const { t } = ctx;
+  const { labels } = ctx;
   const { formatLength, formatFlow } = createPdfFormatters(ctx);
   const ev = event as unknown as Record<string, unknown>;
   const staticLevel =
@@ -47,25 +48,25 @@ function buildEventStats(event: HydrodynamicEvent, ctx: PdfContext): Content[] {
   const fields: { label: string; value: string }[] = [];
   if (staticLevel != null) {
     fields.push({
-      label: t('hydrodynamicEvents.stats.ne'),
+      label: labels.hydrodynamicEvents.stats.ne,
       value: formatLength(staticLevel),
     });
   }
   if (dynamicLevel != null) {
     fields.push({
-      label: t('hydrodynamicEvents.stats.nd'),
+      label: labels.hydrodynamicEvents.stats.nd,
       value: formatLength(dynamicLevel),
     });
   }
   if (rate != null) {
     fields.push({
-      label: t('hydrodynamicEvents.stats.flowRate'),
+      label: labels.hydrodynamicEvents.stats.flowRate,
       value: formatFlow(rate),
     });
   }
   if (operator) {
     fields.push({
-      label: t('hydrodynamicEvents.fields.operator'),
+      label: labels.hydrodynamicEvents.fields.operator,
       value: operator,
     });
   }
@@ -101,7 +102,7 @@ export function buildHydrodynamicEventsSection(
   well: Well,
   ctx: PdfContext,
 ): Content | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   const events = well.hydrodynamic_events;
   if (!events?.length) return null;
 
@@ -114,7 +115,7 @@ export function buildHydrodynamicEventsSection(
     {
       stack: [
         { text: ' ' },
-        { text: t('hydrodynamicEvents.title'), style: 'title' },
+        { text: labels.hydrodynamicEvents.title, style: 'title' },
         buildEventHeader(first!, ctx),
       ],
       unbreakable: true,

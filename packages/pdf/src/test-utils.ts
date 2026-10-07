@@ -1,17 +1,32 @@
 // Shared fixtures for the package's Vitest suites. Not exported from the barrel.
 import type { Well } from '@welldot/core';
+import type { PdfLabelTree } from './configs/labels.configs';
+import { PDF_LABELS } from './configs/labels.configs';
 import { resolvePdfContext } from './context';
 import type {
   PdfContext,
   PdfExportOptions,
-  PdfTranslate,
+  PdfLabels,
 } from './types/options.types';
 
-/** Translate stub that echoes the key's last segment (`general.name` → `name`). */
-export const lastSegmentT: PdfTranslate = key => key.split('.').pop()!;
+function echoLabels(mode: 'path' | 'lastSegment'): PdfLabels {
+  const walk = (node: PdfLabelTree, path: string[]): unknown =>
+    Object.fromEntries(
+      Object.entries(node).map(([key, value]) => {
+        const at = [...path, key];
+        return typeof value.en === 'string'
+          ? [key, mode === 'path' ? at.join('.') : key]
+          : [key, walk(value as PdfLabelTree, at)];
+      }),
+    );
+  return walk(PDF_LABELS as unknown as PdfLabelTree, []) as PdfLabels;
+}
 
-/** Translate stub that echoes the full key. */
-export const keyT: PdfTranslate = key => key;
+/** Labels whose text is their own path (`general.name` reads "general.name"). */
+export const keyLabels = echoLabels('path');
+
+/** Labels whose text is their last path segment (`general.name` reads "name"). */
+export const lastSegmentLabels = echoLabels('lastSegment');
 
 /** Minimal valid v2 well. */
 export function baseWell(overrides: Partial<Well> = {}): Well {
@@ -32,11 +47,12 @@ export function baseWell(overrides: Partial<Well> = {}): Well {
 
 /**
  * Resolved context for tests: `breakPages: false`, metres/mm, `en`,
- * `https://example.test`. Pass `t` to replace the label lookup with a stub.
+ * `https://example.test`. Pass `labels` (e.g. {@link keyLabels}) to replace
+ * the document text.
  */
 export function makeTestContext(
   options: PdfExportOptions = {},
-  t?: PdfTranslate,
+  labels?: PdfLabels,
 ): PdfContext {
   const ctx = resolvePdfContext({
     title: 'Header',
@@ -49,5 +65,5 @@ export function makeTestContext(
     ...options,
     units: { length: 'm', diameter: 'mm', ...options.units },
   });
-  return t ? { ...ctx, t } : ctx;
+  return labels ? { ...ctx, labels } : ctx;
 }

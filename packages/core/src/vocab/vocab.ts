@@ -48,6 +48,18 @@ export function getVocabLabel(
   return entry ? resolveLanguageText(entry.label, locale) : value;
 }
 
+/**
+ * Comma-separated labels of a multi-valued field (e.g. `well_purpose`) in
+ * `locale`. Values with no entry are kept as-is.
+ */
+export function formatVocabList(
+  vocab: readonly VocabEntry[],
+  values: readonly string[] | undefined,
+  locale: string,
+): string {
+  return (values ?? []).map(v => getVocabLabel(vocab, v, locale)).join(', ');
+}
+
 /** The recommended values of `vocab`, deprecated ones left out by default. */
 export function vocabValues<V extends string>(
   vocab: readonly VocabEntry<V>[],

@@ -4,8 +4,14 @@ import type {
   ProductionEntry,
   Well,
 } from '@welldot/core';
-import { DECLARED_METHODS, READING_SOURCES } from '@welldot/core';
 import {
+  DECLARED_METHODS,
+  PRODUCTION_ENTRY_TYPES,
+  READING_SOURCES,
+} from '@welldot/core';
+import {
+  formatMeterLabel,
+  getActivePermit,
   getProductionByPeriod,
   getProductionTotal,
   getRetractedProductionIds,
@@ -13,10 +19,8 @@ import {
 } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
-import { meterLabel } from '../helpers/operationVocab';
-import { getActivePermit } from '../helpers/permitVocab';
 import { headerCell, rightCell, withTableTitle } from '../layout/tables';
-import type { PdfContext, PdfTranslate } from '../types/options.types';
+import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content, TableCell } from '../types/pdfmake.types';
 import { packLabelValueRows } from './metadataTable';
 
@@ -32,18 +36,28 @@ function percent(value: number, limit: number | undefined): string {
 }
 
 /** Total / metered / estimated / reported, plus unknown intervals. */
-function buildTotals(well: Well, fmt: PdfFormatters, t: PdfTranslate): Content {
+function buildTotals(
+  well: Well,
+  fmt: PdfFormatters,
+  labels: PdfLabels,
+): Content {
   const totals = getProductionTotal(well);
-  const label = (key: string) => t(`operation.production.totals.${key}`);
+  const totalLabels = labels.operation.production.totals;
   const items = [
-    { label: label('total'), value: fmt.formatVolume(totals.total, 1) },
-    { label: label('metered'), value: fmt.formatVolume(totals.metered, 1) },
-    { label: label('estimated'), value: fmt.formatVolume(totals.estimated, 1) },
-    { label: label('reported'), value: fmt.formatVolume(totals.reported, 1) },
+    { label: totalLabels.total, value: fmt.formatVolume(totals.total, 1) },
+    { label: totalLabels.metered, value: fmt.formatVolume(totals.metered, 1) },
+    {
+      label: totalLabels.estimated,
+      value: fmt.formatVolume(totals.estimated, 1),
+    },
+    {
+      label: totalLabels.reported,
+      value: fmt.formatVolume(totals.reported, 1),
+    },
   ];
   if (totals.unknown_intervals) {
     items.push({
-      label: t('operation.production.unknownIntervalsLabel'),
+      label: labels.operation.production.unknownIntervalsLabel,
       value: String(totals.unknown_intervals),
     });
   }
@@ -57,23 +71,23 @@ function buildTotals(well: Well, fmt: PdfFormatters, t: PdfTranslate): Content {
 function buildAnnualTable(
   well: Well,
   fmt: PdfFormatters,
-  t: PdfTranslate,
+  labels: PdfLabels,
 ): Content | null {
   const buckets = [...getProductionByPeriod(well, 'year')].reverse();
   if (!buckets.length) return null;
   const limit = getActivePermit(well, todayCalendarDate())?.volume_limits?.find(
     v => v.period === 'annual',
   )?.volume;
-  const label = (key: string) => t(`operation.production.totals.${key}`);
+  const totalLabels = labels.operation.production.totals;
 
   const header: TableCell[] = [
-    headerCell(t('operation.production.periods.year')),
-    headerCell(label('metered'), true),
-    headerCell(label('estimated'), true),
-    headerCell(label('total'), true),
-    headerCell(label('reported'), true),
+    headerCell(labels.operation.production.periods.year),
+    headerCell(totalLabels.metered, true),
+    headerCell(totalLabels.estimated, true),
+    headerCell(totalLabels.total, true),
+    headerCell(totalLabels.reported, true),
   ];
-  if (limit) header.push(headerCell(t('operation.production.ofLimit'), true));
+  if (limit) header.push(headerCell(labels.operation.production.ofLimit, true));
 
   const body: TableCell[][] = [header];
   buckets.forEach(b => {
@@ -88,7 +102,7 @@ function buildAnnualTable(
     body.push(row);
   });
 
-  return withTableTitle(t('operation.production.annual'), {
+  return withTableTitle(labels.operation.production.annual, {
     layout: 'lightHorizontalLines',
     table: {
       widths: limit
@@ -107,7 +121,7 @@ function buildLedgerTable(
   fmt: PdfFormatters,
   ctx: PdfContext,
 ): Content {
-  const { t, locale, dateFormats } = ctx;
+  const { labels, locale, dateFormats } = ctx;
   const retracted = getRetractedProductionIds(well);
   const entries = [...(well.production ?? [])].sort(
     (a, b) =>
@@ -115,14 +129,14 @@ function buildLedgerTable(
         new Date(entryInstant(a)).getTime() ||
       (b.sequence ?? 0) - (a.sequence ?? 0),
   );
-  const field = (key: string) => t(`operation.production.fields.${key}`);
+  const fields = labels.operation.production.fields;
 
   const body: TableCell[][] = [
     [
-      headerCell(field('datetime')),
-      headerCell(t('operation.production.fields.type')),
-      headerCell(t('operation.production.fields.details')),
-      headerCell(t('operation.production.fields.value'), true),
+      headerCell(fields.datetime),
+      headerCell(labels.operation.production.fields.type),
+      headerCell(labels.operation.production.fields.details),
+      headerCell(labels.operation.production.fields.value, true),
     ],
   ];
 
@@ -134,7 +148,13 @@ function buildLedgerTable(
       const r = e as MeterReading;
       const meter = well.meters?.find(m => m.id === r.meter_id);
       details = [
-        meter ? meterLabel(meter, t, locale, dateFormats.date) : r.meter_id,
+        meter
+          ? formatMeterLabel(meter, {
+              locale,
+              untypedLabel: labels.operation.meter.untyped,
+              dateFormat: dateFormats.date,
+            })
+          : r.meter_id,
         r.source ? fmt.vocab(READING_SOURCES, r.source) : null,
       ]
         .filter(Boolean)
@@ -152,13 +172,10 @@ function buildLedgerTable(
       value = '—';
     }
     const marks = [
-      isRetracted ? t('operation.production.retracted') : null,
-      e.corrects ? t('operation.production.correction') : null,
+      isRetracted ? labels.operation.production.retracted : null,
+      e.corrects ? labels.operation.production.correction : null,
     ].filter(Boolean);
-    const typeLabel =
-      e.type === 'meter_reading' || e.type === 'declared_volume'
-        ? t(`operation.production.types.${e.type}`)
-        : (e as { type: string }).type;
+    const typeLabel = fmt.vocab(PRODUCTION_ENTRY_TYPES, e.type);
     const decoration = isRetracted ? { decoration: 'lineThrough' } : {};
 
     body.push([
@@ -169,7 +186,7 @@ function buildLedgerTable(
     ]);
   });
 
-  return withTableTitle(t('operation.production.ledger'), {
+  return withTableTitle(labels.operation.production.ledger, {
     layout: 'lightHorizontalLines',
     table: {
       widths: ['auto', 'auto', '*', 'auto'],
@@ -190,17 +207,17 @@ export function buildProductionSection(
   ctx: PdfContext,
 ): Content | null {
   if (!well.production?.length) return null;
-  const { t } = ctx;
+  const { labels } = ctx;
   const fmt = createPdfFormatters(ctx);
 
-  const annual = buildAnnualTable(well, fmt, t);
+  const annual = buildAnnualTable(well, fmt, labels);
   return {
     stack: [
       {
         stack: [
           { text: ' ' },
-          { text: t('operation.production.title'), style: 'title' },
-          buildTotals(well, fmt, t),
+          { text: labels.operation.production.title, style: 'title' },
+          buildTotals(well, fmt, labels),
         ],
         unbreakable: true,
       },

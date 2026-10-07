@@ -1,57 +1,32 @@
-import type {
-  Parameter,
-  ParameterGroup,
-  WaterQualityResult,
-  WaterSample,
-} from '@welldot/core';
+import type { Parameter, WaterQualityResult, WaterSample } from '@welldot/core';
 import {
+  FRACTION_VALUES,
+  MEASURED_IN_VALUES,
+  PARAMETER_GROUP_VALUES,
+  QUALIFIER_VALUES,
   SAMPLE_TYPES,
+  VALIDATION_STATUS_VALUES,
   getLimitSet,
   getParameterDefinition,
   getVocabLabel,
 } from '@welldot/core';
-import { formatDate } from './date';
+import { formatDate, formatWaterQualityResult } from '@welldot/utils';
 
-/**
- * Water quality vocabularies. The open ones (sample type, sampling method,
- * point type, device) live in `@welldot/core`; the rest are closed enums.
- */
-
-/** Sample types that point to an original sample with `parent_sample_id`. */
-export const PARENT_SAMPLE_TYPES: readonly string[] = [
-  'field_duplicate',
-  'split_sample',
-];
-
-/** Blank sample types (QA/QC). */
-export const BLANK_SAMPLE_TYPES: readonly string[] = [
-  'field_blank',
-  'trip_blank',
-  'equipment_blank',
-];
-
-export const QUALIFIER_VALUES = [
-  '<',
-  '>',
-  'not_detected',
-  'estimated',
-] as const;
-
-/** Qualifiers that only go with a numeric `value`. */
-export const NUMERIC_QUALIFIERS: readonly string[] = ['<', '>', 'estimated'];
-
-export const FRACTION_VALUES = ['total', 'dissolved', 'suspended'] as const;
-
-export const MEASURED_IN_VALUES = ['field', 'lab'] as const;
-
-export const FILTRATION_LOCATION_VALUES = ['field', 'lab'] as const;
-
-export const VALIDATION_STATUS_VALUES = [
-  'unvalidated',
-  'validated',
-  'qualified',
-  'rejected',
-] as const;
+// Closed value lists live in @welldot/core and pure formatting in
+// @welldot/utils; re-exported for auto-import. The i18n-keyed label lookups
+// and UI-only maps stay here.
+export {
+  BLANK_SAMPLE_TYPES,
+  FILTRATION_LOCATION_VALUES,
+  FRACTION_VALUES,
+  MEASURED_IN_VALUES,
+  NUMERIC_QUALIFIERS,
+  PARAMETER_GROUP_VALUES,
+  PARENT_SAMPLE_TYPES,
+  QUALIFIER_VALUES,
+  VALIDATION_STATUS_VALUES,
+} from '@welldot/core';
+export { parameterUnitSymbol } from '@welldot/utils';
 
 /** PrimeVue `Tag` severity for each validation status. */
 export const VALIDATION_STATUS_SEVERITY: Record<string, string> = {
@@ -60,20 +35,6 @@ export const VALIDATION_STATUS_SEVERITY: Record<string, string> = {
   qualified: 'warn',
   rejected: 'danger',
 };
-
-/** Display order of the vocabulary groups. */
-export const PARAMETER_GROUP_VALUES: readonly ParameterGroup[] = [
-  'physical',
-  'aggregate',
-  'major_ion',
-  'nutrient',
-  'organic',
-  'disinfection',
-  'mining_redox',
-  'metal',
-  'microbiology',
-  'radioactivity',
-];
 
 export type QualifierValue = (typeof QUALIFIER_VALUES)[number];
 export type FractionValue = (typeof FRACTION_VALUES)[number];
@@ -116,18 +77,6 @@ export function resolveParameterLabel(
   return tryTranslate(`${PREFIX}.parameters.${def.code}`, t) ?? def.label;
 }
 
-/** Unit symbol of a result: the vocabulary unit, or `unit` for `x-` codes. */
-export function parameterUnitSymbol(result: {
-  parameter: Parameter;
-  unit?: string;
-}): string {
-  const def = getParameterDefinition(result.parameter);
-  if (def) return def.unit.symbol;
-  // CAS numbers outside the equivalence table are substances in mg/L.
-  if (result.parameter.vocabulary === 'cas') return 'mg/L';
-  return result.unit ?? '';
-}
-
 /**
  * Display text of a result's value: `< 0.001`, `0.004 (est.)`,
  * `not detected`, `present` / `absent`, or the qualitative text.
@@ -136,19 +85,18 @@ export function parameterUnitSymbol(result: {
 export function formatResultValue(
   result: Pick<WaterQualityResult, 'value' | 'presence' | 'text' | 'qualifier'>,
   t: Translate,
-  formatNumber: (_n: number) => string = n => String(n),
+  formatNumber?: (_n: number) => string,
 ): string {
-  if (result.qualifier === 'not_detected') return t(`${PREFIX}.notDetected`);
-  if (result.presence !== undefined)
-    return t(`${PREFIX}.presence.${result.presence ? 'present' : 'absent'}`);
-  if (result.text !== undefined) return result.text;
-  if (result.value === undefined) return '—';
-  const n = formatNumber(result.value);
-  if (result.qualifier === '<' || result.qualifier === '>')
-    return `${result.qualifier} ${n}`;
-  if (result.qualifier === 'estimated')
-    return `${n} (${t(`${PREFIX}.estimatedShort`)})`;
-  return n;
+  return formatWaterQualityResult(
+    result,
+    {
+      notDetected: t(`${PREFIX}.notDetected`),
+      present: t(`${PREFIX}.presence.present`),
+      absent: t(`${PREFIX}.presence.absent`),
+      estimated: t(`${PREFIX}.estimatedShort`),
+    },
+    formatNumber,
+  );
 }
 
 /** Translated result `qualifier`, falling back to the raw value. */

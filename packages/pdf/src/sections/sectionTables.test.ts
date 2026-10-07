@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildSectionTables } from './sectionTables';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 describe('buildSectionTables', () => {
   it('returns no sections for an entirely empty well', () => {
@@ -91,7 +91,7 @@ describe('buildSectionTables', () => {
       well,
       makeTestContext(
         { units: { length: 'ft', diameter: 'inches' } },
-        lastSegmentT,
+        lastSegmentLabels,
       ),
     );
     const serialized = JSON.stringify(sections);
@@ -107,7 +107,7 @@ describe('buildSectionTables', () => {
       well,
       makeTestContext(
         { theme: { colors: { tableRule: '#123456' } } },
-        lastSegmentT,
+        lastSegmentLabels,
       ),
     );
     const layout = (

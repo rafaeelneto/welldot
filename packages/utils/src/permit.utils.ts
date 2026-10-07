@@ -3,8 +3,11 @@ import type {
   Permit,
   PermitCondition,
   PermitHistoryEntry,
+  VocabEntry,
   Well,
 } from '@welldot/core';
+
+import { PERMIT_ADMINISTRATIVE_STATUSES } from '@welldot/core';
 
 import { instantLocalDate } from './shared.utils';
 
@@ -112,6 +115,32 @@ export type PermitStatus =
   | 'active'
   | 'active_pending_renewal'
   | 'expired';
+
+const DERIVED_PERMIT_STATUSES: readonly VocabEntry<PermitStatus>[] = [
+  { value: 'superseded', label: { en: 'Superseded', pt: 'Substituída' } },
+  {
+    value: 'not_yet_valid',
+    label: { en: 'Not yet valid', pt: 'Ainda não vigente' },
+  },
+  { value: 'active', label: { en: 'Active', pt: 'Vigente' } },
+  {
+    value: 'active_pending_renewal',
+    label: { en: 'Renewal pending', pt: 'Renovação em análise' },
+  },
+  { value: 'expired', label: { en: 'Expired', pt: 'Vencida' } },
+];
+
+/**
+ * Every {@link PermitStatus} with en/pt labels, for `getVocabLabel` of
+ * `@welldot/core`: the stored administrative statuses (minus `granted`,
+ * which always resolves to a derived one) followed by the derived ones.
+ */
+export const PERMIT_STATUSES: readonly VocabEntry<PermitStatus>[] = [
+  ...(PERMIT_ADMINISTRATIVE_STATUSES.filter(
+    e => e.value !== 'granted',
+  ) as VocabEntry<PermitStatus>[]),
+  ...DERIVED_PERMIT_STATUSES,
+];
 
 /**
  * Administrative statuses under which a permit has no deadlines at all: it
@@ -292,6 +321,18 @@ export type ConditionDeadlineStatus =
   | 'fulfilled_late'
   | 'upcoming'
   | 'overdue';
+
+/** Every {@link ConditionDeadlineStatus} with en/pt labels. */
+export const CONDITION_DEADLINE_STATUSES: readonly VocabEntry<ConditionDeadlineStatus>[] =
+  [
+    { value: 'fulfilled', label: { en: 'Fulfilled', pt: 'Cumprida' } },
+    {
+      value: 'fulfilled_late',
+      label: { en: 'Fulfilled late', pt: 'Cumprida com atraso' },
+    },
+    { value: 'upcoming', label: { en: 'Upcoming', pt: 'A vencer' } },
+    { value: 'overdue', label: { en: 'Overdue', pt: 'Atrasada' } },
+  ];
 
 export type ConditionDeadlineState = {
   /** The deadline. Absent for the fulfillment of an undated condition. */
@@ -632,4 +673,37 @@ export function getPermitWarnings(
   }
 
   return warnings;
+}
+
+// ─── Display helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Short display label of a permit: authority plus `identifier`, else
+ * `request_identifier`. Falls back to `fallback` (e.g. an unresolved id).
+ *
+ * @example permitLabel(permit) // "SEMAS-PA 1234/2025"
+ */
+export function permitLabel(permit: Permit | undefined, fallback = ''): string {
+  if (!permit) return fallback;
+  return [permit.authority, getPermitIdentifier(permit)]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * The permit production compliance is judged by: among the `active` /
+ * `active_pending_renewal` permits on `today`, the one with the latest start.
+ */
+export function getActivePermit(
+  well: Well,
+  today: string = todayCalendarDate(),
+): Permit | undefined {
+  return (well.permits ?? [])
+    .filter(p => {
+      const status = getPermitStatus(well, p, today);
+      return status === 'active' || status === 'active_pending_renewal';
+    })
+    .sort((a, b) =>
+      (getPermitStartDate(b) ?? '').localeCompare(getPermitStartDate(a) ?? ''),
+    )[0];
 }

@@ -19,11 +19,4 @@ export function vocabOptions(
     }));
 }
 
-/** Comma-separated labels of a multi-valued field (e.g. `well_purpose`). */
-export function formatVocabList(
-  vocab: readonly VocabEntry[],
-  values: readonly string[] | undefined,
-  locale: string,
-): string {
-  return (values ?? []).map(v => getVocabLabel(vocab, v, locale)).join(', ');
-}
+export { formatVocabList } from '@welldot/core';

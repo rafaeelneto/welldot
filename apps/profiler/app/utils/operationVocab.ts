@@ -1,20 +1,11 @@
 import type { Meter, PumpInstallation, WellStatus } from '@welldot/core';
-import { METER_TYPES, PUMP_TYPES, getVocabLabel } from '@welldot/core';
-import { formatDate } from './date';
+import { PUMP_TYPES, WELL_STATUS_VALUES, getVocabLabel } from '@welldot/core';
+import { formatDate, formatMeterLabel } from '@welldot/utils';
 
-/**
- * Closed operational vocabularies. The open ones (meter type, reading source,
- * declared method, maintenance type) live in `@welldot/core`.
- */
+export { WELL_STATUS_VALUES } from '@welldot/core';
 
-/** `status_change` statuses — a closed vocabulary (no free text or `x-`). */
-export const WELL_STATUS_VALUES: readonly WellStatus[] = [
-  'active',
-  'maintenance',
-  'inactive',
-  'decommissioned',
-  'abandoned',
-];
+// The closed status list lives in @welldot/core (open vocabularies too);
+// labels come from the app's i18n messages.
 
 function resolveLabel(
   values: readonly string[],
@@ -53,15 +44,10 @@ export function meterLabel(
   t: (_key: string) => string,
   locale: string,
 ): string {
-  return [
-    m.type
-      ? getVocabLabel(METER_TYPES, m.type, locale)
-      : t('editor.operation.meter.untyped'),
-    m.serial ? `S/N ${m.serial}` : null,
-    formatDate(m.installed_at, 'dd/MM/yyyy'),
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  return formatMeterLabel(m, {
+    locale,
+    untypedLabel: t('editor.operation.meter.untyped'),
+  });
 }
 
 /** "Submersible Acme SP-5 · 01/02/2024" — identifies one pump installation. */

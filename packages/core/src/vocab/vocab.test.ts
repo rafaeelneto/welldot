@@ -32,7 +32,12 @@ import {
   PERMIT_TYPES,
   WATER_USES,
 } from './permit.vocab';
-import { type VocabEntry, getVocabLabel, vocabValues } from './vocab';
+import {
+  type VocabEntry,
+  formatVocabList,
+  getVocabLabel,
+  vocabValues,
+} from './vocab';
 import {
   SAMPLE_TYPES,
   SAMPLING_DEVICES,
@@ -241,5 +246,17 @@ describe('vocabValues', () => {
     expect(vocabValues(WELL_TYPES, { includeDeprecated: true })).toContain(
       'artesian',
     );
+  });
+});
+
+describe('formatVocabList', () => {
+  it('joins labels in the locale and keeps unknown values as-is', () => {
+    expect(
+      formatVocabList(WELL_PURPOSES, ['monitoring', 'x-custom'], 'en'),
+    ).toBe(`${getVocabLabel(WELL_PURPOSES, 'monitoring', 'en')}, x-custom`);
+  });
+
+  it('returns an empty string for no values', () => {
+    expect(formatVocabList(WELL_PURPOSES, undefined, 'pt')).toBe('');
   });
 });

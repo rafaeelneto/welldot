@@ -3,21 +3,25 @@ import {
   CONDITION_CATEGORIES,
   PERMIT_HISTORY_TYPES,
   PERMIT_TYPES,
+  VOLUME_LIMIT_PERIODS,
   WATER_USES,
 } from '@welldot/core';
 import {
+  CONDITION_DEADLINE_STATUSES,
+  formatCalendarDate,
+  formatDate,
   formatNumber,
   getConditionDeadlineStates,
   getPermitHistory,
   getPermitStartDate,
   getPermitStatus,
+  PERMIT_STATUSES,
+  permitLabel,
   todayCalendarDate,
 } from '@welldot/utils';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
-import { formatCalendarDate, formatDate } from '../helpers/date';
-import { permitLabel } from '../helpers/permitVocab';
 import { buildEntryDivider } from '../layout/tables';
-import type { PdfContext, PdfTranslate } from '../types/options.types';
+import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content } from '../types/pdfmake.types';
 
 function attachmentName(attachment: Attachment): string {
@@ -28,13 +32,13 @@ function attachmentName(attachment: Attachment): string {
 
 function formatValidity(
   p: Permit,
-  t: PdfTranslate,
+  labels: PdfLabels,
   dateFormat: string,
 ): string {
   const start = formatCalendarDate(getPermitStartDate(p), dateFormat);
   const end = p.valid_until
     ? formatCalendarDate(p.valid_until, dateFormat)
-    : t('operation.permit.noExpiry');
+    : labels.operation.permit.noExpiry;
   return start ? `${start} → ${end}` : end;
 }
 
@@ -46,7 +50,7 @@ function buildHeader(
   fmt: PdfFormatters,
   ctx: PdfContext,
 ): Content {
-  const { t } = ctx;
+  const { labels } = ctx;
   const status = getPermitStatus(well, p, today)!;
   return {
     columns: [
@@ -54,14 +58,14 @@ function buildHeader(
         text: [
           { text: fmt.vocab(PERMIT_TYPES, p.type), style: 'tableHeader' },
           {
-            text: `   ${t(`operation.permit.status.${status}`)}`,
+            text: `   ${fmt.vocab(PERMIT_STATUSES, status)}`,
             style: 'metadataLabel',
           },
         ],
         width: '*',
       },
       {
-        text: formatValidity(p, t, ctx.dateFormats.date),
+        text: formatValidity(p, labels, ctx.dateFormats.date),
         style: 'metadataLabel',
         alignment: 'right',
         width: 'auto',
@@ -76,34 +80,34 @@ function specLines(
   fmt: PdfFormatters,
   ctx: PdfContext,
 ): string[] {
-  const { t } = ctx;
+  const { labels } = ctx;
   const date = (value: string) =>
     formatCalendarDate(value, ctx.dateFormats.date);
-  const field = (key: string) => t(`operation.permit.fields.${key}`);
+  const fields = labels.operation.permit.fields;
   const superseded = well.permits?.find(x => x.id === p.supersedes);
 
   return [
-    `${field('authority')}: ${p.authority}`,
-    p.identifier && `${field('identifier')}: ${p.identifier}`,
+    `${fields.authority}: ${p.authority}`,
+    p.identifier && `${fields.identifier}: ${p.identifier}`,
     p.request_identifier &&
-      `${field('requestIdentifier')}: ${p.request_identifier}`,
-    p.issued_at && `${field('issuedAt')}: ${date(p.issued_at)}`,
+      `${fields.requestIdentifier}: ${p.request_identifier}`,
+    p.issued_at && `${fields.issuedAt}: ${date(p.issued_at)}`,
     p.renewal_requested_at &&
-      `${field('renewalRequestedAt')}: ${date(p.renewal_requested_at)}`,
+      `${fields.renewalRequestedAt}: ${date(p.renewal_requested_at)}`,
     p.supersedes &&
-      `${field('supersedes')}: ${permitLabel(superseded, p.supersedes)}`,
+      `${fields.supersedes}: ${permitLabel(superseded, p.supersedes)}`,
     p.water_use?.length &&
-      `${field('waterUse')}: ${fmt.vocabList(WATER_USES, p.water_use)}`,
+      `${fields.waterUse}: ${fmt.vocabList(WATER_USES, p.water_use)}`,
     p.flow_rate != null &&
-      `${field('flowRate')}: ${fmt.formatFlow(p.flow_rate, 2)}`,
+      `${fields.flowRate}: ${fmt.formatFlow(p.flow_rate, 2)}`,
     p.daily_operating_time != null &&
-      `${field('dailyOperatingTime')}: ${formatNumber(p.daily_operating_time, { maximumFractionDigits: 2, suffix: 'h' })}`,
+      `${fields.dailyOperatingTime}: ${formatNumber(p.daily_operating_time, { maximumFractionDigits: 2, suffix: 'h' })}`,
     ...(p.volume_limits ?? []).map(
       v =>
-        `${field('volumeLimits')} (${field(`volumePeriods.${v.period}`)}): ${fmt.formatVolume(v.volume, 0)}`,
+        `${fields.volumeLimits} (${fmt.vocab(VOLUME_LIMIT_PERIODS, v.period)}): ${fmt.formatVolume(v.volume, 0)}`,
     ),
     p.monthly_schedule &&
-      `${field('monthlySchedule')}: ${[...p.monthly_schedule]
+      `${fields.monthlySchedule}: ${[...p.monthly_schedule]
         .sort((a, b) => a.month - b.month)
         .map(g =>
           new Intl.DateTimeFormat(ctx.locale, { month: 'short' }).format(
@@ -121,14 +125,13 @@ function conditionLine(
   well: Well,
   today: string,
   fmt: PdfFormatters,
-  t: PdfTranslate,
+  labels: PdfLabels,
   dateFormat: string,
 ): string {
   const date = (value: string | undefined) =>
     formatCalendarDate(value, dateFormat);
   const states = getConditionDeadlineStates(well, p, c, { today });
-  const status = (key: string) =>
-    t(`operation.permit.conditions.deadlineStatus.${key}`);
+  const status = (key: string) => fmt.vocab(CONDITION_DEADLINE_STATUSES, key);
   const overdue = states.filter(s => s.status === 'overdue');
   const next = states.find(s => s.status === 'upcoming');
   const lastDone = [...states]
@@ -141,13 +144,13 @@ function conditionLine(
     lastDone &&
       `${status(lastDone.status)}${lastDone.due_date ? ` ${date(lastDone.due_date)}` : ''}`,
     next && `${status('upcoming')}: ${date(next.due_date)}`,
-    !states.length && t('operation.permit.conditions.undated'),
+    !states.length && labels.operation.permit.conditions.undated,
   ].filter(Boolean);
 
   const meta = [
     c.category && fmt.vocab(CONDITION_CATEGORIES, c.category),
     c.responsible &&
-      `${t('operation.permit.conditions.responsible')}: ${c.responsible}`,
+      `${labels.operation.permit.conditions.responsible}: ${c.responsible}`,
   ].filter(Boolean);
   const category = meta.length ? ` (${meta.join(' · ')})` : '';
   return `•  ${c.description}${category}${summary.length ? ` — ${summary.join(' · ')}` : ''}`;
@@ -156,7 +159,7 @@ function conditionLine(
 /** Fulfillment records of a condition, one indented line each. */
 function fulfillmentLines(
   c: PermitCondition,
-  t: PdfTranslate,
+  labels: PdfLabels,
   dateFormat: string,
 ): string[] {
   return [...(c.fulfillments ?? [])]
@@ -167,7 +170,7 @@ function fulfillmentLines(
       [
         `      ✓ ${formatDate(f.datetime, dateFormat)}`,
         f.due_date &&
-          `${t('operation.permit.fulfill.deadline')} ${formatCalendarDate(f.due_date, dateFormat)}`,
+          `${labels.operation.permit.fulfill.deadline} ${formatCalendarDate(f.due_date, dateFormat)}`,
         f.author,
         f.description,
       ]
@@ -180,14 +183,14 @@ function fulfillmentLines(
 function historyLine(
   h: ReturnType<typeof getPermitHistory>[number],
   fmt: PdfFormatters,
-  t: PdfTranslate,
+  labels: PdfLabels,
   dateFormat: string,
 ): string {
   const state =
     h.done === true
-      ? t('operation.permit.history.done')
+      ? labels.operation.permit.history.done
       : h.due_date
-        ? `${t('operation.permit.history.dueDate')} ${formatCalendarDate(h.due_date, dateFormat)}`
+        ? `${labels.operation.permit.history.dueDate} ${formatCalendarDate(h.due_date, dateFormat)}`
         : null;
   return [
     `•  ${formatCalendarDate(h.date, dateFormat)}`,
@@ -206,7 +209,7 @@ function buildBody(
   fmt: PdfFormatters,
   ctx: PdfContext,
 ): Content[] {
-  const { t } = ctx;
+  const { labels } = ctx;
   const dateFormat = ctx.dateFormats.date;
   const blocks: Content[] = [
     {
@@ -220,15 +223,15 @@ function buildBody(
     blocks.push({
       stack: [
         {
-          text: t('operation.permit.conditions.title'),
+          text: labels.operation.permit.conditions.title,
           style: 'metadataLabel',
         },
         ...conditions.flatMap(c => [
           {
-            text: conditionLine(p, c, well, today, fmt, t, dateFormat),
+            text: conditionLine(p, c, well, today, fmt, labels, dateFormat),
             fontSize: 9,
           },
-          ...fulfillmentLines(c, t, dateFormat).map(text => ({
+          ...fulfillmentLines(c, labels, dateFormat).map(text => ({
             text,
             fontSize: 8,
             color: ctx.theme.colors.tableHeader,
@@ -243,11 +246,11 @@ function buildBody(
     blocks.push({
       stack: [
         {
-          text: t('operation.permit.history.title'),
+          text: labels.operation.permit.history.title,
           style: 'metadataLabel',
         },
         ...history.map(h => ({
-          text: historyLine(h, fmt, t, dateFormat),
+          text: historyLine(h, fmt, labels, dateFormat),
           fontSize: 9,
         })),
       ],
@@ -294,7 +297,7 @@ export function buildPermitSection(
     {
       stack: [
         { text: ' ' },
-        { text: ctx.t('operation.permit.title'), style: 'title' },
+        { text: ctx.labels.operation.permit.title, style: 'title' },
         buildHeader(first!, well, today, fmt, ctx),
       ],
       unbreakable: true,

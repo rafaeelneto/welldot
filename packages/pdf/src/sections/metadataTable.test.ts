@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { baseWell, keyT, makeTestContext } from '../test-utils';
+import { baseWell, keyLabels, makeTestContext } from '../test-utils';
 import { buildMetadataTable } from './metadataTable';
 
-const ctx = makeTestContext({ locale: 'pt' }, keyT);
+const ctx = makeTestContext({ locale: 'pt' }, keyLabels);
 
 describe('buildMetadataTable', () => {
   it('returns null when no metadata field is populated', () => {
@@ -38,7 +38,7 @@ describe('buildMetadataTable', () => {
     });
     const table = buildMetadataTable(
       well,
-      makeTestContext({ locale: 'pt', units: { length: 'ft' } }, keyT),
+      makeTestContext({ locale: 'pt', units: { length: 'ft' } }, keyLabels),
     );
     const serialized = JSON.stringify(table);
     expect(serialized).toContain('ft');
@@ -97,7 +97,7 @@ describe('buildMetadataTable', () => {
       well,
       makeTestContext(
         { locale: 'pt', dateFormats: { date: 'yyyy-MM-dd' } },
-        keyT,
+        keyLabels,
       ),
     );
     const serialized = JSON.stringify(table);
@@ -110,7 +110,7 @@ describe('buildMetadataTable', () => {
     const serialized = JSON.stringify(
       buildMetadataTable(
         well,
-        makeTestContext({ locale: 'pt', coordinateFormat: 'DMS' }, keyT),
+        makeTestContext({ locale: 'pt', coordinateFormat: 'DMS' }, keyLabels),
       ),
     );
     expect(serialized).toContain('23°30');

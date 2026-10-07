@@ -48,7 +48,7 @@ export function buildHeaderContent(
   currentPage: number,
   pageCount: number,
 ): Content {
-  const { theme, page, header, t, title } = ctx;
+  const { theme, page, header, labels, title } = ctx;
   // The title keeps its legacy 330pt box on A4 and scales with wider pages.
   const titleWidth = Math.round((page.contentWidth * 330) / 535);
 
@@ -65,7 +65,7 @@ export function buildHeaderContent(
     },
     {
       text: header.showPageNumbers
-        ? `${t('document.page')} ${currentPage}/${pageCount}`
+        ? `${labels.document.page} ${currentPage}/${pageCount}`
         : '',
       alignment: 'right',
       fontSize: 8,

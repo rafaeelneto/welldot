@@ -1,9 +1,8 @@
 import type { Well } from '@welldot/core';
-import { WELL_PURPOSES, WELL_TYPES } from '@welldot/core';
+import { calculatedWellDepth, WELL_PURPOSES, WELL_TYPES } from '@welldot/core';
+import { formatCoord } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters } from '../formatters';
-import { formatCoord } from '../helpers/coords';
-import { calculatedWellDepth } from '../helpers/wellDepth';
 import type { PdfContext } from '../types/options.types';
 import type { ContentTable, TableCell } from '../types/pdfmake.types';
 
@@ -52,54 +51,54 @@ export function buildMetadataTable(
   well: Well,
   ctx: PdfContext,
 ): ContentTable | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   const { formatLength, vocab, vocabList } = createPdfFormatters(ctx);
 
   const fields: MetaField[] = [];
 
   if (well.name) {
-    fields.push({ label: t('general.name'), value: well.name });
+    fields.push({ label: labels.general.name, value: well.name });
   }
   if (well.well_type) {
     fields.push({
-      label: t('general.wellType'),
+      label: labels.general.wellType,
       value: vocab(WELL_TYPES, well.well_type),
     });
   }
   if (well.well_purpose?.length) {
     fields.push({
-      label: t('general.wellPurpose'),
+      label: labels.general.wellPurpose,
       value: vocabList(WELL_PURPOSES, well.well_purpose),
     });
   }
   if (well.well_driller) {
     fields.push({
-      label: t('general.driller'),
+      label: labels.general.driller,
       value: well.well_driller,
     });
   }
   if (well.construction_date) {
     fields.push({
-      label: t('general.constructionDate'),
+      label: labels.general.constructionDate,
       value: format(parseISO(well.construction_date), ctx.dateFormats.date),
     });
   }
   if (well.location?.lat != null && well.location?.lng != null) {
     fields.push({
-      label: t('general.coordinates'),
+      label: labels.general.coordinates,
       value: `${formatCoord(well.location.lat, ctx.coordinateFormat, true)}, ${formatCoord(well.location.lng, ctx.coordinateFormat, false)}`,
     });
   }
   if (well.location?.elevation != null) {
     fields.push({
-      label: t('general.elevation'),
+      label: labels.general.elevation,
       value: formatLength(well.location.elevation),
     });
   }
   const calculatedDepth = calculatedWellDepth(well);
   if (well.well_depth != null || calculatedDepth > 0) {
     fields.push({
-      label: t('general.wellDepth'),
+      label: labels.general.wellDepth,
       value: formatLength(well.well_depth ?? calculatedDepth),
     });
   }
@@ -107,13 +106,13 @@ export function buildMetadataTable(
     if (!entry.id) continue;
     const label = entry.authority
       ? entry.primary
-        ? `${entry.authority} (${t('general.wellIds.primary')})`
+        ? `${entry.authority} (${labels.general.wellIds.primary})`
         : entry.authority
-      : t('general.wellIds.id');
+      : labels.general.wellIds.id;
     fields.push({ label, value: entry.id });
   }
   const observations: MetaField | null = well.obs
-    ? { label: t('general.observationsLabel'), value: well.obs }
+    ? { label: labels.general.observationsLabel, value: well.obs }
     : null;
 
   if (fields.length === 0 && !observations) return null;

@@ -53,7 +53,7 @@ export const PDF_SECTION_BUILDERS: Record<PdfSectionKey, SectionBuilder> = {
 
 function isContext(value: PdfExportOptions | PdfContext): value is PdfContext {
   return (
-    typeof (value as PdfContext).t === 'function' &&
+    typeof (value as PdfContext).labels === 'object' &&
     typeof (value as PdfContext).page === 'object' &&
     typeof (value as PdfContext).page?.contentWidth === 'number'
   );
@@ -88,8 +88,15 @@ export function buildDocDefinition(
   options: PdfExportOptions | PdfContext = {},
 ): TDocumentDefinition {
   const ctx = toPdfContext(options);
-  const { breakPages, headingInfo, endInfo, metadataPosition, theme, page, t } =
-    ctx;
+  const {
+    breakPages,
+    headingInfo,
+    endInfo,
+    metadataPosition,
+    theme,
+    page,
+    labels,
+  } = ctx;
 
   const content: Content[] = [{ text: ' ' }];
 
@@ -100,7 +107,9 @@ export function buildDocDefinition(
   const beforeMetadataTable =
     metadataPosition === 'before' ? buildMetadataTable(well, ctx) : null;
   if (beforeMetadataTable) {
-    content.push(withTableTitle(t('general.generalInfo'), beforeMetadataTable));
+    content.push(
+      withTableTitle(labels.general.generalInfo, beforeMetadataTable),
+    );
   }
 
   svgs.forEach((svg, index) => {
@@ -123,14 +132,16 @@ export function buildDocDefinition(
 
   if (endInfo.length > 0) {
     content.push(
-      withTableTitle(t('document.finalInfoTitle'), infoTable(endInfo)),
+      withTableTitle(labels.document.finalInfoTitle, infoTable(endInfo)),
     );
   }
 
   const afterMetadataTable =
     metadataPosition === 'after' ? buildMetadataTable(well, ctx) : null;
   if (afterMetadataTable) {
-    content.push(withTableTitle(t('general.generalInfo'), afterMetadataTable));
+    content.push(
+      withTableTitle(labels.general.generalInfo, afterMetadataTable),
+    );
   }
 
   for (const key of ctx.sections.order) {

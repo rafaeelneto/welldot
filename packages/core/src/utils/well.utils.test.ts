@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  calculatedWellDepth,
   checkIfProfileIsEmpty,
   convertProfileFromJSON,
   deserializeWell,
@@ -2748,5 +2749,42 @@ describe('v2.3 — water_samples', () => {
     });
     expect(result.water_samples).toBeUndefined();
     expect(result.history_logs).toEqual(well.history_logs);
+  });
+});
+
+// ─── calculatedWellDepth ─────────────────────────────────────────────────────
+
+describe('calculatedWellDepth', () => {
+  it('returns the deepest constructive `to`, ignoring geology', () => {
+    const well = {
+      ...fullWell(),
+      lithology: [{ from: 0, to: 999 }],
+    } as unknown as Well;
+    const constructive = [
+      ...well.bore_hole,
+      ...well.well_case,
+      ...well.well_screen,
+      ...well.hole_fill,
+      ...well.reduction,
+      ...well.surface_case,
+    ].map(i => i.to);
+    expect(calculatedWellDepth(well)).toBe(Math.max(0, ...constructive));
+  });
+
+  it('returns 0 for a well without constructive data', () => {
+    expect(
+      calculatedWellDepth({
+        version: 2,
+        bore_hole: [],
+        well_case: [],
+        reduction: [],
+        well_screen: [],
+        surface_case: [],
+        hole_fill: [],
+        lithology: [],
+        fractures: [],
+        caves: [],
+      }),
+    ).toBe(0);
   });
 });

@@ -1,4 +1,5 @@
 import type { Parameter } from '../types/well.types';
+import { resolveLanguageText } from '../utils/language.utils';
 
 /**
  * Version of the published `welldot` water quality parameter vocabulary.
@@ -754,6 +755,20 @@ export function getParameterDefinition(
   if (parameter.vocabulary === 'welldot') return BY_CODE.get(parameter.code);
   if (parameter.vocabulary === 'cas') return BY_CAS.get(parameter.code);
   return undefined;
+}
+
+/**
+ * Display label of a parameter in `locale` (`pt-BR` → `pt` → English): its
+ * vocabulary entry's translation (a CAS number resolves through the
+ * published equivalences first), else the raw code (`x-` and unknown codes).
+ */
+export function getParameterLabel(
+  parameter: Parameter,
+  locale: string,
+): string {
+  const def = getParameterDefinition(parameter);
+  if (!def) return parameter.code;
+  return resolveLanguageText({ ...def.labels, en: def.label }, locale, 'en');
 }
 
 /**

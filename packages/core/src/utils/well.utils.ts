@@ -93,14 +93,15 @@ function createEmptyWell(): Well {
 }
 
 /**
- * Deepest recorded point across a well's constructive arrays only (not
+ * Calculated well depth: the deepest recorded point across a well's
+ * constructive arrays only (not
  * geologic — lithology/fractures/caves may extend past the actual
  * constructed well and would overstate it). Same "last item's `to`" logic
  * as `@welldot/utils`'s `getProfileLastItemsDepths`, duplicated here because
  * `packages/core` may not depend on `@welldot/utils` (dependency chain runs
  * the other way).
  */
-function calculatedWellDepth(well: Well): number {
+export function calculatedWellDepth(well: Well): number {
   const lastTo = (items: { to: number }[]): number =>
     items.length ? items[items.length - 1]!.to : 0;
 

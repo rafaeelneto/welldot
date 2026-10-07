@@ -1,9 +1,9 @@
 import type { Permit } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildPermitSection } from './permitTable';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 const permit: Permit = {
   id: 'pmt-01',
@@ -77,18 +77,18 @@ describe('buildPermitSection', () => {
   it('renders status, validity, grants, conditions and attachments', () => {
     const section = buildPermitSection(well, ctx, '2026-10-03');
     const text = JSON.stringify(section);
-    expect(text).toContain('active');
+    expect(text).toContain('Active');
     expect(text).toContain('10/02/2025 → 10/02/2029');
     expect(text).toContain('SEMAS-PA');
     expect(text).toContain('1234/2025');
     expect(text).toContain('Human supply');
     expect(text).toContain('PRT-2024/0099');
     expect(text).toContain(
-      'Install meter (Equipment installation · responsible: Ops team) — fulfilled 11/05/2025',
+      'Install meter (Equipment installation · responsible: Ops team) — Fulfilled 11/05/2025',
     );
     expect(text).toContain('deadline 11/05/2025 · J. Silva · Meter installed');
-    expect(text).toContain('overdue: 31/07/2025, 31/01/2026, 31/07/2026');
-    expect(text).toContain('upcoming: 31/01/2027');
+    expect(text).toContain('Overdue: 31/07/2025, 31/01/2026, 31/07/2026');
+    expect(text).toContain('Upcoming: 31/01/2027');
     expect(text).toContain('portaria.pdf');
   });
 
@@ -112,7 +112,7 @@ describe('buildPermitSection', () => {
     const text = JSON.stringify(
       buildPermitSection(baseWell({ permits: [requested] }), ctx, '2026-10-03'),
     );
-    expect(text).toContain('requested');
+    expect(text).toContain('Requested');
     expect(text).toContain('requestIdentifier: PRT-1');
   });
 
@@ -135,7 +135,7 @@ describe('buildPermitSection', () => {
     );
     const text = JSON.stringify(section);
     expect(text.indexOf('999/2029')).toBeLessThan(text.indexOf('1234/2025'));
-    expect(text).toContain('superseded');
+    expect(text).toContain('Superseded');
   });
 
   it('honors a custom date format and the table header color', () => {
@@ -146,7 +146,7 @@ describe('buildPermitSection', () => {
           dateFormats: { date: 'yyyy-MM-dd' },
           theme: { colors: { tableHeader: '#123456' } },
         },
-        lastSegmentT,
+        lastSegmentLabels,
       ),
       '2026-10-03',
     );
@@ -154,7 +154,7 @@ describe('buildPermitSection', () => {
     expect(text).toContain('2025-02-10 → 2029-02-10');
     expect(text).toContain('issuedAt: 2025-02-10');
     expect(text).toContain('2024-11-04 · Filing · Request filed');
-    expect(text).toContain('overdue: 2025-07-31, 2026-01-31, 2026-07-31');
+    expect(text).toContain('Overdue: 2025-07-31, 2026-01-31, 2026-07-31');
     expect(text).toContain('deadline 2025-05-11 · J. Silva');
     expect(text).not.toMatch(/\d{2}\/\d{2}\/\d{4}/);
     // Fulfillment lines use the theme's table header color.

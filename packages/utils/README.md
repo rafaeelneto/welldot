@@ -10,7 +10,7 @@ These are pure functions over a parsed `Well` object. No DOM, no network, no sid
 npm install @welldot/utils
 ```
 
-`@welldot/core` is a dependency and provides the `Well` type these functions operate on.
+`@welldot/core` is a dependency and provides the `Well` type these functions operate on. `date-fns` is a dependency of the date display helpers.
 
 ## Quick start
 
@@ -124,6 +124,28 @@ formatNumber(39.99998784, { fractionDigits: 2, suffix: 'm' }); // "40.00 m"
 formatNumber(1234.5, { locale: 'pt-BR', maximumFractionDigits: 1 }); // "1.234,5"
 formatNumber(null); // "—"
 ```
+
+### Display helpers
+
+Framework-free formatting shared by the profiler app and `@welldot/pdf`. Anything that needs translated words takes them as plain strings, so callers keep their own message catalogs.
+
+| Function                                                                | Returns                                                                                                   |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `formatDate(date, format?)`                                             | `Date` or date string with a date-fns pattern (default `dd/MM/yyyy HH:mm`); `''` when missing or invalid. |
+| `toCalendarDate(date)` / `fromCalendarDate(value)`                      | Local `Date` ↔ .well calendar date (`YYYY-MM-DD`), never through UTC; `null` for malformed input.         |
+| `formatCalendarDate(value, format?)`                                    | A .well calendar date displayed with a pattern (default `dd/MM/yyyy`), no time-zone shift.                |
+| `formatCoord(dd, 'DD' \| 'DMS', isLat)` / `ddToDms(dd, isLat)`          | 6-decimal degrees or `DD°MM'SS.ss"H`.                                                                     |
+| `parseToDd(input)` / `clampLat(lat)` / `clampLng(lng)`                  | Decimal degrees from DD or DMS text (`NaN` if invalid) / range clamping.                                  |
+| `resolveDiameterUnitLabel(unit, locale)`                                | `mm`, or `"` (Portuguese) / `in.` for inches.                                                             |
+| `resolveFlowUnitLabel(unit)` / `resolveVolumeUnitLabel(unit)`           | Display symbols of storage tokens (`m3/h` → `m³/h`, `ft3` → `ft³`).                                       |
+| `lastReading(event)` / `allStepReadings(event)` / `stepRate(event, i?)` | Last step reading, every step reading, or a step's rate of a hydrodynamic event.                          |
+| `recoveryReadingsCount(event)`                                          | Number of recovery readings (`0` without a recovery block).                                               |
+| `stepHasReadings(readings)` / `derivedStepDuration(readings)`           | Whether a step has complete readings / its duration from the largest complete `elapsed`.                  |
+| `permitLabel(permit, fallback?)` / `getActivePermit(well, today?)`      | `authority identifier` / the active permit with the latest start (production compliance).                 |
+| `formatMeterLabel(meter, { locale, untypedLabel, dateFormat? })`        | `Electromagnetic · S/N 123 · 01/02/2024`.                                                                 |
+| `parameterUnitSymbol(result)`                                           | Vocabulary unit, `mg/L` for unmapped CAS numbers, else the result's `unit`.                               |
+| `formatWaterQualityResult(result, labels, formatNumber?)`               | `< 0.001`, `0.004 (est.)`, the not-detected/present/absent label, or the text.                            |
+| `PERMIT_STATUSES` / `CONDITION_DEADLINE_STATUSES`                       | en/pt-labeled vocabularies of the statuses `getPermitStatus` / `getConditionDeadlineStates` return.       |
 
 ### Operations (.well v2.3)
 

@@ -3,25 +3,25 @@ import {
   HISTORY_LOG_CATEGORIES,
   HISTORY_LOG_SEVERITIES,
   MAINTENANCE_TYPES,
+  WELL_STATUSES,
   getVocabLabel,
 } from '@welldot/core';
 import { format, parseISO } from 'date-fns';
-import { resolveWellStatusLabel } from '../helpers/operationVocab';
 import { buildEntryDivider } from '../layout/tables';
-import type { PdfContext, PdfTranslate } from '../types/options.types';
+import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content } from '../types/pdfmake.types';
 
 /** `maintenance_type` or `status_change` status, when present (.well v2.3). */
 function categoryDetail(
   entry: HistoryLogEntry,
-  t: PdfTranslate,
+  labels: PdfLabels,
   locale: string,
 ): string {
   if (entry.category === 'maintenance' && entry.maintenance_type) {
     return getVocabLabel(MAINTENANCE_TYPES, entry.maintenance_type, locale);
   }
   if (entry.category === 'status_change' && entry.status) {
-    return resolveWellStatusLabel(entry.status, t);
+    return getVocabLabel(WELL_STATUSES, entry.status, locale);
   }
   return '';
 }
@@ -34,8 +34,8 @@ function attachmentName(attachment: Attachment): string {
 
 /** The category/severity/date header line — short and height-bounded, so it's safe to bind to the section title. */
 function buildLogEntryHeader(entry: HistoryLogEntry, ctx: PdfContext): Content {
-  const { t, locale } = ctx;
-  const detail = categoryDetail(entry, t, locale);
+  const { labels, locale } = ctx;
+  const detail = categoryDetail(entry, labels, locale);
   return {
     columns: [
       {
@@ -75,7 +75,10 @@ function buildLogEntryHeader(entry: HistoryLogEntry, ctx: PdfContext): Content {
  * page and leaving the previous page half-blank. Unbounded in height, so
  * never bind this to the section title/header via `unbreakable`.
  */
-function buildLogEntryBody(entry: HistoryLogEntry, t: PdfTranslate): Content[] {
+function buildLogEntryBody(
+  entry: HistoryLogEntry,
+  labels: PdfLabels,
+): Content[] {
   const blocks: Content[] = [
     { text: entry.description, margin: [0, 4, 0, 0], fontSize: 10 },
   ];
@@ -93,7 +96,7 @@ function buildLogEntryBody(entry: HistoryLogEntry, t: PdfTranslate): Content[] {
 
   if (entry.author) {
     blocks.push({
-      text: `${t('historyLog.logs.by')} ${entry.author}`,
+      text: `${labels.historyLog.logs.by} ${entry.author}`,
       style: 'metadataLabel',
       margin: [0, 4, 0, 0],
     });
@@ -106,7 +109,7 @@ function buildLogEntry(entry: HistoryLogEntry, ctx: PdfContext): Content {
   return {
     stack: [
       buildLogEntryHeader(entry, ctx),
-      ...buildLogEntryBody(entry, ctx.t),
+      ...buildLogEntryBody(entry, ctx.labels),
     ],
   };
 }
@@ -139,12 +142,12 @@ export function buildHistoryLogSection(
     {
       stack: [
         { text: ' ' },
-        { text: ctx.t('historyLog.logs.title'), style: 'title' },
+        { text: ctx.labels.historyLog.logs.title, style: 'title' },
         buildLogEntryHeader(first!, ctx),
       ],
       unbreakable: true,
     },
-    ...buildLogEntryBody(first!, ctx.t),
+    ...buildLogEntryBody(first!, ctx.labels),
   ];
   rest.forEach(entry => {
     items.push(buildEntryDivider(ctx));

@@ -1,6 +1,6 @@
 import { renderSVG } from 'uqr';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { keyT, makeTestContext } from '../test-utils';
+import { keyLabels, makeTestContext } from '../test-utils';
 import type { PdfExportOptions } from '../types/options.types';
 import { buildFooterContent } from './footer';
 
@@ -13,7 +13,7 @@ vi.mock('uqr', () => ({
 const BASE_URL = 'https://example.test:4173';
 const SHARE_URL = 'https://example.test:4173/editor?share=abc123';
 
-function ctx(overrides: PdfExportOptions = {}, t = keyT) {
+function ctx(overrides: PdfExportOptions = {}, t = keyLabels) {
   return makeTestContext({ baseUrl: BASE_URL, ...overrides }, t);
 }
 

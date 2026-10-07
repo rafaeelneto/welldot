@@ -8,6 +8,7 @@ import type {
 } from '@welldot/core';
 import type { DeepPartial, RenderConfig, WellTheme } from '@welldot/render';
 import type { PdfLabelPack } from '../configs/labels.configs';
+import type { ResolvedPdfLabels } from '../configs/labels.utils';
 import type { Content, TFontDictionary } from './pdfmake.types';
 
 /** Coordinate display format: decimal degrees or degrees/minutes/seconds. */
@@ -16,8 +17,8 @@ export type CoordinateFormat = 'DD' | 'DMS';
 /** Localized text: a plain string, or a `LanguageText` resolved by `locale`. */
 export type PdfLocalizedText = LanguageText | string;
 
-/** Looks up a label by its dot path in the resolved label pack (e.g. `general.name`). Returns the key itself when missing. */
-export type PdfTranslate = (_key: string) => string;
+/** Document text resolved for the export locale, read as typed properties (`labels.general.name`). */
+export type PdfLabels = ResolvedPdfLabels;
 
 /** Partial, per-leaf override of {@link PdfLabelPack}. Leaves accept a plain string or a `LanguageText`. */
 export type PdfLabelOverrides<T = PdfLabelPack> = {
@@ -283,8 +284,8 @@ export interface ResolvedPdfPage {
  */
 export interface PdfContext {
   locale: string;
-  /** Label lookup in the resolved label pack. */
-  t: PdfTranslate;
+  /** Document text resolved for `locale`, overrides applied. */
+  labels: PdfLabels;
   title: string;
   breakPages: boolean;
   scale: number;

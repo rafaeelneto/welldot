@@ -2,7 +2,7 @@ import type { Well, WellVisibility } from '@welldot/core';
 import { redactWell } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
 import { buildDocDefinition } from './buildDocDefinition';
-import { baseWell, keyT, makeTestContext } from './test-utils';
+import { baseWell, keyLabels, makeTestContext } from './test-utils';
 
 // The PDF has no visibility logic of its own: callers pass a `redactWell`
 // result and every builder skips what is empty. These tests pin that
@@ -117,12 +117,12 @@ function render(visibility: WellVisibility = {}): string {
     well,
     [],
     null,
-    makeTestContext({ metadataPosition: 'before' }, keyT),
+    makeTestContext({ metadataPosition: 'before' }, keyLabels),
   );
   return JSON.stringify(doc.content);
 }
 
-/** What each redactable part leaves in the PDF (keys are label paths, since `keyT` echoes them). */
+/** What each redactable part leaves in the PDF (keys are label paths, since `keyLabels` echoes them). */
 const MARKERS: Record<string, string> = {
   identification: 'Marker Driller',
   location: 'general.coordinates',

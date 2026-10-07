@@ -1,9 +1,9 @@
 import type { HistoryLogEntry } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildHistoryLogSection } from './historyLogTable';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 describe('buildHistoryLogSection', () => {
   it('returns null when there are no log entries', () => {
@@ -149,7 +149,7 @@ describe('buildHistoryLogSection', () => {
     );
     expect(serialized).toContain('Status change');
     expect(serialized).toContain(' · Meter calibration');
-    expect(serialized).toContain(' · inactive');
+    expect(serialized).toContain(' · Inactive');
   });
 
   it('honors a custom dateTime format and the theme divider color', () => {
@@ -175,7 +175,7 @@ describe('buildHistoryLogSection', () => {
             dateFormats: { dateTime: "yyyy-MM-dd '@' HH:mm" },
             theme: { colors: { divider: '#123456' } },
           },
-          lastSegmentT,
+          lastSegmentLabels,
         ),
       ),
     );

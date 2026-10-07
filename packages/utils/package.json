@@ -55,7 +55,8 @@
     "prepublishOnly": "pnpm run build && pnpm run test"
   },
   "dependencies": {
-    "@welldot/core": "workspace:*"
+    "@welldot/core": "workspace:*",
+    "date-fns": "^4.1.0"
   },
   "devDependencies": {
     "@welldot/lint": "workspace:*",

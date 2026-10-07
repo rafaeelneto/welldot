@@ -981,3 +981,48 @@ export function getWaterSampleWarnings(well: Well): WaterSampleWarning[] {
 
   return warnings;
 }
+
+// ─── Display helpers ─────────────────────────────────────────────────────────
+
+/** Unit symbol of a result: the vocabulary unit, else `mg/L` for unmapped CAS numbers, else `unit`. */
+export function parameterUnitSymbol(result: {
+  parameter: Parameter;
+  unit?: string;
+}): string {
+  const def = getParameterDefinition(result.parameter);
+  if (def) return def.unit.symbol;
+  // CAS numbers outside the equivalence table are substances in mg/L.
+  if (result.parameter.vocabulary === 'cas') return 'mg/L';
+  return result.unit ?? '';
+}
+
+/** Translated words {@link formatWaterQualityResult} needs. */
+export type ResultValueLabels = {
+  notDetected: string;
+  present: string;
+  absent: string;
+  /** Short "estimated" marker, shown as `0.004 (est.)`. */
+  estimated: string;
+};
+
+/**
+ * Display text of a result's value: `< 0.001`, `0.004 (est.)`, the
+ * not-detected/present/absent label, or the qualitative text.
+ * `formatNumber` defaults to `String`.
+ */
+export function formatWaterQualityResult(
+  result: Pick<WaterQualityResult, 'value' | 'presence' | 'text' | 'qualifier'>,
+  labels: ResultValueLabels,
+  formatNumber: (_n: number) => string = n => String(n),
+): string {
+  if (result.qualifier === 'not_detected') return labels.notDetected;
+  if (result.presence !== undefined)
+    return result.presence ? labels.present : labels.absent;
+  if (result.text !== undefined) return result.text;
+  if (result.value === undefined) return '—';
+  const n = formatNumber(result.value);
+  if (result.qualifier === '<' || result.qualifier === '>')
+    return `${result.qualifier} ${n}`;
+  if (result.qualifier === 'estimated') return `${n} (${labels.estimated})`;
+  return n;
+}

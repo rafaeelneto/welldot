@@ -1,9 +1,9 @@
 import type { HydrodynamicEvent } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildHydrodynamicEventsSection } from './hydrodynamicEventsTable';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 describe('buildHydrodynamicEventsSection', () => {
   it('returns null when there are no events', () => {
@@ -136,7 +136,7 @@ describe('buildHydrodynamicEventsSection', () => {
         well,
         makeTestContext(
           { dateFormats: { dateTime: 'yyyy-MM-dd HH:mm' } },
-          lastSegmentT,
+          lastSegmentLabels,
         ),
       ),
     );
@@ -161,7 +161,7 @@ describe('buildHydrodynamicEventsSection', () => {
     const well = baseWell({ hydrodynamic_events: events });
     const custom = makeTestContext(
       { theme: { colors: { divider: '#abcdef' } }, page: { size: 'A3' } },
-      lastSegmentT,
+      lastSegmentLabels,
     );
     const section = buildHydrodynamicEventsSection(well, custom) as {
       stack: { canvas?: { lineColor: string; x2: number }[] }[];

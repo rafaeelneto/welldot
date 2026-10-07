@@ -1,9 +1,9 @@
 import type { PumpInstallation } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildPumpInstallationSection } from './pumpInstallationTable';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 describe('buildPumpInstallationSection', () => {
   it('returns null when there are no installations', () => {
@@ -63,7 +63,10 @@ describe('buildPumpInstallationSection', () => {
     const serialized = JSON.stringify(
       buildPumpInstallationSection(
         baseWell({ pump_installations: pumps }),
-        makeTestContext({ units: { flow: 'L/s', power: 'cv' } }, lastSegmentT),
+        makeTestContext(
+          { units: { flow: 'L/s', power: 'cv' } },
+          lastSegmentLabels,
+        ),
       ),
     );
     expect(serialized).toContain('10.00 L/s');
@@ -107,7 +110,10 @@ describe('buildPumpInstallationSection', () => {
     const serialized = JSON.stringify(
       buildPumpInstallationSection(
         baseWell({ pump_installations: pumps }),
-        makeTestContext({ dateFormats: { date: 'yyyy-MM-dd' } }, lastSegmentT),
+        makeTestContext(
+          { dateFormats: { date: 'yyyy-MM-dd' } },
+          lastSegmentLabels,
+        ),
       ),
     );
     expect(serialized).toContain('2020-03-05 → 2024-07-08');

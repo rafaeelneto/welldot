@@ -1,9 +1,9 @@
 import type { WaterSample } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildWaterSampleSection } from './waterSampleTable';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 const wd = (code: string) => ({ code, vocabulary: 'welldot' });
 
@@ -115,7 +115,10 @@ describe('buildWaterSampleSection', () => {
   it('marks exceedances when a limit set is selected', () => {
     const section = buildWaterSampleSection(
       baseWell({ water_samples: [routine] }),
-      makeTestContext({ waterQualityLimitSet: 'who_gdwq_2022' }, lastSegmentT),
+      makeTestContext(
+        { waterQualityLimitSet: 'who_gdwq_2022' },
+        lastSegmentLabels,
+      ),
     );
     const [table] = resultTables(section);
     const isMarked = (row: number) =>
@@ -138,7 +141,7 @@ describe('buildWaterSampleSection', () => {
     const serialized = JSON.stringify(
       buildWaterSampleSection(
         baseWell({ water_samples: [routine] }),
-        makeTestContext({ waterQualityLimitSet: 'nope' }, lastSegmentT),
+        makeTestContext({ waterQualityLimitSet: 'nope' }, lastSegmentLabels),
       ),
     );
     expect(serialized).not.toContain('#b91c1c');
@@ -153,7 +156,7 @@ describe('buildWaterSampleSection', () => {
           theme: { colors: { exceedance: '#ff00aa' } },
           dateFormats: { date: 'yyyy-MM-dd', dateTime: 'yyyy-MM-dd HH:mm' },
         },
-        lastSegmentT,
+        lastSegmentLabels,
       ),
     );
     const [table] = resultTables(section);

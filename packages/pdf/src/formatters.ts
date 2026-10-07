@@ -1,19 +1,19 @@
 import type { VocabEntry } from '@welldot/core';
 import {
   flowFromCanonical,
+  formatVocabList,
   getVocabLabel,
   metersToFeet,
   mmToInches,
   powerFromCanonical,
   volumeFromCanonical,
 } from '@welldot/core';
-import { formatNumber } from '@welldot/utils';
 import {
+  formatNumber,
   resolveDiameterUnitLabel,
   resolveFlowUnitLabel,
   resolveVolumeUnitLabel,
-} from './helpers/unitLabel';
-import { formatVocabList } from './helpers/vocab';
+} from '@welldot/utils';
 import type { PdfContext } from './types/options.types';
 
 export interface PdfFormatters {
@@ -41,7 +41,9 @@ export interface PdfFormatters {
   diameterUnit: PdfContext['units']['diameter'];
   /** Display label of the resolved volume unit (`m³`, `L`, `ft³`, `gal`). */
   volumeUnitLabel: string;
-  /** Label of a core recommended-vocabulary value in the export locale. */
+  /** Export locale the labels resolve in. */
+  locale: string;
+  /** Label of a core/utils vocabulary value in the export locale. */
   vocab(_vocab: readonly VocabEntry[], _value: string): string;
   /** Comma-separated labels of a multi-valued vocabulary field. */
   vocabList(
@@ -121,6 +123,7 @@ export function createPdfFormatters(
   }
 
   return {
+    locale,
     vocab: (vocab, value) => getVocabLabel(vocab, value, locale),
     vocabList: (vocab, values) => formatVocabList(vocab, values, locale),
     formatLength,

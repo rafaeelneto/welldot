@@ -1,9 +1,9 @@
 import type { Meter } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildMeterSection } from './meterTable';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 describe('buildMeterSection', () => {
   it('returns null when there are no meters', () => {
@@ -46,7 +46,7 @@ describe('buildMeterSection', () => {
     const serialized = JSON.stringify(
       buildMeterSection(
         baseWell({ meters }),
-        makeTestContext({ units: { volume: 'L' } }, lastSegmentT),
+        makeTestContext({ units: { volume: 'L' } }, lastSegmentLabels),
       ),
     );
     expect(serialized).toContain('10,000 L');
@@ -116,7 +116,10 @@ describe('buildMeterSection', () => {
     const serialized = JSON.stringify(
       buildMeterSection(
         baseWell({ meters }),
-        makeTestContext({ dateFormats: { date: 'yyyy-MM-dd' } }, lastSegmentT),
+        makeTestContext(
+          { dateFormats: { date: 'yyyy-MM-dd' } },
+          lastSegmentLabels,
+        ),
       ),
     );
     expect(serialized).toContain('2020-03-05 → 2024-07-08');

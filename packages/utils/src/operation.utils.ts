@@ -9,6 +9,9 @@ import type {
   WellStatus,
 } from '@welldot/core';
 
+import { getVocabLabel, METER_TYPES } from '@welldot/core';
+
+import { formatDate } from './date.utils';
 import { getPermitStatus, todayCalendarDate } from './permit.utils';
 import { getRetractedIds, instantLocalDate } from './shared.utils';
 
@@ -745,4 +748,34 @@ export function getOperationWarnings(
   }
 
   return warnings;
+}
+
+// ─── Display helpers ─────────────────────────────────────────────────────────
+
+export type MeterLabelOptions = {
+  /** Locale of the meter type label. */
+  locale: string;
+  /** Text used when the meter has no `type`. */
+  untypedLabel: string;
+  /** date-fns pattern of the install date. Defaults to `dd/MM/yyyy`. */
+  dateFormat?: string;
+};
+
+/**
+ * Identifies one meter installation: type, serial and install date.
+ *
+ * @example formatMeterLabel(m, { locale: 'en', untypedLabel: 'Meter' })
+ * // "Electromagnetic · S/N 123 · 01/02/2024"
+ */
+export function formatMeterLabel(
+  meter: Meter,
+  { locale, untypedLabel, dateFormat = 'dd/MM/yyyy' }: MeterLabelOptions,
+): string {
+  return [
+    meter.type ? getVocabLabel(METER_TYPES, meter.type, locale) : untypedLabel,
+    meter.serial ? `S/N ${meter.serial}` : null,
+    formatDate(meter.installed_at, dateFormat),
+  ]
+    .filter(Boolean)
+    .join(' · ');
 }

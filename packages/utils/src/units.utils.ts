@@ -1,10 +1,9 @@
+// ─── Unit display labels ─────────────────────────────────────────────────────
 import type { DiameterUnits, FlowUnits, VolumeUnits } from '@welldot/core';
 
 /**
- * Resolves the diameter unit's display suffix for the active locale.
- * `mm` is locale-invariant; `inches` reads `in.` in English and `"` in
- * Portuguese, matching the double-quote convention used in Brazilian
- * well reports.
+ * Display suffix of a diameter unit. `mm` is locale-invariant; `inches`
+ * reads `"` in Portuguese (Brazilian well reports) and `in.` otherwise.
  */
 export function resolveDiameterUnitLabel(
   unit: DiameterUnits,
@@ -14,7 +13,7 @@ export function resolveDiameterUnitLabel(
   return locale === 'pt' ? '"' : 'in.';
 }
 
-/** Display suffix for a flow unit (`m3/h` is the storage token, `m³/h` the label). */
+/** Display suffix of a flow unit (`m3/h` is the storage token, `m³/h` the label). */
 export function resolveFlowUnitLabel(unit: FlowUnits): string {
   return unit === 'm3/h' ? 'm³/h' : unit;
 }
@@ -26,7 +25,7 @@ const VOLUME_UNIT_LABELS: Record<VolumeUnits, string> = {
   gal: 'gal',
 };
 
-/** Display suffix for a volume unit (`m3`/`ft3` are storage tokens, `m³`/`ft³` the labels). */
+/** Display suffix of a volume unit (`m3`/`ft3` are storage tokens, `m³`/`ft³` the labels). */
 export function resolveVolumeUnitLabel(unit: VolumeUnits): string {
   return VOLUME_UNIT_LABELS[unit] ?? unit;
 }

@@ -4,9 +4,11 @@ import {
   CENTRALIZER_TYPES,
   CONSTRUCTION_MATERIALS,
 } from '@welldot/core';
-import { calculateHoleFillVolume } from '@welldot/utils';
+import {
+  calculateHoleFillVolume,
+  resolveDiameterUnitLabel,
+} from '@welldot/utils';
 import { createPdfFormatters } from '../formatters';
-import { resolveDiameterUnitLabel } from '../helpers/unitLabel';
 import {
   headerCell,
   lightLinesLayout,
@@ -17,31 +19,31 @@ import type { PdfContext } from '../types/options.types';
 import type { Content, TableCell } from '../types/pdfmake.types';
 
 function buildCementPadSection(well: Well, ctx: PdfContext): Content | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   const pad = well.cement_pad;
   if (!pad?.thickness || !pad?.width) return null;
 
   const { formatLength, vocab } = createPdfFormatters(ctx);
   const body: TableCell[][] = [
     [
-      headerCell(t('construction.wellhead.thickness')),
+      headerCell(labels.construction.wellhead.thickness),
       rightCell(formatLength(pad.thickness)),
     ],
     [
-      headerCell(t('construction.wellhead.width')),
+      headerCell(labels.construction.wellhead.width),
       rightCell(formatLength(pad.width)),
     ],
     [
-      headerCell(t('construction.wellhead.length')),
+      headerCell(labels.construction.wellhead.length),
       rightCell(formatLength(pad.length)),
     ],
     [
-      headerCell(t('construction.wellhead.type')),
+      headerCell(labels.construction.wellhead.type),
       rightCell(pad.type ? vocab(CEMENT_PAD_TYPES, pad.type) : '—'),
     ],
   ];
 
-  return withTableTitle(t('construction.wellhead.cementPad'), {
+  return withTableTitle(labels.construction.wellhead.cementPad, {
     layout: lightLinesLayout(ctx),
     table: { widths: ['*', '*'], dontBreakRows: true, body },
   });
@@ -52,7 +54,7 @@ function buildIntervalSection(
   title: string,
   ctx: PdfContext,
 ): Content | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   if (items.length === 0) return null;
 
   const { formatLength, formatDiameter, diameterUnit, lengthUnit } =
@@ -60,10 +62,10 @@ function buildIntervalSection(
   const body: TableCell[][] = [
     [
       headerCell(
-        `${t('construction.boreHole.diameter')} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
+        `${labels.construction.boreHole.diameter} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
       ),
-      headerCell(`${t('construction.boreHole.from')} (${lengthUnit})`, true),
-      headerCell(`${t('construction.boreHole.to')} (${lengthUnit})`, true),
+      headerCell(`${labels.construction.boreHole.from} (${lengthUnit})`, true),
+      headerCell(`${labels.construction.boreHole.to} (${lengthUnit})`, true),
     ],
   ];
   for (const item of items) {
@@ -86,7 +88,7 @@ function buildIntervalSection(
 }
 
 function buildHoleFillSection(well: Well, ctx: PdfContext): Content | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   const items = well.hole_fill;
   if (items.length === 0) return null;
 
@@ -99,13 +101,13 @@ function buildHoleFillSection(well: Well, ctx: PdfContext): Content | null {
   } = createPdfFormatters(ctx);
   const body: TableCell[][] = [
     [
-      headerCell(t('construction.holeFill.description')),
+      headerCell(labels.construction.holeFill.description),
       headerCell(
-        `${t('construction.holeFill.diameter')} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
+        `${labels.construction.holeFill.diameter} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
         true,
       ),
-      headerCell(`${t('construction.holeFill.from')} (${lengthUnit})`, true),
-      headerCell(`${t('construction.holeFill.to')} (${lengthUnit})`, true),
+      headerCell(`${labels.construction.holeFill.from} (${lengthUnit})`, true),
+      headerCell(`${labels.construction.holeFill.to} (${lengthUnit})`, true),
     ],
   ];
 
@@ -122,7 +124,7 @@ function buildHoleFillSection(well: Well, ctx: PdfContext): Content | null {
       const volumeM3 = calculateHoleFillVolume(item.type, well);
       body.push([
         {
-          text: t('document.volumeTotal'),
+          text: labels.document.volumeTotal,
           style: 'sumRow',
           colSpan: 3,
         },
@@ -133,7 +135,7 @@ function buildHoleFillSection(well: Well, ctx: PdfContext): Content | null {
     }
   });
 
-  return withTableTitle(t('construction.holeFill.title'), {
+  return withTableTitle(labels.construction.holeFill.title, {
     layout: 'lightHorizontalLines',
     table: {
       widths: ['*', 'auto', 'auto', 'auto'],
@@ -145,7 +147,7 @@ function buildHoleFillSection(well: Well, ctx: PdfContext): Content | null {
 }
 
 function buildWellCaseSection(well: Well, ctx: PdfContext): Content | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   const items = well.well_case;
   if (items.length === 0) return null;
 
@@ -153,13 +155,13 @@ function buildWellCaseSection(well: Well, ctx: PdfContext): Content | null {
     createPdfFormatters(ctx);
   const body: TableCell[][] = [
     [
-      headerCell(t('construction.wellCase.type')),
+      headerCell(labels.construction.wellCase.type),
       headerCell(
-        `${t('construction.wellCase.diameter')} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
+        `${labels.construction.wellCase.diameter} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
         true,
       ),
-      headerCell(`${t('construction.wellCase.from')} (${lengthUnit})`, true),
-      headerCell(`${t('construction.wellCase.to')} (${lengthUnit})`, true),
+      headerCell(`${labels.construction.wellCase.from} (${lengthUnit})`, true),
+      headerCell(`${labels.construction.wellCase.to} (${lengthUnit})`, true),
     ],
   ];
 
@@ -178,7 +180,7 @@ function buildWellCaseSection(well: Well, ctx: PdfContext): Content | null {
         .reduce((sum, el) => sum + (el.to - el.from), 0);
       body.push([
         {
-          text: t('document.total'),
+          text: labels.document.total,
           style: 'sumRow',
           colSpan: 3,
         },
@@ -193,7 +195,7 @@ function buildWellCaseSection(well: Well, ctx: PdfContext): Content | null {
     }
   });
 
-  return withTableTitle(t('construction.wellCase.title'), {
+  return withTableTitle(labels.construction.wellCase.title, {
     layout: 'lightHorizontalLines',
     table: {
       widths: ['*', 'auto', 'auto', 'auto'],
@@ -205,7 +207,7 @@ function buildWellCaseSection(well: Well, ctx: PdfContext): Content | null {
 }
 
 function buildReductionSection(well: Well, ctx: PdfContext): Content | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   const items = well.reduction;
   if (items.length === 0) return null;
 
@@ -213,17 +215,17 @@ function buildReductionSection(well: Well, ctx: PdfContext): Content | null {
     createPdfFormatters(ctx);
   const body: TableCell[][] = [
     [
-      headerCell(t('construction.reduction.type')),
+      headerCell(labels.construction.reduction.type),
       headerCell(
-        `${t('construction.reduction.diamFrom')} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
+        `${labels.construction.reduction.diamFrom} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
         true,
       ),
       headerCell(
-        `${t('construction.reduction.diamTo')} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
+        `${labels.construction.reduction.diamTo} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
         true,
       ),
-      headerCell(`${t('construction.reduction.from')} (${lengthUnit})`, true),
-      headerCell(`${t('construction.reduction.to')} (${lengthUnit})`, true),
+      headerCell(`${labels.construction.reduction.from} (${lengthUnit})`, true),
+      headerCell(`${labels.construction.reduction.to} (${lengthUnit})`, true),
     ],
   ];
 
@@ -237,7 +239,7 @@ function buildReductionSection(well: Well, ctx: PdfContext): Content | null {
     ]);
   }
 
-  return withTableTitle(t('construction.reduction.title'), {
+  return withTableTitle(labels.construction.reduction.title, {
     layout: 'lightHorizontalLines',
     table: {
       widths: ['*', 'auto', 'auto', 'auto', 'auto'],
@@ -249,7 +251,7 @@ function buildReductionSection(well: Well, ctx: PdfContext): Content | null {
 }
 
 function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   const items = well.well_screen;
   if (items.length === 0) return null;
 
@@ -257,17 +259,20 @@ function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
     createPdfFormatters(ctx);
   const body: TableCell[][] = [
     [
-      headerCell(t('construction.wellScreen.type')),
+      headerCell(labels.construction.wellScreen.type),
       headerCell(
-        `${t('construction.wellScreen.diameter')} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
+        `${labels.construction.wellScreen.diameter} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
         true,
       ),
       headerCell(
-        `${t('document.slot')} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
+        `${labels.document.slot} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
         true,
       ),
-      headerCell(`${t('construction.wellScreen.from')} (${lengthUnit})`, true),
-      headerCell(`${t('construction.wellScreen.to')} (${lengthUnit})`, true),
+      headerCell(
+        `${labels.construction.wellScreen.from} (${lengthUnit})`,
+        true,
+      ),
+      headerCell(`${labels.construction.wellScreen.to} (${lengthUnit})`, true),
     ],
   ];
 
@@ -287,7 +292,7 @@ function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
         .reduce((sum, el) => sum + (el.to - el.from), 0);
       body.push([
         {
-          text: t('document.total'),
+          text: labels.document.total,
           style: 'sumRow',
           colSpan: 4,
         },
@@ -303,7 +308,7 @@ function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
     }
   });
 
-  return withTableTitle(t('construction.wellScreen.title'), {
+  return withTableTitle(labels.construction.wellScreen.title, {
     layout: 'lightHorizontalLines',
     table: {
       widths: ['*', 'auto', 'auto', 'auto', 'auto'],
@@ -315,7 +320,7 @@ function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
 }
 
 function buildCentralizerSection(well: Well, ctx: PdfContext): Content | null {
-  const { t } = ctx;
+  const { labels } = ctx;
   const items = well.centralizers ?? [];
   if (items.length === 0) return null;
 
@@ -323,17 +328,20 @@ function buildCentralizerSection(well: Well, ctx: PdfContext): Content | null {
     createPdfFormatters(ctx);
   const body: TableCell[][] = [
     [
-      headerCell(t('construction.centralizer.type')),
+      headerCell(labels.construction.centralizer.type),
       headerCell(
-        `${t('construction.centralizer.diameter')} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
+        `${labels.construction.centralizer.diameter} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
         true,
       ),
       headerCell(
-        `${t('construction.centralizer.spacing')} (${lengthUnit})`,
+        `${labels.construction.centralizer.spacing} (${lengthUnit})`,
         true,
       ),
-      headerCell(`${t('construction.centralizer.from')} (${lengthUnit})`, true),
-      headerCell(`${t('construction.centralizer.to')} (${lengthUnit})`, true),
+      headerCell(
+        `${labels.construction.centralizer.from} (${lengthUnit})`,
+        true,
+      ),
+      headerCell(`${labels.construction.centralizer.to} (${lengthUnit})`, true),
     ],
   ];
 
@@ -349,7 +357,7 @@ function buildCentralizerSection(well: Well, ctx: PdfContext): Content | null {
     ]);
   }
 
-  return withTableTitle(t('construction.centralizer.title'), {
+  return withTableTitle(labels.construction.centralizer.title, {
     layout: 'lightHorizontalLines',
     table: {
       widths: ['*', 'auto', 'auto', 'auto', 'auto'],
@@ -367,13 +375,17 @@ function buildCentralizerSection(well: Well, ctx: PdfContext): Content | null {
  * omitted when its corresponding `well.*` array/field is empty.
  */
 export function buildSectionTables(well: Well, ctx: PdfContext): Content[] {
-  const { t } = ctx;
+  const { labels } = ctx;
   const sections = [
     buildCementPadSection(well, ctx),
-    buildIntervalSection(well.bore_hole, t('construction.boreHole.title'), ctx),
+    buildIntervalSection(
+      well.bore_hole,
+      labels.construction.boreHole.title,
+      ctx,
+    ),
     buildIntervalSection(
       well.surface_case,
-      t('construction.surfaceCase.title'),
+      labels.construction.surfaceCase.title,
       ctx,
     ),
     buildHoleFillSection(well, ctx),

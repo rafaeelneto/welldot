@@ -20,8 +20,8 @@ export function buildOperatingRegimeSection(
 
   const fmt = createPdfFormatters(ctx);
   const currentId = getCurrentRegime(well)?.id;
-  const { t } = ctx;
-  const field = (key: string) => t(`operation.regime.fields.${key}`);
+  const { labels } = ctx;
+  const fields = labels.operation.regime.fields;
   const sorted: OperatingRegime[] = [...regimes].sort(
     (a, b) =>
       new Date(b.effective_from).getTime() -
@@ -30,17 +30,19 @@ export function buildOperatingRegimeSection(
 
   const body: TableCell[][] = [
     [
-      headerCell(field('effectiveFrom')),
-      headerCell(field('flowRate'), true),
-      headerCell(`${field('dailyOperatingTime')} (h)`, true),
-      headerCell(field('daysPerWeek'), true),
-      headerCell(field('notes')),
+      headerCell(fields.effectiveFrom),
+      headerCell(fields.flowRate, true),
+      headerCell(`${fields.dailyOperatingTime} (h)`, true),
+      headerCell(fields.daysPerWeek, true),
+      headerCell(fields.notes),
     ],
   ];
   sorted.forEach(r => {
     const date = format(parseISO(r.effective_from), ctx.dateFormats.dateTime);
     body.push([
-      r.id === currentId ? `${date}  (${t('operation.regime.inForce')})` : date,
+      r.id === currentId
+        ? `${date}  (${labels.operation.regime.inForce})`
+        : date,
       rightCell(fmt.formatFlow(r.flow_rate, 2)),
       rightCell(
         r.daily_operating_time != null
@@ -55,7 +57,7 @@ export function buildOperatingRegimeSection(
   return {
     stack: [
       { text: ' ' },
-      withTableTitle(t('operation.regime.title'), {
+      withTableTitle(labels.operation.regime.title, {
         layout: 'lightHorizontalLines',
         table: {
           widths: ['auto', 'auto', 'auto', 'auto', '*'],

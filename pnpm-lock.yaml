@@ -622,6 +622,9 @@ importers:
       '@welldot/core':
         specifier: workspace:*
         version: link:../core
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
     devDependencies:
       '@welldot/lint':
         specifier: workspace:*

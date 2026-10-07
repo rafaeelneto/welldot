@@ -1,9 +1,9 @@
 import type { OperatingRegime } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentT, makeTestContext } from '../test-utils';
+import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
 import { buildOperatingRegimeSection } from './operatingRegimeTable';
 
-const ctx = makeTestContext({}, lastSegmentT);
+const ctx = makeTestContext({}, lastSegmentLabels);
 
 describe('buildOperatingRegimeSection', () => {
   it('returns null when there is no regime', () => {
@@ -59,7 +59,7 @@ describe('buildOperatingRegimeSection', () => {
         baseWell({ operating_regime: regimes }),
         makeTestContext(
           { dateFormats: { dateTime: "yyyy-MM-dd '@' HH:mm" } },
-          lastSegmentT,
+          lastSegmentLabels,
         ),
       ),
     );
