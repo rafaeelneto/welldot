@@ -51,7 +51,7 @@ export const PERMIT_ADMINISTRATIVE_STATUSES =
     { value: 'suspended', label: { en: 'Suspended', pt: 'Suspensa' } },
     { value: 'revoked', label: { en: 'Revoked', pt: 'Revogada' } },
     { value: 'denied', label: { en: 'Denied', pt: 'Indeferida' } },
-    { value: 'withdrawn', label: { en: 'Withdrawn', pt: 'Desistida' } },
+    { value: 'withdrawn', label: { en: 'Withdrawn', pt: 'Cancelada' } },
   ]);
 
 /** `permits[].volume_limits[].period` (since v2.3). */

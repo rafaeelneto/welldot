@@ -259,7 +259,8 @@
         "diameter": "Diâmetro",
         "flow": "Vazão",
         "power": "Potência",
-        "volume": "Volume"
+        "volume": "Volume",
+        "inches": "pol."
       },
       "coordinates": {
         "title": "Coordenadas",
@@ -522,7 +523,7 @@
         "from": "De",
         "to": "Até",
         "diameter": "Diâm.",
-        "screenSlot": "Slot (mm)",
+        "screenSlot": "Abertura (mm)",
         "type": "Tipo",
         "typeInfo": "Material (ou tipo construtivo) do filtro por onde a água entra no poço, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
         "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo (ex.: aço inox espiralado, ponte/bridge slot) e ele será salvo como escrito.",
@@ -1175,7 +1176,7 @@
           "suspended": "Suspensa",
           "revoked": "Revogada",
           "denied": "Indeferida",
-          "withdrawn": "Desistida",
+          "withdrawn": "Cancelada",
           "superseded": "Substituída",
           "not_yet_valid": "Ainda não vigente",
           "active": "Vigente",

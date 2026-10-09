@@ -667,7 +667,7 @@ Identifiers are free strings preserved verbatim, because agencies use diverse fo
 | `suspended` | Suspensa        | Temporarily halted by the authority.                            |
 | `revoked`   | Revogada        | Cancelled by the authority.                                     |
 | `denied`    | Indeferida      | The request was refused.                                        |
-| `withdrawn` | Desistida       | The request or permit was given up by the holder.               |
+| `withdrawn` | Cancelada       | The request or permit was given up by the holder.               |
 
 The change itself (notice of suspension, decision) is recorded as a `history` step, with the document attached.
 

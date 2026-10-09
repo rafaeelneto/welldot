@@ -259,7 +259,8 @@
         "diameter": "Diameter",
         "flow": "Flow rate",
         "power": "Power",
-        "volume": "Volume"
+        "volume": "Volume",
+        "inches": "in."
       },
       "coordinates": {
         "title": "Coordinates",
