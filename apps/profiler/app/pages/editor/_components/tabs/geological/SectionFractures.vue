@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Well } from '@welldot/core';
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -87,6 +87,11 @@ function reorderFracture(from: number, to: number) {
       :rows="[...profileStore.well.fractures]"
       :columns="fractureColumns"
       :add-label="t('editor.geological.fractures.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addFracture"
       @delete="deleteFracture"
       @change="updateFracture"

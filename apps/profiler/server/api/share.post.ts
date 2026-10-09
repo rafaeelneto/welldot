@@ -1,4 +1,3 @@
-/* eslint-disable camelcase -- `well_json` matches the Supabase column name */
 import { deserializeWell, isWellEmpty, serializeWell } from '@welldot/core';
 import type { RateLimiterBinding } from '../utils/rateLimit';
 

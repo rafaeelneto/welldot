@@ -1,4 +1,5 @@
-import { serializeWell } from '@welldot/core';
+import type { Well } from '@welldot/core';
+import { redactWell, serializeWell } from '@welldot/core';
 
 /**
  * Composable for exporting the current profile.
@@ -9,6 +10,7 @@ import { serializeWell } from '@welldot/core';
  */
 export function useProfileExport() {
   const store = useProfileStore();
+  const shareVisibilityStore = useShareVisibilityStore();
   const persistence = useFilePersistence();
 
   /** Serialise the current well to a JSON string, or null if no well is loaded. */
@@ -18,8 +20,17 @@ export function useProfileExport() {
     return serializeWell(well);
   }
 
-  function _defaultName(): string {
+  /**
+   * Serialise the current well to JSON with the shared section-visibility
+   * preference applied — used by the Share dialog, never by Save/Save As.
+   */
+  function getShareableJson(): string | null {
     const well = store.getExportableWell();
+    if (!well) return null;
+    return serializeWell(redactWell(well, shareVisibilityStore.visibility));
+  }
+
+  function _defaultName(well: Well | null): string {
     return `${well?.name ?? 'well'}.well`;
   }
 
@@ -31,7 +42,10 @@ export function useProfileExport() {
     if (import.meta.server) return;
     const json = getRawJson();
     if (!json) return;
-    const ok = await persistence.save(json, _defaultName());
+    const ok = await persistence.save(
+      json,
+      _defaultName(store.getExportableWell()),
+    );
     if (ok) store.markClean();
   }
 
@@ -43,12 +57,16 @@ export function useProfileExport() {
     if (import.meta.server) return;
     const json = getRawJson();
     if (!json) return;
-    const ok = await persistence.saveAs(json, _defaultName());
+    const ok = await persistence.saveAs(
+      json,
+      _defaultName(store.getExportableWell()),
+    );
     if (ok) store.markClean();
   }
 
   /**
-   * Trigger a `.well` file download in the browser.
+   * Trigger a `.well` file download in the browser, with the shared
+   * section-visibility preference applied.
    * No-ops on the server (SSR guard) and when no well is loaded.
    *
    * @param filename - Override the default `<wellName>.well` filename.
@@ -56,10 +74,12 @@ export function useProfileExport() {
   function download(filename?: string): void {
     if (import.meta.server) return;
 
-    const json = getRawJson();
-    if (!json) return;
+    const well = store.getExportableWell();
+    if (!well) return;
+    const redacted = redactWell(well, shareVisibilityStore.visibility);
+    const json = serializeWell(redacted);
 
-    const name = filename ?? _defaultName();
+    const name = filename ?? _defaultName(redacted);
 
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -70,5 +90,5 @@ export function useProfileExport() {
     URL.revokeObjectURL(url);
   }
 
-  return { getRawJson, save, saveAs, download };
+  return { getRawJson, getShareableJson, save, saveAs, download };
 }

@@ -1,6 +1,7 @@
 {
   "name": "welldot",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
@@ -11,6 +12,7 @@
   },
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
+    "@welldot/lint": "workspace:*",
     "@eslint/js": "^8.57.1",
     "@typescript-eslint/eslint-plugin": "^8.59.0",
     "@typescript-eslint/parser": "^8.59.0",

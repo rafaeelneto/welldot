@@ -4,6 +4,7 @@ import type {
   Constructive,
   Fracture,
   HoleFill,
+  LanguageText,
   Lithology,
   Reduction,
   SurfaceCase,
@@ -100,6 +101,15 @@ export type ConstructionTheme = {
   wellCase: { fill: string; stroke: string; strokeWidth: number };
   wellScreen: { stroke: string; strokeWidth: number };
   reduction: { fill: string; stroke: string; strokeWidth: number };
+  centralizer: { fill: string; stroke: string; strokeWidth: number };
+  /** Current pump body and its riser pipe (`.well` v2.3 `pump_installations`). */
+  pump: {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+    riserStroke: string;
+    riserStrokeWidth: number;
+  };
   conflict: { stroke: string; strokeWidth: number };
 };
 export type LabelsTheme = {
@@ -231,6 +241,14 @@ export type ComponentsClassNames = {
     group: string;
     item: string;
   };
+  centralizer: {
+    group: string;
+    item: string;
+  };
+  pump: {
+    group: string;
+    item: string;
+  };
   conflict: {
     group: string;
     rect: string;
@@ -270,10 +288,91 @@ export type TooltipKey =
   | 'wellCase'
   | 'wellScreen'
   | 'reduction'
+  | 'centralizer'
+  | 'pump'
   | 'conflict'
   | 'fracture'
   | 'cementPad'
   | 'cave';
+
+/**
+ * Renderer-drawn text: a core `LanguageText` with `pt` required (the fallback
+ * locale; `en` and any other tag optional), or a bare string when the value
+ * doesn't vary by locale. Resolve via `resolveRenderLabel()` — never read a
+ * tag directly, since the value may be a plain string.
+ */
+export type RenderLocalizedText = LanguageText<'pt'> | string;
+
+/**
+ * Shape shared by `RenderConfig.tooltipLabels` (resolved, `T = string`) and
+ * `RenderLabelPack.tooltipLabels` (authoring, `T = RenderLocalizedText`) —
+ * defined once via the generic so the two shapes can't drift apart.
+ */
+export type TooltipLabels<T = string> = {
+  common: {
+    from: T;
+    to: T;
+    description: T;
+    diameter: T;
+    type: T;
+  };
+  geology: { title: T; geologicUnit: T; aquiferUnit: T };
+  hole: { title: T };
+  surfaceCase: { title: T };
+  holeFill: { title: T };
+  wellCase: { title: T };
+  wellScreen: { title: T; slot: T };
+  reduction: { title: T };
+  centralizer: { title: T; depth: T; spacing: T };
+  pump: {
+    title: T;
+    intakeDepth: T;
+    model: T;
+    power: T;
+    riser: T;
+    type_submersible: T;
+    type_vertical_turbine: T;
+    type_jet: T;
+    type_progressive_cavity: T;
+    type_hand_pump: T;
+    type_compressor_airlift: T;
+  };
+  conflict: { title: T };
+  fracture: {
+    title: T;
+    titleSwarm: T;
+    depth: T;
+    waterIntake: T;
+    dip: T;
+    azimuth: T;
+  };
+  cementPad: { title: T; thickness: T; width: T; length: T };
+  cave: { title: T; waterIntake: T };
+};
+
+/**
+ * Canonical, paired-locale source for every string `@welldot/render` draws.
+ * `RENDER_LABELS` (in `configs/render.configs.ts`) is the sole instance;
+ * `applyRenderLocale()` resolves it down to a plain-string `DeepPartial<RenderConfig>`.
+ */
+export type RenderLabelPack = {
+  constructionLabels: {
+    wellCasePrefix: RenderLocalizedText;
+    wellScreenPrefix: RenderLocalizedText;
+    wellScreenSlotPrefix: RenderLocalizedText;
+  };
+  legend: {
+    title: RenderLocalizedText;
+    labels: Record<keyof LegendRenderConfig['labels'], RenderLocalizedText>;
+  };
+  tooltipLabels: TooltipLabels<RenderLocalizedText>;
+  typeLabels: {
+    fracture: RenderLocalizedText;
+    fractureWater: RenderLocalizedText;
+    cave: RenderLocalizedText;
+    caveWater: RenderLocalizedText;
+  };
+};
 
 /** Full rendering behaviour configuration. Use `INTERACTIVE_RENDER_CONFIG` or `STATIC_RENDER_CONFIG` as a starting point. */
 export type RenderConfig = {
@@ -287,6 +386,8 @@ export type RenderConfig = {
   minZoomScale?: number;
   /** undefined = show all; false or [] = show none; array = show only listed keys */
   tooltips?: TooltipKey[] | false;
+  /** Resolved (plain-string) tooltip titles/field labels — see `TooltipLabels`. */
+  tooltipLabels: TooltipLabels;
   animation: {
     duration: number;
     ease: (t: number) => number;
@@ -327,6 +428,21 @@ export type RenderConfig = {
     surfaceCase: {
       diameterPaddingRatio: number;
     };
+    centralizer: {
+      /** Half the marker height in pixels (constant regardless of zoom). */
+      markerHalfHeight: number;
+    };
+    /** Current pump + riser layer (`.well` v2.3 `pump_installations`). */
+    pump: {
+      /** Whether the current pump is drawn. */
+      active: boolean;
+      /** Pump body height in pixels (constant regardless of zoom); the body ends at `intake_depth`. */
+      bodyHeight: number;
+      /** Pump body width as a fraction of the casing/screen diameter at the intake. */
+      bodyWidthRatio: number;
+      /** Riser width as a fraction of the casing diameter, used when `riser_diameter` is absent. */
+      riserWidthRatio: number;
+    };
   };
   textures?: TexturesConfig;
   constructionLabels: {
@@ -347,7 +463,9 @@ export type RenderConfig = {
     lithology?: boolean | ('depth' | 'description' | 'dividers')[];
     typeLabels?: {
       fracture?: string;
+      fractureWater?: string;
       cave?: string;
+      caveWater?: string;
     };
     depthTipHeight: number;
     depthTipPadX: number;
@@ -409,6 +527,8 @@ export type LegendRenderConfig = {
     wellCase: string;
     wellScreen: string;
     reduction: string;
+    centralizer: string;
+    pump: string;
     cementPad: string;
     conflict: string;
   };
@@ -449,6 +569,8 @@ export type DrawGroups = {
   wellCaseGroup: SvgSelection;
   wellScreenGroup: SvgSelection;
   reductionGroup: SvgSelection;
+  centralizerGroup: SvgSelection;
+  pumpGroup: SvgSelection;
   conflictGroup: SvgSelection;
   highlightsGeologicGroup: SvgSelection;
   highlightsConstructionGroup: SvgSelection;
@@ -501,6 +623,7 @@ export type DrawContext = {
   classes: ComponentsClassNames;
   textures: WellTextures;
   units: Units;
+  locale: 'en' | 'pt';
   /** Full (unfiltered) construction profile — for x-scale domain. */
   constructionData: Constructive;
   groups: DrawGroups;

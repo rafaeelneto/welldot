@@ -1,4 +1,3 @@
-/* eslint-disable camelcase -- .well schema fields (bore_hole, well_case, ...) are intentionally snake_case */
 import type { Well } from '@welldot/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useProfileShare } from './useProfileShare';
@@ -9,6 +8,18 @@ const { getExportableWell } = vi.hoisted(() => ({
 
 vi.mock('~/stores/profile.store', () => ({
   useProfileStore: () => ({ getExportableWell }),
+}));
+
+vi.mock('~/stores/shareVisibility.store', () => ({
+  useShareVisibilityStore: () => ({
+    visibility: {
+      general: true,
+      constructive: true,
+      geology: true,
+      hydrodynamic: true,
+      history: true,
+    },
+  }),
 }));
 
 const nonEmptyWell = {
@@ -53,7 +64,10 @@ describe('useProfileShare', () => {
     const first = await getShare();
     const second = await getShare();
 
-    expect(first).toEqual({ id: 'abc123', expiresAt: '2026-09-14T00:00:00.000Z' });
+    expect(first).toEqual({
+      id: 'abc123',
+      expiresAt: '2026-09-14T00:00:00.000Z',
+    });
     expect(second).toEqual(first);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });

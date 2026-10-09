@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { useDark } from '@vueuse/core';
-import type { DiameterUnits, LengthUnits } from '@welldot/core';
+import type {
+  DiameterUnits,
+  FlowUnits,
+  LengthUnits,
+  PowerUnits,
+  VolumeUnits,
+} from '@welldot/core';
 import type { CoordinateFormat } from '~/stores/ui.store';
 
 const visible = defineModel<boolean>({ default: false });
@@ -20,6 +26,14 @@ const isDark = useDark({
 
 const lengthUnitOptions: LengthUnits[] = ['m', 'ft'];
 const diameterUnitOptions: DiameterUnits[] = ['mm', 'inches'];
+const flowUnitOptions = (['m3/h', 'L/s', 'gpm'] as FlowUnits[]).map(value => ({
+  value,
+  label: resolveFlowUnitLabel(value),
+}));
+const powerUnitOptions: PowerUnits[] = ['kW', 'cv', 'hp'];
+const volumeUnitOptions = (['m3', 'L', 'ft3', 'gal'] as VolumeUnits[]).map(
+  value => ({ value, label: resolveVolumeUnitLabel(value) }),
+);
 const coordinateFormatOptions: CoordinateFormat[] = ['DD', 'DMS'];
 
 const currentLocale = computed({
@@ -27,7 +41,7 @@ const currentLocale = computed({
   set: (val: string) => setLocale(val as 'en' | 'pt'),
 });
 
-const localeOptions = locales.value.map((l) => l.code);
+const localeOptions = locales.value.map(l => l.code);
 
 const togglePt = {
   root: {
@@ -75,6 +89,40 @@ const togglePt = {
           <SelectButton
             v-model="uiStore.diameterUnit"
             :options="diameterUnitOptions"
+            :allow-empty="false"
+          />
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-sm text-content-0">
+            {{ t('editor.settings.units.flow') }}
+          </span>
+          <SelectButton
+            v-model="uiStore.flowUnit"
+            :options="flowUnitOptions"
+            option-label="label"
+            option-value="value"
+            :allow-empty="false"
+          />
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-sm text-content-0">
+            {{ t('editor.settings.units.power') }}
+          </span>
+          <SelectButton
+            v-model="uiStore.powerUnit"
+            :options="powerUnitOptions"
+            :allow-empty="false"
+          />
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-sm text-content-0">
+            {{ t('editor.settings.units.volume') }}
+          </span>
+          <SelectButton
+            v-model="uiStore.volumeUnit"
+            :options="volumeUnitOptions"
+            option-label="label"
+            option-value="value"
             :allow-empty="false"
           />
         </div>

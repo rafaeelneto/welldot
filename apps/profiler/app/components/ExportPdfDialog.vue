@@ -150,6 +150,28 @@ const endInfoCount = computed(() =>
             />
           </section>
 
+          <!-- What to share -->
+          <section class="flex flex-col gap-3">
+            <span :class="kickerClass">{{
+              t('editor.exportPdfDialog.visibilitySection.title')
+            }}</span>
+            <div class="flex items-center justify-between">
+              <label
+                for="pdf-use-custom-visibility"
+                class="text-sm text-content-0 cursor-pointer"
+              >
+                {{ t('editor.exportPdfDialog.visibilitySection.toggle') }}
+              </label>
+              <ToggleSwitch
+                v-model="pdfExportStore.useCustomVisibility"
+                input-id="pdf-use-custom-visibility"
+              />
+            </div>
+            <ShareVisibilityChecklist
+              v-if="pdfExportStore.useCustomVisibility"
+            />
+          </section>
+
           <!-- Scale -->
           <section class="flex flex-col gap-3">
             <span :class="kickerClass">{{
@@ -263,6 +285,6 @@ const endInfoCount = computed(() =>
       </div>
     </div>
 
-    <div ref="draftContainerRef" v-show="false" />
+    <div v-show="false" ref="draftContainerRef" />
   </Dialog>
 </template>

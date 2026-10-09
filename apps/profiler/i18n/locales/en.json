@@ -1,14 +1,28 @@
 {
   "meta": {
-    "title": "Welldot — Open well profile format",
-    "description": "Free editor to create, visualize, and export geological and construction profiles. A simple JSON, versioned, readable by any language."
+    "title": "Well Profiler App for the Open .well Format",
+    "description": "Welldot (formerly Well Profiler) is a free well profiler app for well profiles — visualize, edit, and export in the open, versioned .well format.",
+    "featureList": [
+      "Create, visualize, and export geological and construction well profiles",
+      "Open, versioned .well JSON file format",
+      "Pump installation history and general attachments (.well v2.3)",
+      "Free and open source"
+    ]
+  },
+  "editorMeta": {
+    "title": "Well Profile Editor",
+    "description": "Free browser-based well profiler app to create, visualize, and export geological and construction well profiles as open, versioned .well files."
   },
   "nav": {
     "editor": "Editor",
+    "manager": "Manager",
+    "preview": "Preview",
+    "managerTooltip": "Well manager — preview release",
     "github": "GitHub",
     "openEditor": "Open editor",
     "openEditorMobile": "Editor",
     "menu": "Menu",
+    "language": "Language",
     "theme": {
       "light": "Light mode",
       "dark": "Dark mode"
@@ -16,7 +30,7 @@
   },
   "footer": {
     "version": "welldot · v1.0.0",
-    "spec": ".well spec v1.0",
+    "spec": ".well spec v2.3",
     "license": "Open · Apache 2.0"
   },
   "hero": {
@@ -25,18 +39,20 @@
     "headlineEm": "open format",
     "headline2": ".",
     "body": "Free editor to create, visualize, and export geological and construction profiles. A simple JSON, versioned, readable by any language.",
-    "ctaPrimary": "Open editor →",
+    "ctaPrimary": "Open well editor →",
     "ctaSecondary": "View specification",
     "badgeSpec": "spec",
     "badgeLicense": "license",
-    "badgeSite": "welldot.org"
+    "badgeSite": "welldot.org",
+    "badgeFormerlyBold": "Formerly",
+    "badgeFormerly": "Well Profiler"
   },
   "format": {
     "kicker": "I · The format",
     "headline1": "One JSON.",
     "headlineEm": "Three",
     "headline2": "purposes.",
-    "intro": "Today, well data lives in PDFs that don't talk to each other. The {well} file is a simple, versioned format to change that — a single JSON that fully describes a well, designed as an {standard}.",
+    "intro": "Today, well data lives in PDFs that don't talk to each other. The {well} file is a simple, versioned format to change that — a single JSON that fully describes a well, from construction and geology to pump tests, installed pumps and maintenance history, designed as an {standard}.",
     "standard": "international standard",
     "props": [
       {
@@ -58,6 +74,16 @@
         "num": "§ 1.4",
         "title": "Open",
         "body": "Human-readable JSON, public specification, and permissive license — free to use, extend, and contribute."
+      },
+      {
+        "num": "§ 1.5",
+        "title": "Pump tests",
+        "body": "Hydrodynamic events and derived aquifer parameters — transmissivity, storativity, specific capacity — recorded as structured time series."
+      },
+      {
+        "num": "§ 1.6",
+        "title": "Operation & history",
+        "body": "Pump installations with nameplate, intake depth, riser and electrical data, typed documents, and a dated log of maintenance and incidents that follows the well through its working life."
       }
     ]
   },
@@ -65,6 +91,8 @@
     "kicker": "II · Intention",
     "body": "Today, a water well's data exists in many places: in the driller's notebook, in the consultant's spreadsheet, in the PDF report submitted to the licensing authority. Each in its own format, each {unreadable}. {welldot} and the {well} format were created to solve this.",
     "unreadable": "unreadable to the other",
+    "originNote": "This project began as {wellProfiler}, a tool to draw well diagrams. It's growing into something broader: an open platform for the entire lifecycle of well data — not just the drawing.",
+    "wellProfiler": "Well Profiler",
     "pillars": [
       {
         "title": "Live editor",
@@ -118,7 +146,7 @@
     "headline1": "The",
     "headlineEm": "future",
     "headline2": ".",
-    "intro": "v1 covers geological and construction profiles. The specification evolves openly to embrace the full lifecycle of a well.",
+    "intro": "v2.3 covers geological, construction, and hydrodynamic profiles — pump tests, aquifer analysis, pump installations, water-use permits and their conditions, general attachments, and operational history. The specification evolves openly to embrace what's still ahead.",
     "props": [
       {
         "num": "§ 4.1",
@@ -127,28 +155,48 @@
       },
       {
         "num": "§ 4.2",
-        "title": "Pump tests",
-        "body": "Pump tests, recovery, specific flow, and hydrodynamic parameters as time series."
-      },
-      {
-        "num": "§ 4.3",
-        "title": "Operational history",
-        "body": "Event log: maintenance, pump replacement, static level, shutdowns — dated and attributable."
-      },
-      {
-        "num": "§ 4.4",
         "title": "Water quality",
         "body": "Physical-chemical and bacteriological analyses linked to sampling, depth, and date."
       },
       {
-        "num": "§ 4.5",
-        "title": "Extended metadata",
-        "body": "Water rights, owner, usage regime, cadastral references, and links to regulatory databases."
+        "num": "§ 4.3",
+        "title": "Production & operation",
+        "body": "Meters, produced volumes checked against permit limits, and operating regime — the next operational blocks."
       },
       {
-        "num": "§ 4.6",
+        "num": "§ 4.4",
         "title": "Community extensions",
         "body": "Namespaces for fields specific to agencies and regions, without breaking the standardized core."
+      }
+    ]
+  },
+  "tools": {
+    "kicker": "V · The ecosystem",
+    "headline1": "Free, open",
+    "headlineEm": "tools",
+    "headline2": ", not just an app.",
+    "intro": "welldot is a set of small, independent packages. Use the editor, or pull just the piece you need into your own stack.",
+    "viewSource": "View source →",
+    "cards": [
+      {
+        "title": "\\@welldot/core",
+        "body": "Types, Zod validators, and serialization utilities for the .well format — the foundation everything else builds on.",
+        "path": "packages/core"
+      },
+      {
+        "title": "\\@welldot/utils",
+        "body": "Profile analysis utilities: depth calculations, cylindrical volumes, and gravel pack volume estimates.",
+        "path": "packages/utils"
+      },
+      {
+        "title": "\\@welldot/render",
+        "body": "The D3-based SVG renderer that draws every profile on this site — embeddable in any web app.",
+        "path": "packages/render"
+      },
+      {
+        "title": "Profiler app",
+        "body": "This editor, source and all. Nuxt 4 + Vue 3, deployed at welldot.org — fork it or read how it's built.",
+        "path": "apps/profiler"
       }
     ]
   },
@@ -157,7 +205,7 @@
     "headlineEm": "recorded at once",
     "headline2": ".",
     "subtitle": "Free to use. Free to implement. Open forever.",
-    "primary": "Open editor",
+    "primary": "Open well editor",
     "secondary": "github.com/rafaeelneto/welldot"
   },
   "heroVisual": {
@@ -177,8 +225,15 @@
   },
   "editor": {
     "well": "Well",
+    "fieldInfo": "More information",
+    "deleteRow": "Delete row",
+    "showPendingTextures": "Show pending textures",
     "save": "Save",
     "edit": "Edit",
+    "record": {
+      "by": "by",
+      "moreActions": "More actions"
+    },
     "saveAs": "Save As",
     "open": "Open",
     "share": "Share",
@@ -187,6 +242,12 @@
     "back": "Back",
     "menu": "Menu",
     "importSiagas": "Import from SIAGAS",
+    "aiImporter": {
+      "title": "AI Import",
+      "comingSoon": "This feature is coming soon.",
+      "description": "The AI Import will turn a well report — PDF, image, or document — into a .well profile automatically. It isn't available yet.",
+      "close": "Close"
+    },
     "toolsMenu": {
       "title": "Tools"
     },
@@ -195,7 +256,10 @@
       "units": {
         "title": "Units",
         "length": "Length",
-        "diameter": "Diameter"
+        "diameter": "Diameter",
+        "flow": "Flow rate",
+        "power": "Power",
+        "volume": "Volume"
       },
       "coordinates": {
         "title": "Coordinates",
@@ -215,10 +279,14 @@
       "constructionShort": "Constr.",
       "geological": "Geological",
       "summary": "Summary",
-      "historico": "History",
-      "hidrodinamica": "Hydrodynamic",
-      "hidro": "Hydro",
-      "inDevelopment": "In dev"
+      "historyLog": "History",
+      "hydrodynamicEvents": "Hydrodynamic",
+      "hydro": "Hydro",
+      "inDevelopment": "In dev",
+      "operation": "Operation",
+      "permits": "Permits",
+      "waterQuality": "Water quality",
+      "waterQualityShort": "Quality"
     },
     "status": {
       "saved": "Saved",
@@ -269,6 +337,43 @@
       "linkValidUntil": "Valid until {date}",
       "comingSoon": "Soon"
     },
+    "shareVisibility": {
+      "title": "Choose what to share",
+      "sections": {
+        "general": "General info",
+        "constructive": "Construction",
+        "geology": "Geology",
+        "hydrodynamic": "Pumping tests",
+        "history": "History",
+        "operation": "Operation",
+        "water_quality": "Water quality"
+      },
+      "fields": {
+        "identification": "Identification",
+        "location": "Location",
+        "obs": "Observations",
+        "attachments": "Attachments",
+        "bore_hole": "Bore hole",
+        "surface_case": "Surface casing",
+        "well_case": "Casing",
+        "reduction": "Reductions",
+        "well_screen": "Screens",
+        "hole_fill": "Hole fill",
+        "centralizers": "Centralizers",
+        "cement_pad": "Cement pad",
+        "lithology": "Lithology",
+        "fractures": "Fractures",
+        "caves": "Caves",
+        "hydrodynamic_events": "Pumping tests and level readings",
+        "aquifer_analysis": "Aquifer analyses",
+        "pump_installations": "Pump installations",
+        "meters": "Meters",
+        "operating_regime": "Operating regime",
+        "production": "Production",
+        "permits": "Permits"
+      },
+      "lastVisibleHint": "At least one item must stay visible."
+    },
     "exportPdfDialog": {
       "title": "Export PDF",
       "close": "Close",
@@ -289,17 +394,23 @@
         "after": "After",
         "hide": "Hide"
       },
+      "visibilitySection": {
+        "title": "Decide what to share",
+        "toggle": "Use my share selection"
+      },
       "scale": {
         "title": "Scale"
       },
       "metadataFields": {
         "name": "Name",
         "wellType": "Type",
+        "wellPurpose": "Purpose",
         "driller": "Driller",
         "constructionDate": "Construction date",
         "latitude": "Latitude",
         "longitude": "Longitude",
         "elevation": "Elevation",
+        "wellDepth": "Well depth",
         "observations": "Observations"
       },
       "initialInfo": {
@@ -322,15 +433,6 @@
         "fit": "Fit",
         "empty": "Load a profile to see the PDF preview",
         "error": "Couldn't generate the PDF preview. Try again or adjust the export options."
-      },
-      "content": {
-        "total": "Total",
-        "volumeTotal": "Total volume",
-        "slot": "Slot",
-        "footerTagline": "See this profile\nonline",
-        "footerTaglineFallback": "See more wells\nonline",
-        "footerValidUntilLabel": "Expires",
-        "page": "Page"
       }
     },
     "zoom": {
@@ -339,7 +441,8 @@
       "fit": "Fit"
     },
     "canvas": {
-      "empty": "No well data yet"
+      "empty": "No well data yet",
+      "reload": "Reload visualization"
     },
     "construction": {
       "tag": "Construction · Well",
@@ -350,13 +453,7 @@
         "type": "Type",
         "width": "Width",
         "length": "Length",
-        "thickness": "Thickness",
-        "typeOptions": {
-          "concrete": "Concrete",
-          "reinforcedConcrete": "Reinforced Concrete",
-          "cement": "Cement",
-          "mortar": "Mortar"
-        }
+        "thickness": "Thickness"
       },
       "boreHole": {
         "title": "Bore Hole",
@@ -365,8 +462,13 @@
         "to": "To",
         "diameter": "Diam.",
         "drillingMethod": "Method",
+        "drillingMethodInfo": "Drilling method used to open this bore hole interval. Pick one of the suggestions — rotary, percussion, cable tool, auger or air hammer.",
+        "drillingMethodFreeText": "This field is free text: if the method is not in the list, just type it (e.g. reverse circulation, sonic, jetting) and it will be saved as-is.",
         "addRow": "Add bore hole",
-        "empty": "No bore hole intervals yet"
+        "empty": "No bore hole intervals yet",
+        "wellDepth": "Well depth",
+        "wellDepthCalculated": "Calculated depth",
+        "syncDepth": "Resync depth"
       },
       "surfaceCase": {
         "title": "Surface Casing",
@@ -383,6 +485,8 @@
         "to": "To",
         "diameter": "Diam.",
         "type": "Type / Material",
+        "typeInfo": "Material of the casing that lines the well and holds the bore hole walls, e.g. PVC, geomechanical PVC, carbon steel or stainless steel.",
+        "typeFreeText": "This field is free text: if the material is not in the list, just type it (e.g. HDPE, blank steel pipe) and it will be saved as-is.",
         "addRow": "Add casing"
       },
       "reduction": {
@@ -393,7 +497,24 @@
         "diamFrom": "Diam. From",
         "diamTo": "Diam. To",
         "type": "Type",
+        "typeInfo": "Material or shape of the reducer that connects the two diameters, e.g. PVC, geomechanical PVC, carbon steel, conical or stepped.",
+        "typeFreeText": "This field is free text: if the material is not in the list, just type it (e.g. conical, stepped) and it will be saved as-is.",
         "addRow": "Add reduction"
+      },
+      "centralizer": {
+        "title": "Centralizers",
+        "tag": "CENTRALIZERS",
+        "from": "From",
+        "to": "To",
+        "spacing": "Spacing",
+        "type": "Type",
+        "typeInfo": "Kind or material of the centralizers clamped to the casing to keep it centered in the bore hole, e.g. spring bow, rigid, polymer, carbon steel or stainless steel.",
+        "typeFreeText": "This field is free text: if the type or material is not in the list, just type it and it will be saved as-is.",
+        "diameter": "Diameter",
+        "description": "Description",
+        "descriptionInfo": "Optional notes about these centralizers, such as manufacturer, model, material or how they were installed.",
+        "addRow": "Add centralizers",
+        "hint": "One row per interval. Use the same depth in From and To for a single centralizer; leave spacing empty if unknown."
       },
       "wellScreen": {
         "title": "Screen",
@@ -403,6 +524,8 @@
         "diameter": "Diam.",
         "screenSlot": "Slot (mm)",
         "type": "Type",
+        "typeInfo": "Material (or construction) of the screen that lets water into the well, e.g. PVC, geomechanical PVC, carbon steel or stainless steel.",
+        "typeFreeText": "This field is free text: if the material is not in the list, just type it (e.g. wire wound stainless steel, bridge slot) and it will be saved as-is.",
         "addRow": "Add screen"
       },
       "holeFill": {
@@ -411,8 +534,10 @@
         "from": "From",
         "to": "To",
         "diameter": "Diam.",
-        "type": "Type",
+        "type": "Function",
+        "typeInfo": "Role of the material in the annular space between casing and bore hole wall: gravel pack is the filter gravel around the screens; seal is the cement or bentonite that isolates the annulus against contamination.",
         "description": "Material/Description",
+        "descriptionInfo": "Material actually used in this interval, e.g. grain size of the gravel (1–2 mm quartz gravel) or seal material (cement grout, bentonite pellets).",
         "addRow": "Add fill interval",
         "typeOptions": {
           "gravelPack": "Gravel Pack",
@@ -458,31 +583,31 @@
       "generalInfo": "General Information",
       "location": "Location",
       "observations": "Observations",
-      "name": "Name",
+      "name": "Well Name",
       "driller": "Driller",
       "constructionDate": "Construction Date",
       "wellType": "Well Type",
+      "wellTypeInfo": "Indicates the type of structure the well is, according to its construction (e.g. tubular, hand dug, horizontal, infiltration gallery). It is not the drilling method, nor what the well is used for: use Well Purpose for that. Artesian is a hydraulic condition, detected from the water levels.",
+      "wellPurpose": "Well Purpose",
+      "wellPurposeEmpty": "No purpose selected",
+      "wellPurposeAdd": "Add purpose",
+      "wellPurposeEdit": "Edit",
+      "wellPurposeRemove": "Remove purpose",
+      "artesianDeprecated": {
+        "message": "\"Artesian\" is deprecated as a well type since .well v2.1 — it is a hydraulic condition, not a construction method. Pick the construction method instead; a flowing artesian condition is recorded as a negative static level in the hydrodynamic events.",
+        "action": "Change to tubular"
+      },
+      "flowingArtesian": "Flowing artesian — latest static level is above ground",
       "coordinates": "Coordinates",
       "coordinatesLabel": "Coordinate Format",
-      "dd": "DD",
-      "dms": "DMS",
       "latitude": "Latitude",
       "longitude": "Longitude",
       "elevation": "Elevation",
+      "wellDepth": "Well depth",
       "clickOrDragPin": "Click the map or drag the pin",
-      "latPlaceholderDd": "-23.512533",
-      "latPlaceholderDms": "23°30'45.12\"S",
-      "lngPlaceholderDd": "-48.503900",
-      "lngPlaceholderDms": "48°30'14.04\"W",
       "observationsLabel": "Observations",
       "freeNotes": "Free notes",
       "metadata": "Metadata",
-      "wellTypes": {
-        "deepTubular": "Deep tubular",
-        "shallowTubular": "Shallow tubular",
-        "artesian": "Artesian",
-        "handDug": "Hand dug"
-      },
       "wellIds": {
         "title": "Well Identifiers",
         "tag": "IDENTIFIERS",
@@ -491,17 +616,35 @@
         "id": "ID",
         "idPlaceholder": "e.g. SP-0042819",
         "primary": "Primary",
+        "primaryTooltip": "Primary identifier — the canonical ID for this well",
+        "setPrimaryTooltip": "Mark as the primary identifier",
         "addRow": "Add identifier",
         "delete": "Delete identifier",
-        "empty": "No identifiers yet"
-      }
+        "empty": "No identifiers yet",
+        "info": {
+          "label": "About well identifiers",
+          "title": "What are well identifiers?",
+          "what": "Other codes this same well has in external databases and registries. They make the .well file compatible with those systems, so the well can be cross-referenced and matched across different sources.",
+          "examplesIntro": "Examples:",
+          "exampleGrant": "Water-use permit (outorga) number issued by the water resources agency",
+          "exampleSiagas": "SIAGAS identification code",
+          "exampleCompany": "An internal code used by a company, utility or driller",
+          "fields": "Authority is the name of the registry or institution that issued the code (pick a suggestion or type your own). ID is the code exactly as issued; keep leading zeros and separators (e.g. SP-0042819).",
+          "primary": "Use the radio button to mark the main identifier. If none is marked, the first one is treated as the main one. Each authority + ID pair must be unique."
+        }
+      },
+      "attachments": "General attachments",
+      "attachmentsInfo": "Files about the well as a whole, such as the drilling report or an as-built drawing. Attachments of pumps, tests and history entries stay on their own records."
     },
     "summary": {
-      "tag": "Overview · Volumes",
+      "tag": "Well overview",
       "kpis": {
         "depth": "Total Depth",
         "layers": "Layers",
-        "screen": "Screen"
+        "screen": "Screen",
+        "wellDepth": "Usable depth",
+        "staticLevel": "Current SWL",
+        "flowRate": "Flow rate"
       },
       "boreHole": {
         "title": "Bore Hole",
@@ -523,15 +666,33 @@
       },
       "casing": {
         "title": "Casing",
-        "tag": "CASING · SCREEN",
-        "type": "Type",
+        "tag": "BLANK CASING",
+        "type": "Material",
         "diameter": "Diam.",
         "from": "From",
         "to": "To",
         "length": "Length",
-        "kindCase": "Casing",
-        "kindScreen": "Screen",
         "total": "Total cased length"
+      },
+      "reduction": {
+        "title": "Reduction",
+        "tag": "REDUCER",
+        "type": "Type",
+        "diamFrom": "Diam. From",
+        "diamTo": "Diam. To",
+        "from": "From",
+        "to": "To"
+      },
+      "centralizer": {
+        "title": "Centralizers",
+        "tag": "CENTRALIZERS",
+        "type": "Type",
+        "diameter": "Diam.",
+        "spacing": "Spacing",
+        "from": "From",
+        "to": "To",
+        "count": "Qty.",
+        "total": "Total centralizers"
       },
       "holeFill": {
         "title": "Annular Space",
@@ -553,9 +714,131 @@
         "from": "From",
         "to": "To",
         "thickness": "Thickness"
+      },
+      "unnamed": "Unnamed well",
+      "seeIn": "See in {tab}",
+      "identity": {
+        "title": "Identification",
+        "tag": "GENERAL",
+        "ids": "Identifiers"
+      },
+      "location": {
+        "title": "Location",
+        "tag": "COORDINATES",
+        "empty": "No coordinates provided."
+      },
+      "pump": {
+        "title": "Current pump",
+        "tag": "OPERATION",
+        "installedAt": "Installed on {date}",
+        "intakeDepth": "Intake depth",
+        "submergence": "Submergence",
+        "ratedFlow": "Rated flow",
+        "ratedHead": "Rated head",
+        "ratedPower": "Power",
+        "serviceTime": "Time in service",
+        "years": "{n} years",
+        "days": "{n} days",
+        "empty": "No pump installed."
+      },
+      "aquifer": {
+        "title": "Aquifer",
+        "tag": "HYDRODYNAMICS",
+        "staticLevel": "Static level",
+        "dynamicLevel": "Dynamic level",
+        "flowRate": "Flow rate",
+        "maxFlowRate": "Max. flow rate",
+        "specificCapacity": "Specific capacity",
+        "transmissivity": "Transmissivity",
+        "hydraulicConductivity": "Hydraulic conductivity",
+        "storativity": "Storativity",
+        "aquiferThickness": "Saturated thickness",
+        "wellEfficiency": "Well efficiency",
+        "latestAnalysis": "Latest analysis on {date}",
+        "empty": "No hydrodynamic data recorded."
+      },
+      "waterQuality": {
+        "title": "Water quality",
+        "tag": "LATEST ANALYSIS",
+        "collectedAt": "Collected",
+        "sampleType": "Sample type",
+        "laboratory": "Laboratory",
+        "results": "Results",
+        "facies": "Facies",
+        "ionBalance": "Ion balance",
+        "compliance": "Compliance · {set}",
+        "noExceedances": "No parameter outside the limits.",
+        "noLimitSet": "Pick a limit set in the Water quality tab to check compliance.",
+        "empty": "No samples recorded."
+      },
+      "permit": {
+        "title": "Permit",
+        "total": "{n} permits in total",
+        "validity": "Validity",
+        "flowRate": "Granted flow",
+        "dailyTime": "Daily time",
+        "waterUse": "Water use",
+        "nextDeadlines": "Upcoming conditions",
+        "noDeadlines": "No pending deadlines.",
+        "empty": "No permits recorded.",
+        "overdueCount": "{n} overdue"
+      },
+      "activity": {
+        "title": "Events & alerts",
+        "tag": "HISTORY",
+        "alerts": "Alerts",
+        "noAlerts": "No alerts.",
+        "latestEvent": "Latest hydrodynamic event",
+        "noEvents": "No hydrodynamic events recorded.",
+        "recentLogs": "Recent logs",
+        "noLogs": "No history log entries.",
+        "domains": {
+          "permits": "Permits",
+          "pump": "Pumps",
+          "operation": "Operation",
+          "historyLog": "History",
+          "waterQuality": "Water quality"
+        },
+        "dataIssues": "Data inconsistencies ({n})"
+      },
+      "construction": {
+        "title": "Construction details",
+        "tag": "CONSTRUCTION · GEOLOGY",
+        "empty": "No construction data recorded."
+      },
+      "screen": {
+        "title": "Screen",
+        "tag": "SCREENED SECTIONS",
+        "type": "Type",
+        "diameter": "Diam.",
+        "slot": "Slot",
+        "from": "From",
+        "to": "To",
+        "length": "Length",
+        "total": "Total screened"
+      },
+      "cementPad": {
+        "title": "Cement pad",
+        "tag": "SURFACE",
+        "type": "Type",
+        "width": "Width",
+        "length": "Length",
+        "thickness": "Thickness"
+      },
+      "alerts": {
+        "permitExpired": "Permit {number} expired on {date}.",
+        "permitPendingRenewal": "Permit {number} expired on {date}; renewal under review.",
+        "permitExpiring": "Permit {number} expires on {date} ({n} days).",
+        "permit_suspended": "Permit {number} is suspended.",
+        "permit_revoked": "Permit {number} was revoked.",
+        "permitStepsOverdue": "Permit {number}: {n} administrative step(s) past due — {description}",
+        "conditionOverdue": "Condition overdue since {date}: {description}",
+        "conditionOverdueMany": "{n} deadlines overdue since {date}: {description}",
+        "waterExceedances": "{n} parameter(s) outside {set} limits in the {date} sample.",
+        "wellStatus": "Well status: {status} since {date}."
       }
     },
-    "historico": {
+    "historyLog": {
       "tag": "History · Well",
       "logs": {
         "title": "History Logs",
@@ -575,27 +858,32 @@
         "by": "by",
         "deleteAttachment": "Remove attachment?",
         "editAttachment": "Edit attachment",
-        "categories": {
-          "maintenance": "Maintenance",
-          "inspection": "Inspection",
-          "incident": "Incident",
-          "event": "Event"
-        },
-        "severity": {
-          "low": "Low",
-          "medium": "Medium",
-          "high": "High",
-          "critical": "Critical"
-        },
+        "copyPath": "Copy path",
+        "copied": "Copied",
+        "noAttachments": "No files attached",
         "fields": {
           "category": "Category",
           "datetime": "Date / Time",
           "description": "Description",
           "author": "Author",
           "severity": "Severity",
+          "attachments": "Attachments",
           "attachmentUrl": "File URL",
           "attachmentFilename": "Display name",
-          "attachmentMediaType": "File type"
+          "attachmentMediaType": "File type",
+          "maintenanceType": "Maintenance type",
+          "pumpInstallation": "Pump installation",
+          "meter": "Meter",
+          "events": "Hydrodynamic events",
+          "eventsInfo": "Events holding the data produced or observed in this entry, e.g. the level measured or the pumping test performed.",
+          "addEvent": "Add event…",
+          "status": "Status",
+          "statusInfo": "The latest status change sets the current status of the well.",
+          "sample": "Water sample",
+          "samples": "Water samples",
+          "samplesInfo": "Water samples collected or concerned by this entry.",
+          "addSample": "Add sample…",
+          "removeLink": "Remove link"
         }
       },
       "events": {
@@ -605,7 +893,7 @@
         "comingSoon": "Full editing available in the Hydrodynamic tab"
       }
     },
-    "hidrodinamica": {
+    "hydrodynamicEvents": {
       "title": "Hydrodynamic Events",
       "addEvent": "Add event",
       "ledgerNote": "Chronological ledger — new records are appended, not overwritten.",
@@ -620,7 +908,7 @@
       "analyses": {
         "inDevBody": "The Analyses tab will allow entering aquifer test results (transmissivity, specific capacity, storage coefficient)."
       },
-      "estadoAtual": {
+      "currentState": {
         "title": "Current State",
         "ne": "CURRENT SWL",
         "specificCapacity": "SPEC. CAPACITY",
@@ -628,13 +916,6 @@
         "dynamicLevel": "DWL",
         "flowRate": "FLOW RATE Q",
         "noData": "—"
-      },
-      "eventTypes": {
-        "spot_measurement": "Spot Measurement",
-        "constant_rate": "Constant Rate",
-        "step_drawdown": "Step Drawdown",
-        "airlift": "Air-lift",
-        "recovery_only": "Recovery Only"
       },
       "fields": {
         "type": "Event Type",
@@ -645,12 +926,12 @@
         "staticLevel": "SWL (m)",
         "staticLevelPrecision": "±Prec. SWL",
         "measurementMethod": "Measurement method",
-        "pumpingRate": "Estimated rate (m³/h)",
+        "pumpingRate": "Estimated rate ({unit})",
         "pumpingDuration": "Estimated duration (min)",
         "steps": "Pumping Steps",
         "recovery": "Recovery",
         "includeRecovery": "Include recovery phase",
-        "rate": "Rate (m³/h)",
+        "rate": "Rate ({unit})",
         "ratePrecision": "±Prec.",
         "duration": "Duration (min)",
         "durationDerivedHint": "Calculated from readings (max elapsed time)",
@@ -671,22 +952,829 @@
         "steps": "steps",
         "readings": "readings"
       },
-      "measurementMethods": {
-        "electric_probe": "Electric probe",
-        "pressure_transducer": "Pressure transducer",
-        "air_line": "Air line",
-        "tape": "Tape"
-      },
       "addStep": "Add step",
       "addReading": "Add reading",
       "manageReadings": "Manage",
       "readingsDialog": {
-        "stepTitle": "Readings — Step {n} ({rate} m³/h)",
+        "stepTitle": "Readings — Step {n} ({rate} {unit})",
         "recoveryTitle": "Readings — Recovery"
       },
       "validation": {
         "missing": "Add {fields} to save this event"
+      },
+      "retracted": "Retracted",
+      "retractedInfo": "A later event corrects this one. It stays in the file but no longer counts.",
+      "correction": "Correction",
+      "correctionInfo": "This event corrects an earlier one."
+    },
+    "attachments": {
+      "documentType": "Document type",
+      "documentTypeInfo": "What the document is (.well v2.3). Optional — leave empty when unsure.",
+      "documentTypePlaceholder": "Not specified",
+      "description": "Description",
+      "mediaTypeOther": "Other"
+    },
+    "operation": {
+      "wellStatuses": {
+        "active": "Active",
+        "maintenance": "Under maintenance",
+        "inactive": "Inactive",
+        "decommissioned": "Decommissioned",
+        "abandoned": "Abandoned"
+      },
+      "pump": {
+        "title": "Pump installations",
+        "intro": "One entry per installation. A pump pulled and reinstalled gets a new entry with the same serial number. The current pump is the one without a removal date.",
+        "add": "Add installation",
+        "edit": "Edit installation",
+        "deleteConfirm": "Delete this pump installation?",
+        "empty": "No pump installation recorded yet.",
+        "current": "Current",
+        "removed": "Removed",
+        "submergence": "Submergence",
+        "submergenceInfo": "Intake depth minus the latest dynamic level.",
+        "submergenceNegative": "The intake is above the latest dynamic level.",
+        "fields": {
+          "type": "Pump type",
+          "typeInfo": "Solar is a power source, not a pump type. Free text is allowed.",
+          "powerSource": "Power source",
+          "installedAt": "Installed at",
+          "removedAt": "Removed at",
+          "removedAtInfo": "Leave empty while the pump is installed.",
+          "installedBy": "Installed by",
+          "removedBy": "Removed by",
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "serial": "Serial number",
+          "serialInfo": "Links reinstallations of the same unit.",
+          "intakeDepth": "Intake depth",
+          "intakeDepthInfo": "Depth of the pump intake from ground level. The profile draws the pump ending here.",
+          "ratedFlowRate": "Rated flow",
+          "ratedHead": "Rated head",
+          "ratedPower": "Rated power",
+          "ratedPowerInfo": "Stored in kW; shown in the unit chosen in Settings. 1 cv = 0.7355 kW · 1 hp = 0.7457 kW.",
+          "stages": "Stages",
+          "checkValve": "Check valve",
+          "riser": "Riser",
+          "riserDiameter": "Riser diameter",
+          "riserDiameterInfo": "As-built outer diameter of the riser pipe.",
+          "riserMaterial": "Riser material",
+          "electrical": "Electrical",
+          "voltage": "Voltage",
+          "phases": "Phases",
+          "cableSection": "Cable section",
+          "cableLength": "Cable length",
+          "notes": "Notes"
+        },
+        "warnings": {
+          "intake_below_well_bottom": "The intake is deeper than the well.",
+          "intake_in_screen": "The intake sits inside a screen interval.",
+          "multiple_open_installations": "More than one installation has no removal date.",
+          "removed_before_installed": "The removal date must be after the installation date."
+        }
+      },
+      "meter": {
+        "title": "Meters",
+        "intro": "One entry per installation of a totalizer (water meter). Device facts only: every register value, including the installation and removal readings, is a reading in Production.",
+        "add": "Add meter",
+        "edit": "Edit meter",
+        "deleteConfirm": "Delete this meter?",
+        "deleteConfirmWithReadings": "This meter has readings in the production ledger. They stay in the file but will no longer resolve to a meter. Delete it anyway?",
+        "empty": "No meter recorded yet.",
+        "current": "Current",
+        "removed": "Removed",
+        "untyped": "Meter",
+        "lastReading": "Last reading",
+        "readingsInfo": "Record the register values at installation and removal as meter readings in Production, dated at these instants.",
+        "fields": {
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "type": "Meter type",
+          "serial": "Serial number",
+          "serialInfo": "A meter removed and reinstalled gets a new entry with the same serial number.",
+          "installedAt": "Installed at",
+          "removedAt": "Removed at",
+          "removedAtInfo": "Leave empty while the meter is installed.",
+          "installedBy": "Installed by",
+          "removedBy": "Removed by",
+          "nominalDiameter": "Nominal diameter",
+          "nominalDiameterInfo": "Nominal diameter (DN) of the meter.",
+          "maxReading": "Register capacity",
+          "maxReadingInfo": "Largest value the register shows before rolling over to zero. Used to derive the volume across a rollover.",
+          "notes": "Notes"
+        }
+      },
+      "regime": {
+        "title": "Operating regime",
+        "intro": "How the well is intended to run from a given moment. A change of regime is a new entry; the latest one already in effect is the regime in force. A stopped well is a status change in the history log, not a zero flow.",
+        "add": "Add regime",
+        "edit": "Edit regime",
+        "deleteConfirm": "Delete this regime?",
+        "empty": "No operating regime recorded yet.",
+        "inForce": "Regime in force",
+        "scheduled": "Scheduled",
+        "from": "From",
+        "dailyVolume": "Daily volume",
+        "none": "No regime in force.",
+        "noValues": "No values declared",
+        "unknownInfo": "Leave a field empty when it is unknown — an empty field never means zero.",
+        "hoursPerDay": "{n} h/day",
+        "daysPerWeekShort": "{n} days/week",
+        "fields": {
+          "effectiveFrom": "Effective from",
+          "effectiveFromInfo": "Unique within the block. There is no end date: the next regime replaces this one.",
+          "flowRate": "Flow rate",
+          "dailyOperatingTime": "Daily operation",
+          "daysPerWeek": "Days per week",
+          "notes": "Notes"
+        }
+      },
+      "production": {
+        "title": "Production",
+        "intro": "Append-only ledger of water produced: meter readings and declared volumes. Entries are never edited — a correction is a new entry that retracts the original.",
+        "add": "Add entry",
+        "correct": "Correct",
+        "correctInfo": "The correction is saved as a new entry that retracts this one. The original stays in the file but no longer counts.",
+        "saveCorrection": "Save correction",
+        "deleteConfirm": "Delete this entry?",
+        "deleteInfo": "Deleting removes the entry from the file. To fix a wrong value, prefer a correction, which keeps the history. Delete anyway?",
+        "empty": "No production recorded yet.",
+        "noMeters": "Add a meter first to record its readings.",
+        "types": {
+          "meter_reading": "Meter reading",
+          "declared_volume": "Declared volume"
+        },
+        "fields": {
+          "type": "Type",
+          "details": "Details",
+          "value": "Value",
+          "meter": "Meter",
+          "datetime": "Date / Time",
+          "reading": "Reading",
+          "readingInfo": "Register value. Choose the volume unit in Settings to enter readings of meters that count in liters or gallons — they are stored in m³.",
+          "source": "Source",
+          "periodStart": "Period start",
+          "periodEnd": "Period end",
+          "volume": "Volume",
+          "method": "Method",
+          "methodInfo": "Estimated volumes count only where no meter reading covers the period. Reported volumes (as declared to a regulator) are kept for comparison and never added to the total.",
+          "notes": "Notes"
+        },
+        "totals": {
+          "total": "Total",
+          "totalInfo": "Metered plus estimated volumes. Meters take precedence over estimates.",
+          "metered": "Metered",
+          "estimated": "Estimated",
+          "reported": "Reported",
+          "reportedInfo": "Volumes declared to a regulator, for comparison only."
+        },
+        "unknownIntervals": "{n} interval between readings has an unknown volume (the register went down and the meter has no register capacity). | {n} intervals between readings have an unknown volume (the register went down and the meter has no register capacity).",
+        "unknownIntervalsLabel": "Unknown intervals",
+        "compliance": {
+          "title": "Compliance · permit {number}",
+          "annual": "Year {period}",
+          "monthly": "Month {period}"
+        },
+        "periods": {
+          "period": "Period",
+          "month": "Month",
+          "year": "Year"
+        },
+        "byPeriod": "Production by period",
+        "annual": "Annual production",
+        "ofLimit": "% of limit",
+        "noPeriods": "No volume can be derived yet.",
+        "ledger": "Ledger",
+        "hideRetracted": "Hide retracted",
+        "allEntries": "All entries",
+        "retracted": "Retracted",
+        "retractedInfo": "A later entry corrects this one. It stays in the file but no longer counts.",
+        "correction": "Correction",
+        "correctionInfo": "This entry corrects an earlier one."
+      },
+      "wellStatus": {
+        "title": "Well status",
+        "unknown": "Status unknown",
+        "unknownInfo": "The status is derived from “Status change” entries in the history log. None has been recorded yet.",
+        "derivedInfo": "Derived from the latest “Status change” entry in the history log.",
+        "since": "since {date}"
+      },
+      "permit": {
+        "title": "Permits",
+        "intro": "One entry per legal instrument. The attached document is authoritative. A renewal is a new permit that supersedes the previous one; status and condition deadlines are derived.",
+        "add": "Add permit",
+        "edit": "Edit permit",
+        "deleteConfirm": "Delete this permit?",
+        "empty": "No permit recorded yet.",
+        "noExpiry": "no fixed expiry",
+        "supersedes": "Supersedes {number}",
+        "supersededBy": "Superseded by {number}",
+        "status": {
+          "requested": "Requested",
+          "granted": "Granted",
+          "suspended": "Suspended",
+          "revoked": "Revoked",
+          "denied": "Denied",
+          "withdrawn": "Withdrawn",
+          "superseded": "Superseded",
+          "not_yet_valid": "Not yet valid",
+          "active": "Active",
+          "active_pending_renewal": "Renewal pending",
+          "expired": "Expired"
+        },
+        "fields": {
+          "type": "Type",
+          "typeInfo": "A renewal is not a type: create a new permit of the same type that supersedes the previous one.",
+          "authority": "Authority",
+          "authorityInfo": "Issuing body, e.g. ANA, SEMAS-PA.",
+          "status": "Status",
+          "statusInfo": "Administrative situation set by the authority. Leave \"Granted\" for an issued permit: its validity status is then derived from the dates.",
+          "identifier": "Permit identifier",
+          "identifierInfo": "Identifier of the granted instrument (portaria, license code…), as written in the document. Empty while the permit is only requested.",
+          "requestIdentifier": "Request identifier",
+          "requestIdentifierInfo": "Protocol or process identifier of the request, as assigned by the authority.",
+          "issuedAt": "Issued at",
+          "validFrom": "Valid from",
+          "validFromInfo": "Leave empty when valid from the issue date.",
+          "validUntil": "Valid until",
+          "validUntilInfo": "Leave empty when there is no fixed expiry.",
+          "renewalRequestedAt": "Renewal requested at",
+          "renewalRequestedAtInfo": "A renewal filed on or before the expiry keeps the permit active while it is pending.",
+          "validity": "Validity",
+          "waterUse": "Water use",
+          "waterUseEmpty": "No use selected",
+          "waterUseAdd": "Add use",
+          "waterUseEdit": "Edit",
+          "waterUseRemove": "Remove use",
+          "flowRate": "Max. flow",
+          "dailyOperatingTime": "Max. daily operation",
+          "volumeLimits": "Volume limits",
+          "volumeLimitsInfo": "Only volumes stated in the document. Volumes implied by flow × time are derived, never stored.",
+          "volumePeriods": {
+            "daily": "Daily",
+            "monthly": "Monthly",
+            "annual": "Annual"
+          },
+          "monthlySchedule": "Monthly schedule",
+          "monthlyScheduleInfo": "When a schedule exists, months left empty have no abstraction granted.",
+          "month": "Month",
+          "days": "Days",
+          "supersedes": "Supersedes",
+          "supersedesInfo": "The permit this one legally replaces (renewal).",
+          "notes": "Notes"
+        },
+        "grantDetails": "Validity and grant",
+        "grantDetailsInfo": "filled once the permit is granted",
+        "conditions": {
+          "title": "Conditions",
+          "add": "Add condition",
+          "empty": "No conditions.",
+          "description": "Description",
+          "descriptionInfo": "Text of the condition as written in the document.",
+          "category": "Category",
+          "responsible": "Responsible",
+          "responsibleInfo": "Person or team accountable for meeting this condition.",
+          "deadline": "First deadline",
+          "deadlineModes": {
+            "none": "Undated",
+            "fixed": "Fixed date",
+            "relative": "After start"
+          },
+          "firstDue": "Date",
+          "dueAfter": "After",
+          "recurrence": "Repeats every",
+          "recurrenceNone": "One-time",
+          "lastDue": "Until",
+          "occurrences": "Max. occurrences",
+          "units": {
+            "D": "days",
+            "W": "weeks",
+            "M": "months",
+            "Y": "years"
+          },
+          "preview": "Next deadlines",
+          "previewNone": "No deadline is generated.",
+          "noStartDate": "Needs an issue or start date to resolve.",
+          "undated": "Undated",
+          "more": "+{count} more",
+          "deadlineStatus": {
+            "fulfilled": "Fulfilled",
+            "fulfilled_late": "Fulfilled late",
+            "upcoming": "Upcoming",
+            "overdue": "Overdue"
+          },
+          "markFulfilled": "Mark fulfilled",
+          "undoFulfilled": "Remove fulfillment",
+          "undoConfirm": "Remove this fulfillment?",
+          "remove": "Remove condition",
+          "schedule": "Condition schedule",
+          "openSchedule": "View schedule",
+          "scheduleInfo": "Fulfillments marked here are saved with the permit.",
+          "fulfilledCount": "{n} fulfilled"
+        },
+        "fulfill": {
+          "title": "Condition fulfilled",
+          "deadline": "Deadline",
+          "datetime": "Fulfilled at",
+          "author": "Fulfilled by",
+          "authorInfo": "Defaults to the condition's responsible.",
+          "description": "Description",
+          "defaultDescription": "{condition} — fulfilled",
+          "info": "Recorded in the condition's fulfillments. Attach the proof of submission as condition evidence.",
+          "sampleInfo": "Water sample whose analysis fulfills this condition."
+        },
+        "history": {
+          "title": "History",
+          "info": "Administrative steps of the permit: filing, process movements, notifications, fees, inspections, decisions.",
+          "add": "Add step",
+          "empty": "No steps recorded.",
+          "remove": "Remove step",
+          "date": "Date",
+          "type": "Type",
+          "description": "Description",
+          "done": "Done",
+          "dueDate": "Due",
+          "dueDateInfo": "For actionable steps (a fee to pay, a notification to answer). Past due and not done raises an alert.",
+          "dueOn": "Due {date}",
+          "overdue": "{n} administrative step(s) past due.",
+          "addTitle": "New step",
+          "editTitle": "Edit step",
+          "edit": "Edit step",
+          "save": "Save step",
+          "markDone": "Mark as done",
+          "reopen": "Reopen step",
+          "deleteConfirm": "Remove this step from the permit history?"
+        },
+        "view": {
+          "open": "View",
+          "close": "Close",
+          "tabs": {
+            "grant": "Permit",
+            "conditions": "Conditions",
+            "history": "History"
+          },
+          "sections": {
+            "grant": "Permit & grant",
+            "notes": "Notes & documents"
+          },
+          "fulfilledCount": "{done}/{total} fulfilled",
+          "conditionFulfilled": "Condition fulfilled",
+          "timelineEmpty": "No history steps or fulfillments recorded."
+        },
+        "warnings": {
+          "valid_until_before_valid_from": "The expiry date is before the start date.",
+          "supersedes_unresolved": "The superseded permit does not exist in this file.",
+          "supersedes_cycle": "The supersedes chain loops back on itself.",
+          "overlapping_validity": "Another permit of the same type overlaps this one.",
+          "daily_operating_time_out_of_range": "A daily operating time is outside 0–24 h.",
+          "monthly_above_max": "A monthly value is above the permit maximum.",
+          "duplicate_month": "A month appears more than once in the schedule.",
+          "duplicate_volume_period": "A volume period appears more than once.",
+          "duplicate_condition_id": "Two conditions share the same id.",
+          "condition_due_conflict": "A condition has both a fixed date and a relative deadline; the fixed date wins.",
+          "invalid_duration": "A condition has an invalid duration.",
+          "missing_identifier": "Fill in the permit identifier or the request identifier.",
+          "granted_without_identifier": "A granted permit has no permit identifier.",
+          "duplicate_history_id": "Two history steps share the same id.",
+          "duplicate_fulfillment_id": "Two fulfillments of a condition share the same id.",
+          "unmatched_fulfillment": "A condition fulfillment matches no deadline of this permit.",
+          "fulfillment_reference_unresolved": "A condition fulfillment links to an event or sample that does not exist."
+        }
+      },
+      "warnings": {
+        "meter_removed_before_installed": "The removal date must be after the installation date.",
+        "overlapping_meters": "This meter is installed at the same time as another one.",
+        "duplicate_meter_id": "Two meters share the same id.",
+        "reading_meter_unresolved": "The meter of this reading does not exist in this file.",
+        "reading_outside_installation": "This reading is outside the meter installation period.",
+        "reading_rollover_unknown": "The register went down and the meter has no register capacity: the volume of this interval is unknown.",
+        "duplicate_production_id": "Two production entries share the same id.",
+        "corrects_unresolved": "The corrected entry does not exist in this file.",
+        "corrects_cycle": "The correction chain loops back on itself.",
+        "declared_period_invalid": "The period end must be after its start.",
+        "estimated_overlaps_meter": "This estimated volume overlaps meter readings; the meter takes precedence.",
+        "duplicate_regime_id": "Two regimes share the same id.",
+        "regime_duplicate_effective_from": "Another regime starts at the same instant.",
+        "regime_exceeds_permit": "The regime in force is above the flow or daily operation granted by the active permit.",
+        "log_category_field_mismatch": "This entry has fields that belong to another category.",
+        "log_reference_unresolved": "A referenced pump, meter or event does not exist in this file.",
+        "log_after_decommission": "This entry is dated after the well was decommissioned or abandoned.",
+        "missing_maintenance_type": "This maintenance entry references data but has no maintenance type.",
+        "missing_status": "This status change has no status.",
+        "analysis_uses_retracted_event": "This analysis uses an event that has been retracted."
       }
+    },
+    "waterQuality": {
+      "title": "Water quality",
+      "intro": "Append-only ledger of water samples and their field and laboratory results. Samples are never edited — an amended report or a data revalidation is a new sample that retracts the original.",
+      "add": "Add sample",
+      "edit": "Edit sample",
+      "correct": "Correct",
+      "correctInfo": "The correction is saved as a new sample that retracts this one. The original stays in the file but no longer counts.",
+      "saveCorrection": "Save correction",
+      "retracted": "Retracted",
+      "retractedInfo": "A later sample corrects this one. It stays in the file but is excluded from derivations.",
+      "correction": "Correction",
+      "correctionInfo": "This sample corrects an earlier one.",
+      "hideRetracted": "Hide retracted",
+      "deleteConfirm": "Delete this sample?",
+      "deleteInfo": "Deleting removes the sample from the file. To fix a wrong value, prefer a correction, which keeps the history. Delete anyway?",
+      "deleteBlocked": "Referenced by a correction, a duplicate/split or a history log — it cannot be deleted. Record a correction instead.",
+      "empty": "No water samples recorded yet.",
+      "noMatches": "No samples match the filters.",
+      "allCampaigns": "All campaigns",
+      "allTypes": "All sample types",
+      "compareAgainst": "Compare against",
+      "compareAgainstInfo": "Limits are never written to the .well file. Pick a bundled limit set to highlight exceeding results. Values are transcribed from the cited source and must be checked against the official document before regulatory use.",
+      "noLimitSet": "No limit set",
+      "limitSetSource": "Source: {source}",
+      "exceeds": "Exceeds the limit",
+      "exceedsMax": "above the maximum of {limit}",
+      "exceedsMin": "below the minimum of {limit}",
+      "exceedsPresence": "must be absent",
+      "notDetected": "not detected",
+      "estimatedShort": "est.",
+      "presence": {
+        "present": "present",
+        "absent": "absent"
+      },
+      "card": {
+        "parentOf": "Original sample: {sample}",
+        "pumpIntake": "pump intake",
+        "formationWater": "Formation water",
+        "formationWaterInfo": "The sample depth lies within a screen interval and below the static level.",
+        "notFormationWater": "Not formation water",
+        "notFormationWaterInfo": "The sample depth lies outside the screens or above the static level — it may represent stagnant casing water."
+      },
+      "derived": {
+        "ionBalance": "Ion balance {pct}%",
+        "ionBalanceInfo": "Cations {cations} meq/L · anions {anions} meq/L",
+        "rpd": "RPD {pct}% ({name})",
+        "holdingTime": "Analyzed within {time}",
+        "hours": "{n} h",
+        "days": "{n} d",
+        "receivedTempOk": "Received cold",
+        "receivedTempHigh": "Received warm",
+        "purgeStabilized": "Purge stabilized",
+        "purgeNotStabilized": "Purge not stabilized",
+        "facies": "Facies {facies}",
+        "faciesIons": {
+          "calcium": "Calcium",
+          "magnesium": "Magnesium",
+          "sodium_potassium": "Sodium + potassium",
+          "bicarbonate": "Bicarbonate",
+          "chloride": "Chloride",
+          "sulfate": "Sulfate",
+          "mixed": "Mixed"
+        }
+      },
+      "errors": {
+        "title": "The sample cannot be saved:",
+        "result": "Result {n} ({name}): {message}",
+        "idTaken": "Another sample already uses this id.",
+        "labNameRequired": "The laboratory name is required when any laboratory field is filled.",
+        "pointTypeRequired": "Choose the sampling point type to record a device, depth or pump.",
+        "noResults": "Add at least one result."
+      },
+      "fields": {
+        "id": "Sample id",
+        "idInfo": "Unique within the file. Duplicates, splits, corrections and history logs point to the sample by this id.",
+        "datetime": "Collected at",
+        "sampleType": "Sample type",
+        "sampleTypeInfo": "Routine sample or QA/QC sample. Use an x- prefix for other types.",
+        "parentSample": "Original sample",
+        "parentSampleId": "Original sample",
+        "parentSampleInfo": "Required for field duplicates and split samples: the sample they replicate.",
+        "campaign": "Campaign",
+        "campaignInfo": "Free identifier grouping the samples of one sampling round.",
+        "sequence": "Sequence",
+        "sequenceInfo": "Orders samples taken at the same instant (e.g. a vertical profile).",
+        "samplingMethod": "Sampling method",
+        "samplingMethodInfo": "How the well was purged before collection.",
+        "samplingPoint": "Sampling point",
+        "device": "Device",
+        "depth": "Depth",
+        "interval": "Interval",
+        "laboratory": "Laboratory",
+        "reportNumber": "Report no.",
+        "receivedAt": "Received at",
+        "receivedTemperature": "Received temperature",
+        "detectionLimit": "DL",
+        "staticLevelEvent": "Static level measurement",
+        "staticLevelEventInfo": "Hydrodynamic event holding the water level measured at collection.",
+        "collectedBy": "Collected by",
+        "preservation": "Preservation",
+        "preservationInfo": "Preservation and packaging, free text (e.g. HNO₃ to pH < 2, cooled to 4 °C).",
+        "chainOfCustody": "Chain of custody",
+        "chainOfCustodyInfo": "Chain of custody form number.",
+        "notes": "Notes",
+        "attachments": "Attachments",
+        "results": "Results",
+        "dateOnly": "Date only",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "samplingPoint": {
+        "title": "Sampling point",
+        "type": "Point type",
+        "device": "Device",
+        "deviceInfo": "What collected the sample. The purge itself is described by the sampling method.",
+        "pumpInstallation": "Production pump",
+        "pumpInstallationInfo": "Pump installation sampled at its discharge. The sample depth then comes from the pump intake depth.",
+        "linkPumpAtCollection": "Link the pump installed at collection: {pump}",
+        "pumpNotInPlace": "This pump was not installed when the sample was collected.",
+        "pumpDepthInfo": "Depth derived from the pump installation intake depth.",
+        "depth": "Depth",
+        "depthInfo": "Point depth of the sampler intake, from ground level.",
+        "depthPrecision": "Depth precision (1σ)",
+        "from": "From",
+        "to": "To",
+        "geometries": {
+          "none": "No depth",
+          "depth": "Point depth",
+          "interval": "Isolated interval"
+        }
+      },
+      "purge": {
+        "title": "Purge",
+        "duration": "Duration",
+        "volume": "Volume",
+        "flowRate": "Flow rate",
+        "stabilized": "Stabilized",
+        "stabilizedInfo": "Field parameters were stable before collection.",
+        "readings": "Stabilization readings",
+        "readingsInfo": "Field parameters read while purging. The final values at collection go in the results, measured in the field.",
+        "elapsed": "Elapsed",
+        "parameter": "Parameter",
+        "value": "Value",
+        "addReading": "Add reading",
+        "removeReading": "Remove reading"
+      },
+      "laboratory": {
+        "title": "Laboratory",
+        "name": "Laboratory",
+        "accreditation": "Accreditation",
+        "accreditationInfo": "ISO/IEC 17025 or equivalent accreditation identifier.",
+        "reportNumber": "Report no.",
+        "batchId": "Batch / work order",
+        "sampleId": "Lab sample id",
+        "receivedAt": "Received at",
+        "receivedTemperature": "Received temperature"
+      },
+      "result": {
+        "add": "Add result",
+        "remove": "Remove result",
+        "newRow": "new result",
+        "details": "More on {name}",
+        "vocabulary": "Vocabulary",
+        "vocabularies": {
+          "welldot": "welldot",
+          "cas": "CAS",
+          "custom": "Custom (x-)"
+        },
+        "parameter": "Parameter",
+        "parameterPlaceholder": "Search a parameter",
+        "customVocabulary": "x-vocabulary",
+        "code": "Code",
+        "unit": "UCUM unit",
+        "unitInfo": "Required for custom (x-) codes, in UCUM (e.g. mg/L, ug/L, uS/cm).",
+        "form": "Value form",
+        "forms": {
+          "value": "Number",
+          "presence": "Presence",
+          "text": "Text"
+        },
+        "qualifier": "Qualifier",
+        "value": "Value",
+        "detectionLimit": "Detection limit",
+        "quantificationLimit": "Quantification limit",
+        "valuePrecision": "Precision (1σ)",
+        "valuePrecisionInfo": "One-sigma uncertainty. Reports usually give expanded uncertainty (k = 2): divide it by the coverage factor.",
+        "fraction": "Fraction",
+        "measuredIn": "Measured in",
+        "method": "Method",
+        "analyzedAt": "Analyzed at",
+        "labFlags": "Lab flags",
+        "labFlagsInfo": "Flags as issued by the laboratory, uninterpreted. Press Enter after each one."
+      },
+      "filtration": {
+        "poreSize": "Filter pore size",
+        "location": "Filtered in"
+      },
+      "validation": {
+        "status": "Validation",
+        "qualifier": "Validation qualifier",
+        "qualifierInfo": "Code from the validation guideline applied (e.g. J, UJ, R).",
+        "guideline": "Guideline",
+        "validatedBy": "Validated by",
+        "validatedAt": "Validated at"
+      },
+      "qualifiers": {
+        "lt": "< less than",
+        "gt": "> greater than",
+        "not_detected": "Not detected",
+        "estimated": "Estimated"
+      },
+      "fractions": {
+        "total": "Total",
+        "dissolved": "Dissolved",
+        "suspended": "Suspended"
+      },
+      "measuredIn": {
+        "field": "Field",
+        "lab": "Lab"
+      },
+      "validationStatuses": {
+        "unvalidated": "Unvalidated",
+        "validated": "Validated",
+        "qualified": "Qualified",
+        "rejected": "Rejected"
+      },
+      "groups": {
+        "physical": "Physical / field",
+        "aggregate": "Aggregate",
+        "major_ion": "Major ions",
+        "nutrient": "Nutrients",
+        "organic": "Organic",
+        "disinfection": "Disinfection",
+        "mining_redox": "Mining and redox",
+        "metal": "Metals / trace",
+        "microbiology": "Microbiology",
+        "radioactivity": "Radioactivity"
+      },
+      "warnings": {
+        "parent_missing": "Field duplicates and split samples should point to their original sample.",
+        "dissolved_without_filtration": "Dissolved fraction without filtration details — field- and lab-filtered results are not comparable.",
+        "depth_outside_screen": "Sample depth lies outside every screen interval (possibly stagnant casing water).",
+        "depth_below_well_bottom": "Sample depth is below the well depth.",
+        "depth_above_static_level": "Sample depth is above the static level measured at collection.",
+        "value_form_mismatch": "The value form does not match the parameter (presence on a numeric code, or a value on a presence code).",
+        "not_detected_without_limit": "Not detected without a detection limit — the result has no scale.",
+        "duplicate_result": "The same parameter, fraction and measurement place appear more than once.",
+        "unknown_parameter_code": "Unknown welldot parameter code for this vocabulary version.",
+        "analyzed_before_collection": "Analyzed before the sample was collected.",
+        "received_before_collection": "Received by the laboratory before the sample was collected.",
+        "reference_unresolved": "A referenced record (corrected sample, original sample, static level event or pump installation) does not exist.",
+        "corrects_cycle": "Corrections form a cycle.",
+        "duplicate_sample_id": "Another sample uses the same id."
+      },
+      "pdf": {
+        "title": "Water quality",
+        "results": "Results",
+        "parameter": "Parameter",
+        "value": "Value",
+        "unit": "Unit",
+        "fraction": "Fraction",
+        "measuredIn": "Measured in",
+        "method": "Method",
+        "flags": "Lab flags",
+        "validation": "Validation",
+        "exceedances": "Exceedances",
+        "limitSet": "Limit set"
+      },
+      "parameters": {
+        "temperature": "Temperature",
+        "ph": "pH",
+        "specific_conductance": "Specific conductance at 25 °C",
+        "conductivity_uncompensated": "Electrical conductivity, uncompensated",
+        "dissolved_oxygen": "Dissolved oxygen",
+        "orp": "Oxidation-reduction potential vs. reference electrode",
+        "eh": "Redox potential vs. SHE",
+        "turbidity": "Turbidity, formazin, method unspecified",
+        "turbidity_ntu": "Turbidity, nephelometric white light",
+        "turbidity_fnu": "Turbidity, nephelometric infrared (ISO 7027)",
+        "turbidity_fau": "Turbidity, attenuation (ISO 7027)",
+        "apparent_color": "Apparent color",
+        "true_color": "True color",
+        "odor": "Odor",
+        "taste": "Taste",
+        "total_dissolved_solids": "Total dissolved solids",
+        "total_suspended_solids": "Total suspended solids",
+        "total_solids": "Total solids",
+        "free_co2": "Free carbon dioxide",
+        "alkalinity_total_as_caco3": "Total alkalinity as CaCO₃",
+        "alkalinity_bicarbonate_as_caco3": "Bicarbonate alkalinity as CaCO₃",
+        "alkalinity_carbonate_as_caco3": "Carbonate alkalinity as CaCO₃",
+        "alkalinity_hydroxide_as_caco3": "Hydroxide alkalinity as CaCO₃",
+        "acidity_total_as_caco3": "Total acidity as CaCO₃",
+        "hardness_total_as_caco3": "Total hardness as CaCO₃",
+        "hardness_calcium_as_caco3": "Calcium hardness as CaCO₃",
+        "calcium": "Calcium",
+        "magnesium": "Magnesium",
+        "sodium": "Sodium",
+        "potassium": "Potassium",
+        "bicarbonate": "Bicarbonate as HCO₃⁻",
+        "carbonate": "Carbonate as CO₃²⁻",
+        "chloride": "Chloride",
+        "sulfate": "Sulfate",
+        "fluoride": "Fluoride",
+        "silica_as_sio2": "Silica as SiO₂",
+        "nitrate_as_n": "Nitrate as N",
+        "nitrate_as_no3": "Nitrate as NO₃⁻",
+        "nitrite_as_n": "Nitrite as N",
+        "nitrite_as_no2": "Nitrite as NO₂⁻",
+        "ammonia_as_n": "Ammonia nitrogen as N",
+        "ammonia_as_nh3": "Ammonia as NH₃",
+        "kjeldahl_nitrogen_as_n": "Total Kjeldahl nitrogen as N",
+        "phosphorus_total_as_p": "Total phosphorus as P",
+        "orthophosphate_as_po4": "Orthophosphate as PO₄³⁻",
+        "total_organic_carbon": "Total organic carbon",
+        "cod": "Chemical oxygen demand",
+        "bod5": "Biochemical oxygen demand, 5-day",
+        "total_petroleum_hydrocarbons": "Total petroleum hydrocarbons (range per method)",
+        "oil_and_grease": "Oil and grease",
+        "free_chlorine": "Free chlorine residual",
+        "total_chlorine": "Total chlorine residual",
+        "ferrous_iron": "Ferrous iron (Fe²⁺)",
+        "chromium_hexavalent": "Hexavalent chromium",
+        "cyanide_total_as_cn": "Total cyanide as CN⁻",
+        "cyanide_wad_as_cn": "Weak acid dissociable cyanide as CN⁻",
+        "cyanide_free_as_cn": "Free cyanide as CN⁻",
+        "thiocyanate": "Thiocyanate",
+        "sulfide_total_as_s": "Total sulfide as S",
+        "iron": "Iron",
+        "manganese": "Manganese",
+        "aluminum": "Aluminium",
+        "antimony": "Antimony",
+        "arsenic": "Arsenic",
+        "barium": "Barium",
+        "beryllium": "Beryllium",
+        "boron": "Boron",
+        "cadmium": "Cadmium",
+        "chromium": "Chromium, total",
+        "cobalt": "Cobalt",
+        "copper": "Copper",
+        "lead": "Lead",
+        "lithium": "Lithium",
+        "mercury": "Mercury",
+        "molybdenum": "Molybdenum",
+        "nickel": "Nickel",
+        "selenium": "Selenium",
+        "silver": "Silver",
+        "strontium": "Strontium",
+        "thallium": "Thallium",
+        "uranium": "Uranium",
+        "vanadium": "Vanadium",
+        "zinc": "Zinc",
+        "total_coliforms": "Total coliforms in 100 mL",
+        "total_coliforms_mpn": "Total coliforms, count",
+        "total_coliforms_cfu": "Total coliforms, count",
+        "e_coli": "E. coli in 100 mL",
+        "e_coli_mpn": "E. coli, count",
+        "e_coli_cfu": "E. coli, count",
+        "thermotolerant_coliforms": "Thermotolerant coliforms in 100 mL",
+        "thermotolerant_coliforms_mpn": "Thermotolerant coliforms, count",
+        "thermotolerant_coliforms_cfu": "Thermotolerant coliforms, count",
+        "heterotrophic_plate_count": "Heterotrophic plate count",
+        "gross_alpha": "Gross alpha activity",
+        "gross_beta": "Gross beta activity",
+        "radium_226": "Radium-226",
+        "radium_228": "Radium-228",
+        "radon_222": "Radon-222"
+      },
+      "addShort": "Add",
+      "editShort": "Edit",
+      "saveEdit": "Save changes",
+      "editTooltip": "Edit in place — only to fix typing errors",
+      "editWarning": "Editing changes the original record in place, with no trace of what it said before. Use it only to fix typing errors made when entering the data. For an amended lab report or a data revalidation, use Correct instead: it saves a new sample that retracts this one and keeps the history.",
+      "editConfirm": "Overwrite the original sample?",
+      "editConfirmInfo": "The changes replace what was recorded for this sample, and the previous values are not kept. Continue only if you are fixing typing errors; for an amended report, cancel and use Correct.",
+      "view": {
+        "open": "View",
+        "close": "Close",
+        "tabs": {
+          "sample": "Sampling",
+          "results": "Results",
+          "links": "Links"
+        },
+        "sections": {
+          "collection": "Collection",
+          "notes": "Notes and documents"
+        },
+        "columns": {
+          "limits": "Limits",
+          "ql": "QL"
+        },
+        "comparingWith": "Comparing against {set}. Values in red exceed the limit.",
+        "links": {
+          "corrects": "Corrects",
+          "correctedBy": "Corrected by",
+          "parent": "Original sample",
+          "children": "Duplicates and splits",
+          "historyLogs": "History log entries",
+          "missing": "Record not found: {id}",
+          "empty": "No links to other records."
+        }
+      }
+    }
+  },
+  "tips": {
+    "dontShowAgain": "Don't show again",
+    "gotIt": "Got it",
+    "units": {
+      "title": "Customizable units",
+      "body": "You can switch length (m/ft) and diameter (mm/in) units in Settings.",
+      "action": "Open settings"
     }
   }
 }

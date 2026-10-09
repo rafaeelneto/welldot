@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import { CONSTRUCTION_MATERIALS } from '@welldot/core';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
+
+const screenTypeOptions = computed(() => vocabOptions(CONSTRUCTION_MATERIALS));
 
 const wellScreenColumns = computed<WellGridColumn[]>(() => [
   {
@@ -32,7 +36,10 @@ const wellScreenColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'type',
     label: t('editor.construction.wellScreen.type'),
-    type: 'text',
+    info: t('editor.construction.wellScreen.typeInfo'),
+    infoHighlight: t('editor.construction.wellScreen.typeFreeText'),
+    type: 'combo',
+    options: screenTypeOptions.value,
     stretch: true,
     minSize: 200,
   },
@@ -86,6 +93,11 @@ function reorderWellScreen(from: number, to: number) {
       :rows="[...profileStore.well.well_screen]"
       :columns="wellScreenColumns"
       :add-label="t('editor.construction.wellScreen.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addWellScreen"
       @delete="deleteWellScreen"
       @change="updateWellScreen"

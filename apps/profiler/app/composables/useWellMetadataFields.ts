@@ -1,17 +1,22 @@
 import type { Well } from '@welldot/core';
+import { WELL_PURPOSES, WELL_TYPES } from '@welldot/core';
+import { calculatedWellDepth } from '~/utils/wellDepth';
 
 export type WellMetadataFieldKey =
   | 'name'
   | 'well_type'
+  | 'well_purpose'
   | 'well_driller'
   | 'construction_date'
   | 'lat'
   | 'lng'
   | 'elevation'
+  | 'well_depth'
   | 'obs';
 
 export function useWellMetadataFields() {
   const { t } = useI18n();
+  const { vocabLabel, vocabList } = useVocab();
 
   const metadataFields = computed<
     { key: WellMetadataFieldKey; label: string }[]
@@ -20,6 +25,10 @@ export function useWellMetadataFields() {
     {
       key: 'well_type',
       label: t('editor.exportPdfDialog.metadataFields.wellType'),
+    },
+    {
+      key: 'well_purpose',
+      label: t('editor.exportPdfDialog.metadataFields.wellPurpose'),
     },
     {
       key: 'well_driller',
@@ -42,6 +51,10 @@ export function useWellMetadataFields() {
       label: t('editor.exportPdfDialog.metadataFields.elevation'),
     },
     {
+      key: 'well_depth',
+      label: t('editor.exportPdfDialog.metadataFields.wellDepth'),
+    },
+    {
       key: 'obs',
       label: t('editor.exportPdfDialog.metadataFields.observations'),
     },
@@ -57,6 +70,12 @@ export function useWellMetadataFields() {
         return well.location?.elevation != null
           ? String(well.location.elevation)
           : '';
+      case 'well_type':
+        return well.well_type ? vocabLabel(WELL_TYPES, well.well_type) : '';
+      case 'well_purpose':
+        return vocabList(WELL_PURPOSES, well.well_purpose);
+      case 'well_depth':
+        return String(well.well_depth ?? calculatedWellDepth(well));
       default:
         return String(well[key] ?? '');
     }

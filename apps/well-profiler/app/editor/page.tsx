@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: 'Well Profiler | Editor',
   description:
     'Crie, planeje, edite e exporte o perfil geológico construtivo do seu poço',
+  alternates: { canonical: '/editor' },
 };
 
 function Page() {

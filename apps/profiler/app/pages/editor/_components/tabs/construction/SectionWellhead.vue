@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { CEMENT_PAD_TYPES } from '@welldot/core';
+
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 const uiStore = useUiStore();
 
@@ -36,24 +39,7 @@ function toggleCementPad(enabled: boolean) {
   }
 }
 
-const cementPadTypeOptions = computed(() => [
-  {
-    label: t('editor.construction.wellhead.typeOptions.concrete'),
-    value: 'Concreto',
-  },
-  {
-    label: t('editor.construction.wellhead.typeOptions.reinforcedConcrete'),
-    value: 'Concreto Armado',
-  },
-  {
-    label: t('editor.construction.wellhead.typeOptions.cement'),
-    value: 'Cimento',
-  },
-  {
-    label: t('editor.construction.wellhead.typeOptions.mortar'),
-    value: 'Argamassa',
-  },
-]);
+const cementPadTypeOptions = computed(() => vocabOptions(CEMENT_PAD_TYPES));
 </script>
 
 <template>
@@ -87,7 +73,7 @@ const cementPadTypeOptions = computed(() => [
     </div>
 
     <template v-if="hasCementPad">
-      <Field :label="t('editor.construction.wellhead.type')">
+      <WellLabeledField :label="t('editor.construction.wellhead.type')">
         <Select
           v-model="profileStore.well.cement_pad!.type"
           :options="cementPadTypeOptions"
@@ -95,39 +81,39 @@ const cementPadTypeOptions = computed(() => [
           option-value="value"
           class="w-full"
         />
-      </Field>
+      </WellLabeledField>
 
       <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-        <Field :label="widthLabel">
-          <UnitInput
-            unit-type="length"
+        <WellLabeledField :label="widthLabel">
+          <WellUnitInput
             v-model="profileStore.well.cement_pad!.width"
-            :min="0"
-            class="w-full"
-            :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
-          />
-        </Field>
-        <Field :label="lengthLabel">
-          <UnitInput
             unit-type="length"
-            v-model="profileStore.well.cement_pad!.length"
             :min="0"
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </Field>
+        </WellLabeledField>
+        <WellLabeledField :label="lengthLabel">
+          <WellUnitInput
+            v-model="profileStore.well.cement_pad!.length"
+            unit-type="length"
+            :min="0"
+            class="w-full"
+            :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
+          />
+        </WellLabeledField>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
-        <Field :label="thicknessLabel">
-          <UnitInput
-            unit-type="length"
+        <WellLabeledField :label="thicknessLabel">
+          <WellUnitInput
             v-model="profileStore.well.cement_pad!.thickness"
+            unit-type="length"
             :min="0"
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </Field>
+        </WellLabeledField>
       </div>
     </template>
   </section>

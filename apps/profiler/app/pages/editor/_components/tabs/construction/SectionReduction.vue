@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import type { Well } from '@welldot/core';
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import { CONSTRUCTION_MATERIALS } from '@welldot/core';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
+
+// Fiberglass reducers are uncommon; the rest of the materials are offered.
+const reductionTypeOptions = computed(() =>
+  vocabOptions(CONSTRUCTION_MATERIALS).filter(o => o.value !== 'fiberglass'),
+);
 
 const reductionColumns = computed<WellGridColumn[]>(() => [
   {
@@ -33,14 +40,23 @@ const reductionColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'type',
     label: t('editor.construction.reduction.type'),
-    type: 'text',
+    info: t('editor.construction.reduction.typeInfo'),
+    infoHighlight: t('editor.construction.reduction.typeFreeText'),
+    type: 'combo',
+    options: reductionTypeOptions.value,
     stretch: true,
     minSize: 200,
   },
 ]);
 
 function addReduction() {
-  profileStore.well.reduction.push({ from: 0, to: 0, diam_from: 0, diam_to: 0, type: '' });
+  profileStore.well.reduction.push({
+    from: 0,
+    to: 0,
+    diam_from: 0,
+    diam_to: 0,
+    type: '',
+  });
 }
 
 function deleteReduction(index: number) {
@@ -80,6 +96,11 @@ function reorderReduction(from: number, to: number) {
       :rows="[...profileStore.well.reduction]"
       :columns="reductionColumns"
       :add-label="t('editor.construction.reduction.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addReduction"
       @delete="deleteReduction"
       @change="updateReduction"

@@ -6,6 +6,7 @@ import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 
 import Header from '@/src_old/components/header/header.component';
+import TopBanner from '@/src_old/components/topBanner/topBanner.component';
 import {
   ColorSchemeScript,
   createTheme,
@@ -13,6 +14,11 @@ import {
   MantineProvider,
 } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  metadataBase: new URL('https://wellprofiler.com'),
+};
 
 const myColor: MantineColorsTuple = [
   '#ebf8ff',
@@ -54,6 +60,7 @@ export default function RootLayout({
 
         <MantineProvider theme={theme}>
           <Notifications />
+          <TopBanner />
           <Header />
           {children}
         </MantineProvider>

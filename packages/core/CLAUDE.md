@@ -15,16 +15,31 @@ src/
     well.types.ts           ← TypeScript types for all .well entities
     units.types.ts          ← Units / measurement types
     textures.ts             ← Texture/TextureCode types for FGDC patterns
+    language.types.ts       ← LanguageText<L> (BCP 47-keyed text, L = required tags), LanguageTextInput
   validators/
     well.validators.ts      ← Zod schemas mirroring each type; parseWell()
   utils/
     well.utils.ts           ← Serialize/deserialize, profileToWell, isEmpty checks
+    units.ts                ← Unit conversions (incl. water quality import helpers)
     fgdc.textures.ts        ← FGDC_TEXTURES_OPTIONS mapping (code → label/pattern)
+    language.utils.ts       ← resolveLanguageText (object, plain string, JSON string, null/undefined)
+  vocab/
+    waterQuality.vocab.ts   ← WATER_QUALITY_PARAMETERS (98 welldot codes, versioned), getParameterDefinition,
+                               parameterKey, isKnownParameter
+    waterQuality.limits.ts  ← Limit sets (WHO_GDWQ_2022, BR_GM_MS_888_2021, EU_2020_2184), getLimitSet
+    vocab.ts                ← VocabEntry (label: LanguageText<'en' | 'pt'>), OpenVocab<T>, getVocabLabel, …
+    closed.vocab.ts         ← Closed (schema-fixed) vocabularies with en/pt labels + derived *_VALUES lists
+    *.vocab.ts              ← Recommended vocabularies of open fields with en/pt labels (general,
+                               construction, operation, permit, history, hydrodynamic, attachment, waterSample)
 ```
 
 ## Key domain concepts
 
-- **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata.
+- **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata, the event/analysis/log blocks, and (since v2.3) root `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime` and `water_samples`.
+- **Block kinds** (v2.3) — `hydrodynamic_events`, `production` and `water_samples` are ledgers (corrected via `corrects`, never edited); `history_logs`, `permits` (incl. their `history` and condition `fulfillments`) and `operating_regime` are mutable records; `Permit.status` is a closed administrative vocabulary (absent = `granted`) and `identifier`/`request_identifier` are optional verbatim strings; `pump_installations` and `meters` are installation blocks (`installed_at`/`removed_at`). Permit dates are calendar dates (`YYYY-MM-DD`) and condition offsets are ISO 8601 date durations (`P90D`); everything else is an RFC 3339 instant. `production` is a discriminated union (`meter_reading` | `declared_volume`, `x-` types pass through); register values and volumes are m³ and totals are never stored. `history_logs` category-specific fields are flat optional fields on `HistoryLogEntry`: `maintenance` (`maintenance_type`, `pump_installation_id`, `meter_id`), `status_change` (`status`); `hydrodynamic_event_ids` / `sample_ids` are data links valid on every category; permit condition fulfillment is not a log category, it lives in `permits[].conditions[].fulfillments`. Derivations that honor these rules (current pump, retracted events/production, permit status, condition deadlines, meter volumes, current regime, current well status, operation warnings) live in `@welldot/utils`.
+- **Water quality** (v2.3) — `water_samples` is a ledger (corrected via `corrects`) of `WaterSample`s, each with ≥1 `WaterQualityResult`. A result has exactly one of `value`/`presence`/`text` (none only with `qualifier: 'not_detected'`); parameters are `{ code, vocabulary }` with `welldot` | `cas` | `x-…`, and `unit` exists only for `x-` codes (the unit of `welldot`/`cas` codes comes from the vocabulary; substances are always mg/L). `depth` is exclusive with `from`/`to`; `*_resolution` is the literal `'day'`. The vocabulary (`src/vocab/waterQuality.vocab.ts`) is versioned data — bump `WATER_QUALITY_VOCABULARY_VERSION` when codes change and update the vocabulary table in `docs/spec/v2/water-quality.md`. Limit sets (`src/vocab/waterQuality.limits.ts`) are display-time data, never written to files; their values must be verified against the official sources. `HistoryLogEntry.sample_ids` (any category) and `ConditionFulfillment.sample_id` link to samples. `SectionKey` includes `'water_quality'` (redacted by `redactWell`). Derivations (ion balance, RPD, holding times, exceedances, warnings) live in `@welldot/utils`.
+- **Open vocabularies** — free-text fields with recommended values are typed `OpenVocab<T>` (`T | (string & {})`) and their values + `en`/`pt` labels live in `src/vocab/*.vocab.ts` (`as const satisfies readonly VocabEntry[]`). Zod stays `z.string()`. The vocabularies are the single source of labels for every consumer (the profiler has no i18n keys for them). Closed vocabularies (`closed.vocab.ts`) follow the same shape, built with `closedVocab<T>()` so a missing value is a compile error. Every library ships its own labels: never make a consumer translate a value the format defines. `vocab.test.ts` checks each vocabulary against its table in the spec docs — adding or changing a value means updating the matching `format-reference.md` / `water-quality.md` table.
+- **New top-level blocks** must be mapped explicitly in `decodeV2Well`, `serializeWell` (which whitelists fields) and `redactWell`.
 - **`Profile`** — backward-compat alias for `Well`; used in the legacy Next.js app.
 - All depth values are **meters from ground level** (0 = surface, increasing downward).
 - All diameter values are **millimeters**.
@@ -56,6 +71,8 @@ docs/
                                Extensibility, Cross-reference & uniqueness rules
       object-schemas.md     ← All object schemas + hydrodynamic_events + aquifer_analysis +
                                history_logs + Complete Example JSON
+      water-quality.md      ← water_samples schemas, result rules, recommended values, unit rules,
+                               parameter vocabulary table, regulatory profiles (since v2.3)
       interoperability.md   ← JSON-LD Context, GWML2 relationship, Schema Validation
   schema/
     v1/                     ← stub; v1 schema TBD
@@ -78,7 +95,7 @@ Update when:
 
 - A new known limitation is recognized.
 - A design principle is revised during the ratification process.
-- The "Changes from v1" section gains a new entry (e.g. v2.1 additions).
+- A minor revision ships: add a "Changes in v2.x" section at the top (latest first), with additions, clarifications and deprecations (see v2.3, v2.1).
 
 ### `docs/spec/v2/format-reference.md`
 
@@ -96,15 +113,25 @@ What to update: the relevant field table, the field-to-unit binding list if the 
 
 Update when:
 
-- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, or any `hydrodynamic_events` event type).
+- A field is added, removed, or renamed on any object type (`BoreHole`, `WellCase`, `Reduction`, `WellScreen`, `SurfaceCase`, `HoleFill`, `Centralizer`, `CementPad`, `Lithology`, `Texture`, `Fracture`, `Cave`, `PumpingStep`, `LevelReading`, `RecoveryPhase`, `AquiferAnalysis`, `HistoryLogEntry`, `Attachment`, `PumpInstallation`, `PumpElectrical`, `Permit`, `PermitCondition`, `PermitHistoryEntry`, `ConditionFulfillment`, `VolumeLimit`, `MonthlyGrant`, `Meter`, `MeterReading`, `DeclaredVolume`, `OperatingRegime`, or any `hydrodynamic_events` event type).
 - A new event type is added to `hydrodynamic_events`.
 - The Complete Example JSON no longer validates against the current types.
 
 What to update: the field table for the changed type and the Complete Example JSON if the change affects it.
 
+### `docs/spec/v2/water-quality.md`
+
+Update when:
+
+- A field is added, removed, or renamed on `WaterSample`, `SamplingPoint`, `Purge`, `PurgeReading`, `Laboratory`, `WaterQualityResult`, `Parameter`, `Filtration` or `ResultValidation`.
+- A code is added to or changed in `WATER_QUALITY_PARAMETERS` (keep the vocabulary table in sync and bump `WATER_QUALITY_VOCABULARY_VERSION`).
+- A water quality validation rule, recommended value or unit rule changes.
+
+Cross-cutting rows (datetime, canonical units, cross-references, precision) stay in `format-reference.md`; the Complete Example stays in `object-schemas.md`.
+
 ### `docs/schema/v2/well.schema.json`
 
-Regenerate (do not hand-edit) after any change to `src/validators/well.validators.ts`. Generation command (once `zod-to-json-schema` is wired into the build):
+Regenerate (do not hand-edit) after any change to `src/validators/well.validators.ts`. CI (`publish-core.yml`) fails when the committed schema is stale:
 
 ```bash
 pnpm generate:schema

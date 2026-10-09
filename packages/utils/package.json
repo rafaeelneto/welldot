@@ -1,11 +1,25 @@
 {
   "name": "@welldot/utils",
-  "version": "0.2.0",
+  "version": "0.3.0",
+  "description": "Profile analysis utilities for the .well open format — depth, diameter, cylindrical volume, gravel pack estimates, and aquifer hydraulics.",
+  "keywords": [
+    "well",
+    "water-well",
+    "hydrogeology",
+    "geoscience",
+    "borehole",
+    "aquifer",
+    "volume",
+    "gravel-pack",
+    "drawdown",
+    "transmissivity"
+  ],
   "type": "module",
   "author": {
     "name": "Rafael Neto",
     "email": "rafaelneto.g@gmail.com"
   },
+  "license": "Apache-2.0",
   "homepage": "https://github.com/rafaeelneto/welldot#readme",
   "repository": {
     "type": "git",
@@ -41,7 +55,8 @@
     "prepublishOnly": "pnpm run build && pnpm run test"
   },
   "dependencies": {
-    "@welldot/core": "workspace:*"
+    "@welldot/core": "workspace:*",
+    "date-fns": "^4.1.0"
   },
   "devDependencies": {
     "@welldot/lint": "workspace:*",

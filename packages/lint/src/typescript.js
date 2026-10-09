@@ -15,8 +15,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
-      'no-unused-vars': 'off', // use TS version instead
-      camelcase: 'off', // allow snake_case for things like CSS properties
+      'no-unused-vars': 'off',
     },
   },
 ];

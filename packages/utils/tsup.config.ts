@@ -7,7 +7,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   splitting: false,
-  external: ['@welldot/core'],
+  external: ['@welldot/core', 'date-fns'],
   esbuildOptions(options) {
     options.alias = { '~': './src' };
   },

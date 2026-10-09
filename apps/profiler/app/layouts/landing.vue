@@ -3,6 +3,7 @@ import { useDark } from '@vueuse/core';
 import { NuxtLink } from '#components';
 
 const { t, locale, locales, setLocale } = useI18n();
+const localePath = useLocalePath();
 
 function changeLocale(code: string) {
   setLocale(code as 'en' | 'pt');
@@ -28,6 +29,17 @@ const togglePt = {
     ],
   },
 };
+
+// Shared by the topbar and drawer "coming soon" markers.
+const previewPillClass =
+  'text-xs font-semibold uppercase tracking-wider px-1.5 py-0.5 ' +
+  'rounded-full bg-surface-100 text-content-400';
+
+// Same 32px bordered box as the theme toggle, so the two drawer rows align.
+const localeBtnClass =
+  'size-8 rounded-lg border flex items-center justify-center cursor-pointer ' +
+  'font-mono text-xs uppercase transition-colors duration-200 outline-none ' +
+  'focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1';
 </script>
 
 <template>
@@ -37,7 +49,7 @@ const togglePt = {
       <div class="container-landing flex items-center gap-4 lg:gap-6 py-3">
         <!-- Brand -->
         <NuxtLink
-          to="/"
+          :to="localePath('/')"
           class="flex items-center gap-2.5 font-bold text-base tracking-tight text-content-0 no-underline"
         >
           <Icon name="welldot:logo" class="size-6.5 shrink-0" />
@@ -47,10 +59,19 @@ const togglePt = {
         <!-- Desktop text links -->
         <div class="hidden lg:flex items-center gap-6">
           <NuxtLink
-            to="/editor"
+            :to="localePath('/editor')"
             class="text-content-400 hover:text-content-0 font-medium transition-colors no-underline"
           >
             {{ t('nav.editor') }}
+          </NuxtLink>
+          <NuxtLink
+            v-tooltip.bottom="t('nav.managerTooltip')"
+            to="https://manager.welldot.org/"
+            target="_blank"
+            class="flex items-center gap-2 text-content-400 hover:text-content-0 font-medium transition-colors no-underline"
+          >
+            {{ t('nav.manager') }}
+            <span :class="previewPillClass">{{ t('nav.preview') }}</span>
           </NuxtLink>
           <NuxtLink
             to="https://github.com/rafaeelneto/welldot"
@@ -93,7 +114,7 @@ const togglePt = {
           :label="t('nav.openEditor')"
           size="small"
           :as="NuxtLink"
-          to="/editor"
+          :to="localePath('/editor')"
           class="hidden lg:inline-flex"
         />
 
@@ -102,7 +123,7 @@ const togglePt = {
           :label="t('nav.openEditorMobile')"
           size="small"
           :as="NuxtLink"
-          to="/editor"
+          :to="localePath('/editor')"
           class="lg:hidden"
         />
 
@@ -141,12 +162,24 @@ const togglePt = {
 
       <nav class="flex flex-col gap-1 mt-2">
         <NuxtLink
-          to="/editor"
+          :to="localePath('/editor')"
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-200 hover:text-content-0 hover:bg-surface-100 transition-colors no-underline"
           @click="drawerOpen = false"
         >
           <Icon name="heroicons:pencil-square" class="size-4 shrink-0" />
           {{ t('nav.editor') }}
+        </NuxtLink>
+        <NuxtLink
+          to="https://manager.welldot.org/"
+          target="_blank"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-200 hover:text-content-0 hover:bg-surface-100 transition-colors no-underline"
+          @click="drawerOpen = false"
+        >
+          <Icon name="heroicons:squares-2x2" class="size-4 shrink-0" />
+          {{ t('nav.manager') }}
+          <span :class="[previewPillClass, 'ml-auto']">{{
+            t('nav.preview')
+          }}</span>
         </NuxtLink>
         <NuxtLink
           to="https://github.com/rafaeelneto/welldot"
@@ -193,12 +226,32 @@ const togglePt = {
         </ToggleButton>
       </div>
 
+      <div class="flex items-center gap-2 px-1 mt-3">
+        <span class="text-xs text-content-400 font-mono uppercase mr-auto">{{
+          t('nav.language')
+        }}</span>
+        <button
+          v-for="loc in locales"
+          :key="loc.code"
+          :class="[
+            localeBtnClass,
+            locale === loc.code
+              ? 'border-primary-500 text-content-0'
+              : 'border-surface-200 text-content-400 hover:border-surface-300 hover:text-content-0',
+          ]"
+          :aria-pressed="locale === loc.code"
+          @click="changeLocale(loc.code)"
+        >
+          {{ loc.code }}
+        </button>
+      </div>
+
       <template #footer>
         <Button
           :label="t('nav.openEditor')"
           class="w-full"
           :as="NuxtLink"
-          to="/editor"
+          :to="localePath('/editor')"
           @click="drawerOpen = false"
         />
       </template>

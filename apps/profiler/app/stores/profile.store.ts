@@ -7,11 +7,13 @@ import {
   getLatestStaticLevel,
   getProfileDiamValues,
   getProfileLastItemsDepths,
+  isFlowingArtesian,
 } from '@welldot/utils';
 import type { Draft } from 'immer';
 import { defineStore } from 'pinia';
 import { computed, markRaw, ref } from 'vue';
 import { makeDeepProxy } from '~/utils/state';
+import { calculatedWellDepth } from '~/utils/wellDepth';
 
 // ─── Chained-depth types ─────────────────────────────────────────────────────
 
@@ -207,6 +209,9 @@ export const useProfileStore = defineStore(
     const latestStaticLevel = computed(() =>
       _well.value ? getLatestStaticLevel(_well.value) : undefined,
     );
+    const flowingArtesian = computed(() =>
+      _well.value ? isFlowingArtesian(_well.value) : false,
+    );
     const latestTransmissivity = computed(() =>
       _well.value
         ? getLatestAquiferAnalysisField(_well.value, 'transmissivity')
@@ -220,6 +225,13 @@ export const useProfileStore = defineStore(
 
     // ── Actions ────────────────────────────────────────────────────────────
 
+    /**
+     * Bumped whenever a different well starts being edited (`loadWell`,
+     * `clear`) — not by edits. Session-only (not persisted); lets the UI
+     * reset per-well view state such as the active editor tab.
+     */
+    const wellSession = ref(0);
+
     /** Load a well from a JSON string (v1 or v2 format). Resets history. */
     function loadWell(json: string): boolean {
       try {
@@ -231,6 +243,7 @@ export const useProfileStore = defineStore(
         _reset(parsed);
         errors.value = {};
         isDirty.value = false;
+        wellSession.value++;
         return true;
       } catch (e) {
         errors.value = {
@@ -240,11 +253,30 @@ export const useProfileStore = defineStore(
       }
     }
 
-    /** Apply an Immer recipe to the current well. Tracked in undo/redo history. */
+    /**
+     * Apply an Immer recipe to the current well. Tracked in undo/redo history.
+     *
+     * Also keeps `well_depth` tracking the calculated constructive depth
+     * (`calculatedWellDepth` — deliberately narrower than `maxDepth`, which
+     * includes geology for the render scale), in the same transaction as the
+     * triggering edit (same pattern as `rechainDepths` below): only while
+     * it's unset or still equal to the pre-edit calculated depth. Once the
+     * user manually diverges it, further edits to the constructive data no
+     * longer touch it — they'd need to click "sync" to re-link it.
+     */
     function updateWell(recipe: (draft: Draft<Well>) => void): void {
       if (!_well.value) return;
+      const previousDepth = calculatedWellDepth(_well.value);
       _update(draft => {
-        if (draft) recipe(draft as Draft<Well>);
+        if (!draft) return;
+        recipe(draft as Draft<Well>);
+        const nextDepth = calculatedWellDepth(draft as Well);
+        if (
+          nextDepth !== previousDepth &&
+          (draft.well_depth == null || draft.well_depth === previousDepth)
+        ) {
+          draft.well_depth = nextDepth;
+        }
       });
       isDirty.value = true;
     }
@@ -312,6 +344,7 @@ export const useProfileStore = defineStore(
       _reset(emptyWell());
       errors.value = {};
       isDirty.value = false;
+      wellSession.value++;
     }
 
     function markClean(): void {
@@ -435,8 +468,11 @@ export const useProfileStore = defineStore(
 
       // ── Measurements: hydrodynamic
       latestStaticLevel,
+      flowingArtesian,
       latestTransmissivity,
       latestSpecificCapacity,
+
+      wellSession,
 
       // ── Actions
       loadWell,

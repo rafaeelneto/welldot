@@ -1,19 +1,13 @@
-import { formatNumber, type FormatNumberOptions } from '~/utils/formatNumber';
+import { useWellNumberFormat } from '@welldot/vue';
 
-export const LOCALE_MAP: Record<string, string> = { en: 'en-US', pt: 'pt-BR' };
+export { LOCALE_MAP } from '@welldot/vue';
 
+/**
+ * Locale-aware number formatting (`en` → `en-US`, `pt` → `pt-BR`).
+ *
+ * Thin wrapper over `@welldot/vue`'s `useWellNumberFormat`; the locale reaches
+ * it from `$i18n` through the `@welldot/vue/nuxt` module's plugin.
+ */
 export function useNumberFormat() {
-  const { locale } = useI18n();
-  const resolvedLocale = computed(
-    () => LOCALE_MAP[locale.value] ?? locale.value,
-  );
-
-  function format(
-    value: number | null | undefined,
-    options?: Omit<FormatNumberOptions, 'locale'>,
-  ): string {
-    return formatNumber(value, { ...options, locale: resolvedLocale.value });
-  }
-
-  return { formatNumber: format, resolvedLocale };
+  return useWellNumberFormat();
 }

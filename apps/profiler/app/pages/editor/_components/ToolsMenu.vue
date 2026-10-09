@@ -4,7 +4,10 @@ export interface ToolItem {
   icon: string;
   description?: string;
   disabled?: boolean;
+  /** Renders a "Soon" badge next to the label. Purely cosmetic. */
   comingSoon?: boolean;
+  /** Keeps the item in the desktop drawer, which otherwise only lists tools
+   *  that have no dedicated button in the nav. */
   alwaysInMenu?: boolean;
   onClick?: () => void;
 }

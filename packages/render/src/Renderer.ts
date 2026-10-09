@@ -20,6 +20,8 @@ import {
   type Well,
 } from '@welldot/core';
 import {
+  formatNumber,
+  getCurrentPump,
   getProfileDiamValues,
   getProfileLastItemsDepths,
 } from '@welldot/utils';
@@ -44,17 +46,20 @@ import {
 } from './configs/render.configs';
 import { drawAnnotationLabels } from './renderers/annotation-labels.renderer';
 import { drawCaves } from './renderers/caves.renderer';
+import { drawCentralizers } from './renderers/centralizers.renderer';
 import { drawConstructionLabels } from './renderers/construction-labels.renderer';
 import { drawConstructive } from './renderers/construction.renderer';
 import { drawFractures } from './renderers/fractures.renderer';
 import { drawHighlights } from './renderers/highlights.renderer';
 import { drawWellLegend } from './renderers/legend.renderer';
 import { drawLithology } from './renderers/lithology.renderer';
+import { drawPump } from './renderers/pump.renderer';
 import { drawUnitLabels } from './renderers/unit-labels.renderer';
 import { asSvgElement } from './utils/d3.utils';
 import { buildSvgStyleBlock } from './utils/render.styles';
 import {
   filterByDepth,
+  fractureDip,
   populateTooltips,
   preloadFgdcTextures,
 } from './utils/render.utils';
@@ -90,11 +95,13 @@ export class WellRenderer {
     length: 'm',
     diameter: 'mm',
   };
+  private locale: 'en' | 'pt' = 'pt';
 
   /**
    * @param svgs - One entry per SVG panel; multi-entry for split-panel layouts.
    * @param options.classNames - Override default BEM CSS class names.
    * @param options.units - Active measurement units (`length` and `diameter`).
+   * @param options.locale - Locale for renderer-drawn text (diameter symbol, and any `RenderConfig` fields resolved via `applyRenderLocale`). Defaults to `'pt'`, matching the package's historical output.
    * @param options.renderConfig - Rendering behaviour (zoom, pan, animation, layout). Defaults to `INTERACTIVE_RENDER_CONFIG`.
    * @param options.theme - Visual theme overrides. Merged on top of `DEFAULT_WELL_THEME`.
    * @param options.onError - Called when a draw error occurs (e.g., a renderer throws). Falls back to `console.error` if omitted.
@@ -105,6 +112,7 @@ export class WellRenderer {
     options: {
       classNames?: DeepPartial<ComponentsClassNames>;
       units?: Units;
+      locale?: 'en' | 'pt';
       renderConfig?: DeepPartial<RenderConfig>;
       theme?: DeepPartial<WellTheme>;
       onError?: (err: Error) => void;
@@ -130,6 +138,10 @@ export class WellRenderer {
 
     if (options.units) {
       this.units = { ...this.units, ...options.units };
+    }
+
+    if (options.locale) {
+      this.locale = options.locale;
     }
 
     if (options.renderConfig) {
@@ -207,6 +219,8 @@ export class WellRenderer {
     construction.append('g').attr('class', this.classes.wellCase.group);
     construction.append('g').attr('class', this.classes.wellScreen.group);
     construction.append('g').attr('class', this.classes.reduction.group);
+    construction.append('g').attr('class', this.classes.pump.group);
+    construction.append('g').attr('class', this.classes.centralizer.group);
     construction.append('g').attr('class', this.classes.conflict.group);
     construction
       .append('g')
@@ -282,11 +296,16 @@ export class WellRenderer {
    * Renders the well profile into all configured SVG panels.
    * @param profile - The well data to render.
    * @param options.units - Override the instance-level measurement units for this render.
+   * @param options.locale - Override the instance-level locale for this render.
    * @param options.highlights - Highlight overlays to display on top of the profile.
    */
   draw(
     profile: RenderableWell,
-    options: { units?: Units; highlights?: Highlights } = {},
+    options: {
+      units?: Units;
+      locale?: 'en' | 'pt';
+      highlights?: Highlights;
+    } = {},
   ) {
     if (isWellEmpty(profile)) return;
 
@@ -298,6 +317,9 @@ export class WellRenderer {
     }
 
     this.units = { ...this.units, ...options.units };
+    if (options.locale) {
+      this.locale = options.locale;
+    }
     const highlights = options.highlights ?? {};
 
     const maxValues = getProfileLastItemsDepths(profile);
@@ -361,6 +383,8 @@ export class WellRenderer {
     const wellCaseGroup = svg.select(`.${this.classes.wellCase.group}`);
     const wellScreenGroup = svg.select(`.${this.classes.wellScreen.group}`);
     const reductionGroup = svg.select(`.${this.classes.reduction.group}`);
+    const centralizerGroup = svg.select(`.${this.classes.centralizer.group}`);
+    const pumpGroup = svg.select(`.${this.classes.pump.group}`);
     const conflictGroup = svg.select(`.${this.classes.conflict.group}`);
     const constructionLabelsGroup = svg.select(
       `.${this.classes.constructionLabels.group}`,
@@ -390,6 +414,8 @@ export class WellRenderer {
       this.classes,
       this.units,
       this.renderConfig.tooltips,
+      this.renderConfig.tooltipLabels,
+      this.locale,
     );
 
     const { xLeft: geoXLeft, xRightInset: geoXRightInset } =
@@ -410,6 +436,7 @@ export class WellRenderer {
       well_case: profile.well_case,
       well_screen: profile.well_screen,
       reduction: profile.reduction,
+      centralizers: profile.centralizers ?? [],
       fractures: profile.fractures,
     } as Constructive;
 
@@ -426,11 +453,13 @@ export class WellRenderer {
       .domain([depthFrom * depthFactor, depthTo * depthFactor])
       .range([0, contentHeight]);
 
-    const yAxis = d3
-      .axisLeft(yScaleAxis)
-      .tickFormat(
-        (d: d3module.NumberValue) => `${d}${getLengthUnit(this.units.length)}`,
-      );
+    const yAxis = d3.axisLeft(yScaleAxis).tickFormat(
+      (d: d3module.NumberValue) =>
+        `${formatNumber(Number(d), {
+          maximumFractionDigits: this.units.length === 'ft' ? 1 : 2,
+          locale: this.locale,
+        })}${getLengthUnit(this.units.length)}`,
+    );
 
     const gY = svg.select<SVGGElement>(`.${this.classes.yAxis}`).call(yAxis);
 
@@ -483,6 +512,8 @@ export class WellRenderer {
       wellCaseGroup,
       wellScreenGroup,
       reductionGroup,
+      centralizerGroup,
+      pumpGroup,
       conflictGroup,
       highlightsGeologicGroup,
       highlightsConstructionGroup,
@@ -509,11 +540,13 @@ export class WellRenderer {
       classes: this.classes,
       textures: this.textures,
       units: this.units,
+      locale: this.locale,
       constructionData,
       groups,
     };
 
     const inDepth = filterByDepth(depthFrom, depthTo);
+    const currentPump = getCurrentPump(profile as Well);
     const filteredConstruction = {
       ...constructionData,
       bore_hole: constructionData.bore_hole.filter(inDepth),
@@ -522,6 +555,7 @@ export class WellRenderer {
       well_case: constructionData.well_case.filter(inDepth),
       well_screen: constructionData.well_screen.filter(inDepth),
       reduction: constructionData.reduction?.filter(inDepth) ?? [],
+      centralizers: constructionData.centralizers?.filter(inDepth) ?? [],
     };
 
     const zooming = (e: { transform: d3module.ZoomTransform }): void => {
@@ -584,10 +618,10 @@ export class WellRenderer {
         .selectAll(`g.${this.classes.fractures.item}`)
         .attr('transform', (d: unknown) => {
           if (!d) return null;
-          const f = d as { depth: number; dip: number };
+          const f = d as { depth: number; dip?: number | null };
           const cx = pocoCenterX;
           const cy = transform.applyY(yScaleLocal(f.depth));
-          return `translate(0,${cy}) rotate(${f.dip},${cx},0)`;
+          return `translate(0,${cy}) rotate(${fractureDip(f.dip)},${cx},0)`;
         });
 
       // Delegated redraws — unconditional, each renderer self-guards:
@@ -601,6 +635,8 @@ export class WellRenderer {
           ) ?? [],
         caves: profile.caves?.filter(inDepth) ?? [],
       });
+      drawPump(zoomedCtx, currentPump);
+      drawCentralizers(zoomedCtx, filteredConstruction);
       drawConstructionLabels(zoomedCtx, {
         well_case: constructionData.well_case.filter(inDepth),
         well_screen: constructionData.well_screen.filter(inDepth),
@@ -629,6 +665,8 @@ export class WellRenderer {
         ) ?? [],
       );
       drawConstructive(ctx, filteredConstruction);
+      drawPump(ctx, currentPump);
+      drawCentralizers(ctx, filteredConstruction);
       drawConstructionLabels(ctx, {
         well_case: filteredConstruction.well_case,
         well_screen: filteredConstruction.well_screen,

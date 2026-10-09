@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import type { Well } from '@welldot/core';
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import { CONSTRUCTION_MATERIALS } from '@welldot/core';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
+
+const wellCaseTypeOptions = computed(() =>
+  vocabOptions(CONSTRUCTION_MATERIALS),
+);
 
 const wellCaseColumns = computed<WellGridColumn[]>(() => [
   {
@@ -27,7 +33,10 @@ const wellCaseColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'type',
     label: t('editor.construction.wellCase.type'),
-    type: 'text',
+    info: t('editor.construction.wellCase.typeInfo'),
+    infoHighlight: t('editor.construction.wellCase.typeFreeText'),
+    type: 'combo',
+    options: wellCaseTypeOptions.value,
     stretch: true,
     minSize: 200,
   },
@@ -74,6 +83,11 @@ function reorderWellCase(from: number, to: number) {
       :rows="[...profileStore.well.well_case]"
       :columns="wellCaseColumns"
       :add-label="t('editor.construction.wellCase.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addWellCase"
       @delete="deleteWellCase"
       @change="updateWellCase"

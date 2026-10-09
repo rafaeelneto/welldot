@@ -1,4 +1,5 @@
 import type { AnnotationData, DrawContext } from '~/types/render.types';
+import { formatLength, getLengthUnit } from '~/utils/format.utils';
 import { wrapText } from '~/utils/render.utils';
 
 type AnnotationItem = {
@@ -50,7 +51,7 @@ export function drawAnnotationLabels(
     data.lithology
       .filter(d => d.to <= ctx.depthTo)
       .forEach(d => {
-        const text = `${d.to}`;
+        const text = `${formatLength(d.to, ctx.units.length, ctx.locale)}${getLengthUnit(ctx.units.length)}`;
         const approxW = text.length * (st.fontSize * 0.52) + s.depthTipPadX * 2;
         const y = ctx.yScale(d.to) - s.depthTipHeight / 2;
 
@@ -94,7 +95,7 @@ export function drawAnnotationLabels(
           baseY: ctx.yScale(Math.max(d.from, ctx.depthFrom)),
           originX: ctx.geoXRight,
           originY: ctx.yScale(Math.max(d.from, ctx.depthFrom)),
-          header: `${d.from}–${d.to} m`,
+          header: `${formatLength(d.from, ctx.units.length, ctx.locale)}–${formatLength(d.to, ctx.units.length, ctx.locale)}${getLengthUnit(ctx.units.length)}`,
           description: d.description || '',
         });
       });
@@ -104,13 +105,16 @@ export function drawAnnotationLabels(
     data.fractures
       .filter(d => d.depth >= ctx.depthFrom && d.depth < ctx.depthTo)
       .forEach(d => {
-        const typeLabel = d.water_intake ? 'fratura aberta' : 'fratura';
+        const typeLabel = d.water_intake
+          ? (ctx.renderConfig.labels.typeLabels?.fractureWater ??
+            'fratura aberta')
+          : (ctx.renderConfig.labels.typeLabels?.fracture ?? 'fratura');
         items.push({
           sortDepth: d.depth,
           baseY: ctx.yScale(d.depth),
           originX: ctx.pocoCenterX,
           originY: ctx.yScale(d.depth),
-          header: `${d.depth} m · ${typeLabel}`,
+          header: `${formatLength(d.depth, ctx.units.length, ctx.locale)}${getLengthUnit(ctx.units.length)} · ${typeLabel}`,
           description: d.description || '',
         });
       });
@@ -121,13 +125,15 @@ export function drawAnnotationLabels(
       .filter(d => d.from < ctx.depthTo)
       .forEach(d => {
         const midDepth = (d.from + d.to) / 2;
-        const typeLabel = d.water_intake ? 'caverna úmida' : 'caverna';
+        const typeLabel = d.water_intake
+          ? (ctx.renderConfig.labels.typeLabels?.caveWater ?? 'caverna úmida')
+          : (ctx.renderConfig.labels.typeLabels?.cave ?? 'caverna');
         items.push({
           sortDepth: d.from,
           baseY: ctx.yScale(Math.max(d.from, ctx.depthFrom)),
           originX: ctx.geoXRight,
           originY: ctx.yScale(Math.max(midDepth, ctx.depthFrom)),
-          header: `${d.from}–${d.to} m · ${typeLabel}`,
+          header: `${formatLength(d.from, ctx.units.length, ctx.locale)}–${formatLength(d.to, ctx.units.length, ctx.locale)}${getLengthUnit(ctx.units.length)} · ${typeLabel}`,
           description: d.description || '',
         });
       });

@@ -5,6 +5,41 @@ import { NuxtLink } from '#components';
 definePageMeta({ layout: 'landing' });
 
 const { t, tm, rt } = useI18n();
+const localePath = useLocalePath();
+
+useSeoMeta({
+  title: () => t('meta.title'),
+  description: () => t('meta.description'),
+});
+
+defineOgImage('Default', {
+  kicker: computed(() => t('hero.kicker')),
+  headline1: computed(() => t('hero.headline1')),
+  headlineEm: computed(() => t('hero.headlineEm')),
+  headline2: computed(() => t('hero.headline2')),
+  tagline: computed(() => t('hero.body')),
+  badgeSpec: computed(() => t('hero.badgeSpec')),
+  badgeLicense: computed(() => t('hero.badgeLicense')),
+  badgeSite: computed(() => t('hero.badgeSite')),
+});
+
+useSchemaOrg([
+  defineSoftwareApp({
+    '@type': 'WebApplication',
+    name: 'Welldot',
+    url: 'https://welldot.org',
+    description: computed(() => t('meta.description')),
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Any (web-based)',
+    offers: {
+      price: 0,
+      priceCurrency: 'USD',
+    },
+    featureList: computed(() =>
+      (tm('meta.featureList') as any[]).map(f => rt(f)),
+    ),
+  }),
+]);
 
 // ── Scroll-driven hero progress ────────────────────────────────────────────
 const heroBandRef = ref<HTMLElement>();
@@ -73,6 +108,22 @@ const horizonProps = computed(() =>
     body: rt(p.body),
   })),
 );
+
+const TOOL_PATHS = [
+  'packages/core',
+  'packages/utils',
+  'packages/render',
+  'apps/profiler',
+] as const;
+
+const toolCards = computed(() =>
+  (tm('tools.cards') as any[]).map((card: any, i: number) => ({
+    title: rt(card.title),
+    body: rt(card.body),
+    path: TOOL_PATHS[i]!,
+    href: `https://github.com/rafaeelneto/welldot/tree/main/${TOOL_PATHS[i]}`,
+  })),
+);
 </script>
 
 <template>
@@ -132,7 +183,11 @@ const horizonProps = computed(() =>
             {{ t('hero.body') }}
           </p>
           <div class="flex flex-col sm:flex-row gap-2.5 mb-5 lg:mb-7">
-            <Button :label="t('hero.ctaPrimary')" :as="NuxtLink" to="/editor" />
+            <Button
+              :label="t('hero.ctaPrimary')"
+              :as="NuxtLink"
+              :to="localePath('/editor')"
+            />
             <Button
               :label="t('hero.ctaSecondary')"
               as="a"
@@ -146,7 +201,7 @@ const horizonProps = computed(() =>
             class="flex flex-wrap gap-5.5 pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
           >
             <span
-              ><b class="text-content-0 font-medium">v1.0</b>
+              ><b class="text-content-0 font-medium">v2.3</b>
               {{ t('hero.badgeSpec') }}</span
             >
             <span
@@ -157,6 +212,12 @@ const horizonProps = computed(() =>
               ><b class="text-content-0 font-medium">{{
                 t('hero.badgeSite')
               }}</b></span
+            >
+            <span
+              ><b class="text-content-0 font-medium">{{
+                t('hero.badgeFormerlyBold')
+              }}</b>
+              {{ t('hero.badgeFormerly') }}</span
             >
           </div>
         </div>
@@ -195,7 +256,7 @@ const horizonProps = computed(() =>
               >
             </i18n-t>
           </p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <LandingPropCard
               v-for="prop in formatProps"
               :key="prop.num"
@@ -247,6 +308,17 @@ const horizonProps = computed(() =>
           </template>
           <template #welldot><b>welldot</b></template>
           <template #well><b>.well</b></template>
+        </i18n-t>
+      </p>
+      <p
+        class="text-[14px] lg:text-[16px] leading-[1.55] max-w-220 mb-9 text-content-400"
+      >
+        <i18n-t keypath="intention.originNote" tag="span">
+          <template #wellProfiler
+            ><b class="text-content-0">{{
+              t('intention.wellProfiler')
+            }}</b></template
+          >
         </i18n-t>
       </p>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
@@ -359,7 +431,7 @@ const horizonProps = computed(() =>
       >
         {{ t('horizon.intro') }}
       </p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <LandingPropCard
           v-for="prop in horizonProps"
           :key="prop.num"
@@ -368,6 +440,39 @@ const horizonProps = computed(() =>
         >
           {{ prop.body }}
         </LandingPropCard>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §V · Ecossistema de ferramentas livres ──────────────────────────────── -->
+  <section
+    class="relative py-14 lg:py-20 border-b border-surface-200/60 overflow-hidden"
+  >
+    <div class="container-landing relative">
+      <div class="kicker mb-4.5">{{ t('tools.kicker') }}</div>
+      <h2
+        class="font-serif font-medium text-[38px] lg:text-[60px] leading-none tracking-tight mb-3.5"
+      >
+        {{ t('tools.headline1') }}
+        <em class="text-primary-500">{{ t('tools.headlineEm') }}</em
+        >{{ t('tools.headline2') }}
+      </h2>
+      <p
+        class="text-[15px] lg:text-[17px] leading-[1.55] text-content-400 lg:max-w-120 mb-8"
+      >
+        {{ t('tools.intro') }}
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <LandingToolCard
+          v-for="card in toolCards"
+          :key="card.title"
+          :title="card.title"
+          :path="card.path"
+          :href="card.href"
+          :link-label="t('tools.viewSource')"
+        >
+          {{ card.body }}
+        </LandingToolCard>
       </div>
     </div>
   </section>
@@ -409,7 +514,11 @@ const horizonProps = computed(() =>
       <div
         class="flex flex-col sm:flex-row gap-2.5 justify-center items-center"
       >
-        <Button :label="t('cta.primary')" :as="NuxtLink" to="/editor" />
+        <Button
+          :label="t('cta.primary')"
+          :as="NuxtLink"
+          :to="localePath('/editor')"
+        />
         <Button
           :label="t('cta.secondary')"
           as="a"

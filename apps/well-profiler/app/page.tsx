@@ -8,6 +8,7 @@ import { Button } from '@mantine/core';
 import Behance from '@/public/assets/icons/behance_1.svg';
 import Linkedin from '@/public/assets/icons/linkedin_1.svg';
 import Email from '@/public/assets/icons/email_1.svg';
+import Github from '@/public/assets/icons/github_1.svg';
 
 import styles from '@/app/home.module.scss';
 
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
   title: 'Well Profiler',
   description:
     'Web app dedicado a construção de perfis geológicos e construtivos de poços de água subterrânea',
+  alternates: { canonical: '/' },
 };
 
 function Home() {
@@ -96,6 +98,14 @@ function Home() {
               target="_blank"
             >
               <Email />
+            </NextLink>
+
+            <NextLink
+              className={styles.socialBtn}
+              href="https://github.com/rafaeelneto/welldot"
+              target="_blank"
+            >
+              <Github />
             </NextLink>
           </div>
         </div>

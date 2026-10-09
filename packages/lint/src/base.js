@@ -15,16 +15,24 @@ export default [
     rules: {
       // style
       'linebreak-style': ['error', 'unix'],
-      camelcase: ['error'],
+      // The `.well` schema is snake_case on the wire, so code across the repo
+      // reads and writes fields like `media_type` and `static_level` verbatim.
+      camelcase: 'off',
       'prefer-template': ['error'],
-      'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
+      // Off, not relaxed: the codebase uses `++`/`--` idiomatically outside
+      // for-loop afterthoughts too (`while` cursors, undo/redo stack indices in
+      // `useImmer`). This is an airbnb stylistic relic, not a safety rule.
+      'no-plusplus': 'off',
       radix: ['error', 'as-needed'],
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 
       // safety
       'no-use-before-define': 'off', // handled by TS version
       'no-undef': 'off', // TypeScript handles this
-      'no-return-assign': ['error', 'always'],
+      // Vue event handlers and menu-item callbacks across the apps are written
+      // as `() => (someRef.value = true)`. The parenthesised form is explicit
+      // enough, so only flag a bare `return x = y`.
+      'no-return-assign': ['error', 'except-parens'],
       'prefer-promise-reject-errors': ['warn'],
 
       // imports

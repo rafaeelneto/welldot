@@ -19,6 +19,8 @@ export const usePdfExportStore = defineStore(
     const metadataPosition = ref<'before' | 'after' | null>('before');
     const headingInfo = ref<PdfInfoItem[]>([]);
     const endInfo = ref<PdfInfoItem[]>([]);
+    /** Whether the PDF applies the shared visibility preference (`shareVisibility.store.ts`). Off by default. */
+    const useCustomVisibility = ref(false);
 
     return {
       header,
@@ -27,6 +29,7 @@ export const usePdfExportStore = defineStore(
       metadataPosition,
       headingInfo,
       endInfo,
+      useCustomVisibility,
     };
   },
   {

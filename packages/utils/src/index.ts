@@ -1,2 +1,11 @@
 export { checkIfProfileIsEmpty } from '@welldot/core';
+export * from './coords.utils';
+export * from './date.utils';
+export * from './hydrodynamic.utils';
+export * from './number.utils';
+export * from './operation.utils';
+export * from './permit.utils';
 export * from './profile.utils';
+export * from './shared.utils';
+export * from './units.utils';
+export * from './waterQuality.utils';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -34,6 +34,7 @@ const holeFillColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'type',
     label: t('editor.construction.holeFill.type'),
+    info: t('editor.construction.holeFill.typeInfo'),
     type: 'select-button',
     size: 220,
     options: holeFillTypeOptions.value,
@@ -41,6 +42,7 @@ const holeFillColumns = computed<WellGridColumn[]>(() => [
   {
     prop: 'description',
     label: t('editor.construction.holeFill.description'),
+    info: t('editor.construction.holeFill.descriptionInfo'),
     type: 'text',
     stretch: true,
     minSize: 200,
@@ -88,6 +90,11 @@ function reorderHoleFill(from: number, to: number) {
       :rows="[...profileStore.well.hole_fill]"
       :columns="holeFillColumns"
       :add-label="t('editor.construction.holeFill.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addHoleFill"
       @delete="deleteHoleFill"
       @change="updateHoleFill"

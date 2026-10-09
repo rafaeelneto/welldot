@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Well } from '@welldot/core';
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -79,6 +79,11 @@ function reorderCave(from: number, to: number) {
       :rows="[...profileStore.well.caves]"
       :columns="caveColumns"
       :add-label="t('editor.geological.caves.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addCave"
       @delete="deleteCave"
       @change="updateCave"

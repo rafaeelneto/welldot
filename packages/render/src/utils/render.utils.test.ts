@@ -8,7 +8,11 @@ import type {
   Units,
 } from '@welldot/core';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ComponentsClassNames, SvgSelection } from '~/types/render.types';
+import type {
+  ComponentsClassNames,
+  SvgSelection,
+  TooltipLabels,
+} from '~/types/render.types';
 
 // vi.hoisted lets these be referenced inside vi.mock factories (which are hoisted)
 const mockTexturePaths = vi.hoisted(() => ({
@@ -47,6 +51,7 @@ vi.mock('~/utils/fgdcTextures', () => ({
 }));
 
 import {
+  fractureDip,
   getConflictAreas,
   getLithologicalFillList,
   getLithologyFill,
@@ -79,6 +84,62 @@ const makeLithology = (overrides: Partial<Lithology> = {}): Lithology => ({
 
 const makeUnits = (): Units => ({ length: 'm', diameter: 'mm' });
 
+const makeLabels = (): TooltipLabels => ({
+  common: {
+    from: 'De',
+    to: 'até',
+    description: 'Descrição:',
+    diameter: 'Diâmetro:',
+    type: 'Tipo:',
+  },
+  geology: {
+    title: 'Litologia',
+    geologicUnit: 'Unidade geológica:',
+    aquiferUnit: 'Unidade aquífera:',
+  },
+  hole: { title: 'FURO' },
+  surfaceCase: { title: 'TUBO DE BOCA' },
+  holeFill: { title: 'ESP. ANULAR' },
+  wellCase: { title: 'REVESTIMENTO' },
+  wellScreen: { title: 'FILTROS', slot: 'Ranhura:' },
+  reduction: { title: 'REDUÇÃO' },
+  centralizer: {
+    title: 'CENTRALIZADOR',
+    depth: 'Profundidade:',
+    spacing: 'Espaçamento:',
+  },
+  pump: {
+    title: 'BOMBA',
+    intakeDepth: 'Profundidade do crivo:',
+    model: 'Modelo:',
+    power: 'Potência:',
+    riser: 'Edutor:',
+    type_submersible: 'Bomba submersa',
+    type_vertical_turbine: 'Bomba de eixo vertical',
+    type_jet: 'Bomba injetora',
+    type_progressive_cavity: 'Bomba helicoidal',
+    type_hand_pump: 'Bomba manual',
+    type_compressor_airlift: 'Compressor (air-lift)',
+  },
+  conflict: { title: 'CONFLITO' },
+  fracture: {
+    title: 'FRATURA',
+    titleSwarm: 'ENXAME DE FRATURAS',
+    depth: 'Profundidade:',
+    waterIntake: "Entrada d'água:",
+    dip: 'Mergulho:',
+    azimuth: 'Azimute:',
+  },
+  cementPad: {
+    title: 'LAJE DE PROTEÇÃO',
+    thickness: 'Espessura:',
+    width: 'Largura:',
+    length: 'Comprimento:',
+  },
+  cave: { title: 'CAVERNA', waterIntake: "Entrada d'água" },
+});
+const LOCALE = 'pt' as const;
+
 const makeClasses = (): ComponentsClassNames => ({
   tooltip: {
     root: 'tip',
@@ -102,6 +163,8 @@ const makeClasses = (): ComponentsClassNames => ({
   wellCase: { group: '', rect: '' },
   wellScreen: { group: '', rect: '' },
   reduction: { group: '', item: '' },
+  centralizer: { group: '', item: '' },
+  pump: { group: '', item: '' },
   conflict: { group: '', rect: '' },
   unitLabels: { group: '', geoRect: '', aqRect: '', text: '' },
   legend: {
@@ -144,6 +207,19 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------------------
+
+describe('fractureDip', () => {
+  it('passes a numeric dip through', () => {
+    expect(fractureDip(35)).toBe(35);
+    expect(fractureDip(0)).toBe(0);
+  });
+
+  it('treats null, undefined and NaN as 0', () => {
+    expect(fractureDip(null)).toBe(0);
+    expect(fractureDip(undefined)).toBe(0);
+    expect(fractureDip(NaN)).toBe(0);
+  });
+});
 
 describe('makeSeededPrng', () => {
   it('returns a function', () => {
@@ -624,22 +700,32 @@ describe('populateTooltips', () => {
     'fracture',
     'cementPad',
     'cave',
+    'pump',
   ];
 
-  it('tooltipConfig=undefined → all 10 keys present as real tips (no show/hide)', () => {
-    const tooltips = populateTooltips(makeSvg(), makeClasses(), makeUnits());
+  it('tooltipConfig=undefined → all 11 keys present as real tips (no show/hide)', () => {
+    const tooltips = populateTooltips(
+      makeSvg(),
+      makeClasses(),
+      makeUnits(),
+      undefined,
+      makeLabels(),
+      LOCALE,
+    );
     ALL_KEYS.forEach(k => {
       expect(tooltips[k]).toBeDefined();
       expect('show' in tooltips[k]).toBe(false);
     });
   });
 
-  it('tooltipConfig=false → all 10 are noop objects with show/hide', () => {
+  it('tooltipConfig=false → all 11 are noop objects with show/hide', () => {
     const tooltips = populateTooltips(
       makeSvg(),
       makeClasses(),
       makeUnits(),
       false,
+      makeLabels(),
+      LOCALE,
     );
     ALL_KEYS.forEach(k => {
       expect(typeof tooltips[k].show).toBe('function');
@@ -648,10 +734,14 @@ describe('populateTooltips', () => {
   });
 
   it('tooltipConfig array → only listed keys are real tips; rest are noop', () => {
-    const tooltips = populateTooltips(makeSvg(), makeClasses(), makeUnits(), [
-      'geology',
-      'hole',
-    ]);
+    const tooltips = populateTooltips(
+      makeSvg(),
+      makeClasses(),
+      makeUnits(),
+      ['geology', 'hole'],
+      makeLabels(),
+      LOCALE,
+    );
     expect('show' in tooltips.geology).toBe(false);
     expect('show' in tooltips.hole).toBe(false);
     expect(typeof tooltips.fracture.show).toBe('function');
@@ -660,19 +750,122 @@ describe('populateTooltips', () => {
 
   it('svg.call is invoked once per enabled tip', () => {
     const svg = makeSvg();
-    populateTooltips(svg, makeClasses(), makeUnits(), ['geology', 'hole']);
+    populateTooltips(
+      svg,
+      makeClasses(),
+      makeUnits(),
+      ['geology', 'hole'],
+      makeLabels(),
+      LOCALE,
+    );
     expect(svg.call).toHaveBeenCalledTimes(2);
   });
 
   it('svg.call is not invoked when tooltipConfig=false', () => {
     const svg = makeSvg();
-    populateTooltips(svg, makeClasses(), makeUnits(), false);
+    populateTooltips(
+      svg,
+      makeClasses(),
+      makeUnits(),
+      false,
+      makeLabels(),
+      LOCALE,
+    );
     expect(svg.call).not.toHaveBeenCalled();
+  });
+
+  describe('cache invalidation', () => {
+    const makeStatefulSvg = () => {
+      const node = { setAttribute: vi.fn() };
+      return { call: vi.fn(), node: () => node } as unknown as SvgSelection;
+    };
+
+    it('reuses cached tooltips when units/tooltipConfig/labels/locale are unchanged', () => {
+      const svg = makeStatefulSvg();
+      populateTooltips(
+        svg,
+        makeClasses(),
+        makeUnits(),
+        undefined,
+        makeLabels(),
+        LOCALE,
+      );
+      const callsAfterFirst = (svg.call as ReturnType<typeof vi.fn>).mock.calls
+        .length;
+      populateTooltips(
+        svg,
+        makeClasses(),
+        makeUnits(),
+        undefined,
+        makeLabels(),
+        LOCALE,
+      );
+      expect((svg.call as ReturnType<typeof vi.fn>).mock.calls.length).toBe(
+        callsAfterFirst,
+      );
+    });
+
+    it('regenerates when units change (e.g. the user switches length/diameter unit)', () => {
+      const svg = makeStatefulSvg();
+      populateTooltips(
+        svg,
+        makeClasses(),
+        makeUnits(),
+        undefined,
+        makeLabels(),
+        LOCALE,
+      );
+      const callsAfterFirst = (svg.call as ReturnType<typeof vi.fn>).mock.calls
+        .length;
+      populateTooltips(
+        svg,
+        makeClasses(),
+        { length: 'ft', diameter: 'inches' },
+        undefined,
+        makeLabels(),
+        LOCALE,
+      );
+      expect(
+        (svg.call as ReturnType<typeof vi.fn>).mock.calls.length,
+      ).toBeGreaterThan(callsAfterFirst);
+    });
+
+    it('regenerates when locale changes (e.g. the user switches language)', () => {
+      const svg = makeStatefulSvg();
+      populateTooltips(
+        svg,
+        makeClasses(),
+        makeUnits(),
+        undefined,
+        makeLabels(),
+        'pt',
+      );
+      const callsAfterFirst = (svg.call as ReturnType<typeof vi.fn>).mock.calls
+        .length;
+      populateTooltips(
+        svg,
+        makeClasses(),
+        makeUnits(),
+        undefined,
+        makeLabels(),
+        'en',
+      );
+      expect(
+        (svg.call as ReturnType<typeof vi.fn>).mock.calls.length,
+      ).toBeGreaterThan(callsAfterFirst);
+    });
   });
 
   describe('HTML content', () => {
     function getHtmlFn(key: string) {
-      const tooltips = populateTooltips(makeSvg(), makeClasses(), makeUnits());
+      const tooltips = populateTooltips(
+        makeSvg(),
+        makeClasses(),
+        makeUnits(),
+        undefined,
+        makeLabels(),
+        LOCALE,
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return ((tooltips[key] as any).html as ReturnType<typeof vi.fn>).mock
         .calls[0][0];
@@ -695,6 +888,31 @@ describe('populateTooltips', () => {
     it('hole tooltip includes diameter', () => {
       const hole: BoreHole = { from: 0, to: 50, diameter: 200 };
       expect(getHtmlFn('hole')(null, hole)).toContain('200');
+    });
+
+    it('centralizer tooltip shows depth, spacing and type', () => {
+      const html = getHtmlFn('centralizer')(null, {
+        from: 6,
+        to: 30,
+        spacing: 6,
+        type: 'spring_bow',
+        depth: 18,
+      });
+      expect(html).toContain('CENTRALIZADOR');
+      expect(html).toContain('18');
+      expect(html).toContain('Espaçamento:');
+      expect(html).toContain('Mola (spring bow)');
+    });
+
+    it('centralizer tooltip omits the interval line for a single centralizer', () => {
+      const html = getHtmlFn('centralizer')(null, {
+        from: 12,
+        to: 12,
+        type: 'rigid',
+        depth: 12,
+      });
+      expect(html).not.toContain('Espaçamento:');
+      expect(html).not.toContain('até');
     });
 
     it('fracture with swarm=true shows "ENXAME DE FRATURAS"', () => {
@@ -731,8 +949,9 @@ describe('populateTooltips', () => {
         length: 1.5,
       };
       const html = getHtmlFn('cementPad')(null, pad);
-      expect(html).toContain('0.2');
-      expect(html).toContain('1.5');
+      // LOCALE is 'pt', so the decimal separator is a comma, not a period.
+      expect(html).toContain('0,2');
+      expect(html).toContain('1,5');
     });
 
     it('cave tooltip includes from and to depths', () => {

@@ -1,6 +1,6 @@
-import { Texture } from '../types/textures';
+import { TextureOption } from '../types/textures';
 
-export const FGDC_TEXTURES_OPTIONS: Texture[] = [
+export const FGDC_TEXTURES_OPTIONS: TextureOption[] = [
   // --- Surficial Patterns (Series 100) ---
   { code: 101, label: 'Unconsolidated material', pending: true },
   { code: 102, label: 'Alluvium', pending: true },

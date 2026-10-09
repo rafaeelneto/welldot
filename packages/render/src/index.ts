@@ -1,7 +1,9 @@
 export {
   DEFAULT_WELL_THEME,
   INTERACTIVE_RENDER_CONFIG,
+  RENDER_LABELS,
   STATIC_RENDER_CONFIG,
+  applyRenderLocale,
 } from './configs/render.configs';
 
 export { importFgdcTextures } from './utils/fgdcTextures';
@@ -22,9 +24,12 @@ export type {
   LithologyTextureTheme,
   LithologyTheme,
   RenderConfig,
+  RenderLabelPack,
+  RenderLocalizedText,
   RenderableWell,
   SvgInstance,
   TooltipKey,
+  TooltipLabels,
   WellTheme,
   WithKey,
 } from './types/render.types';
@@ -33,4 +38,5 @@ export {
   formatLength,
   getDiameterUnit,
   getLengthUnit,
+  resolveRenderLabel,
 } from './utils/format.utils';

@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import type { RenderableWell } from '@welldot/render';
-import { WellRenderer, INTERACTIVE_RENDER_CONFIG } from '@welldot/render';
+import {
+  WellRenderer,
+  INTERACTIVE_RENDER_CONFIG,
+  applyRenderLocale,
+} from '@welldot/render';
 import { useDark } from '@vueuse/core';
 
 const props = defineProps<{ progress: number }>();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const svgId = `hero-well-${Math.random().toString(36).slice(2, 8)}`;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 let wellRenderer: any = null;
 let ro: ResizeObserver | null = null;
 let io: IntersectionObserver | null = null;
@@ -1021,23 +1025,29 @@ async function initRenderer(container: HTMLElement) {
   wellRenderer = null;
   const { width, height, margins } = getDimensions(container);
   const dark = isDark.value;
+  const rendererLocale = locale.value === 'en' ? 'en' : 'pt';
+  const localizedConfig = applyRenderLocale(
+    INTERACTIVE_RENDER_CONFIG,
+    rendererLocale,
+  );
   wellRenderer = new WellRenderer(
     [{ selector: `#${svgId}`, height, width, margins }],
     {
       renderConfig: {
-        ...INTERACTIVE_RENDER_CONFIG,
+        ...localizedConfig,
         zoom: false,
         pan: false,
         tooltips: false,
         animation: { duration: 120, ease: (t: number) => t },
         highlights: {
-          ...INTERACTIVE_RENDER_CONFIG.highlights,
+          ...localizedConfig.highlights,
           fill: '#5d86d2',
           fillOpacity: 0.15,
           stroke: '#5d86d2',
           strokeWidth: 1.5,
         },
       },
+      locale: rendererLocale,
       ...(dark && {
         theme: {
           labels: {
@@ -1063,7 +1073,7 @@ async function initRenderer(container: HTMLElement) {
   await wellRenderer.prepareSvg();
 }
 
-watch(isDark, async () => {
+watch([isDark, () => locale.value], async () => {
   if (!containerEl) return;
   await initRenderer(containerEl);
   redraw();

@@ -129,7 +129,7 @@ function buildFooterContent(breakPages = true) {
             alignment: 'left',
           },
           {
-            text: 'wellprofiler.com',
+            text: 'welldot.org',
             font: 'spaceGrotesk',
             fontSize: 7,
             color: '#494949',
@@ -147,7 +147,7 @@ function buildFooterContent(breakPages = true) {
                 width: 46,
               },
               {
-                svg: qrSvg('https://wellprofiler.com', 34),
+                svg: qrSvg('https://welldot.org', 34),
                 width: 34,
                 height: 34,
               },
@@ -370,7 +370,7 @@ export const exportPdfProfile = async (
                           color: '#1a1a2e',
                         },
                         {
-                          text: 'wellprofiler.com',
+                          text: 'welldot.org',
                           font: 'spaceGrotesk',
                           bold: false,
                           fontSize: 8,

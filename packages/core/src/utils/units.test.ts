@@ -1,24 +1,43 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  concentrationFromCanonical,
+  concentrationToCanonical,
   cubicMeterPerHourToLitersPerSecond,
   cubicMeterPerHourToUsGallonsPerMinute,
+  cubicMetersToLiters,
+  cvToKilowatts,
   decimalDegreesToDms,
   dmsToDecimalDegrees,
+  expandedToStandardUncertainty,
   feetToMeters,
+  flowFromCanonical,
+  flowToCanonical,
   hoursToMinutes,
+  hpToKilowatts,
   inchesToMm,
   kilopascalToPsi,
+  kilowattsToCv,
+  kilowattsToHp,
   litersPerSecondToCubicMeterPerHour,
+  litersToCubicMeters,
   metersToFeet,
+  milliSiemensPerCmToMicroSiemensPerCm,
+  milliSiemensPerMeterToMicroSiemensPerCm,
   minutesToHours,
   mmToInches,
   mmToSlotNumber,
+  normalizeColorUnit,
+  powerFromCanonical,
+  powerToCanonical,
   psiToKilopascal,
   slotNumberToMm,
   squareMeterPerDayToSquareMeterPerSecond,
   squareMeterPerSecondToSquareMeterPerDay,
+  turbidityCodeForUnit,
   usGallonsPerMinuteToCubicMeterPerHour,
+  volumeFromCanonical,
+  volumeToCanonical,
 } from './units';
 
 // ─── Length ───────────────────────────────────────────────────────────────────
@@ -234,5 +253,118 @@ describe('minutesToHours / hoursToMinutes', () => {
   });
   it('round-trips', () => {
     expect(hoursToMinutes(minutesToHours(90))).toBe(90);
+  });
+});
+
+describe('litersToCubicMeters / cubicMetersToLiters', () => {
+  it('converts 1000 L to 1 m³', () => {
+    expect(litersToCubicMeters(1000)).toBe(1);
+  });
+
+  it('round-trips', () => {
+    expect(litersToCubicMeters(cubicMetersToLiters(12.5))).toBeCloseTo(12.5, 9);
+  });
+});
+
+describe('cvToKilowatts / kilowattsToCv', () => {
+  it('converts 1 cv to 0.73549875 kW', () => {
+    expect(cvToKilowatts(1)).toBeCloseTo(0.735_498_75, 9);
+  });
+
+  it('round-trips', () => {
+    expect(kilowattsToCv(cvToKilowatts(7.5))).toBeCloseTo(7.5, 9);
+  });
+});
+
+describe('hpToKilowatts / kilowattsToHp', () => {
+  it('converts 1 hp to ~0.7457 kW', () => {
+    expect(hpToKilowatts(1)).toBeCloseTo(0.745_699_872, 9);
+  });
+
+  it('round-trips', () => {
+    expect(kilowattsToHp(hpToKilowatts(10))).toBeCloseTo(10, 9);
+  });
+});
+
+describe('flowFromCanonical / flowToCanonical', () => {
+  it('passes m3/h through unchanged', () => {
+    expect(flowFromCanonical(36, 'm3/h')).toBe(36);
+    expect(flowToCanonical(36, 'm3/h')).toBe(36);
+  });
+
+  it('converts 36 m³/h to 10 L/s and back', () => {
+    expect(flowFromCanonical(36, 'L/s')).toBeCloseTo(10, 9);
+    expect(flowToCanonical(10, 'L/s')).toBeCloseTo(36, 9);
+  });
+
+  it('round-trips gpm', () => {
+    expect(flowToCanonical(flowFromCanonical(15, 'gpm'), 'gpm')).toBeCloseTo(
+      15,
+      9,
+    );
+  });
+});
+
+describe('powerFromCanonical / powerToCanonical', () => {
+  it('passes kW through unchanged', () => {
+    expect(powerFromCanonical(5.5, 'kW')).toBe(5.5);
+    expect(powerToCanonical(5.5, 'kW')).toBe(5.5);
+  });
+
+  it('converts cv and hp', () => {
+    expect(powerToCanonical(10, 'cv')).toBeCloseTo(7.3549875, 9);
+    expect(powerFromCanonical(powerToCanonical(10, 'hp'), 'hp')).toBeCloseTo(
+      10,
+      9,
+    );
+  });
+});
+
+describe('volumeFromCanonical / volumeToCanonical', () => {
+  it('passes m3 through unchanged', () => {
+    expect(volumeFromCanonical(12, 'm3')).toBe(12);
+    expect(volumeToCanonical(12, 'm3')).toBe(12);
+  });
+
+  it('converts liters, cubic feet and US gallons', () => {
+    expect(volumeFromCanonical(1, 'L')).toBe(1000);
+    expect(volumeFromCanonical(1, 'ft3')).toBeCloseTo(35.3146667, 6);
+    expect(volumeToCanonical(1, 'gal')).toBeCloseTo(0.003785411784, 12);
+    for (const unit of ['L', 'ft3', 'gal'] as const) {
+      expect(
+        volumeToCanonical(volumeFromCanonical(42.5, unit), unit),
+      ).toBeCloseTo(42.5, 9);
+    }
+  });
+});
+
+describe('water quality units', () => {
+  it('converts concentrations to and from mg/L', () => {
+    expect(concentrationToCanonical(5, 'ug/L')).toBeCloseTo(0.005);
+    expect(concentrationToCanonical(2, 'g/L')).toBe(2000);
+    expect(concentrationFromCanonical(0.001, 'ug/L')).toBeCloseTo(1);
+    expect(concentrationToCanonical(500, 'ng/L')).toBeCloseTo(0.0005);
+  });
+
+  it('converts conductivity to µS/cm', () => {
+    expect(milliSiemensPerMeterToMicroSiemensPerCm(12.4)).toBeCloseTo(124);
+    expect(milliSiemensPerCmToMicroSiemensPerCm(1.24)).toBeCloseTo(1240);
+  });
+
+  it('normalizes color and turbidity unit names', () => {
+    expect(normalizeColorUnit('mg Pt-Co/L')).toBe('uH');
+    expect(normalizeColorUnit('PCU')).toBe('uH');
+    expect(normalizeColorUnit('NTU')).toBeUndefined();
+    expect(turbidityCodeForUnit('uT')).toBe('turbidity');
+    expect(turbidityCodeForUnit('FTU')).toBe('turbidity');
+    expect(turbidityCodeForUnit('fnu')).toBe('turbidity_fnu');
+    expect(turbidityCodeForUnit('NTU')).toBe('turbidity_ntu');
+    expect(turbidityCodeForUnit('FAU')).toBe('turbidity_fau');
+    expect(turbidityCodeForUnit('JTU')).toBeUndefined();
+  });
+
+  it('divides expanded uncertainty by the coverage factor', () => {
+    expect(expandedToStandardUncertainty(0.4)).toBeCloseTo(0.2);
+    expect(expandedToStandardUncertainty(0.3, 3)).toBeCloseTo(0.1);
   });
 });

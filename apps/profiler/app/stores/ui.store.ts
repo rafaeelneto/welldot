@@ -1,4 +1,10 @@
-import type { DiameterUnits, LengthUnits } from '@welldot/core';
+import type {
+  DiameterUnits,
+  FlowUnits,
+  LengthUnits,
+  PowerUnits,
+  VolumeUnits,
+} from '@welldot/core';
 import { defineStore } from 'pinia';
 
 export type CoordinateFormat = 'DD' | 'DMS';
@@ -8,9 +14,24 @@ export const useUiStore = defineStore(
   () => {
     const lengthUnit = ref<LengthUnits>('m');
     const diameterUnit = ref<DiameterUnits>('mm');
+    const flowUnit = ref<FlowUnits>('m3/h');
+    const powerUnit = ref<PowerUnits>('kW');
+    const volumeUnit = ref<VolumeUnits>('m3');
     const coordinateFormat = ref<CoordinateFormat>('DD');
+    const waterQualityLimitSet = ref<string | null>(null);
+    // Ids of startup tips the user chose not to see again.
+    const dismissedTips = ref<string[]>([]);
 
-    return { lengthUnit, diameterUnit, coordinateFormat };
+    return {
+      lengthUnit,
+      diameterUnit,
+      flowUnit,
+      powerUnit,
+      volumeUnit,
+      coordinateFormat,
+      dismissedTips,
+      waterQualityLimitSet,
+    };
   },
   {
     persist: { key: 'welldot_ui' },

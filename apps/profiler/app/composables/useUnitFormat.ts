@@ -1,3 +1,5 @@
+import type { DiameterUnits } from '@welldot/core';
+
 export function useUnitFormat() {
   const {
     toDisplay: lengthToDisplay,
@@ -9,7 +11,23 @@ export function useUnitFormat() {
     toCanonical: diamToCanonical,
     unit: diameterUnit,
   } = useUnitDisplay('diameter');
+  const {
+    toDisplay: flowToDisplay,
+    toCanonical: flowToCanonical,
+    unit: flowUnit,
+  } = useUnitDisplay('flow');
+  const {
+    toDisplay: powerToDisplay,
+    toCanonical: powerToCanonical,
+    unit: powerUnit,
+  } = useUnitDisplay('power');
+  const {
+    toDisplay: volumeToDisplay,
+    toCanonical: volumeToCanonical,
+    unit: volumeUnit,
+  } = useUnitDisplay('volume');
   const { formatNumber } = useNumberFormat();
+  const { locale } = useI18n();
 
   function formatLength(
     value: number | null | undefined,
@@ -29,7 +47,10 @@ export function useUnitFormat() {
     if (value == null) return '—';
     return formatNumber(diamToDisplay(value), {
       fractionDigits,
-      suffix: diameterUnit.value,
+      suffix: resolveDiameterUnitLabel(
+        diameterUnit.value as DiameterUnits,
+        locale.value,
+      ),
     });
   }
 
@@ -38,7 +59,55 @@ export function useUnitFormat() {
     fractionDigits = 2,
   ): string {
     if (value == null) return '—';
-    return formatNumber(value, { fractionDigits, suffix: 'm³' });
+    return formatNumber(volumeToDisplay(value), {
+      fractionDigits,
+      suffix: volumeUnit.value,
+    });
+  }
+
+  function formatFlow(
+    value: number | null | undefined,
+    fractionDigits = 2,
+  ): string {
+    if (value == null) return '—';
+    return formatNumber(flowToDisplay(value), {
+      maximumFractionDigits: fractionDigits,
+      suffix: flowUnit.value,
+    });
+  }
+
+  function formatPower(
+    value: number | null | undefined,
+    fractionDigits = 2,
+  ): string {
+    if (value == null) return '—';
+    return formatNumber(powerToDisplay(value), {
+      maximumFractionDigits: fractionDigits,
+      suffix: powerUnit.value,
+    });
+  }
+
+  /** Unit label of specific capacity (flow per length of drawdown). */
+  const specificCapacityUnit = computed(() =>
+    flowUnit.value === 'm³/h' && lengthUnit.value === 'm'
+      ? 'm²/h'
+      : `${flowUnit.value}/${lengthUnit.value}`,
+  );
+
+  /** Specific capacity, canonically m³/h per m, in the chosen flow / length units. */
+  function toSpecificCapacity(value: number): number {
+    return flowToDisplay(value) / lengthToDisplay(1);
+  }
+
+  function formatSpecificCapacity(
+    value: number | null | undefined,
+    fractionDigits = 2,
+  ): string {
+    if (value == null) return '—';
+    return formatNumber(toSpecificCapacity(value), {
+      maximumFractionDigits: fractionDigits,
+      suffix: specificCapacityUnit.value,
+    });
   }
 
   return {
@@ -51,5 +120,19 @@ export function useUnitFormat() {
     toCanonicalLength: lengthToCanonical,
     toDiameter: diamToDisplay,
     toCanonicalDiameter: diamToCanonical,
+    formatFlow,
+    formatPower,
+    formatSpecificCapacity,
+    flowUnit,
+    powerUnit,
+    volumeUnit,
+    specificCapacityUnit,
+    toFlow: flowToDisplay,
+    toCanonicalFlow: flowToCanonical,
+    toPower: powerToDisplay,
+    toCanonicalPower: powerToCanonical,
+    toVolume: volumeToDisplay,
+    toCanonicalVolume: volumeToCanonical,
+    toSpecificCapacity,
   };
 }

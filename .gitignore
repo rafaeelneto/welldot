@@ -31,3 +31,9 @@ debug.log
 *.tsbuildinfo
 
 *.wrangler
+
+# Local Claude Code settings (machine-specific permission allowlist)
+.claude/settings.local.json
+
+# Internal planning/audit scratch produced by agent tooling
+.specs/

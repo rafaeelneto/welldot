@@ -28,8 +28,14 @@ export default defineNuxtPlugin({
       ],
     }));
 
-    useServerSeoMeta({
+    const siteConfig = useSiteConfig();
+
+    useSeoMeta({
       ogUrl: () => cleanCanonical(),
+      ogImage: () => `${siteConfig.url}/og-image.png`,
+      ogImageWidth: 1200,
+      ogImageHeight: 600,
+      twitterCard: 'summary_large_image',
     });
   },
 });

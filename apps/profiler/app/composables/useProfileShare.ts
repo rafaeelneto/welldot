@@ -1,6 +1,8 @@
-import { isWellEmpty, serializeWell } from '@welldot/core';
+import type { WellVisibility } from '@welldot/core';
+import { isWellEmpty, redactWell, serializeWell } from '@welldot/core';
 import { ref } from 'vue';
 import { useProfileStore } from '~/stores/profile.store';
+import { useShareVisibilityStore } from '~/stores/shareVisibility.store';
 import { copyToClipboard } from '~/utils/clipboard';
 
 export interface ShareResult {
@@ -18,10 +20,21 @@ export function useProfileShare() {
   const profileStore = useProfileStore();
   const isGenerating = ref(false);
 
-  /** Returns the share id/expiry for the current profile, or `null` if it's empty. Caches by content. */
-  async function getShare(): Promise<ShareResult | null> {
-    const well = profileStore.getExportableWell();
-    if (!well || isWellEmpty(well)) return null;
+  /**
+   * Returns the share id/expiry for the current profile, or `null` if it's
+   * empty. Caches by content. When `visibility` is passed, hidden sections and fields
+   * are redacted out before anything is cached or uploaded — the cache key
+   * is derived from the already-redacted content, so a preference change
+   * always produces a fresh share rather than reusing a stale one.
+   */
+  async function getShare(
+    visibility?: WellVisibility,
+  ): Promise<ShareResult | null> {
+    const rawWell = profileStore.getExportableWell();
+    if (!rawWell) return null;
+
+    const well = visibility ? redactWell(rawWell, visibility) : rawWell;
+    if (isWellEmpty(well)) return null;
 
     const key = serializeWell(well);
     const cached = shareCache.get(key);
@@ -40,10 +53,11 @@ export function useProfileShare() {
     }
   }
 
-  /** Generates (or reuses) a share id and copies its link to the clipboard. */
+  /** Generates (or reuses) a share id — respecting the saved section-visibility preference — and copies its link to the clipboard. */
   async function copyShareLink(): Promise<CopyShareLinkResult> {
     try {
-      const share = await getShare();
+      const visibility = useShareVisibilityStore().visibility;
+      const share = await getShare(visibility);
       if (!share) return { ok: false, reason: 'empty' };
 
       const url = `${useRequestURL().origin}/editor?share=${share.id}`;

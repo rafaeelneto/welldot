@@ -9,6 +9,7 @@ import type {
   HoleFill,
   HydrodynamicEvent,
   Lithology,
+  PumpInstallation,
   Reduction,
   SurfaceCase,
   Well,
@@ -24,13 +25,23 @@ import {
   calculateHoleFillVolume,
   calculateHydraulicConductivity,
   calculateSpecificCapacity,
+  calculateSubmergence,
   calculateUnitDrawdown,
   calculateWellLoss,
+  getCentralizerDepths,
   getConstructivePropertySummary,
+  getCurrentPump,
+  getEffectiveHydrodynamicEvents,
   getLatestAquiferAnalysisField,
+  getLatestPumpingDynamicLevel,
   getLatestStaticLevel,
   getProfileDiamValues,
   getProfileLastItemsDepths,
+  getPumpInstallationWarnings,
+  getPumpInstalledAt,
+  getPumpServiceTime,
+  getRetractedEventIds,
+  isFlowingArtesian,
 } from './profile.utils';
 
 // ─── Factories ────────────────────────────────────────────────────────────────
@@ -892,5 +903,444 @@ describe('getLatestAquiferAnalysisField', () => {
       'transmissivity',
     );
     expect(result).toBe(50);
+  });
+});
+
+// ─── isFlowingArtesian ────────────────────────────────────────────────────────
+
+describe('isFlowingArtesian', () => {
+  it('returns false when there is no static level', () => {
+    expect(isFlowingArtesian(emptyWell())).toBe(false);
+  });
+
+  it('returns true when the latest static level is negative (above ground)', () => {
+    const well: Well = {
+      ...emptyWell(),
+      hydrodynamic_events: [makeSpotMeasurement('2024-01-01T00:00:00Z', -1.2)],
+    };
+    expect(isFlowingArtesian(well)).toBe(true);
+  });
+
+  it('uses the most recent level, not any past one', () => {
+    const well: Well = {
+      ...emptyWell(),
+      hydrodynamic_events: [
+        makeSpotMeasurement('2020-01-01T00:00:00Z', -0.5),
+        makeSpotMeasurement('2024-01-01T00:00:00Z', 3),
+      ],
+    };
+    expect(isFlowingArtesian(well)).toBe(false);
+  });
+
+  it('returns false for a level exactly at ground', () => {
+    const well: Well = {
+      ...emptyWell(),
+      hydrodynamic_events: [makeSpotMeasurement('2024-01-01T00:00:00Z', 0)],
+    };
+    expect(isFlowingArtesian(well)).toBe(false);
+  });
+});
+
+// ─── getCentralizerDepths ─────────────────────────────────────────────────────
+
+describe('getCentralizerDepths', () => {
+  it('returns a single depth when from === to', () => {
+    expect(getCentralizerDepths({ from: 12, to: 12, type: 'rigid' })).toEqual([
+      12,
+    ]);
+  });
+
+  it('expands an interval by spacing, inclusive of both ends', () => {
+    expect(
+      getCentralizerDepths({ from: 6, to: 30, spacing: 6, type: 'rigid' }),
+    ).toEqual([6, 12, 18, 24, 30]);
+  });
+
+  it('stops before exceeding `to` when spacing does not divide evenly', () => {
+    expect(
+      getCentralizerDepths({ from: 0, to: 10, spacing: 4, type: 'rigid' }),
+    ).toEqual([0, 4, 8]);
+  });
+
+  it('returns only the endpoints when spacing is unknown', () => {
+    expect(getCentralizerDepths({ from: 10, to: 50, type: 'rigid' })).toEqual([
+      10, 50,
+    ]);
+  });
+
+  it('absorbs floating-point drift', () => {
+    expect(
+      getCentralizerDepths({ from: 0, to: 0.9, spacing: 0.3, type: 'rigid' }),
+    ).toEqual([0, 0.3, 0.6, 0.9]);
+  });
+
+  it('tolerates inverted from/to', () => {
+    expect(
+      getCentralizerDepths({ from: 12, to: 0, spacing: 6, type: 'rigid' }),
+    ).toEqual([0, 6, 12]);
+  });
+});
+
+// ─── v2.3 — ledger corrections ───────────────────────────────────────────────
+
+function spot(
+  id: string,
+  datetime: string,
+  static_level: number,
+  extra: Record<string, unknown> = {},
+): HydrodynamicEvent {
+  return {
+    id,
+    type: 'spot_measurement',
+    datetime,
+    static_level,
+    ...extra,
+  } as HydrodynamicEvent;
+}
+
+describe('getRetractedEventIds / getEffectiveHydrodynamicEvents', () => {
+  it('returns an empty set and every event when nothing is corrected', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [spot('a', '2024-01-01T00:00:00Z', 10)],
+    };
+    expect(getRetractedEventIds(well).size).toBe(0);
+    expect(getEffectiveHydrodynamicEvents(well)).toHaveLength(1);
+  });
+
+  it('excludes every event in a correction chain except the last', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [
+        spot('a', '2024-01-01T00:00:00Z', 10),
+        spot('b', '2024-01-01T00:00:00Z', 11, { corrects: 'a' }),
+        spot('c', '2024-01-01T00:00:00Z', 12, { corrects: 'b' }),
+      ],
+    };
+    expect([...getRetractedEventIds(well)].sort()).toEqual(['a', 'b']);
+    expect(getEffectiveHydrodynamicEvents(well).map(e => e.id)).toEqual(['c']);
+  });
+
+  it('getLatestStaticLevel ignores a retracted newer event', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [
+        spot('old', '2023-01-01T00:00:00Z', 8),
+        spot('wrong', '2024-06-01T00:00:00Z', 99),
+        spot('fix', '2024-06-01T00:00:00Z', 9, { corrects: 'wrong' }),
+      ],
+    };
+    expect(getLatestStaticLevel(well)).toBe(9);
+  });
+});
+
+// ─── v2.3 — pump installations ───────────────────────────────────────────────
+
+function makePump(o: Partial<PumpInstallation> = {}): PumpInstallation {
+  return {
+    id: 'p1',
+    installed_at: '2024-01-01T00:00:00Z',
+    type: 'submersible',
+    ...o,
+  };
+}
+
+describe('getCurrentPump', () => {
+  it('returns undefined without pump_installations', () => {
+    expect(getCurrentPump(emptyWell())).toBeUndefined();
+  });
+
+  it('returns undefined when every installation is removed', () => {
+    const well = {
+      ...emptyWell(),
+      pump_installations: [makePump({ removed_at: '2024-06-01T00:00:00Z' })],
+    };
+    expect(getCurrentPump(well)).toBeUndefined();
+  });
+
+  it('returns the entry without removed_at', () => {
+    const well = {
+      ...emptyWell(),
+      pump_installations: [
+        makePump({ id: 'old', removed_at: '2024-06-01T00:00:00Z' }),
+        makePump({ id: 'new', installed_at: '2024-06-01T01:00:00Z' }),
+      ],
+    };
+    expect(getCurrentPump(well)?.id).toBe('new');
+  });
+
+  it('returns the most recently installed open entry when several are open', () => {
+    const well = {
+      ...emptyWell(),
+      pump_installations: [
+        makePump({ id: 'b', installed_at: '2024-03-01T00:00:00Z' }),
+        makePump({ id: 'a', installed_at: '2024-01-01T00:00:00Z' }),
+      ],
+    };
+    expect(getCurrentPump(well)?.id).toBe('b');
+  });
+});
+
+describe('getLatestPumpingDynamicLevel / calculateSubmergence', () => {
+  const constantRate = (
+    id: string,
+    datetime: string,
+    lastDepth: number,
+    extra: Record<string, unknown> = {},
+  ) =>
+    ({
+      id,
+      type: 'constant_rate',
+      datetime,
+      steps: [
+        {
+          rate: 10,
+          readings: [
+            { elapsed: 1, depth: lastDepth - 5 },
+            { elapsed: 60, depth: lastDepth },
+          ],
+        },
+      ],
+      ...extra,
+    }) as HydrodynamicEvent;
+
+  it('returns undefined without pumping data', () => {
+    expect(getLatestPumpingDynamicLevel(emptyWell())).toBeUndefined();
+  });
+
+  it('uses the last reading of the most recent pumping event', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [
+        constantRate('a', '2023-01-01T00:00:00Z', 30),
+        constantRate('b', '2024-01-01T00:00:00Z', 35),
+      ],
+    };
+    expect(getLatestPumpingDynamicLevel(well)).toBe(35);
+  });
+
+  it('ignores airlift and retracted events', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [
+        constantRate('a', '2023-01-01T00:00:00Z', 30),
+        constantRate('b', '2024-01-01T00:00:00Z', 99),
+        constantRate('c', '2024-01-02T00:00:00Z', 31, { corrects: 'b' }),
+        {
+          ...constantRate('air', '2025-01-01T00:00:00Z', 50),
+          type: 'airlift',
+        } as HydrodynamicEvent,
+      ],
+    };
+    expect(getLatestPumpingDynamicLevel(well)).toBe(31);
+  });
+
+  it('falls back to a newer aquifer_analysis dynamic_level', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [constantRate('a', '2023-01-01T00:00:00Z', 30)],
+      aquifer_analysis: [
+        {
+          id: 'aa',
+          datetime: '2024-01-01T00:00:00Z',
+          source_event_ids: ['a'],
+          dynamic_level: 33,
+        },
+      ],
+    };
+    expect(getLatestPumpingDynamicLevel(well)).toBe(33);
+  });
+
+  it('computes intake_depth − dynamic_level for the current pump', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [constantRate('a', '2024-01-01T00:00:00Z', 40)],
+      pump_installations: [makePump({ intake_depth: 55 })],
+    };
+    expect(calculateSubmergence(well)).toBe(15);
+  });
+
+  it('returns a negative value when the intake is above the water level', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [constantRate('a', '2024-01-01T00:00:00Z', 40)],
+      pump_installations: [makePump({ intake_depth: 35 })],
+    };
+    expect(calculateSubmergence(well)).toBe(-5);
+  });
+
+  it('returns undefined without intake_depth', () => {
+    const well = {
+      ...emptyWell(),
+      hydrodynamic_events: [constantRate('a', '2024-01-01T00:00:00Z', 40)],
+      pump_installations: [makePump()],
+    };
+    expect(calculateSubmergence(well)).toBeUndefined();
+  });
+});
+
+describe('getPumpServiceTime', () => {
+  it('sums the durations of installations sharing a serial', () => {
+    const well = {
+      ...emptyWell(),
+      pump_installations: [
+        makePump({
+          id: 'a',
+          serial: 'S1',
+          installed_at: '2024-01-01T00:00:00Z',
+          removed_at: '2024-01-01T10:00:00Z',
+        }),
+        makePump({
+          id: 'b',
+          serial: 'S1',
+          installed_at: '2024-02-01T00:00:00Z',
+          removed_at: '2024-02-01T05:00:00Z',
+        }),
+        makePump({
+          id: 'c',
+          serial: 'OTHER',
+          installed_at: '2024-01-01T00:00:00Z',
+          removed_at: '2024-03-01T00:00:00Z',
+        }),
+      ],
+    };
+    expect(getPumpServiceTime(well, 'S1')).toBe(15 * 60);
+  });
+
+  it('counts an open installation up to now', () => {
+    const well = {
+      ...emptyWell(),
+      pump_installations: [
+        makePump({ serial: 'S1', installed_at: '2024-01-01T00:00:00Z' }),
+      ],
+    };
+    const now = new Date('2024-01-01T02:00:00Z');
+    expect(getPumpServiceTime(well, 'S1', now)).toBe(120);
+  });
+});
+
+describe('getPumpInstallationWarnings', () => {
+  const base = (): Well => ({
+    ...emptyWell(),
+    bore_hole: [makeBoreHole({ from: 0, to: 80 })],
+    well_screen: [makeWellScreen({ from: 60, to: 80 })],
+  });
+
+  it('returns no warnings for a consistent installation', () => {
+    const well = {
+      ...base(),
+      pump_installations: [makePump({ intake_depth: 50 })],
+    };
+    expect(getPumpInstallationWarnings(well)).toEqual([]);
+  });
+
+  it('flags an intake below the bore hole bottom', () => {
+    const well = {
+      ...base(),
+      pump_installations: [makePump({ intake_depth: 90 })],
+    };
+    expect(getPumpInstallationWarnings(well)).toContainEqual({
+      code: 'intake_below_well_bottom',
+      ids: ['p1'],
+    });
+  });
+
+  it('flags an intake below a shallower well_depth', () => {
+    const well = {
+      ...base(),
+      well_depth: 40,
+      pump_installations: [makePump({ intake_depth: 50 })],
+    };
+    expect(getPumpInstallationWarnings(well)).toContainEqual({
+      code: 'intake_below_well_bottom',
+      ids: ['p1'],
+    });
+  });
+
+  it('flags an intake inside a screen interval', () => {
+    const well = {
+      ...base(),
+      pump_installations: [makePump({ intake_depth: 70 })],
+    };
+    expect(getPumpInstallationWarnings(well)).toContainEqual({
+      code: 'intake_in_screen',
+      ids: ['p1'],
+    });
+  });
+
+  it('flags more than one open installation', () => {
+    const well = {
+      ...base(),
+      pump_installations: [makePump({ id: 'a' }), makePump({ id: 'b' })],
+    };
+    expect(getPumpInstallationWarnings(well)).toContainEqual({
+      code: 'multiple_open_installations',
+      ids: ['a', 'b'],
+    });
+  });
+
+  it('flags removed_at not after installed_at', () => {
+    const well = {
+      ...base(),
+      pump_installations: [
+        makePump({
+          installed_at: '2024-01-01T00:00:00Z',
+          removed_at: '2024-01-01T00:00:00Z',
+        }),
+      ],
+    };
+    expect(getPumpInstallationWarnings(well)).toContainEqual({
+      code: 'removed_before_installed',
+      ids: ['p1'],
+    });
+  });
+});
+
+describe('getPumpInstalledAt', () => {
+  const well = {
+    ...emptyWell(),
+    pump_installations: [
+      makePump({
+        id: 'old',
+        installed_at: '2024-01-01T00:00:00Z',
+        removed_at: '2024-06-01T00:00:00Z',
+      }),
+      makePump({ id: 'new', installed_at: '2024-06-01T01:00:00Z' }),
+    ],
+  };
+
+  it('returns the pump in place at the instant', () => {
+    expect(getPumpInstalledAt(well, '2024-03-01T00:00:00Z')?.id).toBe('old');
+    expect(getPumpInstalledAt(well, '2025-01-01T00:00:00-03:00')?.id).toBe(
+      'new',
+    );
+    expect(getPumpInstalledAt(well, new Date('2024-07-01T00:00:00Z'))?.id).toBe(
+      'new',
+    );
+  });
+
+  it('treats removed_at as exclusive and installed_at as inclusive', () => {
+    expect(getPumpInstalledAt(well, '2024-06-01T00:00:00Z')).toBeUndefined();
+    expect(getPumpInstalledAt(well, '2024-06-01T01:00:00Z')?.id).toBe('new');
+  });
+
+  it('returns undefined before any installation or without pumps', () => {
+    expect(getPumpInstalledAt(well, '2023-12-31T00:00:00Z')).toBeUndefined();
+    expect(
+      getPumpInstalledAt(emptyWell(), '2024-03-01T00:00:00Z'),
+    ).toBeUndefined();
+  });
+
+  it('picks the latest installed when installations overlap', () => {
+    const overlapping = {
+      ...emptyWell(),
+      pump_installations: [
+        makePump({ id: 'a', installed_at: '2024-01-01T00:00:00Z' }),
+        makePump({ id: 'b', installed_at: '2024-02-01T00:00:00Z' }),
+      ],
+    };
+    expect(getPumpInstalledAt(overlapping, '2024-03-01T00:00:00Z')?.id).toBe(
+      'b',
+    );
   });
 });

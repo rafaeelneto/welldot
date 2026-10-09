@@ -2,14 +2,16 @@
 import ShareProfile from '~/components/ShareProfile.vue';
 import SettingsModal from '~/components/SettingsModal.vue';
 import ExportPdfDialog from '~/components/ExportPdfDialog.vue';
+import AiImporterDialog from '~/components/AiImporterDialog.vue';
 import ToolsMenu, { type ToolItem } from './ToolsMenu.vue';
 
-const props = defineProps<{ mobileView: 'perfil' | 'dados' }>();
+const props = defineProps<{ mobileView: 'profile' | 'data' }>();
 const emit = defineEmits<{
-  'update:mobileView': [value: 'perfil' | 'dados'];
+  'update:mobileView': [value: 'profile' | 'data'];
 }>();
 
 const { t } = useI18n();
+const localePath = useLocalePath();
 const store = useProfileStore();
 const { save, saveAs } = useProfileExport();
 const persistence = useFilePersistence();
@@ -108,12 +110,25 @@ onBeforeUnmount(() => document.removeEventListener('keydown', _onKeyDown));
 
 // ── Share dialog ────────────────────────────────────────────────────
 const shareVisible = ref(false);
+const shareVisibilityStore = useShareVisibilityStore();
 
 // ── Settings dialog ─────────────────────────────────────────────────
 const settingsVisible = ref(false);
+const bus = useBus();
+let _offOpenSettings: (() => void) | undefined;
+
+onMounted(() => {
+  _offOpenSettings = bus.on('ui:open-settings', () => {
+    settingsVisible.value = true;
+  });
+});
+onBeforeUnmount(() => _offOpenSettings?.());
 
 // ── Export PDF dialog ────────────────────────────────────────────────
 const exportPdfVisible = ref(false);
+
+// ── AI importer dialog ───────────────────────────────────────────────
+const aiImporterVisible = ref(false);
 
 // ── Tools menu ──────────────────────────────────────────────────────
 const toolsMenuVisible = ref(false);
@@ -154,9 +169,16 @@ const toolItems = computed<ToolItem[]>(() => [
     onClick: () => (exportPdfVisible.value = true),
   },
   {
+    label: t('editor.aiImporter.title'),
+    icon: 'welldot:file-ai',
+    comingSoon: true,
+    onClick: () => (aiImporterVisible.value = true),
+  },
+  {
     label: t('editor.importSiagas'),
     icon: 'ph:download-simple-duotone',
     comingSoon: true,
+    alwaysInMenu: true,
     disabled: true,
   },
   {
@@ -171,7 +193,7 @@ const toolItems = computed<ToolItem[]>(() => [
 // Extra tools shown in the desktop menu, on top of the dedicated buttons
 // already present in the nav.
 const extraToolItems = computed<ToolItem[]>(() =>
-  toolItems.value.filter(item => item.comingSoon || item.alwaysInMenu),
+  toolItems.value.filter(item => item.alwaysInMenu),
 );
 
 // ── Pass-through ────────────────────────────────────────────────────
@@ -198,11 +220,11 @@ const iconBtnPt = {
 
 const viewOptions = computed(() => [
   {
-    value: 'perfil',
+    value: 'profile',
     label: t('editor.viewProfile'),
     icon: 'ph:chart-bar-horizontal-duotone',
   },
-  { value: 'dados', label: t('editor.viewData'), icon: 'ph:table-duotone' },
+  { value: 'data', label: t('editor.viewData'), icon: 'ph:table-duotone' },
 ]);
 </script>
 
@@ -213,7 +235,7 @@ const viewOptions = computed(() => [
   >
     <!-- Brand -->
     <NuxtLink
-      to="/"
+      :to="localePath('/')"
       class="flex items-center gap-2.5 font-bold text-base tracking-tight text-content-0 no-underline shrink-0"
     >
       <Icon name="welldot:logo" class="size-6.5 shrink-0" />
@@ -257,6 +279,17 @@ const viewOptions = computed(() => [
     <!-- Action buttons -->
     <div class="flex items-center gap-0.5">
       <Button
+        v-tooltip.bottom="t('editor.aiImporter.title')"
+        :aria-label="t('editor.aiImporter.title')"
+        unstyled
+        :pt="actionBtnPt"
+        @click="aiImporterVisible = true"
+      >
+        <template #icon>
+          <Icon name="welldot:file-ai" class="size-4 shrink-0" />
+        </template>
+      </Button>
+      <Button
         :label="t('editor.save')"
         :disabled="!hasWell"
         unstyled
@@ -285,11 +318,18 @@ const viewOptions = computed(() => [
         @click="shareVisible = true"
       >
         <template #icon>
-          <Icon name="ph:share-network-duotone" class="size-4 shrink-0" />
+          <span class="relative inline-flex shrink-0">
+            <Icon name="ph:share-network-duotone" class="size-4 shrink-0" />
+            <span
+              v-if="shareVisibilityStore.hasHidden"
+              class="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-primary-500"
+            />
+          </span>
         </template>
       </Button>
       <Button
         :aria-label="t('editor.settings.title')"
+        data-tip="settings"
         unstyled
         :pt="actionBtnPt"
         @click="settingsVisible = true"
@@ -315,8 +355,8 @@ const viewOptions = computed(() => [
 
     <Button
       :label="t('editor.exportPdf')"
-      @click="exportPdfVisible = true"
       size="small"
+      @click="exportPdfVisible = true"
     >
       <template #icon>
         <Icon name="ph:file-pdf-duotone" class="size-4 shrink-0" />
@@ -331,7 +371,7 @@ const viewOptions = computed(() => [
     <!-- Row 1: top bar -->
     <div class="flex items-center gap-3 px-4 py-3">
       <NuxtLink
-        to="/"
+        :to="localePath('/')"
         class="size-8 rounded-full border border-surface-200 flex items-center justify-center text-content-400 hover:text-content-0 hover:border-surface-300 transition-colors shrink-0"
         :aria-label="t('editor.back')"
       >
@@ -349,6 +389,7 @@ const viewOptions = computed(() => [
 
       <Button
         :aria-label="t('editor.toolsMenu.title')"
+        data-tip="settings-mobile"
         unstyled
         :pt="iconBtnPt"
         @click="toolsMenuVisible = true"
@@ -378,7 +419,7 @@ const viewOptions = computed(() => [
       </span>
     </div>
 
-    <!-- Row 3: Perfil / Dados view toggle -->
+    <!-- Row 3: Profile / Data view toggle -->
     <div class="flex items-center gap-2 px-4 pb-3">
       <SelectButton
         :model-value="props.mobileView"
@@ -405,6 +446,9 @@ const viewOptions = computed(() => [
 
   <!-- ─── Export PDF dialog ─────────────────────────────────────────── -->
   <ExportPdfDialog v-if="exportPdfVisible" v-model="exportPdfVisible" />
+
+  <!-- ─── AI importer dialog ────────────────────────────────────────── -->
+  <AiImporterDialog v-if="aiImporterVisible" v-model="aiImporterVisible" />
 
   <!-- ─── Tools menu ────────────────────────────────────────────────── -->
   <ToolsMenu

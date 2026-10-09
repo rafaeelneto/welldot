@@ -1,10 +1,17 @@
 import {
   AquiferAnalysis,
+  Centralizer,
   Constructive,
   HoleFill,
+  HydrodynamicEvent,
+  LevelReading,
+  PumpInstallation,
+  PumpingStep,
   Reduction,
   Well,
 } from '@welldot/core';
+
+import { getRetractedIds } from './shared.utils';
 
 type DepthPoint = { depth: number };
 type DepthInterval = { to: number };
@@ -256,13 +263,37 @@ export function calculateHydraulicConductivity(
 // ─── Hydrodynamic event query utilities ──────────────────────────────────────
 
 /**
+ * Returns the ids of every hydrodynamic event retracted by another event's
+ * `corrects` field (`.well` v2.3 ledger corrections). In a chain (C corrects
+ * B, which corrected A) both A and B are retracted; only C counts.
+ */
+export function getRetractedEventIds(well: Well): Set<string> {
+  return getRetractedIds(well.hydrodynamic_events ?? []);
+}
+
+/**
+ * Returns the hydrodynamic events that count for derivations: every event
+ * not retracted by a `corrects` reference. Retracted events stay in the file
+ * but are excluded from all derived values. Order is preserved.
+ */
+export function getEffectiveHydrodynamicEvents(
+  well: Well,
+): HydrodynamicEvent[] {
+  const events = well.hydrodynamic_events ?? [];
+  const retracted = getRetractedEventIds(well);
+  if (retracted.size === 0) return events;
+  return events.filter(e => !retracted.has(e.id));
+}
+
+/**
  * Returns the static water level (m) from the most recent hydrodynamic event
- * that carries a `static_level` field. Events are compared by UTC datetime.
+ * that carries a `static_level` field. Events retracted via `corrects` are
+ * ignored. Events are compared by UTC datetime.
  * Returns `undefined` if no such event exists.
  */
 export function getLatestStaticLevel(well: Well): number | undefined {
-  const events = well.hydrodynamic_events;
-  if (!events || events.length === 0) return undefined;
+  const events = getEffectiveHydrodynamicEvents(well);
+  if (events.length === 0) return undefined;
   const withLevel = events.filter(
     (e): e is typeof e & { static_level: number } =>
       'static_level' in e &&
@@ -273,6 +304,46 @@ export function getLatestStaticLevel(well: Well): number | undefined {
     (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
   );
   return (withLevel[0] as { static_level: number }).static_level;
+}
+
+/**
+ * Returns `true` when the most recent static water level is above ground
+ * (negative, per the `.well` level sign convention), i.e. the well is flowing
+ * artesian. Returns `false` when there is no static level on record.
+ *
+ * Since `.well` v2.1 this is the canonical way to detect a flowing artesian
+ * well; `well_type: "artesian"` is deprecated.
+ */
+export function isFlowingArtesian(well: Well): boolean {
+  const level = getLatestStaticLevel(well);
+  return level !== undefined && level < 0;
+}
+
+/**
+ * Returns the individual centralizer depths (m) described by a
+ * {@link Centralizer} entry: `from`, `from + spacing`, … up to `to`.
+ *
+ * - `from === to` → a single centralizer at that depth.
+ * - No usable `spacing` → only the known endpoints `[from, to]`, since the
+ *   positions in between are unknown.
+ *
+ * Positions are rounded to millimeters to absorb floating-point drift.
+ */
+export function getCentralizerDepths(centralizer: Centralizer): number[] {
+  const { from, to, spacing } = centralizer;
+  const top = Math.min(from, to);
+  const bottom = Math.max(from, to);
+  if (top === bottom) return [top];
+  if (!spacing || spacing <= 0) return [top, bottom];
+
+  const round = (n: number) => Math.round(n * 1000) / 1000;
+  const depths: number[] = [];
+  for (let i = 0; ; i++) {
+    const depth = round(top + i * spacing);
+    if (depth > bottom) break;
+    depths.push(depth);
+  }
+  return depths;
 }
 
 /**
@@ -292,4 +363,195 @@ export function getLatestAquiferAnalysisField<K extends keyof AquiferAnalysis>(
     (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
   );
   return withField[0][field];
+}
+
+// ─── Pump installation utilities (.well v2.3) ────────────────────────────────
+
+const PUMPING_EVENT_TYPES = new Set([
+  'spot_measurement',
+  'constant_rate',
+  'step_drawdown',
+]);
+
+function toTime(instant: string): number {
+  return new Date(instant).getTime();
+}
+
+/**
+ * Returns the current pump: the `pump_installations` entry without
+ * `removed_at`. When several entries are open (standby pumps, data errors),
+ * the most recently installed one is returned. Returns `undefined` when every
+ * installation has been removed or none exists.
+ */
+export function getCurrentPump(well: Well): PumpInstallation | undefined {
+  const open = (well.pump_installations ?? []).filter(p => !p.removed_at);
+  if (open.length === 0) return undefined;
+  return open.reduce((latest, p) =>
+    toTime(p.installed_at) > toTime(latest.installed_at) ? p : latest,
+  );
+}
+
+/**
+ * Returns the pump installed in the well at `instant`: the entry with
+ * `installed_at <= instant` and no `removed_at` or `removed_at > instant`
+ * (latest installed if several overlap). Use it to link a record dated in the
+ * past (e.g. a water sample collected at the pump) to the pump in place then.
+ *
+ * @param well - The well.
+ * @param instant - RFC 3339 instant (or a `Date`).
+ * @returns The installation in place at `instant`, or `undefined`.
+ */
+export function getPumpInstalledAt(
+  well: Well,
+  instant: string | Date,
+): PumpInstallation | undefined {
+  const t = instant instanceof Date ? instant.getTime() : toTime(instant);
+  if (Number.isNaN(t)) return undefined;
+  const inPlace = (well.pump_installations ?? []).filter(
+    p =>
+      toTime(p.installed_at) <= t &&
+      (!p.removed_at || toTime(p.removed_at) > t),
+  );
+  if (inPlace.length === 0) return undefined;
+  return inPlace.reduce((latest, p) =>
+    toTime(p.installed_at) > toTime(latest.installed_at) ? p : latest,
+  );
+}
+
+/**
+ * Returns the most recent water level (m) measured during pumping: the last
+ * reading of the last step of the most recent non-retracted pumping event
+ * (`spot_measurement`, `constant_rate`, `step_drawdown`). Airlift events are
+ * ignored. Falls back to the most recent `aquifer_analysis[].dynamic_level`
+ * when it is newer or no pumping reading exists.
+ */
+export function getLatestPumpingDynamicLevel(well: Well): number | undefined {
+  let latest: { time: number; depth: number } | undefined;
+
+  for (const event of getEffectiveHydrodynamicEvents(well)) {
+    if (!PUMPING_EVENT_TYPES.has(event.type)) continue;
+    const steps = (event as { steps?: PumpingStep[] }).steps ?? [];
+    const lastStep = [...steps].reverse().find(s => s.readings?.length);
+    if (!lastStep?.readings) continue;
+    const lastReading = lastStep.readings.reduce((a: LevelReading, b) =>
+      b.elapsed > a.elapsed ? b : a,
+    );
+    const time = toTime(event.datetime);
+    if (!latest || time > latest.time) {
+      latest = { time, depth: lastReading.depth };
+    }
+  }
+
+  const analyses = (well.aquifer_analysis ?? []).filter(
+    a => a.dynamic_level !== undefined,
+  );
+  for (const analysis of analyses) {
+    const time = toTime(analysis.datetime);
+    if (!latest || time > latest.time) {
+      latest = { time, depth: analysis.dynamic_level as number };
+    }
+  }
+
+  return latest?.depth;
+}
+
+/**
+ * Returns the submergence (m) of the current pump: `intake_depth −
+ * dynamic_level`, using {@link getLatestPumpingDynamicLevel}. A negative value
+ * means the intake is above the water level. Returns `undefined` when there is
+ * no current pump, no `intake_depth` or no dynamic level on record.
+ */
+export function calculateSubmergence(well: Well): number | undefined {
+  const intake = getCurrentPump(well)?.intake_depth;
+  if (intake === undefined) return undefined;
+  const dynamicLevel = getLatestPumpingDynamicLevel(well);
+  if (dynamicLevel === undefined) return undefined;
+  return intake - dynamicLevel;
+}
+
+/**
+ * Returns the total time in service, in minutes, of the pump unit identified
+ * by `serial`: the sum of the durations of every installation sharing that
+ * serial. An open installation counts up to `now`.
+ */
+export function getPumpServiceTime(
+  well: Well,
+  serial: string,
+  now: Date = new Date(),
+): number {
+  let total = 0;
+  for (const p of well.pump_installations ?? []) {
+    if (p.serial !== serial) continue;
+    const start = toTime(p.installed_at);
+    const end = p.removed_at ? toTime(p.removed_at) : now.getTime();
+    if (end > start) total += end - start;
+  }
+  return total / 60_000;
+}
+
+export type PumpInstallationWarningCode =
+  | 'intake_below_well_bottom'
+  | 'intake_in_screen'
+  | 'multiple_open_installations'
+  | 'removed_before_installed';
+
+export type PumpInstallationWarning = {
+  code: PumpInstallationWarningCode;
+  /** `pump_installations[].id` values the warning refers to. */
+  ids: string[];
+};
+
+/**
+ * Returns the validation warnings of the `pump_installations` block defined
+ * by `.well` v2.3. Warnings never make a file invalid; they flag data an
+ * application should surface to the user:
+ *
+ * - `intake_below_well_bottom` — `intake_depth` greater than `well_depth` or
+ *   below the deepest `bore_hole` interval.
+ * - `intake_in_screen` — `intake_depth` inside a `well_screen` interval.
+ * - `multiple_open_installations` — more than one entry without `removed_at`.
+ * - `removed_before_installed` — `removed_at` earlier than or equal to
+ *   `installed_at`.
+ */
+export function getPumpInstallationWarnings(
+  well: Well,
+): PumpInstallationWarning[] {
+  const pumps = well.pump_installations ?? [];
+  const warnings: PumpInstallationWarning[] = [];
+
+  const boreHoleBottom = Math.max(
+    0,
+    ...(well.bore_hole ?? []).map(b => Math.max(b.from, b.to)),
+  );
+  const limits = [well.well_depth, boreHoleBottom || undefined].filter(
+    (d): d is number => d !== undefined && d > 0,
+  );
+  const bottom = limits.length ? Math.min(...limits) : undefined;
+
+  for (const p of pumps) {
+    if (p.intake_depth !== undefined) {
+      if (bottom !== undefined && p.intake_depth > bottom) {
+        warnings.push({ code: 'intake_below_well_bottom', ids: [p.id] });
+      }
+      const inScreen = (well.well_screen ?? []).some(
+        s =>
+          p.intake_depth! > Math.min(s.from, s.to) &&
+          p.intake_depth! < Math.max(s.from, s.to),
+      );
+      if (inScreen) warnings.push({ code: 'intake_in_screen', ids: [p.id] });
+    }
+    if (p.removed_at && toTime(p.removed_at) <= toTime(p.installed_at)) {
+      warnings.push({ code: 'removed_before_installed', ids: [p.id] });
+    }
+  }
+
+  const open = pumps.filter(p => !p.removed_at);
+  if (open.length > 1) {
+    warnings.push({
+      code: 'multiple_open_installations',
+      ids: open.map(p => p.id),
+    });
+  }
+
+  return warnings;
 }

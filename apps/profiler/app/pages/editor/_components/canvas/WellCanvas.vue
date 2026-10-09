@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import type { DeepPartial, WellTheme } from '@welldot/render';
-import { WellRenderer, INTERACTIVE_RENDER_CONFIG } from '@welldot/render';
+import {
+  WellRenderer,
+  INTERACTIVE_RENDER_CONFIG,
+  applyRenderLocale,
+} from '@welldot/render';
 import { isWellEmpty } from '@welldot/core';
 import { useDark } from '@vueuse/core';
 import ZoomControls from './ZoomControls.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const profileStore = useProfileStore();
 const uiStore = useUiStore();
 
@@ -81,8 +85,16 @@ async function initRenderer() {
   const renderer = new WellRenderer(
     [{ selector: `#${svgId}`, width, height, margins: MARGINS }],
     {
-      units: { length: uiStore.lengthUnit, diameter: uiStore.diameterUnit },
-      renderConfig: INTERACTIVE_RENDER_CONFIG,
+      units: {
+        length: uiStore.lengthUnit,
+        diameter: uiStore.diameterUnit,
+        power: uiStore.powerUnit,
+      },
+      locale: locale.value as 'en' | 'pt',
+      renderConfig: applyRenderLocale(
+        INTERACTIVE_RENDER_CONFIG,
+        locale.value === 'en' ? 'en' : 'pt',
+      ),
       onZoom: scale => {
         currentScale.value = scale;
       },
@@ -104,7 +116,12 @@ function redraw() {
   const profile = well.value;
   if (!profile || isWellEmpty(profile)) return;
   wellRenderer.draw(profile, {
-    units: { length: uiStore.lengthUnit, diameter: uiStore.diameterUnit },
+    units: {
+      length: uiStore.lengthUnit,
+      diameter: uiStore.diameterUnit,
+      power: uiStore.powerUnit,
+    },
+    locale: locale.value as 'en' | 'pt',
   });
 }
 
@@ -125,14 +142,30 @@ function fit() {
   wellRenderer?.resetZoom();
 }
 
+async function reload() {
+  await reinitAndRedraw();
+}
+
 // ── Watchers ─────────────────────────────────────────────────────────────
 // The SVG's pixel size no longer depends on depth (it's fixed to the
 // container), so depth-changing edits don't need a reinit — draw() always
 // remaps the current depth range onto the same fixed height.
 
 watch(well, redraw);
-watch([() => uiStore.lengthUnit, () => uiStore.diameterUnit], redraw);
-watch(isDark, () => reinitAndRedraw());
+// Unit changes do a full reinit (same path as the reload button), not just
+// redraw(), so anything the constructor's `units` option seeds is rebuilt too.
+watch(
+  [
+    () => uiStore.lengthUnit,
+    () => uiStore.diameterUnit,
+    () => uiStore.powerUnit,
+  ],
+  () => reinitAndRedraw(),
+);
+// Locale changes need a full reinit, not just redraw() — renderConfig's
+// translated strings (construction labels, tooltip text, legend, type words)
+// are resolved once via applyRenderLocale() in initRenderer(), not per-draw().
+watch([isDark, () => locale.value], () => reinitAndRedraw());
 
 // ── Mount lifecycle ──────────────────────────────────────────────────────
 
@@ -177,6 +210,7 @@ onUnmounted(() => {
         @zoom-in="zoomIn"
         @zoom-out="zoomOut"
         @fit="fit"
+        @reload="reload"
       />
     </ClientOnly>
   </div>

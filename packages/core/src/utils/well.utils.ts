@@ -3,7 +3,12 @@ import {
   Geologic,
   Lithology,
   Location,
+  SectionKey,
+  SectionVisibility,
+  VisibilityFieldKey,
+  VisibilityKey,
   Well,
+  WellVisibility,
 } from '../types/well.types';
 import { mergeWell } from '../validators/well.validators';
 
@@ -15,6 +20,57 @@ type RawJSON = Record<string, unknown>;
 
 const WELL_FORMAT_VERSION = 2;
 const INCHES_TO_MM = 25.4;
+
+/** Fixed display order for the 7 redactable sections of a well. */
+export const SECTION_KEYS: readonly SectionKey[] = [
+  'general',
+  'constructive',
+  'geology',
+  'hydrodynamic',
+  'history',
+  'operation',
+  'water_quality',
+];
+
+/**
+ * Fields of each section that can be hidden one by one, in display order.
+ * Sections with no entries (`history`, `water_quality`) toggle as a whole.
+ */
+export const VISIBILITY_TREE: Readonly<
+  Record<SectionKey, readonly VisibilityFieldKey[]>
+> = {
+  general: ['identification', 'location', 'obs', 'attachments'],
+  constructive: [
+    'bore_hole',
+    'surface_case',
+    'well_case',
+    'reduction',
+    'well_screen',
+    'hole_fill',
+    'centralizers',
+    'cement_pad',
+  ],
+  geology: ['lithology', 'fractures', 'caves'],
+  hydrodynamic: ['hydrodynamic_events', 'aquifer_analysis'],
+  history: [],
+  operation: [
+    'pump_installations',
+    'meters',
+    'operating_regime',
+    'production',
+    'permits',
+  ],
+  water_quality: [],
+};
+
+/**
+ * The finest toggles of {@link VISIBILITY_TREE}, in display order: every
+ * field, plus each section that has no fields.
+ */
+export const VISIBILITY_LEAF_KEYS: readonly VisibilityKey[] =
+  SECTION_KEYS.flatMap<VisibilityKey>(section =>
+    VISIBILITY_TREE[section].length ? VISIBILITY_TREE[section] : [section],
+  );
 
 const EMPTY_WELL: Well = {
   version: 2,
@@ -34,6 +90,37 @@ const EMPTY_WELL: Well = {
 
 function createEmptyWell(): Well {
   return JSON.parse(JSON.stringify(EMPTY_WELL)) as Well;
+}
+
+/**
+ * Calculated well depth: the deepest recorded point across a well's
+ * constructive arrays only (not
+ * geologic — lithology/fractures/caves may extend past the actual
+ * constructed well and would overstate it). Same "last item's `to`" logic
+ * as `@welldot/utils`'s `getProfileLastItemsDepths`, duplicated here because
+ * `packages/core` may not depend on `@welldot/utils` (dependency chain runs
+ * the other way).
+ */
+export function calculatedWellDepth(well: Well): number {
+  const lastTo = (items: { to: number }[]): number =>
+    items.length ? items[items.length - 1]!.to : 0;
+
+  return Math.max(
+    0,
+    lastTo(well.bore_hole),
+    lastTo(well.hole_fill),
+    lastTo(well.reduction),
+    lastTo(well.surface_case),
+    lastTo(well.well_case),
+    lastTo(well.well_screen),
+  );
+}
+
+/** Fills in `well_depth` from the constructive data when the source didn't provide one. */
+function withCalculatedWellDepth(well: Well): Well {
+  if (well.well_depth != null) return well;
+  const calculated = calculatedWellDepth(well);
+  return calculated > 0 ? { ...well, well_depth: calculated } : well;
 }
 
 function normalizeLithology(items: RawJSON[]): Lithology[] {
@@ -129,6 +216,9 @@ function decodeV2Well(raw: RawJSON): Well {
       profiles: raw.profiles as Well['profiles'],
     }),
     ...(raw.well_type !== undefined && { well_type: raw.well_type as string }),
+    ...(raw.well_purpose !== undefined && {
+      well_purpose: raw.well_purpose as Well['well_purpose'],
+    }),
     ...(raw.name !== undefined && { name: raw.name as string }),
     ...(raw.well_driller !== undefined && {
       well_driller: raw.well_driller as string,
@@ -137,12 +227,18 @@ function decodeV2Well(raw: RawJSON): Well {
       construction_date: raw.construction_date as string,
     }),
     ...(raw.obs !== undefined && { obs: raw.obs as string }),
+    ...(raw.well_depth !== undefined && {
+      well_depth: raw.well_depth as number,
+    }),
     bore_hole: (raw.bore_hole as Well['bore_hole']) ?? [],
     well_case: (raw.well_case as Well['well_case']) ?? [],
     reduction: (raw.reduction as Well['reduction']) ?? [],
     well_screen: normalizeWellScreens(rawScreens),
     surface_case: (raw.surface_case as Well['surface_case']) ?? [],
     hole_fill: (raw.hole_fill as Well['hole_fill']) ?? [],
+    ...(raw.centralizers !== undefined && {
+      centralizers: raw.centralizers as Well['centralizers'],
+    }),
     ...(raw.cement_pad
       ? { cement_pad: raw.cement_pad as Well['cement_pad'] }
       : {}),
@@ -158,6 +254,27 @@ function decodeV2Well(raw: RawJSON): Well {
     }),
     ...(raw.history_logs !== undefined && {
       history_logs: raw.history_logs as Well['history_logs'],
+    }),
+    ...(raw.attachments !== undefined && {
+      attachments: raw.attachments as Well['attachments'],
+    }),
+    ...(raw.pump_installations !== undefined && {
+      pump_installations: raw.pump_installations as Well['pump_installations'],
+    }),
+    ...(raw.permits !== undefined && {
+      permits: raw.permits as Well['permits'],
+    }),
+    ...(raw.meters !== undefined && {
+      meters: raw.meters as Well['meters'],
+    }),
+    ...(raw.production !== undefined && {
+      production: raw.production as Well['production'],
+    }),
+    ...(raw.operating_regime !== undefined && {
+      operating_regime: raw.operating_regime as Well['operating_regime'],
+    }),
+    ...(raw.water_samples !== undefined && {
+      water_samples: raw.water_samples as Well['water_samples'],
     }),
   };
   return mergeWell(decoded, raw) as Well;
@@ -231,18 +348,25 @@ export function serializeWell(well: Well): string {
     ...(well.location !== undefined && { location: well.location }),
     ...(well.profiles !== undefined && { profiles: well.profiles }),
     ...(well.well_type !== undefined && { well_type: well.well_type }),
+    ...(well.well_purpose !== undefined && {
+      well_purpose: well.well_purpose,
+    }),
     ...(well.name !== undefined && { name: well.name }),
     ...(well.well_driller !== undefined && { well_driller: well.well_driller }),
     ...(well.construction_date !== undefined && {
       construction_date: well.construction_date,
     }),
     ...(well.obs !== undefined && { obs: well.obs }),
+    ...(well.well_depth !== undefined && { well_depth: well.well_depth }),
     bore_hole: well.bore_hole,
     well_case: well.well_case,
     reduction: well.reduction,
     well_screen: well.well_screen,
     surface_case: well.surface_case,
     hole_fill: well.hole_fill,
+    ...(well.centralizers !== undefined && {
+      centralizers: well.centralizers,
+    }),
     ...(well.cement_pad && { cement_pad: well.cement_pad }),
     lithology: well.lithology,
     fractures: well.fractures,
@@ -254,6 +378,19 @@ export function serializeWell(well: Well): string {
       aquifer_analysis: well.aquifer_analysis,
     }),
     ...(well.history_logs !== undefined && { history_logs: well.history_logs }),
+    ...(well.attachments !== undefined && { attachments: well.attachments }),
+    ...(well.pump_installations !== undefined && {
+      pump_installations: well.pump_installations,
+    }),
+    ...(well.permits !== undefined && { permits: well.permits }),
+    ...(well.meters !== undefined && { meters: well.meters }),
+    ...(well.production !== undefined && { production: well.production }),
+    ...(well.operating_regime !== undefined && {
+      operating_regime: well.operating_regime,
+    }),
+    ...(well.water_samples !== undefined && {
+      water_samples: well.water_samples,
+    }),
   };
 
   return JSON.stringify(payload);
@@ -285,6 +422,97 @@ export function isWellEmpty(well: Well | null | undefined): boolean {
 }
 
 /**
+ * Returns a copy of `well` with hidden sections and fields cleared: array
+ * fields become `[]` and optional fields become `undefined`, so the result
+ * stays a schema-valid {@link Well}. Never mutates `well`.
+ *
+ * A field is hidden when its key or its section's key is `false` in
+ * `visibility` (see {@link VISIBILITY_TREE}); missing keys are visible.
+ * `well_depth` is dropped only when the whole `constructive` section is
+ * hidden. Hiding a record type does not rewrite references to it held by
+ * visible records (e.g. a production entry's `meter_id`).
+ *
+ * @param well - The well profile to redact.
+ * @param visibility - Section and/or field visibility. A {@link SectionVisibility} works as-is.
+ * @returns A new {@link Well} with hidden parts emptied.
+ *
+ * @example
+ * redactWell(well, { operation: false });              // whole section
+ * redactWell(well, { meters: false, permits: false }); // single fields
+ */
+export function redactWell(
+  well: Well,
+  visibility: WellVisibility | SectionVisibility,
+): Well {
+  const v = visibility as WellVisibility;
+  const redacted: Well = { ...well };
+
+  const sectionOf = (field: VisibilityFieldKey): SectionKey =>
+    SECTION_KEYS.find(s => VISIBILITY_TREE[s].includes(field))!;
+  const hidden = (key: VisibilityKey): boolean =>
+    v[key] === false ||
+    (!SECTION_KEYS.includes(key as SectionKey) &&
+      v[sectionOf(key as VisibilityFieldKey)] === false);
+  const sectionHidden = (section: SectionKey): boolean =>
+    v[section] === false ||
+    (VISIBILITY_TREE[section].length > 0 &&
+      VISIBILITY_TREE[section].every(f => v[f] === false));
+
+  // general
+  if (hidden('identification')) {
+    delete redacted.well_id;
+    delete redacted.well_type;
+    delete redacted.well_purpose;
+    delete redacted.name;
+    delete redacted.well_driller;
+    delete redacted.construction_date;
+  }
+  if (hidden('location')) {
+    delete redacted.location;
+    delete redacted.lat;
+    delete redacted.lng;
+    delete redacted.elevation;
+  }
+  if (hidden('obs')) delete redacted.obs;
+  if (hidden('attachments')) delete redacted.attachments;
+
+  // constructive
+  if (hidden('bore_hole')) redacted.bore_hole = [];
+  if (hidden('surface_case')) redacted.surface_case = [];
+  if (hidden('well_case')) redacted.well_case = [];
+  if (hidden('reduction')) redacted.reduction = [];
+  if (hidden('well_screen')) redacted.well_screen = [];
+  if (hidden('hole_fill')) redacted.hole_fill = [];
+  if (hidden('centralizers')) delete redacted.centralizers;
+  if (hidden('cement_pad')) delete redacted.cement_pad;
+  if (sectionHidden('constructive')) delete redacted.well_depth;
+
+  // geology
+  if (hidden('lithology')) redacted.lithology = [];
+  if (hidden('fractures')) redacted.fractures = [];
+  if (hidden('caves')) redacted.caves = [];
+
+  // hydrodynamic
+  if (hidden('hydrodynamic_events')) redacted.hydrodynamic_events = [];
+  if (hidden('aquifer_analysis')) redacted.aquifer_analysis = [];
+
+  // history
+  if (hidden('history')) redacted.history_logs = [];
+
+  // operation
+  if (hidden('pump_installations')) delete redacted.pump_installations;
+  if (hidden('meters')) delete redacted.meters;
+  if (hidden('operating_regime')) delete redacted.operating_regime;
+  if (hidden('production')) delete redacted.production;
+  if (hidden('permits')) delete redacted.permits;
+
+  // water quality
+  if (hidden('water_quality')) delete redacted.water_samples;
+
+  return redacted;
+}
+
+/**
  * Parses a JSON string produced by {@link serializeWell} (or older legacy
  * formats) and returns a normalized {@link Well} object.
  *
@@ -313,8 +541,8 @@ export function deserializeWell(jsonString: string): Well | null {
   }
 
   if (typeof raw.version === 'number') {
-    if (raw.version === 2) return decodeV2Well(raw);
-    if (raw.version === 1) return decodeV1Well(raw);
+    if (raw.version === 2) return withCalculatedWellDepth(decodeV2Well(raw));
+    if (raw.version === 1) return withCalculatedWellDepth(decodeV1Well(raw));
     throw new Error(`Unsupported .well format version: ${raw.version}`);
   }
 
@@ -337,12 +565,12 @@ export function deserializeWell(jsonString: string): Well | null {
     ...(raw.obs !== undefined && { obs: raw.obs as string }),
   };
 
-  return {
+  return withCalculatedWellDepth({
     ...createEmptyWell(),
     ...metadata,
     ...normalizeConstructive(constructiveSource),
     ...normalizeGeologic(raw),
-  };
+  });
 }
 
 // ─── Backward-compat aliases ─────────────────────────────────────────────────

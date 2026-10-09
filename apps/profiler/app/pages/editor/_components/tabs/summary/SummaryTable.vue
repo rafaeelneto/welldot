@@ -27,20 +27,25 @@ const props = defineProps<{
   groups: SummaryGroup[];
 }>();
 
-const visibleGroups = computed(() => props.groups.filter(g => g.rows.length > 0));
+const visibleGroups = computed(() =>
+  props.groups.filter(g => g.rows.length > 0),
+);
 
 function isLastRow(groupIndex: number, rowIndex: number) {
   const group = visibleGroups.value[groupIndex];
   if (!group) return false;
   if (group.total) return false;
   return (
-    groupIndex === visibleGroups.value.length - 1 && rowIndex === group.rows.length - 1
+    groupIndex === visibleGroups.value.length - 1 &&
+    rowIndex === group.rows.length - 1
   );
 }
 </script>
 
 <template>
-  <table class="w-full overflow-hidden rounded-lg border border-surface-200 font-mono text-[11px]">
+  <table
+    class="w-full overflow-hidden rounded-lg border border-surface-200 font-mono text-[11px]"
+  >
     <thead>
       <tr>
         <th

@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { isWellEmpty } from '@welldot/core';
+import { isWellEmpty, redactWell } from '@welldot/core';
 import { format } from 'date-fns';
 import { renderSVG } from 'uqr';
 
 const visible = defineModel<boolean>({ default: false });
 
 const { t } = useI18n();
-const { download, getRawJson } = useProfileExport();
+const { download, getShareableJson } = useProfileExport();
 const { copyShareLink, isGenerating } = useProfileShare();
 const profileStore = useProfileStore();
+const shareVisibilityStore = useShareVisibilityStore();
 
-const isEmpty = computed(() => isWellEmpty(profileStore.well));
+const isEmpty = computed(() =>
+  isWellEmpty(redactWell(profileStore.well, shareVisibilityStore.visibility)),
+);
+const showVisibilityChecklist = ref(false);
 const linkErrorReason = ref<'tooLarge' | 'error' | null>(null);
 const shareUrl = ref<string | null>(null);
 const shareExpiresAt = ref<string | null>(null);
@@ -39,7 +43,7 @@ watch(visible, isVisible => {
 });
 
 async function copyJson() {
-  const json = getRawJson();
+  const json = getShareableJson();
   if (json) await copyToClipboard(json);
   visible.value = false;
 }
@@ -83,8 +87,38 @@ async function recopyLink() {
     :style="{ width: '24rem' }"
   >
     <div class="flex flex-col gap-2 pt-1">
-      <button
-        class="flex items-center gap-4 p-3 rounded-lg border border-surface-200 hover:border-primary-300 hover:bg-surface-50 transition-colors text-left w-full cursor-pointer"
+      <Button
+        severity="secondary"
+        text
+        size="small"
+        class="self-start"
+        :label="t('editor.shareVisibility.title')"
+        @click="showVisibilityChecklist = !showVisibilityChecklist"
+      >
+        <template #icon>
+          <Icon
+            :name="
+              showVisibilityChecklist
+                ? 'ph:caret-down-bold'
+                : 'ph:caret-right-bold'
+            "
+            class="size-3 shrink-0"
+          />
+        </template>
+      </Button>
+
+      <div
+        v-if="showVisibilityChecklist"
+        class="p-3 rounded-lg border border-surface-200 mb-1"
+      >
+        <ShareVisibilityChecklist />
+      </div>
+
+      <Button
+        unstyled
+        :pt="{
+          root: 'flex items-center gap-4 p-3 rounded-lg border border-surface-200 hover:border-primary-300 hover:bg-surface-50 transition-colors text-left w-full cursor-pointer',
+        }"
         @click="copyJson"
       >
         <Icon
@@ -99,10 +133,13 @@ async function recopyLink() {
             {{ t('editor.shareDialog.copyJsonDesc') }}
           </div>
         </div>
-      </button>
+      </Button>
 
-      <button
-        class="flex items-center gap-4 p-3 rounded-lg border border-surface-200 hover:border-primary-300 hover:bg-surface-50 transition-colors text-left w-full cursor-pointer"
+      <Button
+        unstyled
+        :pt="{
+          root: 'flex items-center gap-4 p-3 rounded-lg border border-surface-200 hover:border-primary-300 hover:bg-surface-50 transition-colors text-left w-full cursor-pointer',
+        }"
         @click="downloadWell"
       >
         <Icon
@@ -117,11 +154,14 @@ async function recopyLink() {
             {{ t('editor.shareDialog.downloadWellDesc') }}
           </div>
         </div>
-      </button>
+      </Button>
 
-      <button
-        class="flex items-center gap-4 p-3 rounded-lg border border-surface-200 hover:border-primary-300 hover:bg-surface-50 transition-colors text-left w-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-surface-200 disabled:hover:bg-transparent"
+      <Button
+        unstyled
         :disabled="isEmpty"
+        :pt="{
+          root: 'flex items-center gap-4 p-3 rounded-lg border border-surface-200 hover:border-primary-300 hover:bg-surface-50 transition-colors text-left w-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-surface-200 disabled:hover:bg-transparent',
+        }"
         @click="copyLink"
       >
         <Icon
@@ -154,7 +194,7 @@ async function recopyLink() {
             {{ t('editor.shareDialog.copyLinkError') }}
           </div>
         </div>
-      </button>
+      </Button>
 
       <div
         v-if="shareUrl"
