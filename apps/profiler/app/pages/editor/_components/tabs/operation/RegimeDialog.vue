@@ -101,9 +101,10 @@ function save() {
     :style="{ width: '100vw', maxWidth: '34rem' }"
   >
     <div class="flex flex-col gap-5 pt-2">
-      <LabeledField
+      <WellLabeledField
         :label="t('editor.operation.regime.fields.effectiveFrom')"
         :info="t('editor.operation.regime.fields.effectiveFromInfo')"
+        :info-label="t('editor.fieldInfo')"
       >
         <DatePicker
           v-model="form.effectiveFrom"
@@ -114,7 +115,7 @@ function save() {
           :invalid="duplicateEffectiveFrom"
           :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
         />
-      </LabeledField>
+      </WellLabeledField>
       <Message
         v-if="duplicateEffectiveFrom"
         severity="error"
@@ -125,8 +126,8 @@ function save() {
       </Message>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <LabeledField :label="t('editor.operation.regime.fields.flowRate')">
-          <UnitInput
+        <WellLabeledField :label="t('editor.operation.regime.fields.flowRate')">
+          <WellUnitInput
             v-model="form.flowRate"
             unit-type="flow"
             :min="0"
@@ -135,8 +136,8 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.regime.fields.dailyOperatingTime')"
         >
           <WellInputNumber
@@ -148,8 +149,10 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.regime.fields.daysPerWeek')">
+        </WellLabeledField>
+        <WellLabeledField
+          :label="t('editor.operation.regime.fields.daysPerWeek')"
+        >
           <WellInputNumber
             v-model="form.daysPerWeek"
             :min="1"
@@ -158,15 +161,15 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
       <Message severity="secondary" size="small" variant="simple">
         {{ t('editor.operation.regime.unknownInfo') }}
       </Message>
 
-      <LabeledField :label="t('editor.operation.regime.fields.notes')">
+      <WellLabeledField :label="t('editor.operation.regime.fields.notes')">
         <Textarea v-model="form.notes" :rows="3" class="w-full text-sm" />
-      </LabeledField>
+      </WellLabeledField>
     </div>
 
     <template #footer>

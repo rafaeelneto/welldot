@@ -35,6 +35,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./textures": {
+      "types": "./dist/textures.d.ts",
+      "import": "./dist/textures.js",
+      "require": "./dist/textures.cjs"
     }
   },
   "files": [

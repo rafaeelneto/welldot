@@ -35,7 +35,7 @@ function setDone(value: boolean) {
 <template>
   <div class="flex flex-col gap-3">
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
-      <LabeledField :label="t('editor.operation.permit.history.date')">
+      <WellLabeledField :label="t('editor.operation.permit.history.date')">
         <DatePicker
           :model-value="fromCalendarDate(entry.date)"
           date-format="dd/mm/yy"
@@ -44,8 +44,8 @@ function setDone(value: boolean) {
           :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           @update:model-value="setDate('date', $event as Date | null)"
         />
-      </LabeledField>
-      <LabeledField :label="t('editor.operation.permit.history.type')">
+      </WellLabeledField>
+      <WellLabeledField :label="t('editor.operation.permit.history.type')">
         <Select
           :model-value="entry.type ?? null"
           :options="typeOptions"
@@ -56,10 +56,11 @@ function setDone(value: boolean) {
           class="w-full"
           @update:model-value="setType($event)"
         />
-      </LabeledField>
-      <LabeledField
+      </WellLabeledField>
+      <WellLabeledField
         :label="t('editor.operation.permit.history.dueDate')"
         :info="t('editor.operation.permit.history.dueDateInfo')"
+        :info-label="t('editor.fieldInfo')"
       >
         <DatePicker
           :model-value="fromCalendarDate(entry.due_date)"
@@ -69,7 +70,7 @@ function setDone(value: boolean) {
           :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           @update:model-value="setDate('due_date', $event as Date | null)"
         />
-      </LabeledField>
+      </WellLabeledField>
       <div class="flex items-center justify-between gap-2 pb-2">
         <label
           class="flex items-center gap-2 text-sm text-content-100 cursor-pointer"
@@ -85,7 +86,7 @@ function setDone(value: boolean) {
       </div>
     </div>
 
-    <LabeledField :label="t('editor.operation.permit.history.description')">
+    <WellLabeledField :label="t('editor.operation.permit.history.description')">
       <Textarea
         v-model="entry.description"
         :rows="2"
@@ -93,7 +94,7 @@ function setDone(value: boolean) {
         class="w-full text-sm"
         :invalid="!entry.description.trim()"
       />
-    </LabeledField>
+    </WellLabeledField>
 
     <AttachmentField v-model="entry.attachments" context="permit_history" />
   </div>

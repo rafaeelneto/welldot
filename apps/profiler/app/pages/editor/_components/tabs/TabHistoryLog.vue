@@ -6,7 +6,6 @@ import {
   type OperationWarningCode,
 } from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
-import AppChip from '~/components/AppChip.vue';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import RecordCard, {
   type RecordAction,
@@ -304,7 +303,7 @@ function entryActions(entry: HistoryLogEntry): RecordAction[] {
 
     <!-- ── Category filter chips ──────────────────────────────────────────── -->
     <div class="flex flex-wrap gap-2">
-      <AppChip
+      <WellChip
         v-for="opt in categoryOptions"
         :key="opt.value"
         :label="opt.label"

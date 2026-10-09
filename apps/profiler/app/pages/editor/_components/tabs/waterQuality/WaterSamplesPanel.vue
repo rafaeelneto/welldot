@@ -228,9 +228,10 @@ function deleteSample(id: string) {
       <div
         class="flex items-end justify-between gap-3 flex-wrap rounded-xl border border-surface-200/70 bg-surface-50 px-4 py-3"
       >
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.waterQuality.compareAgainst')"
           :info="t('editor.waterQuality.compareAgainstInfo')"
+          :info-label="t('editor.fieldInfo')"
           class="min-w-60"
         >
           <Select
@@ -243,7 +244,7 @@ function deleteSample(id: string) {
             :placeholder="t('editor.waterQuality.noLimitSet')"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
         <div class="flex items-center gap-3 flex-wrap">
           <label
             v-if="retractedIds.size"

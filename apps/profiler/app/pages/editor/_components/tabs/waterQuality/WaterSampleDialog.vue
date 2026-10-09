@@ -497,9 +497,10 @@ function commit(sample: WaterSample) {
 
       <!-- ── Header ─────────────────────────────────────────────────────── -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.waterQuality.fields.id')"
           :info="t('editor.waterQuality.fields.idInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <InputText
             v-model="form.id"
@@ -507,8 +508,8 @@ function commit(sample: WaterSample) {
             class="w-full font-mono text-sm"
             :invalid="!form.id.trim() || idTaken"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.waterQuality.fields.datetime')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.waterQuality.fields.datetime')">
           <DatePicker
             v-model="form.datetime"
             show-time
@@ -518,10 +519,11 @@ function commit(sample: WaterSample) {
             class="w-full"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.waterQuality.fields.sampleType')"
           :info="t('editor.waterQuality.fields.sampleTypeInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <Select
             v-model="form.sampleType"
@@ -532,17 +534,18 @@ function commit(sample: WaterSample) {
             :invalid="!form.sampleType?.trim()"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
       <Message v-if="idTaken" severity="error" size="small" variant="simple">
         {{ t('editor.waterQuality.errors.idTaken') }}
       </Message>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <LabeledField
+        <WellLabeledField
           v-if="needsParent || form.parentSampleId"
           :label="t('editor.waterQuality.fields.parentSample')"
           :info="t('editor.waterQuality.fields.parentSampleInfo')"
+          :info-label="t('editor.fieldInfo')"
           class="sm:col-span-3"
         >
           <Select
@@ -555,10 +558,11 @@ function commit(sample: WaterSample) {
             :invalid="needsParent && !form.parentSampleId"
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.waterQuality.fields.campaign')"
           :info="t('editor.waterQuality.fields.campaignInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <Select
             v-model="form.campaign"
@@ -567,10 +571,11 @@ function commit(sample: WaterSample) {
             show-clear
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.waterQuality.fields.sequence')"
           :info="t('editor.waterQuality.fields.sequenceInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <WellInputNumber
             v-model="form.sequence"
@@ -578,10 +583,11 @@ function commit(sample: WaterSample) {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.waterQuality.fields.samplingMethod')"
           :info="t('editor.waterQuality.fields.samplingMethodInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <Select
             v-model="form.samplingMethod"
@@ -592,7 +598,7 @@ function commit(sample: WaterSample) {
             show-clear
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
       <Message
         v-if="needsParent && !form.parentSampleId"
@@ -610,7 +616,9 @@ function commit(sample: WaterSample) {
           {{ t('editor.waterQuality.samplingPoint.title') }}
         </span>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <LabeledField :label="t('editor.waterQuality.samplingPoint.type')">
+          <WellLabeledField
+            :label="t('editor.waterQuality.samplingPoint.type')"
+          >
             <Select
               v-model="form.pointType"
               :options="pointTypeOptions"
@@ -621,10 +629,11 @@ function commit(sample: WaterSample) {
               :invalid="pointFieldsWithoutType"
               class="w-full"
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             :label="t('editor.waterQuality.samplingPoint.device')"
             :info="t('editor.waterQuality.samplingPoint.deviceInfo')"
+            :info-label="t('editor.fieldInfo')"
           >
             <Select
               v-model="form.device"
@@ -635,11 +644,12 @@ function commit(sample: WaterSample) {
               show-clear
               class="w-full"
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             v-if="pumpOptions.length || form.pumpInstallationId"
             :label="t('editor.waterQuality.samplingPoint.pumpInstallation')"
             :info="t('editor.waterQuality.samplingPoint.pumpInstallationInfo')"
+            :info-label="t('editor.fieldInfo')"
           >
             <Select
               v-model="form.pumpInstallationId"
@@ -674,7 +684,7 @@ function commit(sample: WaterSample) {
             >
               {{ t('editor.waterQuality.samplingPoint.pumpNotInPlace') }}
             </Message>
-          </LabeledField>
+          </WellLabeledField>
         </div>
         <Message
           v-if="pointFieldsWithoutType"
@@ -695,11 +705,12 @@ function commit(sample: WaterSample) {
             class="self-start"
           />
           <div v-if="form.geometry === 'depth'" class="grid grid-cols-2 gap-4">
-            <LabeledField
+            <WellLabeledField
               :label="t('editor.waterQuality.samplingPoint.depth')"
               :info="t('editor.waterQuality.samplingPoint.depthInfo')"
+              :info-label="t('editor.fieldInfo')"
             >
-              <UnitInput
+              <WellUnitInput
                 v-model="form.depth"
                 unit-type="length"
                 :min="0"
@@ -707,11 +718,11 @@ function commit(sample: WaterSample) {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.samplingPoint.depthPrecision')"
             >
-              <UnitInput
+              <WellUnitInput
                 v-model="form.depthPrecision"
                 unit-type="length"
                 :min="0"
@@ -719,14 +730,16 @@ function commit(sample: WaterSample) {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
+            </WellLabeledField>
           </div>
           <div
             v-else-if="form.geometry === 'interval'"
             class="grid grid-cols-2 gap-4"
           >
-            <LabeledField :label="t('editor.waterQuality.samplingPoint.from')">
-              <UnitInput
+            <WellLabeledField
+              :label="t('editor.waterQuality.samplingPoint.from')"
+            >
+              <WellUnitInput
                 v-model="form.from"
                 unit-type="length"
                 :min="0"
@@ -734,9 +747,11 @@ function commit(sample: WaterSample) {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
-            <LabeledField :label="t('editor.waterQuality.samplingPoint.to')">
-              <UnitInput
+            </WellLabeledField>
+            <WellLabeledField
+              :label="t('editor.waterQuality.samplingPoint.to')"
+            >
+              <WellUnitInput
                 v-model="form.to"
                 unit-type="length"
                 :min="0"
@@ -745,7 +760,7 @@ function commit(sample: WaterSample) {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
+            </WellLabeledField>
           </div>
           <p
             v-if="form.pumpInstallationId && form.geometry === 'none'"
@@ -758,10 +773,11 @@ function commit(sample: WaterSample) {
 
       <!-- ── Collection ─────────────────────────────────────────────────── -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LabeledField
+        <WellLabeledField
           v-if="eventOptions.length || form.staticLevelEventId"
           :label="t('editor.waterQuality.fields.staticLevelEvent')"
           :info="t('editor.waterQuality.fields.staticLevelEventInfo')"
+          :info-label="t('editor.fieldInfo')"
           class="sm:col-span-2"
         >
           <Select
@@ -772,26 +788,28 @@ function commit(sample: WaterSample) {
             show-clear
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.waterQuality.fields.collectedBy')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.waterQuality.fields.collectedBy')">
           <InputText v-model="form.collectedBy" class="w-full" />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.waterQuality.fields.chainOfCustody')"
           :info="t('editor.waterQuality.fields.chainOfCustodyInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <InputText
             v-model="form.chainOfCustody"
             class="w-full font-mono text-sm"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.waterQuality.fields.preservation')"
           :info="t('editor.waterQuality.fields.preservationInfo')"
+          :info-label="t('editor.fieldInfo')"
           class="sm:col-span-2"
         >
           <InputText v-model="form.preservation" class="w-full" />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- ── Purge (collapsible) ────────────────────────────────────────── -->
@@ -810,7 +828,7 @@ function commit(sample: WaterSample) {
         </button>
         <template v-if="showPurge">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <LabeledField :label="t('editor.waterQuality.purge.duration')">
+            <WellLabeledField :label="t('editor.waterQuality.purge.duration')">
               <WellInputNumber
                 v-model="form.purgeDuration"
                 :min="0"
@@ -819,9 +837,9 @@ function commit(sample: WaterSample) {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
-            <LabeledField :label="t('editor.waterQuality.purge.volume')">
-              <UnitInput
+            </WellLabeledField>
+            <WellLabeledField :label="t('editor.waterQuality.purge.volume')">
+              <WellUnitInput
                 v-model="form.purgeVolume"
                 unit-type="volume"
                 :min="0"
@@ -830,9 +848,9 @@ function commit(sample: WaterSample) {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
-            <LabeledField :label="t('editor.waterQuality.purge.flowRate')">
-              <UnitInput
+            </WellLabeledField>
+            <WellLabeledField :label="t('editor.waterQuality.purge.flowRate')">
+              <WellUnitInput
                 v-model="form.purgeFlowRate"
                 unit-type="flow"
                 :min="0"
@@ -841,10 +859,11 @@ function commit(sample: WaterSample) {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.purge.stabilized')"
               :info="t('editor.waterQuality.purge.stabilizedInfo')"
+              :info-label="t('editor.fieldInfo')"
             >
               <SelectButton
                 v-model="form.purgeStabilized"
@@ -853,14 +872,15 @@ function commit(sample: WaterSample) {
                 option-value="value"
                 size="small"
               />
-            </LabeledField>
+            </WellLabeledField>
           </div>
-          <LabeledField
+          <WellLabeledField
             :label="t('editor.waterQuality.purge.readings')"
             :info="t('editor.waterQuality.purge.readingsInfo')"
+            :info-label="t('editor.fieldInfo')"
           >
             <PurgeReadingsEditor v-model="form.purgeReadings" />
-          </LabeledField>
+          </WellLabeledField>
         </template>
       </div>
 
@@ -880,40 +900,45 @@ function commit(sample: WaterSample) {
         </button>
         <template v-if="showLab">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <LabeledField :label="t('editor.waterQuality.laboratory.name')">
+            <WellLabeledField :label="t('editor.waterQuality.laboratory.name')">
               <InputText
                 v-model="form.labName"
                 class="w-full"
                 :invalid="labNameMissing"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.laboratory.accreditation')"
               :info="t('editor.waterQuality.laboratory.accreditationInfo')"
+              :info-label="t('editor.fieldInfo')"
             >
               <InputText v-model="form.labAccreditation" class="w-full" />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.laboratory.reportNumber')"
             >
               <InputText
                 v-model="form.labReportNumber"
                 class="w-full font-mono text-sm"
               />
-            </LabeledField>
-            <LabeledField :label="t('editor.waterQuality.laboratory.batchId')">
+            </WellLabeledField>
+            <WellLabeledField
+              :label="t('editor.waterQuality.laboratory.batchId')"
+            >
               <InputText
                 v-model="form.labBatchId"
                 class="w-full font-mono text-sm"
               />
-            </LabeledField>
-            <LabeledField :label="t('editor.waterQuality.laboratory.sampleId')">
+            </WellLabeledField>
+            <WellLabeledField
+              :label="t('editor.waterQuality.laboratory.sampleId')"
+            >
               <InputText
                 v-model="form.labSampleId"
                 class="w-full font-mono text-sm"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.laboratory.receivedTemperature')"
             >
               <WellInputNumber
@@ -923,8 +948,8 @@ function commit(sample: WaterSample) {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.laboratory.receivedAt')"
               class="sm:col-span-3"
             >
@@ -945,7 +970,7 @@ function commit(sample: WaterSample) {
                   {{ t('editor.waterQuality.fields.dateOnly') }}
                 </label>
               </div>
-            </LabeledField>
+            </WellLabeledField>
           </div>
           <Message
             v-if="labNameMissing"
@@ -975,13 +1000,13 @@ function commit(sample: WaterSample) {
         </Message>
       </div>
 
-      <LabeledField :label="t('editor.waterQuality.fields.notes')">
+      <WellLabeledField :label="t('editor.waterQuality.fields.notes')">
         <Textarea v-model="form.notes" :rows="2" class="w-full text-sm" />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.waterQuality.fields.attachments')">
+      <WellLabeledField :label="t('editor.waterQuality.fields.attachments')">
         <AttachmentField v-model="form.attachments" context="sample" />
-      </LabeledField>
+      </WellLabeledField>
 
       <Message
         v-if="errors.length"

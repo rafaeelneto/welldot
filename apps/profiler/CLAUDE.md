@@ -5,7 +5,7 @@
 ## Stack
 
 - **Framework:** Nuxt 4 (`srcDir: app/`) with SSR enabled
-- **UI:** PrimeVue 4 (theme via `customTheme.ts` + `customPt.js` pass-through)
+- **UI:** PrimeVue 4 + `@welldot/vue` (workspace package, see [packages/vue/CLAUDE.md](../../packages/vue/CLAUDE.md)) — base components (`Well*`), the PrimeVue theme (`WelldotPreset` + `welldotPt` pass-through) and the Tailwind tokens. Wired by the `@welldot/vue/nuxt` module
 - **Styling:** Tailwind CSS 4 (Vite plugin), global styles in `app/assets/styles/main.css`
 - **State:** Pinia with `pinia-plugin-persistedstate`
 - **i18n:** `@nuxtjs/i18n` — English and Brazilian Portuguese (`i18n/locales/`)
@@ -64,11 +64,14 @@ app/                      ← srcDir
                              @welldot/utils); History log dialog edits `maintenance`
                              fields, `status_change` status (current well status
                              tag) and the `hydrodynamic_event_ids` / `sample_ids` links
-                             of any category (`TagSelect`: chips above a Select); root `attachments`
+                             of any category (`WellTagSelect`: chips above a Select); root `attachments`
                              (general files) live in the General tab below Observations
   layouts/
     landing.vue           ← layout for the landing page
-  components/
+  components/             ← app/domain components only; base components (WellLabeledField,
+                             WellChip, WellTagSelect, WellInfoPopover, WellInputNumber,
+                             WellUnitInput, WellDataGrid, WellLocationPicker/Map…) come from
+                             `@welldot/vue`, registered by its Nuxt module
     landing/              ← landing-page components (HeroVisual, WellJsonViewer, etc.)
     attachments/          ← AttachmentField (strip + add/edit dialog, `v-model` of the list) and
                              AttachmentDialog. Saved records write back with `assignAttachments`
@@ -81,19 +84,23 @@ app/                      ← srcDir
                              danger action always last)
   composables/
     useBus.ts             ← typed event bus composable (wraps EventBus)
+    useUnitDisplay.ts     ← thin wrapper of `useWellUnits` (@welldot/vue)
+    useNumberFormat.ts    ← thin wrapper of `useWellNumberFormat` (@welldot/vue)
   core/
     EventBus/             ← mitt-based typed event bus (bus.ts, Events.ts, types.ts)
   stores/                 ← Pinia stores
-  theme/
-    customTheme.ts        ← PrimeVue design token overrides
-    customPt.js           ← PrimeVue pass-through classes
   plugins/
+    00.i18n-head.ts       ← i18n head tags (minus canonical / og:url)
     01.canonical.ts       ← injects canonical URL
+    02.primevue-services.ts ← ConfirmationService + DialogService
+    03.welldot.ts         ← app layer of `createWelldot`: display units + coordinate format
+                             from `useUiStore`, and the `icon` part (string icons such as
+                             `<WellChip icon="ph:drop">` render through `@nuxt/icon`)
   utils/
     date.ts
     clipboard.ts
   assets/
-    styles/main.css
+    styles/main.css       ← imports tailwindcss, tailwindcss-primeui, @welldot/vue/tailwind.css
     icons/                ← custom SVG icon set (welldot: prefix)
 i18n/
   locales/en.json
@@ -115,7 +122,8 @@ pnpm lint       # eslint
 ## Key patterns
 
 - Nuxt auto-imports components, composables, and `utils/` — no explicit imports needed for those.
-- PrimeVue components are auto-imported. Check `customPt.js` before adding Tailwind classes to PrimeVue elements.
+- PrimeVue components are auto-imported. Check `welldotPt` (`packages/vue/src/theme/pt.ts`) before adding Tailwind classes to PrimeVue elements.
+- **Base components come from `@welldot/vue`** (see [packages/vue/CLAUDE.md](../../packages/vue/CLAUDE.md)). The `@welldot/vue/nuxt` module (in `modules`) registers every `Well*` component, auto-imports `createWelldot` / `useWelldotConfig` / `useWellText` / `useWellUnits` / `useWellNumberFormat`, defaults `primevue.importTheme` / `importPT` to the Welldot theme, and wires the locale from `$i18n`. `plugins/03.welldot.ts` layers the units, coordinate format and the `icon` part on top. The components take plain strings (no i18n inside): pass `t(...)` for every label, including the aria labels (`info-label` / `label` = `t('editor.fieldInfo')`, grid `delete-label` = `t('editor.deleteRow')`, grid `labels` = `{ showPendingTextures, columnInfo }`). Grid column types come from `@welldot/vue/grid` (`WellGridColumn`). Fix base-component bugs in `packages/vue`, never by re-adding app copies.
 - Breakpoints are managed by `nuxt-viewport`; prefer `useViewport()` over raw media queries.
 - Locale strings live in `i18n/locales/*.json`; use `useI18n().t('key')` in components.
 - **Recommended values of open `.well` fields** (permit type, condition category, pump type, materials, sample type, …) come from the `@welldot/core` vocabularies (`PERMIT_TYPES`, `CONSTRUCTION_MATERIALS`, …), never from i18n keys. In components use `useVocab()` — `vocabOptions(VOCAB, current?)` for Select/combo options (deprecated values only when `current`) and `vocabLabel(VOCAB, value)` / `vocabList(VOCAB, values)` for display; free-text and `x-` values show as-is. PDF export lives in `@welldot/pdf` (see `packages/pdf/CLAUDE.md`), which uses `getVocabLabel(…, locale)` and its own label pack. Always store the key, never the translated label. Closed vocabularies (permit status, well status, qualifiers, …): the value lists come from `@welldot/core` (`WELL_STATUS_VALUES`, `QUALIFIER_VALUES`, …) and the labels from i18n keys, looked up in `utils/*Vocab.ts`. Pure helpers (dates, coordinates, unit labels, readings, permit/meter labels) live in `@welldot/utils`; the app's `utils/*.ts` files only re-export them for auto-import next to the UI-only bits (severity maps, icons). Never re-implement them in the app.
@@ -157,15 +165,15 @@ Key rules:
 - `surface` for backgrounds exclusively; `content` for everything neutral on top of it.
 - Pair at the same index. Slight offset toward higher values for hierarchy is fine; a large gap (>400 steps) is a bug.
 - High `surface` values (`400+`) signal a deliberate inversion (dark hero, inverted sidebar) — rare. High `content` values (`800+`) are nearly always wrong.
-- Tailwind utilities (`bg-surface-*`, `text-content-*`, `bg-primary-*`, etc.) are bridged from PrimeVue CSS vars in `app/assets/styles/main.css`. Never use Tailwind grays, raw `bg-white`, or hardcoded hex — they break dark mode.
+- Tailwind utilities (`bg-surface-*`, `text-content-*`, `bg-primary-*`, etc.) are bridged from PrimeVue CSS vars by `@welldot/vue/tailwind.css`, imported in `app/assets/styles/main.css`. Never use Tailwind grays, raw `bg-white`, or hardcoded hex — they break dark mode.
 
 ## PrimeVue components
 
 Always prefer a PrimeVue component over a hand-rolled one. Customise in this order — stop at the first layer that solves the problem:
 
 1. **API** — props and slots (`primevue.org/<component>`).
-2. **`customTheme.ts`** — global visual change (design token override under `components`). Right for color, radius, spacing that should apply to every instance.
-3. **`customPt.js`** — pass-through for structural/utility tweaks (Tailwind class or HTML attr on an internal element). One-off layout adjustments only; not for color changes.
+2. **`WelldotPreset`** (`packages/vue/src/theme/preset.ts`) — global visual change (design token override under `components`). Right for color, radius, spacing that should apply to every instance.
+3. **`welldotPt`** (`packages/vue/src/theme/pt.ts`) — pass-through for structural/utility tweaks (Tailwind class or HTML attr on an internal element). One-off layout adjustments only; not for color changes.
 4. **Custom component** — last resort, only when the three layers above are genuinely insufficient.
 
 Never target PrimeVue internal class names in scoped CSS — they're unstable across minor versions. Use pass-through instead.

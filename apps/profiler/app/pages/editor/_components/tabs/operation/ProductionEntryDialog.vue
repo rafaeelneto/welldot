@@ -218,7 +218,9 @@ function save() {
           {{ t('editor.operation.production.noMeters') }}
         </Message>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <LabeledField :label="t('editor.operation.production.fields.meter')">
+          <WellLabeledField
+            :label="t('editor.operation.production.fields.meter')"
+          >
             <Select
               v-model="form.meterId"
               :options="meterOptions"
@@ -227,8 +229,8 @@ function save() {
               :invalid="!form.meterId"
               class="w-full"
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             :label="t('editor.operation.production.fields.datetime')"
           >
             <DatePicker
@@ -239,12 +241,13 @@ function save() {
               class="w-full"
               :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             :label="t('editor.operation.production.fields.reading')"
             :info="t('editor.operation.production.fields.readingInfo')"
+            :info-label="t('editor.fieldInfo')"
           >
-            <UnitInput
+            <WellUnitInput
               v-model="form.reading"
               unit-type="volume"
               :min="0"
@@ -253,8 +256,10 @@ function save() {
               class="w-full"
               :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
             />
-          </LabeledField>
-          <LabeledField :label="t('editor.operation.production.fields.source')">
+          </WellLabeledField>
+          <WellLabeledField
+            :label="t('editor.operation.production.fields.source')"
+          >
             <Select
               v-model="form.source"
               :options="sourceOptions"
@@ -264,7 +269,7 @@ function save() {
               show-clear
               class="w-full"
             />
-          </LabeledField>
+          </WellLabeledField>
         </div>
         <Message
           v-if="readingOutsideInstallation"
@@ -279,7 +284,7 @@ function save() {
       <!-- ── Declared volume ────────────────────────────────────────────── -->
       <template v-else>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <LabeledField
+          <WellLabeledField
             :label="t('editor.operation.production.fields.periodStart')"
           >
             <DatePicker
@@ -290,8 +295,8 @@ function save() {
               class="w-full"
               :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             :label="t('editor.operation.production.fields.periodEnd')"
           >
             <DatePicker
@@ -303,7 +308,7 @@ function save() {
               :invalid="periodInvalid"
               :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
             />
-          </LabeledField>
+          </WellLabeledField>
         </div>
         <Message
           v-if="periodInvalid"
@@ -314,8 +319,10 @@ function save() {
           {{ t('editor.operation.warnings.declared_period_invalid') }}
         </Message>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <LabeledField :label="t('editor.operation.production.fields.volume')">
-            <UnitInput
+          <WellLabeledField
+            :label="t('editor.operation.production.fields.volume')"
+          >
+            <WellUnitInput
               v-model="form.volume"
               unit-type="volume"
               :min="0"
@@ -324,10 +331,11 @@ function save() {
               class="w-full"
               :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             :label="t('editor.operation.production.fields.method')"
             :info="t('editor.operation.production.fields.methodInfo')"
+            :info-label="t('editor.fieldInfo')"
           >
             <Select
               v-model="form.method"
@@ -338,13 +346,13 @@ function save() {
               show-clear
               class="w-full"
             />
-          </LabeledField>
+          </WellLabeledField>
         </div>
       </template>
 
-      <LabeledField :label="t('editor.operation.production.fields.notes')">
+      <WellLabeledField :label="t('editor.operation.production.fields.notes')">
         <Textarea v-model="form.notes" :rows="2" class="w-full text-sm" />
-      </LabeledField>
+      </WellLabeledField>
     </div>
 
     <template #footer>

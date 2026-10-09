@@ -9,7 +9,7 @@ import {
   type HydrodynamicEvent,
 } from '@welldot/core';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -500,7 +500,7 @@ function reorderRecoveryReading(from: number, to: number) {
   >
     <div class="flex flex-col gap-5 pt-2">
       <!-- Event type selector -->
-      <LabeledField :label="t('editor.hydrodynamicEvents.fields.type')">
+      <WellLabeledField :label="t('editor.hydrodynamicEvents.fields.type')">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <label
             v-for="opt in typeOptions"
@@ -519,10 +519,10 @@ function reorderRecoveryReading(from: number, to: number) {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- Date / time -->
-      <LabeledField :label="t('editor.hydrodynamicEvents.fields.datetime')">
+      <WellLabeledField :label="t('editor.hydrodynamicEvents.fields.datetime')">
         <DatePicker
           v-model="form.datetime"
           show-time
@@ -532,21 +532,25 @@ function reorderRecoveryReading(from: number, to: number) {
           class="w-full"
           :pt="{ pcInput: { root: { class: 'font-mono text-sm w-full' } } }"
         />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- Operator / Equipment -->
       <div class="grid grid-cols-2 gap-3">
-        <LabeledField :label="t('editor.hydrodynamicEvents.fields.operator')">
+        <WellLabeledField
+          :label="t('editor.hydrodynamicEvents.fields.operator')"
+        >
           <InputText v-model="form.operator" class="w-full" />
-        </LabeledField>
-        <LabeledField :label="t('editor.hydrodynamicEvents.fields.equipment')">
+        </WellLabeledField>
+        <WellLabeledField
+          :label="t('editor.hydrodynamicEvents.fields.equipment')"
+        >
           <InputText v-model="form.equipment" class="w-full" />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- Static level (spot / constant_rate / step_drawdown) -->
       <div v-if="showStaticLevel" class="grid grid-cols-2 gap-3">
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.hydrodynamicEvents.fields.staticLevel')"
         >
           <InputNumber
@@ -554,8 +558,8 @@ function reorderRecoveryReading(from: number, to: number) {
             :max-fraction-digits="3"
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.hydrodynamicEvents.fields.staticLevelPrecision')"
         >
           <InputNumber
@@ -563,11 +567,11 @@ function reorderRecoveryReading(from: number, to: number) {
             :max-fraction-digits="3"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- Measurement method (spot_measurement) -->
-      <LabeledField
+      <WellLabeledField
         v-if="showMeasurementMethod"
         :label="t('editor.hydrodynamicEvents.fields.measurementMethod')"
       >
@@ -579,26 +583,26 @@ function reorderRecoveryReading(from: number, to: number) {
           show-clear
           class="w-full"
         />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- Recovery only: estimated preceding params -->
       <div v-if="showRecoveryOnly" class="grid grid-cols-2 gap-3">
-        <LabeledField
+        <WellLabeledField
           :label="
             t('editor.hydrodynamicEvents.fields.pumpingRate', {
               unit: flowUnit,
             })
           "
         >
-          <UnitInput
+          <WellUnitInput
             v-model="form.pumpingRate"
             unit-type="flow"
             :min="0"
             :max-fraction-digits="2"
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.hydrodynamicEvents.fields.pumpingDuration')"
         >
           <InputNumber
@@ -606,7 +610,7 @@ function reorderRecoveryReading(from: number, to: number) {
             :max-fraction-digits="1"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- Pumping steps -->
@@ -618,7 +622,7 @@ function reorderRecoveryReading(from: number, to: number) {
             {{ t('editor.hydrodynamicEvents.fields.steps') }}
           </span>
           <div class="flex items-center gap-3">
-            <LabeledField
+            <WellLabeledField
               :label="t('editor.hydrodynamicEvents.fields.stepsDepthPrecision')"
               class="mb-0 flex-row items-center"
             >
@@ -628,7 +632,7 @@ function reorderRecoveryReading(from: number, to: number) {
                 :max-fraction-digits="3"
                 class="precision-input"
               />
-            </LabeledField>
+            </WellLabeledField>
             <Button
               outlined
               size="small"
@@ -685,7 +689,7 @@ function reorderRecoveryReading(from: number, to: number) {
                         unit: flowUnit,
                       })
                     }}</span>
-                    <UnitInput
+                    <WellUnitInput
                       v-model="step.rate"
                       unit-type="flow"
                       :min="0"
@@ -749,6 +753,11 @@ function reorderRecoveryReading(from: number, to: number) {
                 :rows="step.readings.map(r => ({ ...r }))"
                 :columns="stepReadingColumns"
                 :add-label="t('editor.hydrodynamicEvents.addReading')"
+                :delete-label="t('editor.deleteRow')"
+                :labels="{
+                  showPendingTextures: t('editor.showPendingTextures'),
+                  columnInfo: t('editor.fieldInfo'),
+                }"
                 @add="addStepReading(si)"
                 @delete="ri => deleteStepReading(si, ri)"
                 @change="
@@ -777,6 +786,11 @@ function reorderRecoveryReading(from: number, to: number) {
             :rows="form.recoveryReadings.map(r => ({ ...r }))"
             :columns="recoveryReadingColumns"
             :add-label="t('editor.hydrodynamicEvents.addReading')"
+            :delete-label="t('editor.deleteRow')"
+            :labels="{
+              showPendingTextures: t('editor.showPendingTextures'),
+              columnInfo: t('editor.fieldInfo'),
+            }"
             @add="addRecoveryReading"
             @delete="deleteRecoveryReading"
             @change="changeRecoveryReading"
@@ -796,6 +810,11 @@ function reorderRecoveryReading(from: number, to: number) {
           :rows="form.recoveryReadings.map(r => ({ ...r }))"
           :columns="recoveryReadingColumns"
           :add-label="t('editor.hydrodynamicEvents.addReading')"
+          :delete-label="t('editor.deleteRow')"
+          :labels="{
+            showPendingTextures: t('editor.showPendingTextures'),
+            columnInfo: t('editor.fieldInfo'),
+          }"
           @add="addRecoveryReading"
           @delete="deleteRecoveryReading"
           @change="changeRecoveryReading"
@@ -804,18 +823,18 @@ function reorderRecoveryReading(from: number, to: number) {
       </div>
 
       <!-- Notes -->
-      <LabeledField :label="t('editor.hydrodynamicEvents.fields.notes')">
+      <WellLabeledField :label="t('editor.hydrodynamicEvents.fields.notes')">
         <Textarea
           v-model="form.notes"
           :rows="3"
           class="w-full font-mono text-sm"
         />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- Attachments -->
-      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.attachments')">
         <AttachmentField v-model="form.attachments" context="event" />
-      </LabeledField>
+      </WellLabeledField>
     </div>
 
     <template #footer>
@@ -857,7 +876,7 @@ function reorderRecoveryReading(from: number, to: number) {
 /* ── Step accordion panels ────────────────────────────────────────────────── */
 /* PrimeVue's Aura defaults render inside a layered cssLayer, so this unlayered
    scoped CSS always wins regardless of selector specificity — safe to fully
-   override the panel/content look here without touching customTheme.ts. */
+   override the panel/content look here without touching the WelldotPreset. */
 
 .step-panel {
   border: 1px solid var(--color-surface-200);

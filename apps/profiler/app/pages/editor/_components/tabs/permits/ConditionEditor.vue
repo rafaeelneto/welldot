@@ -181,10 +181,11 @@ function removeFulfillment(c: PermitCondition, id: string) {
       class="rounded-lg border border-surface-200/70 bg-surface-50 p-3 flex flex-col gap-3"
     >
       <div class="flex items-start gap-2">
-        <LabeledField
+        <WellLabeledField
           class="flex-1"
           :label="t('editor.operation.permit.conditions.description')"
           :info="t('editor.operation.permit.conditions.descriptionInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <Textarea
             v-model="c.description"
@@ -193,7 +194,7 @@ function removeFulfillment(c: PermitCondition, id: string) {
             class="w-full text-sm"
             :invalid="!c.description.trim()"
           />
-        </LabeledField>
+        </WellLabeledField>
         <Button
           severity="danger"
           text
@@ -209,7 +210,9 @@ function removeFulfillment(c: PermitCondition, id: string) {
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <LabeledField :label="t('editor.operation.permit.conditions.category')">
+        <WellLabeledField
+          :label="t('editor.operation.permit.conditions.category')"
+        >
           <Select
             :model-value="c.category ?? null"
             :options="categoryOptions"
@@ -220,18 +223,19 @@ function removeFulfillment(c: PermitCondition, id: string) {
             class="w-full"
             @update:model-value="setCategory(c, $event)"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.permit.conditions.responsible')"
           :info="t('editor.operation.permit.conditions.responsibleInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <InputText
             :model-value="c.responsible ?? ''"
             class="w-full"
             @update:model-value="setResponsible(c, $event)"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           class="sm:col-span-2"
           :label="t('editor.operation.permit.conditions.deadline')"
         >
@@ -244,14 +248,14 @@ function removeFulfillment(c: PermitCondition, id: string) {
             size="small"
             @update:model-value="setMode(c, $event)"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <div
         v-if="modeOf(c) !== 'none'"
         class="grid grid-cols-2 sm:grid-cols-4 gap-3"
       >
-        <LabeledField
+        <WellLabeledField
           v-if="modeOf(c) === 'fixed'"
           :label="t('editor.operation.permit.conditions.firstDue')"
         >
@@ -262,15 +266,15 @@ function removeFulfillment(c: PermitCondition, id: string) {
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
             @update:model-value="setDate(c, 'first_due', $event as Date | null)"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           v-else
           :label="t('editor.operation.permit.conditions.dueAfter')"
         >
           <DurationInput v-model="c.due_after" :invalid="!c.due_after" />
-        </LabeledField>
+        </WellLabeledField>
 
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.operation.permit.conditions.recurrence')"
         >
           <DurationInput
@@ -280,10 +284,10 @@ function removeFulfillment(c: PermitCondition, id: string) {
             "
             @update:model-value="setRecurrence(c, $event)"
           />
-        </LabeledField>
+        </WellLabeledField>
 
         <template v-if="c.recurrence">
-          <LabeledField
+          <WellLabeledField
             :label="t('editor.operation.permit.conditions.lastDue')"
           >
             <DatePicker
@@ -296,8 +300,8 @@ function removeFulfillment(c: PermitCondition, id: string) {
                 setDate(c, 'last_due', $event as Date | null)
               "
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             :label="t('editor.operation.permit.conditions.occurrences')"
           >
             <WellInputNumber
@@ -308,7 +312,7 @@ function removeFulfillment(c: PermitCondition, id: string) {
               :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               @update:model-value="setOccurrences(c, $event)"
             />
-          </LabeledField>
+          </WellLabeledField>
         </template>
       </div>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Centralizer, Well } from '@welldot/core';
 import { CENTRALIZER_TYPES } from '@welldot/core';
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
 const { vocabOptions } = useVocab();
@@ -129,6 +129,11 @@ function reorderCentralizer(from: number, to: number) {
       :rows="rows"
       :columns="centralizerColumns"
       :add-label="t('editor.construction.centralizer.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addCentralizer"
       @delete="deleteCentralizer"
       @change="updateCentralizer"

@@ -182,7 +182,7 @@ function saveEntry() {
     :style="{ width: '100vw', maxWidth: '36rem' }"
   >
     <div class="flex flex-col gap-4 pt-2">
-      <LabeledField :label="t('editor.historyLog.logs.fields.category')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.category')">
         <div class="flex flex-wrap gap-2">
           <label
             v-for="opt in categoryOptions"
@@ -201,14 +201,14 @@ function saveEntry() {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- ── maintenance: structured fields (optional — legacy logs lack them) -->
       <div
         v-if="form.category === 'maintenance'"
         class="grid grid-cols-1 sm:grid-cols-2 gap-4"
       >
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.historyLog.logs.fields.maintenanceType')"
           class="sm:col-span-2"
         >
@@ -221,8 +221,8 @@ function saveEntry() {
             show-clear
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           v-if="pumpOptions.length"
           :label="t('editor.historyLog.logs.fields.pumpInstallation')"
         >
@@ -234,8 +234,8 @@ function saveEntry() {
             show-clear
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           v-if="meterOptions.length"
           :label="t('editor.historyLog.logs.fields.meter')"
         >
@@ -247,42 +247,45 @@ function saveEntry() {
             show-clear
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- ── data links (any category, .well v2.3) ─────────────────────── -->
-      <LabeledField
+      <WellLabeledField
         v-if="eventOptions.length || form.hydrodynamicEventIds.length"
         :label="t('editor.historyLog.logs.fields.events')"
         :info="t('editor.historyLog.logs.fields.eventsInfo')"
+        :info-label="t('editor.fieldInfo')"
       >
-        <TagSelect
+        <WellTagSelect
           v-model="form.hydrodynamicEventIds"
           :options="eventOptions"
           :placeholder="t('editor.historyLog.logs.fields.addEvent')"
           :remove-label="t('editor.historyLog.logs.fields.removeLink')"
           filter
         />
-      </LabeledField>
-      <LabeledField
+      </WellLabeledField>
+      <WellLabeledField
         v-if="sampleOptions.length || form.sampleIds.length"
         :label="t('editor.historyLog.logs.fields.samples')"
         :info="t('editor.historyLog.logs.fields.samplesInfo')"
+        :info-label="t('editor.fieldInfo')"
       >
-        <TagSelect
+        <WellTagSelect
           v-model="form.sampleIds"
           :options="sampleOptions"
           :placeholder="t('editor.historyLog.logs.fields.addSample')"
           :remove-label="t('editor.historyLog.logs.fields.removeLink')"
           filter
         />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- ── status_change: required status (closed vocabulary) ─────────── -->
-      <LabeledField
+      <WellLabeledField
         v-if="form.category === 'status_change'"
         :label="t('editor.historyLog.logs.fields.status')"
         :info="t('editor.historyLog.logs.fields.statusInfo')"
+        :info-label="t('editor.fieldInfo')"
       >
         <Select
           v-model="form.status"
@@ -292,9 +295,9 @@ function saveEntry() {
           :invalid="!form.status"
           class="w-full"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.datetime')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.datetime')">
         <DatePicker
           v-model="form.datetime"
           show-time
@@ -304,26 +307,26 @@ function saveEntry() {
           class="w-full"
           :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.description')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.description')">
         <Textarea
           v-model="form.description"
           :rows="5"
           class="w-full font-mono text-sm"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.author')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.author')">
         <InputText v-model="form.author" class="w-full" />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- ── Attachments ────────────────────────────────────────────────── -->
-      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.attachments')">
         <AttachmentField v-model="form.attachments" context="history" />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.severity')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.severity')">
         <div class="flex flex-wrap gap-2">
           <label
             v-for="opt in severityOptions"
@@ -341,7 +344,7 @@ function saveEntry() {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </LabeledField>
+      </WellLabeledField>
     </div>
 
     <template #footer>

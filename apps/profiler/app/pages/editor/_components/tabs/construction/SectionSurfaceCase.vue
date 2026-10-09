@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -61,6 +61,11 @@ function reorderSurfaceCase(from: number, to: number) {
       :rows="[...profileStore.well.surface_case]"
       :columns="surfaceCaseColumns"
       :add-label="t('editor.construction.surfaceCase.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addSurfaceCase"
       @delete="deleteSurfaceCase"
       @change="updateSurfaceCase"

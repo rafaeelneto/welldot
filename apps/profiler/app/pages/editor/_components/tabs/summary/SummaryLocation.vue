@@ -63,9 +63,7 @@ const location = computed(() => {
       <span v-else class="font-mono text-[10px] text-content-400">
         {{ DEFAULT_CRS_LABEL }}
       </span>
-      <ClientOnly>
-        <LocationMap :lat="location.lat" :lng="location.lng" readonly />
-      </ClientOnly>
+      <WellLocationMap :lat="location.lat" :lng="location.lng" readonly />
     </template>
     <SummaryEmpty v-else :text="t('editor.summary.location.empty')" />
   </SummaryCard>

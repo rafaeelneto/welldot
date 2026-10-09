@@ -124,17 +124,20 @@ function save() {
     :style="{ width: '28rem' }"
   >
     <div class="flex flex-col gap-4 pt-2">
-      <LabeledField :label="t('editor.historyLog.logs.fields.attachmentUrl')">
+      <WellLabeledField
+        :label="t('editor.historyLog.logs.fields.attachmentUrl')"
+      >
         <InputText
           v-model="form.url"
           class="w-full font-mono text-sm"
           placeholder="https://"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField
+      <WellLabeledField
         :label="t('editor.attachments.documentType')"
         :info="t('editor.attachments.documentTypeInfo')"
+        :info-label="t('editor.fieldInfo')"
       >
         <Select
           v-model="form.documentType"
@@ -145,15 +148,15 @@ function save() {
           show-clear
           class="w-full"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField
+      <WellLabeledField
         :label="t('editor.historyLog.logs.fields.attachmentFilename')"
       >
         <InputText v-model="form.filename" class="w-full" />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField
+      <WellLabeledField
         :label="t('editor.historyLog.logs.fields.attachmentMediaType')"
       >
         <Select
@@ -163,11 +166,11 @@ function save() {
           option-value="value"
           class="w-full"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.attachments.description')">
+      <WellLabeledField :label="t('editor.attachments.description')">
         <Textarea v-model="form.description" :rows="2" class="w-full text-sm" />
-      </LabeledField>
+      </WellLabeledField>
     </div>
 
     <template #footer>

@@ -297,7 +297,7 @@ function rowTitle(row: ResultDraft): string {
 
       <!-- ── Value ─────────────────────────────────────────────────────── -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 items-end">
-        <LabeledField
+        <WellLabeledField
           v-if="showFormSwitch(row)"
           :label="t('editor.waterQuality.result.form')"
           class="col-span-2 sm:col-span-4"
@@ -311,8 +311,8 @@ function rowTitle(row: ResultDraft): string {
             size="small"
             @update:model-value="setForm(row, $event)"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.waterQuality.result.qualifier')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.waterQuality.result.qualifier')">
           <Select
             v-model="row.qualifier"
             :options="qualifierOptions(row)"
@@ -323,8 +323,8 @@ function rowTitle(row: ResultDraft): string {
             size="small"
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           v-if="row.qualifier !== 'not_detected'"
           :label="t('editor.waterQuality.result.value')"
           :class="row.form === 'text' ? 'col-span-2 sm:col-span-3' : ''"
@@ -355,8 +355,8 @@ function rowTitle(row: ResultDraft): string {
             class="w-full text-sm"
             :invalid="valueMissing(row)"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           v-if="row.form !== 'text' || row.qualifier === 'not_detected'"
           :label="t('editor.waterQuality.result.fraction')"
         >
@@ -369,8 +369,8 @@ function rowTitle(row: ResultDraft): string {
             size="small"
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.waterQuality.result.measuredIn')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.waterQuality.result.measuredIn')">
           <Select
             v-model="row.measuredIn"
             :options="measuredInOptions"
@@ -380,7 +380,7 @@ function rowTitle(row: ResultDraft): string {
             size="small"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
       <Message
         v-if="row.qualifier === 'not_detected' && row.detectionLimit == null"
@@ -405,7 +405,9 @@ function rowTitle(row: ResultDraft): string {
       </button>
       <div v-if="row.expanded" class="flex flex-col gap-3">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <LabeledField :label="t('editor.waterQuality.result.detectionLimit')">
+          <WellLabeledField
+            :label="t('editor.waterQuality.result.detectionLimit')"
+          >
             <WellInputNumber
               v-model="row.detectionLimit"
               :min="0"
@@ -414,8 +416,8 @@ function rowTitle(row: ResultDraft): string {
               class="w-full"
               :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             :label="t('editor.waterQuality.result.quantificationLimit')"
           >
             <WellInputNumber
@@ -426,11 +428,12 @@ function rowTitle(row: ResultDraft): string {
               class="w-full"
               :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
             />
-          </LabeledField>
-          <LabeledField
+          </WellLabeledField>
+          <WellLabeledField
             v-if="row.form === 'value'"
             :label="t('editor.waterQuality.result.valuePrecision')"
             :info="t('editor.waterQuality.result.valuePrecisionInfo')"
+            :info-label="t('editor.fieldInfo')"
           >
             <WellInputNumber
               v-model="row.valuePrecision"
@@ -440,11 +443,13 @@ function rowTitle(row: ResultDraft): string {
               class="w-full"
               :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
             />
-          </LabeledField>
+          </WellLabeledField>
         </div>
 
         <div v-if="row.fraction === 'dissolved'" class="grid grid-cols-2 gap-2">
-          <LabeledField :label="t('editor.waterQuality.filtration.poreSize')">
+          <WellLabeledField
+            :label="t('editor.waterQuality.filtration.poreSize')"
+          >
             <WellInputNumber
               v-model="row.poreSize"
               :min="0"
@@ -454,8 +459,10 @@ function rowTitle(row: ResultDraft): string {
               class="w-full"
               :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
             />
-          </LabeledField>
-          <LabeledField :label="t('editor.waterQuality.filtration.location')">
+          </WellLabeledField>
+          <WellLabeledField
+            :label="t('editor.waterQuality.filtration.location')"
+          >
             <Select
               v-model="row.filtrationLocation"
               :options="filtrationLocationOptions"
@@ -465,7 +472,7 @@ function rowTitle(row: ResultDraft): string {
               size="small"
               class="w-full"
             />
-          </LabeledField>
+          </WellLabeledField>
           <Message
             v-if="row.poreSize == null && !row.filtrationLocation"
             severity="warn"
@@ -478,15 +485,15 @@ function rowTitle(row: ResultDraft): string {
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <LabeledField :label="t('editor.waterQuality.result.method')">
+          <WellLabeledField :label="t('editor.waterQuality.result.method')">
             <InputText
               v-model="row.method"
               size="small"
               class="w-full text-sm"
               placeholder="US EPA 200.8"
             />
-          </LabeledField>
-          <LabeledField :label="t('editor.waterQuality.result.analyzedAt')">
+          </WellLabeledField>
+          <WellLabeledField :label="t('editor.waterQuality.result.analyzedAt')">
             <div class="flex items-center gap-3">
               <DatePicker
                 v-model="row.analyzedAt"
@@ -505,12 +512,13 @@ function rowTitle(row: ResultDraft): string {
                 {{ t('editor.waterQuality.fields.dateOnly') }}
               </label>
             </div>
-          </LabeledField>
+          </WellLabeledField>
         </div>
 
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.waterQuality.result.labFlags')"
           :info="t('editor.waterQuality.result.labFlagsInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <AutoComplete
             v-model="row.labFlags"
@@ -520,10 +528,10 @@ function rowTitle(row: ResultDraft): string {
             class="w-full"
             :pt="{ inputMultiple: { class: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
+        </WellLabeledField>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <LabeledField :label="t('editor.waterQuality.validation.status')">
+          <WellLabeledField :label="t('editor.waterQuality.validation.status')">
             <Select
               v-model="row.validationStatus"
               :options="validationStatusOptions"
@@ -533,19 +541,20 @@ function rowTitle(row: ResultDraft): string {
               size="small"
               class="w-full"
             />
-          </LabeledField>
+          </WellLabeledField>
           <template v-if="row.validationStatus">
-            <LabeledField
+            <WellLabeledField
               :label="t('editor.waterQuality.validation.qualifier')"
               :info="t('editor.waterQuality.validation.qualifierInfo')"
+              :info-label="t('editor.fieldInfo')"
             >
               <InputText
                 v-model="row.validationQualifier"
                 size="small"
                 class="w-full font-mono text-sm"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.validation.guideline')"
             >
               <InputText
@@ -553,8 +562,8 @@ function rowTitle(row: ResultDraft): string {
                 size="small"
                 class="w-full text-sm"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.validation.validatedBy')"
             >
               <InputText
@@ -562,8 +571,8 @@ function rowTitle(row: ResultDraft): string {
                 size="small"
                 class="w-full text-sm"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.waterQuality.validation.validatedAt')"
             >
               <DatePicker
@@ -576,13 +585,13 @@ function rowTitle(row: ResultDraft): string {
                 class="w-full"
                 :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
               />
-            </LabeledField>
+            </WellLabeledField>
           </template>
         </div>
 
-        <LabeledField :label="t('editor.waterQuality.fields.notes')">
+        <WellLabeledField :label="t('editor.waterQuality.fields.notes')">
           <Textarea v-model="row.notes" :rows="2" class="w-full text-sm" />
-        </LabeledField>
+        </WellLabeledField>
       </div>
     </div>
 

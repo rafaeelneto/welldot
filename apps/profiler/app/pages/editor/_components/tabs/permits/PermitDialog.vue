@@ -10,7 +10,6 @@ import type {
   Well,
 } from '@welldot/core';
 import { PERMIT_TYPES, WATER_USES, vocabValues } from '@welldot/core';
-import AppChip from '~/components/AppChip.vue';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import {
   PERMIT_ADMINISTRATIVE_STATUS_VALUES,
@@ -378,9 +377,10 @@ function save() {
           <div class="flex flex-col gap-5 py-4">
             <!-- ── Identity ───────────────────────────────────────────────────── -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <LabeledField
+              <WellLabeledField
                 :label="t('editor.operation.permit.fields.type')"
                 :info="t('editor.operation.permit.fields.typeInfo')"
+                :info-label="t('editor.fieldInfo')"
               >
                 <Select
                   v-model="form.type"
@@ -390,20 +390,22 @@ function save() {
                   editable
                   class="w-full"
                 />
-              </LabeledField>
-              <LabeledField
+              </WellLabeledField>
+              <WellLabeledField
                 :label="t('editor.operation.permit.fields.authority')"
                 :info="t('editor.operation.permit.fields.authorityInfo')"
+                :info-label="t('editor.fieldInfo')"
               >
                 <InputText
                   v-model="form.authority"
                   class="w-full"
                   :invalid="!form.authority.trim()"
                 />
-              </LabeledField>
-              <LabeledField
+              </WellLabeledField>
+              <WellLabeledField
                 :label="t('editor.operation.permit.fields.status')"
                 :info="t('editor.operation.permit.fields.statusInfo')"
+                :info-label="t('editor.fieldInfo')"
               >
                 <Select
                   v-model="form.status"
@@ -412,12 +414,13 @@ function save() {
                   option-value="value"
                   class="w-full"
                 />
-              </LabeledField>
+              </WellLabeledField>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <LabeledField
+              <WellLabeledField
                 :label="t('editor.operation.permit.fields.identifier')"
                 :info="t('editor.operation.permit.fields.identifierInfo')"
+                :info-label="t('editor.fieldInfo')"
               >
                 <InputText
                   v-model="form.identifier"
@@ -426,12 +429,13 @@ function save() {
                     !form.identifier.trim() && !form.requestIdentifier.trim()
                   "
                 />
-              </LabeledField>
-              <LabeledField
+              </WellLabeledField>
+              <WellLabeledField
                 :label="t('editor.operation.permit.fields.requestIdentifier')"
                 :info="
                   t('editor.operation.permit.fields.requestIdentifierInfo')
                 "
+                :info-label="t('editor.fieldInfo')"
               >
                 <InputText
                   v-model="form.requestIdentifier"
@@ -440,7 +444,7 @@ function save() {
                     !form.identifier.trim() && !form.requestIdentifier.trim()
                   "
                 />
-              </LabeledField>
+              </WellLabeledField>
             </div>
             <Message
               v-if="!form.identifier.trim() && !form.requestIdentifier.trim()"
@@ -472,7 +476,7 @@ function save() {
             <template v-if="showGrant">
               <!-- ── Validity ───────────────────────────────────────────────────── -->
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <LabeledField
+                <WellLabeledField
                   :label="t('editor.operation.permit.fields.issuedAt')"
                 >
                   <DatePicker
@@ -482,10 +486,11 @@ function save() {
                     class="w-full"
                     :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
                   />
-                </LabeledField>
-                <LabeledField
+                </WellLabeledField>
+                <WellLabeledField
                   :label="t('editor.operation.permit.fields.validFrom')"
                   :info="t('editor.operation.permit.fields.validFromInfo')"
+                  :info-label="t('editor.fieldInfo')"
                 >
                   <DatePicker
                     v-model="form.validFrom"
@@ -494,10 +499,11 @@ function save() {
                     class="w-full"
                     :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
                   />
-                </LabeledField>
-                <LabeledField
+                </WellLabeledField>
+                <WellLabeledField
                   :label="t('editor.operation.permit.fields.validUntil')"
                   :info="t('editor.operation.permit.fields.validUntilInfo')"
+                  :info-label="t('editor.fieldInfo')"
                 >
                   <DatePicker
                     v-model="form.validUntil"
@@ -507,14 +513,15 @@ function save() {
                     :invalid="validUntilBeforeStart"
                     :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
                   />
-                </LabeledField>
-                <LabeledField
+                </WellLabeledField>
+                <WellLabeledField
                   :label="
                     t('editor.operation.permit.fields.renewalRequestedAt')
                   "
                   :info="
                     t('editor.operation.permit.fields.renewalRequestedAtInfo')
                   "
+                  :info-label="t('editor.fieldInfo')"
                 >
                   <DatePicker
                     v-model="form.renewalRequestedAt"
@@ -523,7 +530,7 @@ function save() {
                     class="w-full"
                     :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
                   />
-                </LabeledField>
+                </WellLabeledField>
               </div>
               <Message
                 v-if="validUntilBeforeStart"
@@ -539,11 +546,11 @@ function save() {
               </Message>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <LabeledField
+                <WellLabeledField
                   :label="t('editor.operation.permit.fields.waterUse')"
                 >
                   <div class="flex flex-wrap items-center gap-2 pt-1">
-                    <AppChip
+                    <WellChip
                       v-for="option in selectedWaterUses"
                       :key="option.value"
                       :label="option.label"
@@ -582,10 +589,11 @@ function save() {
                       </template>
                     </Button>
                   </div>
-                </LabeledField>
-                <LabeledField
+                </WellLabeledField>
+                <WellLabeledField
                   :label="t('editor.operation.permit.fields.supersedes')"
                   :info="t('editor.operation.permit.fields.supersedesInfo')"
+                  :info-label="t('editor.fieldInfo')"
                 >
                   <Select
                     v-model="form.supersedes"
@@ -596,7 +604,7 @@ function save() {
                     :disabled="!supersedesOptions.length"
                     class="w-full"
                   />
-                </LabeledField>
+                </WellLabeledField>
               </div>
 
               <Popover ref="waterUsePopover">
@@ -614,10 +622,10 @@ function save() {
 
               <!-- ── Granted abstraction ────────────────────────────────────────── -->
               <div class="grid grid-cols-2 gap-4">
-                <LabeledField
+                <WellLabeledField
                   :label="t('editor.operation.permit.fields.flowRate')"
                 >
-                  <UnitInput
+                  <WellUnitInput
                     v-model="form.flowRate"
                     unit-type="flow"
                     :min="0"
@@ -626,8 +634,8 @@ function save() {
                     class="w-full"
                     :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
                   />
-                </LabeledField>
-                <LabeledField
+                </WellLabeledField>
+                <WellLabeledField
                   :label="
                     t('editor.operation.permit.fields.dailyOperatingTime')
                   "
@@ -641,12 +649,13 @@ function save() {
                     class="w-full"
                     :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
                   />
-                </LabeledField>
+                </WellLabeledField>
               </div>
 
-              <LabeledField
+              <WellLabeledField
                 :label="t('editor.operation.permit.fields.volumeLimits')"
                 :info="t('editor.operation.permit.fields.volumeLimitsInfo')"
+                :info-label="t('editor.fieldInfo')"
               >
                 <div class="grid grid-cols-3 gap-3">
                   <div
@@ -661,7 +670,7 @@ function save() {
                         )
                       }}
                     </span>
-                    <UnitInput
+                    <WellUnitInput
                       v-model="form.volumes[period]"
                       unit-type="volume"
                       :min="0"
@@ -672,7 +681,7 @@ function save() {
                     />
                   </div>
                 </div>
-              </LabeledField>
+              </WellLabeledField>
 
               <!-- ── Monthly schedule (collapsible) ─────────────────────────────── -->
               <div class="flex flex-col gap-3">
@@ -725,7 +734,7 @@ function save() {
                         <Checkbox v-model="row.enabled" binary />
                         {{ monthNames[row.month - 1] }}
                       </label>
-                      <UnitInput
+                      <WellUnitInput
                         v-model="row.flowRate"
                         unit-type="flow"
                         :min="0"
@@ -759,16 +768,18 @@ function save() {
               </div>
             </template>
 
-            <LabeledField :label="t('editor.operation.permit.fields.notes')">
+            <WellLabeledField
+              :label="t('editor.operation.permit.fields.notes')"
+            >
               <Textarea v-model="form.notes" :rows="3" class="w-full text-sm" />
-            </LabeledField>
+            </WellLabeledField>
 
             <!-- ── Attachments ────────────────────────────────────────────────── -->
-            <LabeledField
+            <WellLabeledField
               :label="t('editor.historyLog.logs.fields.attachments')"
             >
               <AttachmentField v-model="form.attachments" context="permit" />
-            </LabeledField>
+            </WellLabeledField>
           </div>
         </TabPanel>
         <TabPanel value="conditions">

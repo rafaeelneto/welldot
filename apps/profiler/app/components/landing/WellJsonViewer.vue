@@ -83,7 +83,7 @@ watch(
 
 <style scoped>
 /*
- * Tokens reference the design-system palette from customTheme.ts:
+ * Tokens reference the design-system palette from WelldotPreset (@welldot/vue):
  *   surface light: 0=#fff  50=#f7f8fa  100=#eef0f3  200=#d8dde3
  *   surface dark:  0=#0d1218  50=#131922  100=#1a2230  200=#2a3344
  *   content-400 = #7888a0 (both modes)   primary-500 = #5d86d2

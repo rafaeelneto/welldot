@@ -125,7 +125,7 @@ function save() {
   >
     <div class="flex flex-col gap-5 pt-2">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LabeledField :label="t('editor.operation.meter.fields.type')">
+        <WellLabeledField :label="t('editor.operation.meter.fields.type')">
           <Select
             v-model="form.type"
             :options="typeOptions"
@@ -135,15 +135,18 @@ function save() {
             show-clear
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.meter.fields.serial')"
           :info="t('editor.operation.meter.fields.serialInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <InputText v-model="form.serial" class="w-full font-mono text-sm" />
-        </LabeledField>
+        </WellLabeledField>
 
-        <LabeledField :label="t('editor.operation.meter.fields.installedAt')">
+        <WellLabeledField
+          :label="t('editor.operation.meter.fields.installedAt')"
+        >
           <DatePicker
             v-model="form.installedAt"
             show-time
@@ -152,10 +155,11 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.meter.fields.removedAt')"
           :info="t('editor.operation.meter.fields.removedAtInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <DatePicker
             v-model="form.removedAt"
@@ -167,18 +171,20 @@ function save() {
             :invalid="removedBeforeInstalled"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
-        </LabeledField>
+        </WellLabeledField>
 
-        <LabeledField :label="t('editor.operation.meter.fields.installedBy')">
+        <WellLabeledField
+          :label="t('editor.operation.meter.fields.installedBy')"
+        >
           <InputText v-model="form.installedBy" class="w-full" />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.meter.fields.removedBy')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.operation.meter.fields.removedBy')">
           <InputText
             v-model="form.removedBy"
             :disabled="!form.removedAt"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
       <Message
         v-if="removedBeforeInstalled"
@@ -193,20 +199,23 @@ function save() {
       </Message>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LabeledField :label="t('editor.operation.meter.fields.manufacturer')">
+        <WellLabeledField
+          :label="t('editor.operation.meter.fields.manufacturer')"
+        >
           <InputText v-model="form.manufacturer" class="w-full" />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.meter.fields.model')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.operation.meter.fields.model')">
           <InputText v-model="form.model" class="w-full" />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.operation.meter.fields.nominalDiameter')"
           :info="t('editor.operation.meter.fields.nominalDiameterInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
-          <UnitInput
+          <WellUnitInput
             v-model="form.nominalDiameter"
             unit-type="diameter"
             :min="0"
@@ -214,12 +223,13 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.meter.fields.maxReading')"
           :info="t('editor.operation.meter.fields.maxReadingInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
-          <UnitInput
+          <WellUnitInput
             v-model="form.maxReading"
             unit-type="volume"
             :min="0"
@@ -228,17 +238,17 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
-      <LabeledField :label="t('editor.operation.meter.fields.notes')">
+      <WellLabeledField :label="t('editor.operation.meter.fields.notes')">
         <Textarea v-model="form.notes" :rows="3" class="w-full text-sm" />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- ── Attachments ────────────────────────────────────────────────── -->
-      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.attachments')">
         <AttachmentField v-model="form.attachments" context="meter" />
-      </LabeledField>
+      </WellLabeledField>
     </div>
 
     <template #footer>

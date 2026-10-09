@@ -73,7 +73,7 @@ const cementPadTypeOptions = computed(() => vocabOptions(CEMENT_PAD_TYPES));
     </div>
 
     <template v-if="hasCementPad">
-      <LabeledField :label="t('editor.construction.wellhead.type')">
+      <WellLabeledField :label="t('editor.construction.wellhead.type')">
         <Select
           v-model="profileStore.well.cement_pad!.type"
           :options="cementPadTypeOptions"
@@ -81,39 +81,39 @@ const cementPadTypeOptions = computed(() => vocabOptions(CEMENT_PAD_TYPES));
           option-value="value"
           class="w-full"
         />
-      </LabeledField>
+      </WellLabeledField>
 
       <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-        <LabeledField :label="widthLabel">
-          <UnitInput
+        <WellLabeledField :label="widthLabel">
+          <WellUnitInput
             v-model="profileStore.well.cement_pad!.width"
             unit-type="length"
             :min="0"
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField :label="lengthLabel">
-          <UnitInput
+        </WellLabeledField>
+        <WellLabeledField :label="lengthLabel">
+          <WellUnitInput
             v-model="profileStore.well.cement_pad!.length"
             unit-type="length"
             :min="0"
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
-        <LabeledField :label="thicknessLabel">
-          <UnitInput
+        <WellLabeledField :label="thicknessLabel">
+          <WellUnitInput
             v-model="profileStore.well.cement_pad!.thickness"
             unit-type="length"
             :min="0"
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
     </template>
   </section>

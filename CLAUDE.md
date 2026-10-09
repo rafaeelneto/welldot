@@ -10,13 +10,14 @@ Each package and app has its own `CLAUDE.md` with deeper context:
 | `packages/utils`                    | [packages/utils/CLAUDE.md](packages/utils/CLAUDE.md)         |
 | `packages/render`                   | [packages/render/CLAUDE.md](packages/render/CLAUDE.md)       |
 | `packages/pdf`                      | [packages/pdf/CLAUDE.md](packages/pdf/CLAUDE.md)             |
+| `packages/vue`                      | [packages/vue/CLAUDE.md](packages/vue/CLAUDE.md)             |
 | `packages/lint`                     | [packages/lint/CLAUDE.md](packages/lint/CLAUDE.md)           |
 | `apps/profiler` _(active)_          | [apps/profiler/CLAUDE.md](apps/profiler/CLAUDE.md)           |
 | `apps/well-profiler` _(deprecated)_ | [apps/well-profiler/CLAUDE.md](apps/well-profiler/CLAUDE.md) |
 
 ## Project Overview
 
-Well-Profiler is an open-source ecosystem for geological well log visualization, built around the `.well` open file format — a JSON-based standard for water well data. The repo is a **pnpm + Turbo monorepo** consisting of four published TypeScript libraries and two web applications.
+Well-Profiler is an open-source ecosystem for geological well log visualization, built around the `.well` open file format — a JSON-based standard for water well data. The repo is a **pnpm + Turbo monorepo** consisting of five published TypeScript libraries and two web applications.
 
 ## Commands
 
@@ -50,9 +51,9 @@ pnpm build        # tsup build → dist/
 @welldot/utils         ← profile analysis (depth, volumes, gravel pack estimates)
     ↓
 @welldot/render        ← D3-based SVG renderer for .well profiles
-    ↓
-@welldot/pdf           ← customizable pdfmake report export (profile + sections)
-    ↓
+    ↓                ↘
+@welldot/pdf           @welldot/vue   ← Vue 3 + PrimeVue base components, theme, Nuxt module
+    ↓                ↙
 apps/profiler          ← Nuxt 4 web app (active, welldot.org)
 apps/well-profiler     ← Next.js 15 web app (deprecated, migration in progress)
 ```
@@ -67,6 +68,8 @@ apps/well-profiler     ← Next.js 15 web app (deprecated, migration in progress
 
 **`packages/pdf`** — Customizable PDF report export (pdfmake): branding, watermark, page layout, theme, sections, en/pt labels. See [packages/pdf/CLAUDE.md](packages/pdf/CLAUDE.md).
 
+**`packages/vue`** — Vue 3 + PrimeVue base components (`Well*` prefix), the Welldot PrimeVue theme and Tailwind tokens, configured with `createWelldot` (locale, units, coordinate format, swappable parts). Subpaths `/grid` (RevoGrid data grid), `/location` (leaflet), `/theme`, `/tailwind.css` and `/nuxt` (Nuxt module). No vue-i18n or Pinia: text props take `LanguageTextInput`. See [packages/vue/CLAUDE.md](packages/vue/CLAUDE.md).
+
 **`packages/lint`** — Private. Shared ESLint flat-config presets. See [packages/lint/CLAUDE.md](packages/lint/CLAUDE.md).
 
 ### Apps
@@ -77,7 +80,7 @@ apps/well-profiler     ← Next.js 15 web app (deprecated, migration in progress
 
 ### Build outputs
 
-Libraries output ESM (`dist/index.js`), CJS (`dist/index.cjs`), and TypeScript declarations. The app produces standard Next.js artifacts. Turbo caches `dist/**` and `.next/**`.
+Libraries output ESM (`dist/index.js`), CJS (`dist/index.cjs`), and TypeScript declarations (tsup). The exception is `@welldot/vue`: Vite library mode, ESM only, `preserveModules`, plus `dist/{tailwind,grid,style}.css`. The app produces standard Next.js artifacts. Turbo caches `dist/**` and `.next/**`.
 
 ## Key Tech
 

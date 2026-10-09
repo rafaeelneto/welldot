@@ -108,7 +108,9 @@ function save() {
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LabeledField :label="t('editor.operation.permit.fulfill.datetime')">
+        <WellLabeledField
+          :label="t('editor.operation.permit.fulfill.datetime')"
+        >
           <DatePicker
             v-model="form.datetime"
             show-time
@@ -117,19 +119,21 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.permit.fulfill.author')"
           :info="t('editor.operation.permit.fulfill.authorInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <InputText v-model="form.author" class="w-full" />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
-      <LabeledField
+      <WellLabeledField
         v-if="showSampleField"
         :label="t('editor.historyLog.logs.fields.sample')"
         :info="t('editor.operation.permit.fulfill.sampleInfo')"
+        :info-label="t('editor.fieldInfo')"
       >
         <Select
           v-model="form.sampleId"
@@ -140,15 +144,17 @@ function save() {
           filter
           class="w-full"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.operation.permit.fulfill.description')">
+      <WellLabeledField
+        :label="t('editor.operation.permit.fulfill.description')"
+      >
         <Textarea v-model="form.description" :rows="3" class="w-full text-sm" />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.attachments')">
         <AttachmentField v-model="form.attachments" context="condition" />
-      </LabeledField>
+      </WellLabeledField>
 
       <p class="text-xs text-content-400 m-0">
         {{ t('editor.operation.permit.fulfill.info') }}

@@ -189,9 +189,10 @@ function save() {
     <div class="flex flex-col gap-5 pt-2">
       <!-- ── Equipment ──────────────────────────────────────────────────── -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.operation.pump.fields.type')"
           :info="t('editor.operation.pump.fields.typeInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <Select
             v-model="form.type"
@@ -201,8 +202,10 @@ function save() {
             editable
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.pump.fields.powerSource')">
+        </WellLabeledField>
+        <WellLabeledField
+          :label="t('editor.operation.pump.fields.powerSource')"
+        >
           <Select
             v-model="form.powerSource"
             :options="powerSourceOptions"
@@ -212,9 +215,11 @@ function save() {
             show-clear
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
 
-        <LabeledField :label="t('editor.operation.pump.fields.installedAt')">
+        <WellLabeledField
+          :label="t('editor.operation.pump.fields.installedAt')"
+        >
           <DatePicker
             v-model="form.installedAt"
             show-time
@@ -223,10 +228,11 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.pump.fields.removedAt')"
           :info="t('editor.operation.pump.fields.removedAtInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <DatePicker
             v-model="form.removedAt"
@@ -238,18 +244,20 @@ function save() {
             :invalid="removedBeforeInstalled"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
-        </LabeledField>
+        </WellLabeledField>
 
-        <LabeledField :label="t('editor.operation.pump.fields.installedBy')">
+        <WellLabeledField
+          :label="t('editor.operation.pump.fields.installedBy')"
+        >
           <InputText v-model="form.installedBy" class="w-full" />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.pump.fields.removedBy')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.operation.pump.fields.removedBy')">
           <InputText
             v-model="form.removedBy"
             :disabled="!form.removedAt"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
       <Message
         v-if="removedBeforeInstalled"
@@ -261,27 +269,31 @@ function save() {
       </Message>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <LabeledField :label="t('editor.operation.pump.fields.manufacturer')">
+        <WellLabeledField
+          :label="t('editor.operation.pump.fields.manufacturer')"
+        >
           <InputText v-model="form.manufacturer" class="w-full" />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.pump.fields.model')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.operation.pump.fields.model')">
           <InputText v-model="form.model" class="w-full" />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.pump.fields.serial')"
           :info="t('editor.operation.pump.fields.serialInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <InputText v-model="form.serial" class="w-full font-mono text-sm" />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- ── Installation & nameplate ───────────────────────────────────── -->
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.operation.pump.fields.intakeDepth')"
           :info="t('editor.operation.pump.fields.intakeDepthInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
-          <UnitInput
+          <WellUnitInput
             v-model="form.intakeDepth"
             unit-type="length"
             :min="0"
@@ -289,9 +301,11 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.pump.fields.ratedFlowRate')">
-          <UnitInput
+        </WellLabeledField>
+        <WellLabeledField
+          :label="t('editor.operation.pump.fields.ratedFlowRate')"
+        >
+          <WellUnitInput
             v-model="form.ratedFlowRate"
             unit-type="flow"
             :min="0"
@@ -300,9 +314,9 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.pump.fields.ratedHead')">
-          <UnitInput
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.operation.pump.fields.ratedHead')">
+          <WellUnitInput
             v-model="form.ratedHead"
             unit-type="length"
             :min="0"
@@ -310,12 +324,13 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.operation.pump.fields.ratedPower')"
           :info="t('editor.operation.pump.fields.ratedPowerInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
-          <UnitInput
+          <WellUnitInput
             v-model="form.ratedPower"
             unit-type="power"
             :min="0"
@@ -324,8 +339,8 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.pump.fields.stages')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.operation.pump.fields.stages')">
           <WellInputNumber
             v-model="form.stages"
             :min="1"
@@ -333,21 +348,22 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.pump.fields.checkValve')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.operation.pump.fields.checkValve')">
           <div class="flex items-center h-full min-h-10">
             <ToggleSwitch v-model="form.checkValve" />
           </div>
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- ── Riser ──────────────────────────────────────────────────────── -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.operation.pump.fields.riserDiameter')"
           :info="t('editor.operation.pump.fields.riserDiameterInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
-          <UnitInput
+          <WellUnitInput
             v-model="form.riserDiameter"
             unit-type="diameter"
             :min="0"
@@ -355,8 +371,10 @@ function save() {
             class="w-full"
             :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
           />
-        </LabeledField>
-        <LabeledField :label="t('editor.operation.pump.fields.riserMaterial')">
+        </WellLabeledField>
+        <WellLabeledField
+          :label="t('editor.operation.pump.fields.riserMaterial')"
+        >
           <Select
             v-model="form.riserMaterial"
             :options="riserMaterialOptions"
@@ -366,7 +384,7 @@ function save() {
             show-clear
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- ── Electrical (collapsible) ───────────────────────────────────── -->
@@ -385,7 +403,9 @@ function save() {
         </button>
         <template v-if="showElectrical">
           <div class="grid grid-cols-2 gap-4">
-            <LabeledField :label="t('editor.operation.pump.fields.voltage')">
+            <WellLabeledField
+              :label="t('editor.operation.pump.fields.voltage')"
+            >
               <WellInputNumber
                 v-model="form.voltage"
                 :min="0"
@@ -393,8 +413,8 @@ function save() {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
-            <LabeledField :label="t('editor.operation.pump.fields.phases')">
+            </WellLabeledField>
+            <WellLabeledField :label="t('editor.operation.pump.fields.phases')">
               <SelectButton
                 v-model="form.phases"
                 :options="phaseOptions"
@@ -409,10 +429,10 @@ function save() {
                 option-value="value"
                 size="small"
               />
-            </LabeledField>
+            </WellLabeledField>
           </div>
           <div class="grid grid-cols-2 gap-4">
-            <LabeledField
+            <WellLabeledField
               :label="t('editor.operation.pump.fields.cableSection')"
             >
               <WellInputNumber
@@ -423,11 +443,11 @@ function save() {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
-            <LabeledField
+            </WellLabeledField>
+            <WellLabeledField
               :label="t('editor.operation.pump.fields.cableLength')"
             >
-              <UnitInput
+              <WellUnitInput
                 v-model="form.cableLength"
                 unit-type="length"
                 :min="0"
@@ -435,19 +455,19 @@ function save() {
                 class="w-full"
                 :pt="{ pcInput: { root: 'w-full font-mono text-sm' } }"
               />
-            </LabeledField>
+            </WellLabeledField>
           </div>
         </template>
       </div>
 
-      <LabeledField :label="t('editor.operation.pump.fields.notes')">
+      <WellLabeledField :label="t('editor.operation.pump.fields.notes')">
         <Textarea v-model="form.notes" :rows="3" class="w-full text-sm" />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- ── Attachments ────────────────────────────────────────────────── -->
-      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.attachments')">
         <AttachmentField v-model="form.attachments" context="pump" />
-      </LabeledField>
+      </WellLabeledField>
     </div>
 
     <template #footer>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { HydrodynamicEvent } from '@welldot/core';
-import AppChip from '~/components/AppChip.vue';
 import EventCard from './hydrodynamicEvents/EventCard.vue';
 import EventDialog from './hydrodynamicEvents/EventDialog.vue';
 
@@ -215,7 +214,7 @@ function toggleTypeFilter(type: string) {
             <!-- toolbar -->
             <div class="flex items-start justify-between gap-3 flex-wrap">
               <div class="flex flex-wrap gap-1.5">
-                <AppChip
+                <WellChip
                   v-for="opt in typeOptions"
                   :key="opt.value"
                   :label="opt.label"
