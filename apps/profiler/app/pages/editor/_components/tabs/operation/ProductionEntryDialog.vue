@@ -260,12 +260,12 @@ function save() {
           <WellLabeledField
             :label="t('editor.operation.production.fields.source')"
           >
-            <Select
+            <WellComboSelect
               v-model="form.source"
               :options="sourceOptions"
               option-label="label"
               option-value="value"
-              editable
+              :hint="t('editor.comboHint')"
               show-clear
               class="w-full"
             />
@@ -337,12 +337,12 @@ function save() {
             :info="t('editor.operation.production.fields.methodInfo')"
             :info-label="t('editor.fieldInfo')"
           >
-            <Select
+            <WellComboSelect
               v-model="form.method"
               :options="methodOptions"
               option-label="label"
               option-value="value"
-              editable
+              :hint="t('editor.comboHint')"
               show-clear
               class="w-full"
             />

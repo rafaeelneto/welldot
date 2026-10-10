@@ -194,24 +194,24 @@ function save() {
           :info="t('editor.operation.pump.fields.typeInfo')"
           :info-label="t('editor.fieldInfo')"
         >
-          <Select
+          <WellComboSelect
             v-model="form.type"
             :options="typeOptions"
             option-label="label"
             option-value="value"
-            editable
+            :hint="t('editor.comboHint')"
             class="w-full"
           />
         </WellLabeledField>
         <WellLabeledField
           :label="t('editor.operation.pump.fields.powerSource')"
         >
-          <Select
+          <WellComboSelect
             v-model="form.powerSource"
             :options="powerSourceOptions"
             option-label="label"
             option-value="value"
-            editable
+            :hint="t('editor.comboHint')"
             show-clear
             class="w-full"
           />
@@ -375,12 +375,12 @@ function save() {
         <WellLabeledField
           :label="t('editor.operation.pump.fields.riserMaterial')"
         >
-          <Select
+          <WellComboSelect
             v-model="form.riserMaterial"
             :options="riserMaterialOptions"
             option-label="label"
             option-value="value"
-            editable
+            :hint="t('editor.comboHint')"
             show-clear
             class="w-full"
           />

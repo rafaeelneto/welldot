@@ -226,6 +226,7 @@
   "editor": {
     "well": "Poço",
     "fieldInfo": "Mais informações",
+    "comboHint": "Sugestões — você também pode digitar um valor livre",
     "deleteRow": "Excluir linha",
     "showPendingTextures": "Mostrar texturas pendentes",
     "save": "Salvar",

@@ -59,6 +59,7 @@ export const WELLDOT_COMPONENTS = {
     'WellLabeledField',
     'WellChip',
     'WellTagSelect',
+    'WellComboSelect',
     'WellInfoPopover',
     'WellInputNumber',
     'WellUnitInput',

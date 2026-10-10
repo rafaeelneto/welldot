@@ -338,10 +338,10 @@ function removeWellPurpose(value: string) {
             @click="setPrimary(index)"
           />
           <div class="flex flex-1 flex-col gap-2 sm:flex-row">
-            <Select
+            <WellComboSelect
               v-model="entry.authority"
               :options="AUTHORITY_SUGGESTIONS"
-              editable
+              :hint="t('editor.comboHint')"
               :placeholder="t('editor.general.wellIds.authorityPlaceholder')"
               class="w-full sm:w-40 sm:shrink-0"
             />

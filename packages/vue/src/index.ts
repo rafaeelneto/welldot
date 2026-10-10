@@ -28,6 +28,7 @@ export type { DisplayUnitType } from './composables/useWellUnits';
 
 // ── Components ───────────────────────────────────────────────────────────────
 export { default as WellChip } from './components/WellChip.vue';
+export { default as WellComboSelect } from './components/WellComboSelect.vue';
 export { default as WellInfoPopover } from './components/WellInfoPopover.vue';
 export { default as WellInputNumber } from './components/WellInputNumber.vue';
 export { default as WellLabeledField } from './components/WellLabeledField.vue';

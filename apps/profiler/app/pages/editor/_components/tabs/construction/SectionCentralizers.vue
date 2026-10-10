@@ -133,6 +133,7 @@ function reorderCentralizer(from: number, to: number) {
       :labels="{
         showPendingTextures: t('editor.showPendingTextures'),
         columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
       }"
       @add="addCentralizer"
       @delete="deleteCentralizer"

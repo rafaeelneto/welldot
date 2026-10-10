@@ -226,6 +226,7 @@
   "editor": {
     "well": "Well",
     "fieldInfo": "More information",
+    "comboHint": "Suggestions — you can also type your own value",
     "deleteRow": "Delete row",
     "showPendingTextures": "Show pending textures",
     "save": "Save",

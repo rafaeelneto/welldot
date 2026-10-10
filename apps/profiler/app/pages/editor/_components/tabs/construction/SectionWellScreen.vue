@@ -97,6 +97,7 @@ function reorderWellScreen(from: number, to: number) {
       :labels="{
         showPendingTextures: t('editor.showPendingTextures'),
         columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
       }"
       @add="addWellScreen"
       @delete="deleteWellScreen"

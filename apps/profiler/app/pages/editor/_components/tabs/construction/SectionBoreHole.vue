@@ -98,6 +98,7 @@ function syncWellDepth() {
       :labels="{
         showPendingTextures: t('editor.showPendingTextures'),
         columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
       }"
       @add="addBoreHole"
       @delete="deleteBoreHole"

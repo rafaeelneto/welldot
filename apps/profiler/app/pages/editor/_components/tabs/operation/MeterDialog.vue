@@ -126,12 +126,12 @@ function save() {
     <div class="flex flex-col gap-5 pt-2">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <WellLabeledField :label="t('editor.operation.meter.fields.type')">
-          <Select
+          <WellComboSelect
             v-model="form.type"
             :options="typeOptions"
             option-label="label"
             option-value="value"
-            editable
+            :hint="t('editor.comboHint')"
             show-clear
             class="w-full"
           />

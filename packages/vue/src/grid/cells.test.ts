@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, type PropType } from 'vue';
 import { welldotGlobal } from '../test/mountOptions';
 import type { WellDeleteButtonProps } from '../types';
+import GridComboEditor from './cells/GridComboEditor.vue';
 import GridDeleteCell from './cells/GridDeleteCell.vue';
 import GridUnitCell from './cells/GridUnitCell.vue';
 import GridUnitEditor from './cells/GridUnitEditor.vue';
@@ -185,5 +186,42 @@ describe('GridDeleteCell', () => {
     expect(received.at(-1)).toEqual({ index: 5, row: model, label: 'Remover' });
     await wrapper.get('a.trash').trigger('click');
     expect(requestDelete).toHaveBeenCalledWith(5, model);
+  });
+});
+
+describe('GridComboEditor', () => {
+  const options = [
+    { value: 'pvc', label: 'PVC' },
+    { value: 'steel', label: 'Steel' },
+  ];
+  const mountEditor = (props: Record<string, unknown> = {}) =>
+    mount(GridComboEditor, {
+      props: { save: vi.fn(), close: vi.fn(), options, ...props },
+      global: welldotGlobal({ locale: 'pt' }),
+      attachTo: document.body,
+    });
+
+  it('opens the suggestions with the resolved hint', () => {
+    const wrapper = mountEditor({
+      hint: { en: 'Suggestions', pt: 'Sugestões' },
+    });
+    const hint = document.body.querySelector('.well-combo-hint');
+    expect(hint?.textContent?.trim()).toBe('Sugestões');
+    expect(wrapper.find('input').attributes('aria-describedby')).toBe(hint?.id);
+    expect(
+      [...document.body.querySelectorAll('[role="option"]')].map(o =>
+        o.textContent?.trim(),
+      ),
+    ).toEqual(['PVC', 'Steel']);
+    wrapper.unmount();
+  });
+
+  it('shows no hint when none is given', () => {
+    const wrapper = mountEditor();
+    expect(document.body.querySelector('.well-combo-hint')).toBeNull();
+    expect(
+      wrapper.find('input').attributes('aria-describedby'),
+    ).toBeUndefined();
+    wrapper.unmount();
   });
 });

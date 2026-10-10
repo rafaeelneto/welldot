@@ -46,12 +46,12 @@ function setDone(value: boolean) {
         />
       </WellLabeledField>
       <WellLabeledField :label="t('editor.operation.permit.history.type')">
-        <Select
+        <WellComboSelect
           :model-value="entry.type ?? null"
           :options="typeOptions"
           option-label="label"
           option-value="value"
-          editable
+          :hint="t('editor.comboHint')"
           show-clear
           class="w-full"
           @update:model-value="setType($event)"

@@ -8,7 +8,10 @@ import {
   useId,
   watch,
 } from 'vue';
+import type { LanguageTextInput } from '@welldot/core';
 import IconCaretDown from '~icons/ph/caret-down';
+import IconPencilSimpleLine from '~icons/ph/pencil-simple-line';
+import { useWellText } from '../../composables/useWellText';
 import { useGridOverlayFocusGuard } from '../composables/useGridOverlayFocusGuard';
 import type { ResolvedGridOption } from '../types';
 
@@ -17,6 +20,8 @@ const props = defineProps<{
   save: (value: unknown, preventFocus?: boolean) => void;
   close: (focusNext?: boolean) => void;
   options: ResolvedGridOption[];
+  /** Note atop the suggestions saying free text is accepted. */
+  hint?: LanguageTextInput;
 }>();
 
 defineOptions({ inheritAttrs: false });
@@ -25,6 +30,9 @@ const MAX_LENGTH = 90;
 const PANEL_MAX_HEIGHT = 240;
 
 const listId = `well-combo-${useId()}`;
+const hintId = `${listId}-hint`;
+const resolveText = useWellText();
+const hintText = computed(() => resolveText(props.hint));
 const rootRef = ref<HTMLElement | null>(null);
 const inputRef = ref<HTMLInputElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
@@ -212,6 +220,7 @@ onBeforeUnmount(() => {
       aria-autocomplete="list"
       :aria-expanded="panelVisible"
       :aria-controls="listId"
+      :aria-describedby="panelVisible && hintText ? hintId : undefined"
       :aria-activedescendant="
         activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined
       "
@@ -240,6 +249,15 @@ onBeforeUnmount(() => {
         v-bind="overlayFocusGuard"
         @mousedown.prevent
       >
+        <li
+          v-if="hintText"
+          :id="hintId"
+          role="presentation"
+          class="well-combo-hint"
+        >
+          <IconPencilSimpleLine class="size-3.5 shrink-0" aria-hidden="true" />
+          {{ hintText }}
+        </li>
         <li
           v-for="(option, i) in filtered"
           :id="`${listId}-${i}`"

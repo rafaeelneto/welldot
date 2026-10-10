@@ -279,6 +279,14 @@ Multi-value picker: selected values render as removable chips above a single Sel
 | `removeLabel` | `LanguageTextInput`        | Accessible label of each chip's ×                          |
 | `filter`      | `boolean`                  | Filter box in the Select                                   |
 
+### `WellComboSelect`
+
+Editable PrimeVue `Select` for open fields: the options are suggestions and any typed text is kept as the value. `hint` opens the overlay with a short note saying so. Every other attr (`v-model`, `options`, `option-label`, `show-clear`, `invalid`, `pt`…) and slot passes through to `Select`.
+
+| Prop   | Type                | Description                                           |
+| ------ | ------------------- | ----------------------------------------------------- |
+| `hint` | `LanguageTextInput` | Note atop the options (e.g. "Suggestions — or type…") |
+
 ### `WellInfoPopover`
 
 Info icon that opens a popover on hover, focus or click. Body: `info` or the default slot.
@@ -377,14 +385,14 @@ const columns: WellGridColumn[] = [
 </template>
 ```
 
-| Prop          | Type                        | Description                                               |
-| ------------- | --------------------------- | --------------------------------------------------------- |
-| `rows`        | `Record<string, unknown>[]` | Rows to display                                           |
-| `columns`     | `WellGridColumn[]`          | Column definitions (below)                                |
-| `addLabel`    | `LanguageTextInput`         | Add-row button label; icon-only button when omitted       |
-| `deleteLabel` | `LanguageTextInput`         | Accessible label of each delete button                    |
-| `labels`      | `WellDataGridLabels`        | `texturePlaceholder`, `showPendingTextures`, `columnInfo` |
-| `components`  | `WellDataGridComponents`    | `addButton`, `deleteButton`, `dragHandle`                 |
+| Prop          | Type                        | Description                                                            |
+| ------------- | --------------------------- | ---------------------------------------------------------------------- |
+| `rows`        | `Record<string, unknown>[]` | Rows to display                                                        |
+| `columns`     | `WellGridColumn[]`          | Column definitions (below)                                             |
+| `addLabel`    | `LanguageTextInput`         | Add-row button label; icon-only button when omitted                    |
+| `deleteLabel` | `LanguageTextInput`         | Accessible label of each delete button                                 |
+| `labels`      | `WellDataGridLabels`        | `texturePlaceholder`, `showPendingTextures`, `columnInfo`, `comboHint` |
+| `components`  | `WellDataGridComponents`    | `addButton`, `deleteButton`, `dragHandle`                              |
 
 | Event     | Payload                                       |
 | --------- | --------------------------------------------- |
@@ -393,7 +401,7 @@ const columns: WellGridColumn[] = [
 | `change`  | `index: number, prop: string, value: unknown` |
 | `reorder` | `from: number, to: number`                    |
 
-**`WellGridColumn`**: `prop`, `label`, `info?`, `infoHighlight?` (text fields are `LanguageTextInput`), `type` (`text`, `number`, `color`, `checkbox`, `select`, `select-button`, `combo`, `texture`), `options` (for `select` / `select-button` / `combo`; `{ value, label, deprecated? }`, so `VocabEntry[]` fits), `unitType` (values stay SI, shown in the configured unit with the unit in the header), `formatter`, `editor`, `readonly`, `size`, `minSize`, `stretch`, `pin`.
+**`WellGridColumn`**: `prop`, `label`, `info?`, `infoHighlight?` (text fields are `LanguageTextInput`), `type` (`text`, `number`, `color`, `checkbox`, `select`, `select-button`, `combo` — free text with suggested options, its menu topped by `labels.comboHint` —, `texture`), `options` (for `select` / `select-button` / `combo`; `{ value, label, deprecated? }`, so `VocabEntry[]` fits), `unitType` (values stay SI, shown in the configured unit with the unit in the header), `formatter`, `editor`, `readonly`, `size`, `minSize`, `stretch`, `pin`.
 
 Grid styles ship in `dist/grid.css`, included by `@welldot/vue/tailwind.css`. The color editor loads `vue-color/style.css` itself with a client-only dynamic import, so `@welldot/vue/grid` loads in plain-Vite SSR without `ssr.noExternal` and the app's CSS needs nothing from `vue-color`. Cells are mounted by RevoGrid outside the component tree and only see app-level provides: install `createWelldot` with `app.use` (the Nuxt module does).
 

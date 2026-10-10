@@ -212,12 +212,12 @@ function saveEntry() {
           :label="t('editor.historyLog.logs.fields.maintenanceType')"
           class="sm:col-span-2"
         >
-          <Select
+          <WellComboSelect
             v-model="form.maintenanceType"
             :options="maintenanceTypeOptions"
             option-label="label"
             option-value="value"
-            editable
+            :hint="t('editor.comboHint')"
             show-clear
             class="w-full"
           />
