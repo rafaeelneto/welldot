@@ -316,7 +316,7 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
     },
   },
   construction: {
-    cementPad: { widthMultiplier: 0.9, thicknessMultiplier: 1.3 },
+    cementPad: { widthRatio: 1.4, height: 8 },
     surfaceCase: { diameterPaddingRatio: 0.1 },
     centralizer: { markerHalfHeight: 4 },
     pump: {
@@ -434,7 +434,7 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
     },
   },
   construction: {
-    cementPad: { widthMultiplier: 0.9, thicknessMultiplier: 1.3 },
+    cementPad: { widthRatio: 1.4, height: 8 },
     surfaceCase: { diameterPaddingRatio: 0.1 },
     centralizer: { markerHalfHeight: 4 },
     pump: {

@@ -52,6 +52,7 @@ vi.mock('~/utils/fgdcTextures', () => ({
 
 import {
   fractureDip,
+  getCementPadRect,
   getConflictAreas,
   getLithologicalFillList,
   getLithologyFill,
@@ -223,6 +224,28 @@ describe('fractureDip', () => {
     expect(fractureDip(null)).toBe(0);
     expect(fractureDip(undefined)).toBe(0);
     expect(fractureDip(NaN)).toBe(0);
+  });
+});
+
+describe('getCementPadRect', () => {
+  const config = { widthRatio: 1.4, height: 8 };
+
+  it('sizes the pad from the column width and rests it on the surface', () => {
+    expect(getCementPadRect(100, 60, 0, config)).toEqual({
+      x: -40,
+      y: -8,
+      width: 140,
+      height: 8,
+    });
+  });
+
+  it('centers the pad on the construction column', () => {
+    const rect = getCementPadRect(100, 60, 0, config);
+    expect(rect.x + rect.width / 2).toBe(30);
+  });
+
+  it('follows the surface line', () => {
+    expect(getCementPadRect(100, 60, 25, config).y).toBe(17);
   });
 });
 

@@ -421,9 +421,15 @@ export type RenderConfig = {
     };
   };
   construction: {
+    /**
+     * Fixed-size pad drawn above the surface. The profile's `cement_pad`
+     * width and thickness don't change it (they only show in the tooltip).
+     */
     cementPad: {
-      widthMultiplier: number;
-      thicknessMultiplier: number;
+      /** Pad width as a ratio of the construction column width. */
+      widthRatio: number;
+      /** Pad height in pixels (constant regardless of zoom). */
+      height: number;
     };
     surfaceCase: {
       diameterPaddingRatio: number;

@@ -2,7 +2,6 @@ import * as d3 from 'd3';
 
 import type {
   BoreHole,
-  CementPad,
   Constructive,
   HoleFill,
   Reduction,
@@ -15,6 +14,7 @@ import type { Conflict, DrawContext } from '~/types/render.types';
 import { mergeEnter, withTransition } from '~/utils/d3.utils';
 import { makeIntervalKey } from '~/utils/key.utils';
 import {
+  getCementPadRect,
   getConflictAreas,
   getYAxisFunctions,
   mergeConflicts,
@@ -57,36 +57,28 @@ export function drawConstructive(ctx: DrawContext, data: Constructive): void {
 
     cementPad.exit().remove();
 
+    const padRect = getCementPadRect(
+      ctx.POCO_WIDTH,
+      ctx.POCO_CENTER,
+      ctx.yScale(0),
+      rcc.cementPad,
+    );
+
     const newCementPad = cementPad
       .enter()
       .append('rect')
       .attr('class', ctx.classes.cementPad.item)
-      .attr(
-        'x',
-        (d: CementPad) =>
-          (ctx.POCO_CENTER -
-            xScale((d.width * rcc.cementPad.widthMultiplier * 1000) / 2)) /
-          2,
-      )
-      .attr('y', (d: CementPad) => {
-        return (
-          ctx.yScale(0) -
-          ctx.yScale(d.thickness * rcc.cementPad.thicknessMultiplier)
-        );
-      })
-      .attr('width', (d: CementPad) =>
-        xScale((d.width * rcc.cementPad.widthMultiplier * 1000) / 2),
-      )
-      .attr('height', (d: CementPad) => {
-        return ctx.yScale(d.thickness * rcc.cementPad.thicknessMultiplier);
-      })
       .attr('fill', ctx.textures.pad.url())
       .attr('stroke', ctx.theme.cementPad.stroke)
-      .attr('stroke-width', ctx.theme.cementPad.strokeWidth);
-
-    newCementPad
+      .attr('stroke-width', ctx.theme.cementPad.strokeWidth)
       .on('mouseover', ctx.tooltips.cementPad.show)
       .on('mouseout', ctx.tooltips.cementPad.hide);
+
+    mergeEnter(newCementPad, cementPad)
+      .attr('x', padRect.x)
+      .attr('y', padRect.y)
+      .attr('width', padRect.width)
+      .attr('height', padRect.height);
   }
 
   // ── Bore hole ──────────────────────────────────────────────────────────────

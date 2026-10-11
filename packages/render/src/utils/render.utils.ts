@@ -13,6 +13,27 @@ export { populateTooltips } from './tooltips.utils';
 export const fractureDip = (dip: number | null | undefined): number =>
   typeof dip === 'number' && Number.isFinite(dip) ? dip : 0;
 
+/**
+ * Cement pad rect in construction-group coordinates. Its size is fixed: a
+ * `widthRatio` of the construction column width, `height` px tall, resting on
+ * the surface line `surfaceY`. The pad's real width and thickness are left
+ * out, so it never overflows the panel whatever the diameters or depth range.
+ */
+export function getCementPadRect(
+  pocoWidth: number,
+  pocoCenter: number,
+  surfaceY: number,
+  config: { widthRatio: number; height: number },
+): { x: number; y: number; width: number; height: number } {
+  const width = pocoWidth * config.widthRatio;
+  return {
+    x: (pocoCenter - width) / 2,
+    y: surfaceY - config.height,
+    width,
+    height: config.height,
+  };
+}
+
 let _fgdcTextures: Record<string, string> = {};
 let _fgdcTexturesPromise: Promise<void> | null = null;
 
