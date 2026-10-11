@@ -9,16 +9,13 @@ import {
   WellRenderer,
 } from '@welldot/render';
 import { getProfileLastItemsDepths } from '@welldot/utils';
-import { resolvePdfPage } from '../context';
+import { resolveBodyMargins, resolvePdfPage } from '../context';
 import type {
   PdfContext,
   RenderedLegendItem,
   RenderedSvg,
   ResolvedPdfPage,
 } from '../types/options.types';
-
-/** Profile SVG height per page on A4 with the default margins (legacy value, points→px `× 1.33`). */
-export const A4_SVG_HEIGHT = 480 * 1.33;
 
 /** Inner margins of the profile SVG panels. */
 export const PDF_MARGINS = {
@@ -28,22 +25,34 @@ export const PDF_MARGINS = {
   left: 20,
 } as const;
 
-// Header (10pt) + footer (30pt) reserve added to the page margins when
-// `breakPages` is on — see `buildDocDefinition`'s `pageMargins`.
-const PAGE_CHROME = 40;
-const DEFAULT_PAGE = resolvePdfPage();
-const A4_BODY_HEIGHT =
-  DEFAULT_PAGE.height -
-  DEFAULT_PAGE.margins[1] -
-  DEFAULT_PAGE.margins[3] -
-  PAGE_CHROME;
+/** Vertical inner margins of one panel: outer height minus drawing height. */
+const PANEL_PADDING = PDF_MARGINS.top + PDF_MARGINS.bottom;
 
-/** Profile SVG height available on one page, scaled from the A4 budget. */
+/**
+ * Slack (pt) kept under every panel so float rounding never makes pdfmake
+ * see a panel as taller than the space left and push it to the next page.
+ */
+export const FIT_EPSILON = 1;
+
+/**
+ * Smallest drawing height (pt) worth starting the profile with under the
+ * content that precedes it. With less room left, the profile starts on the
+ * next page instead.
+ */
+export const MIN_FIRST_PANEL_HEIGHT = 120;
+
+const DEFAULT_PAGE = resolvePdfPage();
+
+/**
+ * Height of a profile panel that fills a whole page: the page body (page
+ * height minus the margins and header/footer reserve of
+ * `resolveBodyMargins`) minus {@link FIT_EPSILON}.
+ */
 export function computePageSvgHeight(
   page: ResolvedPdfPage = DEFAULT_PAGE,
 ): number {
-  const body = page.height - page.margins[1] - page.margins[3] - PAGE_CHROME;
-  return (A4_SVG_HEIGHT * body) / A4_BODY_HEIGHT;
+  const [, top, , bottom] = resolveBodyMargins(page, true);
+  return page.height - top - bottom - FIT_EPSILON;
 }
 
 /** Width of the profile SVG panels for a page. */
@@ -57,15 +66,16 @@ export function computeProfileWidth(
 export const PDF_CONTENT_WIDTH = computeProfileWidth();
 
 // pt → px, and per-row heights for the heading-info / "before" metadata
-// tables, used to budget how much of the first page is left for the SVG.
+// tables, used to estimate how much of the first page is left for the SVG.
 const PT_TO_PX = 1.33;
 const SINGLE_ROW_HEIGHT = 15 * PT_TO_PX;
 const CELL_ROW_HEIGHT = 26 * PT_TO_PX;
 
 /**
- * Height left on the first page for the profile SVG once the spacer,
- * heading-info table and "before" metadata table (when present) are
- * accounted for.
+ * Rough estimate of the height left on the first page for the profile once
+ * the spacer, heading-info table and "before" metadata table (when present)
+ * are accounted for. Fallback for {@link buildSvgProfiles} when the real
+ * position from `measureProfileStart` is not available.
  */
 export function computeFirstPageAvailableHeight(options: {
   headingInfoCount: number;
@@ -83,6 +93,14 @@ export function computeFirstPageAvailableHeight(options: {
   return computePageSvgHeight(options.page) - used;
 }
 
+export interface BuildSvgProfilesOptions {
+  /**
+   * Height (pt) left on the page where the profile starts, as measured by
+   * `measureProfileStart`. Defaults to {@link computeFirstPageAvailableHeight}.
+   */
+  firstPageRemaining?: number;
+}
+
 export interface BuildSvgProfilesResult {
   svgs: RenderedSvg[];
   legendItems: RenderedLegendItem[];
@@ -96,28 +114,78 @@ export function computeTotalSvgHeight(
   return ((1 / scale) * maxDepthMeters * 1000 * 72) / 25.4;
 }
 
-/** Splits a total SVG height into per-page heights. */
-export function computePageHeights(
-  totalHeight: number,
-  breakPages: boolean,
-  firstPageAvailableHeight?: number,
-  pageSvgHeight: number = A4_SVG_HEIGHT,
-): number[] {
-  if (!breakPages) return [totalHeight];
+/** One profile panel: its outer height and whether it starts a new page. */
+export interface ProfilePanel {
+  height: number;
+  breakBefore: boolean;
+}
 
-  const heights: number[] = [];
-  let heightLeft = totalHeight;
-  let index = 0;
-  while (heightLeft > 0) {
-    const pageHeight =
-      index === 0 && firstPageAvailableHeight != null
-        ? Math.max(firstPageAvailableHeight, 50)
-        : pageSvgHeight;
-    heights.push(Math.min(heightLeft, pageHeight));
-    heightLeft -= pageHeight;
-    index += 1;
+export interface PlanProfilePanelsOptions {
+  /** Drawing height of the whole profile at 1:N ({@link computeTotalSvgHeight}). */
+  totalHeight: number;
+  /** Split the profile across pages. */
+  breakPages: boolean;
+  /** Outer height of a panel filling a whole page ({@link computePageSvgHeight}). */
+  pageHeight: number;
+  /**
+   * Height left on the page where the profile starts. Omitted: the profile
+   * starts at the top of a page.
+   */
+  firstPageRemaining?: number;
+  /** Vertical inner margins of a panel. Defaults to `PDF_MARGINS.top + bottom`. */
+  padding?: number;
+  /** Defaults to {@link MIN_FIRST_PANEL_HEIGHT}. */
+  minFirstPanel?: number;
+}
+
+/**
+ * Splits the profile into page-sized panels. Drawing heights (outer height
+ * minus `padding`) add up to `totalHeight`, so the drawn scale is exactly
+ * 1:N. The first panel fills `firstPageRemaining` when at least
+ * `minFirstPanel` of drawing fits there (or the whole profile does);
+ * otherwise it starts on a new page. Every other panel fills a whole page,
+ * and no panel is taller than `pageHeight`.
+ */
+export function planProfilePanels(
+  options: PlanProfilePanelsOptions,
+): ProfilePanel[] {
+  const {
+    totalHeight,
+    breakPages,
+    pageHeight,
+    firstPageRemaining,
+    padding = PANEL_PADDING,
+    minFirstPanel = MIN_FIRST_PANEL_HEIGHT,
+  } = options;
+  const total = Math.max(0, totalHeight);
+
+  if (!breakPages) return [{ height: total + padding, breakBefore: false }];
+
+  const fullDrawing = Math.max(1, pageHeight - padding);
+  const panels: ProfilePanel[] = [];
+  let left = total;
+
+  if (firstPageRemaining == null) {
+    const drawing = Math.min(left, fullDrawing);
+    panels.push({ height: drawing + padding, breakBefore: false });
+    left -= drawing;
+  } else {
+    const room =
+      Math.min(firstPageRemaining - FIT_EPSILON, pageHeight) - padding;
+    if (room >= minFirstPanel || (room > 0 && room >= left)) {
+      const drawing = Math.min(left, room);
+      panels.push({ height: drawing + padding, breakBefore: false });
+      left -= drawing;
+    }
   }
-  return heights;
+
+  // Skip sub-point leftovers from float error rather than emit a sliver.
+  while (left > 0.5 || panels.length === 0) {
+    const drawing = Math.min(left, fullDrawing);
+    panels.push({ height: drawing + padding, breakBefore: true });
+    left -= drawing;
+  }
+  return panels;
 }
 
 /** Serializes the `<svg id="{id}">` in `container`, or `null` when it is empty. */
@@ -134,11 +202,15 @@ function readSvg(container: HTMLElement, id: string): RenderedSvg | null {
  * legend symbols into hidden `<svg>` elements appended to `container`, and returns
  * their serialized markup. Browser-only: `container` must be attached to
  * the document, since `WellRenderer` selects by ID.
+ *
+ * Pass `firstPageRemaining` from `measureProfileStart` so the first panel
+ * fills exactly the space left under the preceding content.
  */
 export async function buildSvgProfiles(
   well: RenderableWell,
   container: HTMLElement,
   ctx: PdfContext,
+  options: BuildSvgProfilesOptions = {},
 ): Promise<BuildSvgProfilesResult> {
   const { breakPages, scale, locale, page, theme, profile } = ctx;
   const renderLocale: 'en' | 'pt' = locale.toLowerCase().startsWith('en')
@@ -148,22 +220,24 @@ export async function buildSvgProfiles(
 
   const maxYValues = Math.max(0, ...getProfileLastItemsDepths(well));
   const totalHeight = computeTotalSvgHeight(maxYValues, scale);
-  const pageHeights = computePageHeights(
+  const panels = planProfilePanels({
     totalHeight,
     breakPages,
-    computeFirstPageAvailableHeight({
-      headingInfoCount: ctx.headingInfo.length,
-      metadataPosition: ctx.metadataPosition,
-      page,
-    }),
-    computePageSvgHeight(page),
-  );
+    pageHeight: computePageSvgHeight(page),
+    firstPageRemaining:
+      options.firstPageRemaining ??
+      computeFirstPageAvailableHeight({
+        headingInfoCount: ctx.headingInfo.length,
+        metadataPosition: ctx.metadataPosition,
+        page,
+      }),
+  });
 
   container.replaceChildren();
 
   // Unique per call so concurrent exports on one page never collide.
   const prefix = `welldot-pdf-${Math.random().toString(36).slice(2, 10)}`;
-  const panelIds = pageHeights.map((_, index) => `${prefix}-panel-${index}`);
+  const panelIds = panels.map((_, index) => `${prefix}-panel-${index}`);
 
   const svgNS = 'http://www.w3.org/2000/svg';
   const appendSvg = (id: string) => {
@@ -190,7 +264,7 @@ export async function buildSvgProfiles(
   const renderer = new WellRenderer(
     panelIds.map((id, index) => ({
       selector: `#${id}`,
-      height: pageHeights[index]! - PDF_MARGINS.top - PDF_MARGINS.bottom,
+      height: panels[index]!.height - PANEL_PADDING,
       width: profileWidth,
       margins: { ...PDF_MARGINS, left: PDF_MARGINS.left + 10 },
     })),
@@ -231,10 +305,10 @@ export async function buildSvgProfiles(
   await new Promise(resolve => requestAnimationFrame(resolve));
 
   const svgs: RenderedSvg[] = [];
-  for (const id of panelIds) {
+  panelIds.forEach((id, index) => {
     const svg = readSvg(container, id);
-    if (svg) svgs.push(svg);
-  }
+    if (svg) svgs.push({ ...svg, breakBefore: panels[index]!.breakBefore });
+  });
 
   const legendItems: RenderedLegendItem[] = [];
   for (const { id, label } of legendEntries) {

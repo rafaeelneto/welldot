@@ -57,6 +57,17 @@ describe('buildDocDefinition', () => {
     expect(blocks[1]!.pageBreak).toBe('before');
   });
 
+  it('follows the breakBefore flag of each panel when set', () => {
+    const blocks = svgBlocks(
+      build({ breakPages: true }, [
+        { ...svg, breakBefore: true },
+        { ...svg, breakBefore: true },
+      ]).content,
+    );
+    expect(blocks[0]!.pageBreak).toBe('before');
+    expect(blocks[1]!.pageBreak).toBe('before');
+  });
+
   it('omits the metadata table entirely when metadataPosition is null', () => {
     const doc = build({}, [svg], [], baseWell({ name: 'Well A' }));
     expect(JSON.stringify(doc.content)).not.toContain('Well A');

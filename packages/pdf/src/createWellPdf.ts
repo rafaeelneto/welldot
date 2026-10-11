@@ -2,6 +2,7 @@ import type { Well } from '@welldot/core';
 import { format } from 'date-fns';
 import { buildDocDefinition } from './buildDocDefinition';
 import { resolvePdfContext } from './context';
+import { measureProfileStart } from './layout/measureProfileStart';
 import { loadPdfMake } from './runtime/pdfmake';
 import { registerPdfFonts } from './runtime/registerFonts';
 import { buildSvgProfiles } from './svg/buildSvgProfiles';
@@ -60,9 +61,9 @@ function createHiddenContainer(): HTMLElement {
 }
 
 /**
- * One-call export in the browser: renders the profile SVGs, loads pdfmake
- * and fonts, builds the document and returns the created PDF with
- * blob/download/print helpers.
+ * One-call export in the browser: loads pdfmake and fonts, measures where
+ * the profile starts, renders the profile SVGs to fill each page, builds
+ * the document and returns the created PDF with blob/download/print helpers.
  *
  * Pass a well already prepared for export (normalized, redacted if needed).
  *
@@ -83,17 +84,24 @@ export async function createWellPdf(
   const cancelled = () => isCancelled?.() ?? false;
   const ctx = resolvePdfContext(options);
 
+  const instance = pdfMake ?? (await loadPdfMake());
+  await registerPdfFonts(instance, fonts);
+  if (cancelled()) return null;
+
+  // Lay out what precedes the profile first, so its first panel fills
+  // exactly the space left on that page.
+  const start = await measureProfileStart(well, ctx, instance);
+  if (cancelled()) return null;
+
   const target = container ?? createHiddenContainer();
   let svgResult;
   try {
-    svgResult = await buildSvgProfiles(well, target, ctx);
+    svgResult = await buildSvgProfiles(well, target, ctx, {
+      firstPageRemaining: start?.remaining,
+    });
   } finally {
     if (!container) target.remove();
   }
-  if (cancelled()) return null;
-
-  const instance = pdfMake ?? (await loadPdfMake());
-  await registerPdfFonts(instance, fonts);
   if (cancelled()) return null;
 
   const built = buildDocDefinition(

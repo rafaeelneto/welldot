@@ -31,6 +31,8 @@ type StyleRef = string | string[];
 
 export interface ContentText {
   text: string | ContentText[];
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
   style?: StyleRef;
   font?: string;
   fontSize?: number;
@@ -183,6 +185,29 @@ export interface TDocumentDefinition {
     _pageCount: number,
   ) => Content | Content[] | undefined;
   styles?: StyleDictionary;
+  /** Called for each laid-out node; return `true` to force a page break before it. */
+  pageBreakBefore?: (_node: PageBreakNodeInfo) => boolean;
+}
+
+/** Where pdfmake placed a node (`DocumentContext.getCurrentPosition`). */
+export interface NodePosition {
+  pageNumber: number;
+  /** Page height minus the top and bottom page margins. */
+  pageInnerHeight: number;
+  pageInnerWidth: number;
+  left: number;
+  top: number;
+  /** `(top − top margin) / pageInnerHeight`. */
+  verticalRatio: number;
+  horizontalRatio: number;
+}
+
+/** The node summary pdfmake hands to `pageBreakBefore`. */
+export interface PageBreakNodeInfo {
+  id?: string;
+  startPosition: NodePosition;
+  pageNumbers: number[];
+  pages: number;
 }
 
 export interface TFontFamily {
@@ -197,6 +222,7 @@ export interface TFontDictionary {
 }
 
 export interface TCreatedPdf {
+  getBuffer(): Promise<Uint8Array>;
   getDataUrl(): Promise<string>;
   getBlob(): Promise<Blob>;
   download(_filename?: string): Promise<void>;

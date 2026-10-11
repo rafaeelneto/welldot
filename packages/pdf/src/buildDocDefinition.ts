@@ -1,5 +1,5 @@
 import type { Well } from '@welldot/core';
-import { resolvePdfContext } from './context';
+import { resolveBodyMargins, resolvePdfContext } from './context';
 import { buildFooterContent } from './layout/footer';
 import { buildHeaderContent } from './layout/header';
 import { buildLegendTable } from './layout/legend';
@@ -79,6 +79,80 @@ function infoTable(items: { label: string; value: string }[]): ContentTable {
 }
 
 /**
+ * Content that precedes the profile: a spacer line, the heading-info grid
+ * and the general-info table when `metadataPosition` is `'before'`.
+ * `measureProfileStart` lays out exactly these nodes to find where the
+ * profile begins.
+ */
+export function buildLeadContent(
+  well: Well,
+  options: PdfExportOptions | PdfContext = {},
+): Content[] {
+  const ctx = toPdfContext(options);
+  const content: Content[] = [{ text: ' ' }];
+
+  if (ctx.headingInfo.length > 0) {
+    content.push(infoTable(ctx.headingInfo));
+  }
+
+  const beforeMetadataTable =
+    ctx.metadataPosition === 'before' ? buildMetadataTable(well, ctx) : null;
+  if (beforeMetadataTable) {
+    content.push(
+      withTableTitle(ctx.labels.general.generalInfo, beforeMetadataTable),
+    );
+  }
+
+  return content;
+}
+
+/**
+ * Page geometry and text styles of the document, without content, header,
+ * footer or watermark: `pageSize`, `pageMargins` (from
+ * {@link resolveBodyMargins}), `defaultStyle` and `styles`.
+ */
+export function buildDocShell(
+  options: PdfExportOptions | PdfContext = {},
+): Omit<TDocumentDefinition, 'content'> {
+  const { breakPages, theme, page } = toPdfContext(options);
+  return {
+    defaultStyle: {
+      font: theme.fonts.body,
+      fontSize: theme.fontSizes.body,
+      color: theme.colors.text,
+    },
+    pageSize: { width: page.width, height: breakPages ? page.height : 'auto' },
+    pageMargins: resolveBodyMargins(page, breakPages),
+    styles: {
+      title: {
+        bold: true,
+        fontSize: theme.fontSizes.sectionTitle,
+        font: theme.fonts.heading,
+        color: theme.colors.title,
+      },
+      columnRight: { alignment: 'right' },
+      sumRow: { bold: true, fontSize: 12, font: theme.fonts.label },
+      metadataLabel: {
+        fontSize: theme.fontSizes.metadataLabel,
+        font: theme.fonts.label,
+        color: theme.colors.text,
+      },
+      metadataValue: {
+        fontSize: theme.fontSizes.metadataValue,
+        font: theme.fonts.label,
+        color: theme.colors.text,
+      },
+      tableHeader: {
+        font: theme.fonts.label,
+        bold: true,
+        fontSize: theme.fontSizes.tableHeader,
+        color: theme.colors.tableHeader,
+      },
+    },
+  };
+}
+
+/**
  * Pure assembly of the full `pdfmake` document definition from
  * already-rendered profile SVGs and legend symbols, the well's metadata/sections and
  * the export options. No DOM access.
@@ -90,36 +164,18 @@ export function buildDocDefinition(
   options: PdfExportOptions | PdfContext = {},
 ): TDocumentDefinition {
   const ctx = toPdfContext(options);
-  const {
-    breakPages,
-    headingInfo,
-    endInfo,
-    metadataPosition,
-    theme,
-    page,
-    labels,
-  } = ctx;
+  const { breakPages, endInfo, metadataPosition, labels } = ctx;
 
-  const content: Content[] = [{ text: ' ' }];
-
-  if (headingInfo.length > 0) {
-    content.push(infoTable(headingInfo));
-  }
-
-  const beforeMetadataTable =
-    metadataPosition === 'before' ? buildMetadataTable(well, ctx) : null;
-  if (beforeMetadataTable) {
-    content.push(
-      withTableTitle(labels.general.generalInfo, beforeMetadataTable),
-    );
-  }
+  const content: Content[] = buildLeadContent(well, ctx);
 
   svgs.forEach((svg, index) => {
     content.push({
       svg: svg.markup,
       width: svg.width,
       height: svg.height,
-      ...(breakPages && index > 0 ? { pageBreak: 'before' } : {}),
+      ...((svg.breakBefore ?? (breakPages && index > 0))
+        ? { pageBreak: 'before' }
+        : {}),
     });
   });
 
@@ -152,8 +208,8 @@ export function buildDocDefinition(
     else content.push(custom ?? buildFooterContent(ctx, false));
   }
 
-  const [left, top, right, bottom] = page.margins;
   const doc: TDocumentDefinition = {
+    ...buildDocShell(ctx),
     content,
     info: {
       title: ctx.metadata.title ?? ctx.title,
@@ -161,44 +217,6 @@ export function buildDocDefinition(
       subject: ctx.metadata.subject,
       keywords: ctx.metadata.keywords,
       creator: ctx.metadata.creator,
-    },
-    defaultStyle: {
-      font: theme.fonts.body,
-      fontSize: theme.fontSizes.body,
-      color: theme.colors.text,
-    },
-    pageSize: { width: page.width, height: breakPages ? page.height : 'auto' },
-    pageMargins: [
-      left,
-      top + (breakPages ? 10 : 0),
-      right,
-      bottom + (breakPages ? 30 : 0),
-    ],
-    styles: {
-      title: {
-        bold: true,
-        fontSize: theme.fontSizes.sectionTitle,
-        font: theme.fonts.heading,
-        color: theme.colors.title,
-      },
-      columnRight: { alignment: 'right' },
-      sumRow: { bold: true, fontSize: 12, font: theme.fonts.label },
-      metadataLabel: {
-        fontSize: theme.fontSizes.metadataLabel,
-        font: theme.fonts.label,
-        color: theme.colors.text,
-      },
-      metadataValue: {
-        fontSize: theme.fontSizes.metadataValue,
-        font: theme.fonts.label,
-        color: theme.colors.text,
-      },
-      tableHeader: {
-        font: theme.fonts.label,
-        bold: true,
-        fontSize: theme.fontSizes.tableHeader,
-        color: theme.colors.tableHeader,
-      },
     },
   };
 

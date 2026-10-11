@@ -180,11 +180,26 @@ High-level browser export described above. `buildDefaultPdfFilename(well, date?,
 
 ### `buildDocDefinition(well, svgs, legend, options?)`
 
-Pure document assembly. Takes raw options or a resolved context. Use it with your own SVGs, or in Node with `svgs: []` and `legend: []`. `legend` is a list of `RenderedLegendItem` (`{ label, symbol: RenderedSvg }`), laid out as a full-width table of six equal columns (`LEGEND_COLUMNS`) titled `labels.document.legendTitle`, one entry per cell, so long labels wrap inside their cell instead of the legend being scaled to the page width.
+Pure document assembly. Takes raw options or a resolved context. Use it with your own SVGs, or in Node with `svgs: []` and `legend: []`. A profile panel starts on a new page when its `breakBefore` is `true`; without the flag, every panel but the first does (with `breakPages`). The document is built from `buildLeadContent(well, ctx)` (spacer, heading info and the `'before'` metadata table, i.e. everything above the profile) and `buildDocShell(ctx)` (page size, `pageMargins` from `resolveBodyMargins`, styles). `legend` is a list of `RenderedLegendItem` (`{ label, symbol: RenderedSvg }`), laid out as a full-width table of six equal columns (`LEGEND_COLUMNS`) titled `labels.document.legendTitle`, one entry per cell, so long labels wrap inside their cell instead of the legend being scaled to the page width.
 
-### `buildSvgProfiles(well, container, ctx)`
+### `buildSvgProfiles(well, container, ctx, { firstPageRemaining? })`
 
-Draws the profile and one standalone symbol per legend entry with `WellRenderer`, and returns their markup (`{ svgs, legendItems }`). Needs an attached DOM element. Page-geometry helpers: `computePageHeights`, `computePageSvgHeight`, `computeProfileWidth`, `computeTotalSvgHeight`, `computeFirstPageAvailableHeight`.
+Draws the profile and one standalone symbol per legend entry with `WellRenderer`, and returns their markup (`{ svgs, legendItems }`). Needs an attached DOM element.
+
+With `breakPages`, the profile is split by `planProfilePanels`:
+
+- The first panel fills `firstPageRemaining`, the height left under the content above the profile. If less than `MIN_FIRST_PANEL_HEIGHT` (120pt) of drawing fits there, the profile starts on the next page instead.
+- Every other panel fills a whole page body (`computePageSvgHeight`: page height minus margins and the `PAGE_CHROME` header/footer reserve, minus `FIT_EPSILON`), so no panel ever overflows into the footer.
+- Panel drawing heights add up to `computeTotalSvgHeight(depth, scale)`, so the printed scale is exactly 1:N.
+- Each returned panel carries `breakBefore`.
+
+Without `firstPageRemaining`, a rough `computeFirstPageAvailableHeight` estimate is used. `createWellPdf` passes the real value from `measureProfileStart`.
+
+Other geometry helpers: `computeProfileWidth`, `resolveBodyMargins`.
+
+### `measureProfileStart(well, options, pdfMake)`
+
+Lays out only the content above the profile with pdfmake (fonts must be registered) and resolves to `{ pageNumber, remaining }`: the page the profile starts on and the height left on it. Resolves to `null` when `breakPages` is off or the layout fails.
 
 ### `resolvePdfContext(options?)`
 

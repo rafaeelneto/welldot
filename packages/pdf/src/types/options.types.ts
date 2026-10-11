@@ -326,6 +326,12 @@ export interface RenderedSvg {
   markup: string;
   width: number;
   height: number;
+  /**
+   * Profile panels only: start the panel on a new page. When omitted,
+   * `buildDocDefinition` breaks before every panel but the first (when
+   * `breakPages` is on).
+   */
+  breakBefore?: boolean;
 }
 
 /** One legend entry: its label and its standalone symbol SVG. */

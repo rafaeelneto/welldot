@@ -39,9 +39,10 @@ src/
     welldotLogo.ts           ← WELLDOT_LOGO_SVG
   layout/
     header.ts  footer.ts  watermark.ts
+    measureProfileStart.ts   ← pdfmake layout pass of the lead content → space left for the profile
     tables.ts                ← lightLinesLayout, buildEntryDivider, buildRule, headerCell, rightCell, withTableTitle
   sections/                  ← one builder per section, signature (well, ctx: PdfContext)
-  svg/buildSvgProfiles.ts    ← DOM-only: draws the profile with WellRenderer, page-aware sizing
+  svg/buildSvgProfiles.ts    ← DOM-only: draws the profile with WellRenderer; planProfilePanels splits it into page-filling panels
   runtime/
     pdfmake.ts               ← loadPdfMake (dynamic import)
     registerFonts.ts         ← registerPdfFonts, loadDefaultPdfFonts
@@ -84,6 +85,7 @@ pnpm dev        # tsup --watch
 - Never hardcode colors, fonts, widths (`535`), page sizes or date formats in builders; read `ctx.theme`, `ctx.page`, `ctx.dateFormats`.
 - pdfmake mutates canvas nodes during layout: build rules/dividers with the factories in `layout/tables.ts`, never share one node instance.
 - The font data lives only in the `fonts` entry. `loadDefaultPdfFonts` imports it through the package's own `@welldot/pdf/fonts` subpath, which is external in `tsup.config.ts` — keep it that way or the main bundle grows by 1.7 MB.
+- Profile pagination: `createWellPdf` measures where the profile starts (`measureProfileStart`) before drawing it, and the panels fill that space and then whole pages. Page body height comes only from `resolveBodyMargins` (shared with `buildDocShell`); never size panels from a hardcoded height, and never let one exceed `computePageSvgHeight` (pdfmake draws an oversized first-on-page SVG over the footer).
 - `buildSvgProfiles` / `createWellPdf` are browser-only (DOM + `requestAnimationFrame`). Everything else runs in Node.
 - `.svg` files import as raw markup: tsup `loader: { '.svg': 'text' }` and the `svg-as-text` plugin in `vitest.config.ts` must agree.
 - DOM tests opt in with `// @vitest-environment jsdom`; `@welldot/render` is mocked there (jsdom lacks SVG geometry APIs).

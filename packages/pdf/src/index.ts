@@ -5,10 +5,14 @@ export { buildDefaultPdfFilename, createWellPdf } from './createWellPdf';
 export {
   PDF_SECTION_BUILDERS,
   buildDocDefinition,
+  buildDocShell,
+  buildLeadContent,
   toPdfContext,
 } from './buildDocDefinition';
 export {
+  PAGE_CHROME,
   PDF_SECTION_KEYS,
+  resolveBodyMargins,
   resolvePdfContext,
   resolvePdfPage,
   resolvePdfUnits,
@@ -16,15 +20,16 @@ export {
 
 // Profile SVG (browser only)
 export {
-  A4_SVG_HEIGHT,
+  FIT_EPSILON,
+  MIN_FIRST_PANEL_HEIGHT,
   PDF_CONTENT_WIDTH,
   PDF_MARGINS,
   buildSvgProfiles,
   computeFirstPageAvailableHeight,
-  computePageHeights,
   computePageSvgHeight,
   computeProfileWidth,
   computeTotalSvgHeight,
+  planProfilePanels,
 } from './svg/buildSvgProfiles';
 
 // Runtime
@@ -50,6 +55,10 @@ export { buildWaterSampleSection } from './sections/waterSampleTable';
 export { buildFooterContent } from './layout/footer';
 export { buildHeaderContent } from './layout/header';
 export { LEGEND_COLUMNS, buildLegendTable } from './layout/legend';
+export {
+  PROFILE_PROBE_ID,
+  measureProfileStart,
+} from './layout/measureProfileStart';
 export {
   buildEntryDivider,
   buildRule,
@@ -80,7 +89,13 @@ export type {
 export type { ResolvedPdfLabels } from './configs/labels.utils';
 export type { CreateWellPdfOptions, WellPdf } from './createWellPdf';
 export type { PdfFormatters } from './formatters';
-export type { BuildSvgProfilesResult } from './svg/buildSvgProfiles';
+export type { ProfileStartPosition } from './layout/measureProfileStart';
+export type {
+  BuildSvgProfilesOptions,
+  BuildSvgProfilesResult,
+  PlanProfilePanelsOptions,
+  ProfilePanel,
+} from './svg/buildSvgProfiles';
 export type {
   CoordinateFormat,
   PdfBranding,
@@ -114,6 +129,8 @@ export type {
 export type {
   Content,
   ContentTable,
+  NodePosition,
+  PageBreakNodeInfo,
   PdfMakeStatic,
   TCreatedPdf,
   TDocumentDefinition,

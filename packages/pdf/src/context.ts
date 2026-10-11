@@ -59,6 +59,25 @@ export function resolvePdfPage(page: PdfPageOptions = {}): ResolvedPdfPage {
   };
 }
 
+/**
+ * Space added to the top and bottom page margins when `breakPages` is on,
+ * so the per-page header and footer never overlap the body.
+ */
+export const PAGE_CHROME = { top: 10, bottom: 30 } as const;
+
+/**
+ * pdfmake `pageMargins` (`[left, top, right, bottom]`) of the document body:
+ * the page margins plus {@link PAGE_CHROME} when `breakPages` is on.
+ */
+export function resolveBodyMargins(
+  page: ResolvedPdfPage,
+  breakPages: boolean,
+): [number, number, number, number] {
+  const [left, top, right, bottom] = page.margins;
+  if (!breakPages) return [left, top, right, bottom];
+  return [left, top + PAGE_CHROME.top, right, bottom + PAGE_CHROME.bottom];
+}
+
 /** Fills in default display units. Without `volume`, it follows the length system (`ft` → `ft3`). */
 export function resolvePdfUnits(units: PdfUnits = {}): Required<PdfUnits> {
   const length = units.length ?? 'm';
