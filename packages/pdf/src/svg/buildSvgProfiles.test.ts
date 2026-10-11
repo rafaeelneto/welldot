@@ -22,7 +22,7 @@ const drawnSelectors: string[] = [];
 const rendererOptions: unknown[] = [];
 const panelWidths: number[] = [];
 vi.mock('@welldot/render', () => ({
-  STATIC_RENDER_CONFIG: { legend: { height: 44, maxWidth: 700 } },
+  STATIC_RENDER_CONFIG: { legend: { height: 44 } },
   applyRenderLocale: (config: unknown) => config,
   WellRenderer: class {
     private svgs: { selector: string }[];
@@ -40,10 +40,13 @@ vi.mock('@welldot/render', () => ({
       }
     }
     draw() {}
-    renderLegend(selector: string) {
+    getLegendItems() {
+      return [{ label: 'Perfuração' }, { label: 'Bomba e edutor' }];
+    }
+    renderLegendSymbol(selector: string) {
       const el = document.querySelector(selector);
-      el?.setAttribute('width', '535.28');
-      el?.setAttribute('height', '40');
+      el?.setAttribute('width', '28');
+      el?.setAttribute('height', '16');
     }
   },
 }));
@@ -119,7 +122,16 @@ describe('buildSvgProfiles', () => {
     expect(result.svgs).toHaveLength(1);
     expect(result.svgs[0]?.width).toBe(485.28);
     expect(result.svgs[0]?.markup).toContain('<svg');
-    expect(result.legendSvg).not.toBeNull();
+    expect(result.legendItems).toEqual([
+      {
+        label: 'Perfuração',
+        symbol: expect.objectContaining({ width: 28, height: 16 }),
+      },
+      {
+        label: 'Bomba e edutor',
+        symbol: expect.objectContaining({ width: 28, height: 16 }),
+      },
+    ]);
     expect(drawnSelectors).toHaveLength(1);
     expect(drawnSelectors[0]).toMatch(/^#welldot-pdf-[a-z0-9]+-panel-0$/);
   });
@@ -139,7 +151,8 @@ describe('buildSvgProfiles', () => {
       makeTestContext({ locale: 'pt' }),
     );
 
-    expect(container.querySelectorAll('svg')).toHaveLength(2);
+    // One panel + one symbol per legend entry, from the second call only.
+    expect(container.querySelectorAll('svg')).toHaveLength(3);
   });
 });
 
@@ -178,7 +191,7 @@ describe('page-aware geometry', () => {
       renderConfig: {
         zoom: false,
         pan: false,
-        legend: { height: 60, maxWidth: 841.89 - 60 },
+        legend: { height: 60 },
       },
       theme: {
         labels: { bodyFont: 'Roboto', headerFont: 'Roboto' },

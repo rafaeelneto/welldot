@@ -2,6 +2,7 @@ import type { Well } from '@welldot/core';
 import { resolvePdfContext } from './context';
 import { buildFooterContent } from './layout/footer';
 import { buildHeaderContent } from './layout/header';
+import { buildLegendTable } from './layout/legend';
 import { withTableTitle } from './layout/tables';
 import { buildImageWatermark, buildTextWatermark } from './layout/watermark';
 import { buildHistoryLogSection } from './sections/historyLogTable';
@@ -21,6 +22,7 @@ import type {
   PdfContext,
   PdfExportOptions,
   PdfSectionKey,
+  RenderedLegendItem,
   RenderedSvg,
 } from './types/options.types';
 import type {
@@ -78,13 +80,13 @@ function infoTable(items: { label: string; value: string }[]): ContentTable {
 
 /**
  * Pure assembly of the full `pdfmake` document definition from
- * already-rendered profile/legend SVGs, the well's metadata/sections and
+ * already-rendered profile SVGs and legend symbols, the well's metadata/sections and
  * the export options. No DOM access.
  */
 export function buildDocDefinition(
   well: Well,
   svgs: RenderedSvg[],
-  legendSvg: RenderedSvg | null,
+  legend: RenderedLegendItem[],
   options: PdfExportOptions | PdfContext = {},
 ): TDocumentDefinition {
   const ctx = toPdfContext(options);
@@ -121,14 +123,8 @@ export function buildDocDefinition(
     });
   });
 
-  if (legendSvg) {
-    content.push({
-      svg: legendSvg.markup,
-      width: legendSvg.width,
-      height: legendSvg.height,
-      margin: [0, 8, 0, 0],
-    });
-  }
+  const legendTable = buildLegendTable(legend, ctx);
+  if (legendTable) content.push(legendTable);
 
   if (endInfo.length > 0) {
     content.push(

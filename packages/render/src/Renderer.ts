@@ -51,7 +51,12 @@ import { drawConstructionLabels } from './renderers/construction-labels.renderer
 import { drawConstructive } from './renderers/construction.renderer';
 import { drawFractures } from './renderers/fractures.renderer';
 import { drawHighlights } from './renderers/highlights.renderer';
-import { drawWellLegend } from './renderers/legend.renderer';
+import {
+  drawWellLegend,
+  drawWellLegendSymbol,
+  getWellLegendItems,
+  WellLegendItem,
+} from './renderers/legend.renderer';
 import { drawLithology } from './renderers/lithology.renderer';
 import { drawPump } from './renderers/pump.renderer';
 import { drawUnitLabels } from './renderers/unit-labels.renderer';
@@ -238,6 +243,23 @@ export class WellRenderer {
   public renderLegend(selector: string, profile: Well): void {
     drawWellLegend(selector, profile, {
       config: this.renderConfig.legend,
+      theme: this.theme,
+      classNames: this.classes.legend,
+      textures: this.renderConfig.textures,
+    });
+  }
+
+  /** Lists the legend entries `profile` needs, labeled from `renderConfig.legend.labels`. */
+  public getLegendItems(profile: Well): WellLegendItem[] {
+    return getWellLegendItems(profile, this.renderConfig.legend.labels);
+  }
+
+  /**
+   * Renders one legend entry's symbol (see {@link getLegendItems}) into its
+   * own SVG matched by `selector`, with the textures it needs defined inside.
+   */
+  public renderLegendSymbol(selector: string, item: WellLegendItem): void {
+    drawWellLegendSymbol(selector, item, {
       theme: this.theme,
       classNames: this.classes.legend,
       textures: this.renderConfig.textures,

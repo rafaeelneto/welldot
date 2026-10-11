@@ -327,3 +327,9 @@ export interface RenderedSvg {
   width: number;
   height: number;
 }
+
+/** One legend entry: its label and its standalone symbol SVG. */
+export interface RenderedLegendItem {
+  label: string;
+  symbol: RenderedSvg;
+}

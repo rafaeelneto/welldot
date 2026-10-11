@@ -49,6 +49,7 @@ export { buildWaterSampleSection } from './sections/waterSampleTable';
 // Layout
 export { buildFooterContent } from './layout/footer';
 export { buildHeaderContent } from './layout/header';
+export { LEGEND_COLUMNS, buildLegendTable } from './layout/legend';
 export {
   buildEntryDivider,
   buildRule,
@@ -105,6 +106,7 @@ export type {
   PdfThemeFonts,
   PdfUnits,
   PdfWatermark,
+  RenderedLegendItem,
   RenderedSvg,
   ResolvedInfoItem,
   ResolvedPdfPage,

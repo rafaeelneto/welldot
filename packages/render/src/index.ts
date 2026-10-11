@@ -9,7 +9,12 @@ export {
 export { importFgdcTextures } from './utils/fgdcTextures';
 
 export { WellRenderer } from './Renderer';
-export { drawWellLegend } from './renderers/legend.renderer';
+export {
+  drawWellLegend,
+  drawWellLegendSymbol,
+  getWellLegendItems,
+} from './renderers/legend.renderer';
+export type { WellLegendItem } from './renderers/legend.renderer';
 export type {
   CaveTheme,
   ComponentsClassNames,

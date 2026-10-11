@@ -116,7 +116,7 @@ function render(visibility: WellVisibility = {}): string {
   const doc = buildDocDefinition(
     well,
     [],
-    null,
+    [],
     makeTestContext({ metadataPosition: 'before' }, keyLabels),
   );
   return JSON.stringify(doc.content);

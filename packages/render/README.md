@@ -82,6 +82,8 @@ new WellRenderer(svgs: SvgInstance[], options?: {
 | `prepareSvg(): Promise<void>`                                                                                      | Initialise SVG DOM structure and preload FGDC textures. Call once before the first `draw`.                             |
 | `draw(profile: RenderableWell, options?: { units?: Units; locale?: 'en' \| 'pt'; highlights?: Highlights }): void` | Render or re-render the full well profile.                                                                             |
 | `renderLegend(selector: string, profile: Well): void`                                                              | Render a standalone legend into a separate SVG.                                                                        |
+| `getLegendItems(profile: Well): WellLegendItem[]`                                                                  | List the legend entries the profile needs, labeled from `renderConfig.legend.labels`.                                  |
+| `renderLegendSymbol(selector: string, item: WellLegendItem): void`                                                 | Render one entry's symbol into its own SVG, with the textures it uses defined inside (e.g. for a PDF table).           |
 | `zoomBy(factor: number): void`                                                                                     | Multiply the current zoom scale by `factor` (e.g. `1.25` in, `1 / 1.25` out). No-op if `zoom`/`pan` are both disabled. |
 | `resetZoom(): void`                                                                                                | Reset zoom/pan back to `renderConfig.zoomLevel` (default `1` — the initial fit-to-container view).                     |
 | `getZoomScale(): number`                                                                                           | Current zoom scale of the first panel (`1` = initial/fit).                                                             |
@@ -122,7 +124,27 @@ drawWellLegend(
 ): void
 ```
 
-Does nothing if the profile contains no fractures or caves.
+Sets the SVG to `0×0` if the profile needs no legend entry.
+
+### `getWellLegendItems` / `drawWellLegendSymbol`
+
+Build your own legend layout (a table, an HTML list…) instead of the fixed SVG panel.
+
+```ts
+getWellLegendItems(profile: Well, labels?: LegendRenderConfig['labels']): WellLegendItem[]
+
+drawWellLegendSymbol(
+  selector: string,
+  item:     WellLegendItem,
+  options?: {
+    theme?:      Partial<WellTheme>;
+    classNames?: ComponentsClassNames['legend'];
+    textures?:   TexturesConfig;
+  }
+): void
+```
+
+`getWellLegendItems` returns the entries in display order; each has a `key` (a `LegendRenderConfig['labels']` key such as `boreHole` or `fractureSwarm`) and its `label`. `drawWellLegendSymbol` draws one entry's symbol (24×12 px plus a 2 px margin, i.e. a `28×16` SVG) with every texture defined inside, so its `outerHTML` renders on its own.
 
 ---
 

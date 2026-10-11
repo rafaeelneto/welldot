@@ -92,6 +92,7 @@ export const PDF_LABELS = {
     total: { en: 'Total', pt: 'Total' },
     volumeTotal: { en: 'Total volume', pt: 'Volume total' },
     finalInfoTitle: { en: 'Final information', pt: 'Informações finais' },
+    legendTitle: { en: 'Legend', pt: 'Legenda' },
   },
   general: {
     constructionDate: { en: 'Construction Date', pt: 'Data de Construção' },

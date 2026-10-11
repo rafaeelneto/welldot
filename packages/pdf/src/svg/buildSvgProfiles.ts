@@ -12,6 +12,7 @@ import { getProfileLastItemsDepths } from '@welldot/utils';
 import { resolvePdfPage } from '../context';
 import type {
   PdfContext,
+  RenderedLegendItem,
   RenderedSvg,
   ResolvedPdfPage,
 } from '../types/options.types';
@@ -84,7 +85,7 @@ export function computeFirstPageAvailableHeight(options: {
 
 export interface BuildSvgProfilesResult {
   svgs: RenderedSvg[];
-  legendSvg: RenderedSvg | null;
+  legendItems: RenderedLegendItem[];
 }
 
 /** meters → mm (×1000) → inches (÷25.4) → points (×72), scaled by the 1:N ratio. */
@@ -119,9 +120,18 @@ export function computePageHeights(
   return heights;
 }
 
+/** Serializes the `<svg id="{id}">` in `container`, or `null` when it is empty. */
+function readSvg(container: HTMLElement, id: string): RenderedSvg | null {
+  const svg = container.querySelector<SVGSVGElement>(`#${id}`);
+  const width = parseFloat(svg?.getAttribute('width') ?? '0');
+  const height = parseFloat(svg?.getAttribute('height') ?? '0');
+  if (!svg || width <= 0 || height <= 0) return null;
+  return { markup: svg.outerHTML, width, height };
+}
+
 /**
  * Draws the profile (split across pages when `breakPages` is set) and its
- * legend into hidden `<svg>` elements appended to `container`, and returns
+ * legend symbols into hidden `<svg>` elements appended to `container`, and returns
  * their serialized markup. Browser-only: `container` must be attached to
  * the document, since `WellRenderer` selects by ID.
  */
@@ -135,7 +145,6 @@ export async function buildSvgProfiles(
     ? 'en'
     : 'pt';
   const profileWidth = computeProfileWidth(page);
-  const legendMaxWidth = page.contentWidth;
 
   const maxYValues = Math.max(0, ...getProfileLastItemsDepths(well));
   const totalHeight = computeTotalSvgHeight(maxYValues, scale);
@@ -155,14 +164,14 @@ export async function buildSvgProfiles(
   // Unique per call so concurrent exports on one page never collide.
   const prefix = `welldot-pdf-${Math.random().toString(36).slice(2, 10)}`;
   const panelIds = pageHeights.map((_, index) => `${prefix}-panel-${index}`);
-  const legendId = `${prefix}-legend`;
 
   const svgNS = 'http://www.w3.org/2000/svg';
-  for (const id of [...panelIds, legendId]) {
+  const appendSvg = (id: string) => {
     const svg = document.createElementNS(svgNS, 'svg');
     svg.id = id;
     container.appendChild(svg);
-  }
+  };
+  panelIds.forEach(appendSvg);
 
   const localizedStaticConfig = applyRenderLocale(
     STATIC_RENDER_CONFIG,
@@ -175,11 +184,7 @@ export async function buildSvgProfiles(
     zoom: false,
     pan: false,
     animation: { duration: 0 },
-    legend: {
-      ...localizedStaticConfig.legend,
-      ...custom.legend,
-      maxWidth: legendMaxWidth,
-    },
+    legend: { ...localizedStaticConfig.legend, ...custom.legend },
   };
 
   const renderer = new WellRenderer(
@@ -215,30 +220,27 @@ export async function buildSvgProfiles(
 
   await renderer.prepareSvg();
   renderer.draw(well);
-  renderer.renderLegend(`#${legendId}`, well);
+
+  const legendEntries = renderer.getLegendItems(well).map((item, index) => {
+    const id = `${prefix}-legend-${index}`;
+    appendSvg(id);
+    renderer.renderLegendSymbol(`#${id}`, item);
+    return { id, label: item.label };
+  });
 
   await new Promise(resolve => requestAnimationFrame(resolve));
 
   const svgs: RenderedSvg[] = [];
   for (const id of panelIds) {
-    const svg = container.querySelector<SVGSVGElement>(`#${id}`);
-    const width = parseFloat(svg?.getAttribute('width') ?? '0');
-    const height = parseFloat(svg?.getAttribute('height') ?? '0');
-    if (!svg || width <= 0 || height <= 0) continue;
-    svgs.push({ markup: svg.outerHTML, width, height });
+    const svg = readSvg(container, id);
+    if (svg) svgs.push(svg);
   }
 
-  const legendEl = container.querySelector<SVGSVGElement>(`#${legendId}`);
-  const legendWidth = parseFloat(legendEl?.getAttribute('width') ?? '0');
-  const legendHeight = parseFloat(legendEl?.getAttribute('height') ?? '0');
-  const legendSvg: RenderedSvg | null =
-    legendEl && legendWidth > 0 && legendHeight > 0
-      ? {
-          markup: legendEl.outerHTML,
-          width: legendMaxWidth,
-          height: legendHeight * (legendMaxWidth / legendWidth),
-        }
-      : null;
+  const legendItems: RenderedLegendItem[] = [];
+  for (const { id, label } of legendEntries) {
+    const symbol = readSvg(container, id);
+    if (symbol) legendItems.push({ label, symbol });
+  }
 
-  return { svgs, legendSvg };
+  return { svgs, legendItems };
 }

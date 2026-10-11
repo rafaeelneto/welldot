@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { WELLDOT_LOGO_SVG } from './assets/welldotLogo';
 import { buildDocDefinition } from './buildDocDefinition';
+import { LEGEND_COLUMNS } from './layout/legend';
 import { baseWell, keyLabels, makeTestContext } from './test-utils';
-import type { PdfExportOptions, RenderedSvg } from './types/options.types';
-import type { Content, ContentSvg } from './types/pdfmake.types';
+import type {
+  PdfExportOptions,
+  RenderedLegendItem,
+  RenderedSvg,
+} from './types/options.types';
+import type { Content, ContentSvg, ContentTable } from './types/pdfmake.types';
 
 // Deliberately not welldot.org-shaped, so a passing assertion can't be
 // explained by a hardcoded fallback matching this value by coincidence.
@@ -22,7 +27,7 @@ const svg: RenderedSvg = { markup: '<svg></svg>', width: 400, height: 600 };
 function build(
   options: PdfExportOptions = {},
   svgs: RenderedSvg[] = [svg],
-  legend: RenderedSvg | null = null,
+  legend: RenderedLegendItem[] = [],
   well = baseWell(),
 ) {
   return buildDocDefinition(
@@ -53,7 +58,7 @@ describe('buildDocDefinition', () => {
   });
 
   it('omits the metadata table entirely when metadataPosition is null', () => {
-    const doc = build({}, [svg], null, baseWell({ name: 'Well A' }));
+    const doc = build({}, [svg], [], baseWell({ name: 'Well A' }));
     expect(JSON.stringify(doc.content)).not.toContain('Well A');
   });
 
@@ -61,7 +66,7 @@ describe('buildDocDefinition', () => {
     const doc = build(
       { metadataPosition: 'before' },
       [svg],
-      null,
+      [],
       baseWell({ name: 'Well A' }),
     );
     const svgIndex = doc.content.findIndex(
@@ -78,7 +83,7 @@ describe('buildDocDefinition', () => {
     const doc = build(
       { metadataPosition: 'after' },
       [svg],
-      null,
+      [],
       baseWell({ name: 'Well A' }),
     );
     const svgIndex = doc.content.findIndex(
@@ -107,15 +112,54 @@ describe('buildDocDefinition', () => {
     expect(serialized).toContain('All good');
   });
 
-  it('includes the legend svg when provided', () => {
-    const legend: RenderedSvg = {
-      markup: '<svg id="legend"></svg>',
-      width: 500,
-      height: 40,
-    };
-    expect(JSON.stringify(build({}, [svg], legend).content)).toContain(
-      'legend',
-    );
+  describe('legend', () => {
+    const legendItems = (count: number): RenderedLegendItem[] =>
+      Array.from({ length: count }, (_, i) => ({
+        label: `Item ${i}`,
+        symbol: {
+          markup: `<svg id="symbol-${i}"></svg>`,
+          width: 28,
+          height: 16,
+        },
+      }));
+
+    function legendTable(content: Content[]): ContentTable | undefined {
+      return content.find(
+        (c): c is ContentTable =>
+          typeof c === 'object' &&
+          'table' in c &&
+          JSON.stringify(c).includes('document.legendTitle'),
+      );
+    }
+
+    it('lays entries out in a fixed-width table of six equal columns', () => {
+      const table = legendTable(build({}, [svg], legendItems(2)).content);
+      expect(table?.table.widths).toEqual(Array(LEGEND_COLUMNS).fill('*'));
+      // Title row + one row of entries, padded with empty cells.
+      const [, row] = table!.table.body;
+      expect(table!.table.body).toHaveLength(2);
+      expect(row).toHaveLength(LEGEND_COLUMNS);
+      expect(row!.filter(cell => Object.keys(cell).length > 0)).toHaveLength(2);
+    });
+
+    it('keeps each symbol at its own size next to its label', () => {
+      const table = legendTable(build({}, [svg], legendItems(1)).content);
+      expect(table!.table.body[1]![0]).toMatchObject({
+        columns: [
+          { svg: '<svg id="symbol-0"></svg>', width: 28, height: 16 },
+          { text: 'Item 0', width: '*' },
+        ],
+      });
+    });
+
+    it('wraps to a new row after six entries', () => {
+      const table = legendTable(build({}, [svg], legendItems(7)).content);
+      expect(table!.table.body).toHaveLength(3);
+    });
+
+    it('omits the legend when there are no entries', () => {
+      expect(legendTable(build({}, [svg], []).content)).toBeUndefined();
+    });
   });
 
   it('sets page height to auto when breakPages is false, fixed A4 otherwise', () => {
@@ -144,7 +188,7 @@ describe('buildDocDefinition', () => {
   // --- customization ---------------------------------------------------
 
   it('accepts raw options and resolves them (default locale title)', () => {
-    const doc = buildDocDefinition(baseWell(), [svg], null, { locale: 'en' });
+    const doc = buildDocDefinition(baseWell(), [svg], [], { locale: 'en' });
     expect(
       JSON.stringify(doc.header?.(1, 1, { width: 0, height: 0 })),
     ).toContain('GEOLOGICAL PROFILE');
@@ -255,19 +299,15 @@ describe('buildDocDefinition', () => {
       ],
     } as never);
     const ordered = JSON.stringify(
-      build({ sections: { order: ['historyLog'] } }, [svg], null, well).content,
+      build({ sections: { order: ['historyLog'] } }, [svg], [], well).content,
     );
     expect(ordered.indexOf('historyLog')).toBeLessThan(
       ordered.indexOf('boreHole'),
     );
 
     const withoutConstruction = JSON.stringify(
-      build(
-        { sections: { include: { construction: false } } },
-        [svg],
-        null,
-        well,
-      ).content,
+      build({ sections: { include: { construction: false } } }, [svg], [], well)
+        .content,
     );
     expect(withoutConstruction).not.toContain('boreHole');
     expect(withoutConstruction).toContain('historyLog');

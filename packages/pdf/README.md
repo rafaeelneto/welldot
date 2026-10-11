@@ -178,13 +178,13 @@ pdfMake: myPdfMakeInstance,
 
 High-level browser export described above. `buildDefaultPdfFilename(well, date?, prefix?)` builds the default file name.
 
-### `buildDocDefinition(well, svgs, legendSvg, options?)`
+### `buildDocDefinition(well, svgs, legend, options?)`
 
-Pure document assembly. Takes raw options or a resolved context. Use it with your own SVGs, or in Node with `svgs: []`.
+Pure document assembly. Takes raw options or a resolved context. Use it with your own SVGs, or in Node with `svgs: []` and `legend: []`. `legend` is a list of `RenderedLegendItem` (`{ label, symbol: RenderedSvg }`), laid out as a full-width table of six equal columns (`LEGEND_COLUMNS`) titled `labels.document.legendTitle`, one entry per cell, so long labels wrap inside their cell instead of the legend being scaled to the page width.
 
 ### `buildSvgProfiles(well, container, ctx)`
 
-Draws the profile and legend with `WellRenderer` and returns their markup. Needs an attached DOM element. Page-geometry helpers: `computePageHeights`, `computePageSvgHeight`, `computeProfileWidth`, `computeTotalSvgHeight`, `computeFirstPageAvailableHeight`.
+Draws the profile and one standalone symbol per legend entry with `WellRenderer`, and returns their markup (`{ svgs, legendItems }`). Needs an attached DOM element. Page-geometry helpers: `computePageHeights`, `computePageSvgHeight`, `computeProfileWidth`, `computeTotalSvgHeight`, `computeFirstPageAvailableHeight`.
 
 ### `resolvePdfContext(options?)`
 

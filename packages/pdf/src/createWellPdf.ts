@@ -99,7 +99,7 @@ export async function createWellPdf(
   const built = buildDocDefinition(
     well,
     svgResult.svgs,
-    svgResult.legendSvg,
+    svgResult.legendItems,
     ctx,
   );
   const docDefinition = transformDocDefinition?.(built) ?? built;
