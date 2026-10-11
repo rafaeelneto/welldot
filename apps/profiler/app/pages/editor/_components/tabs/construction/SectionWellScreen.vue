@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CONSTRUCTION_MATERIALS } from '@welldot/core';
+import { CONSTRUCTION_MATERIALS, SCREEN_SLOT_TYPES } from '@welldot/core';
 import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
@@ -7,6 +7,7 @@ const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 
 const screenTypeOptions = computed(() => vocabOptions(CONSTRUCTION_MATERIALS));
+const slotTypeOptions = computed(() => vocabOptions(SCREEN_SLOT_TYPES));
 
 const wellScreenColumns = computed<WellGridColumn[]>(() => [
   {
@@ -32,6 +33,15 @@ const wellScreenColumns = computed<WellGridColumn[]>(() => [
     label: t('editor.construction.wellScreen.screenSlot'),
     type: 'number',
     size: 130,
+  },
+  {
+    prop: 'slot_type',
+    label: t('editor.construction.wellScreen.slotType'),
+    info: t('editor.construction.wellScreen.slotTypeInfo'),
+    infoHighlight: t('editor.construction.wellScreen.slotTypeFreeText'),
+    type: 'combo',
+    options: slotTypeOptions.value,
+    minSize: 200,
   },
   {
     prop: 'type',

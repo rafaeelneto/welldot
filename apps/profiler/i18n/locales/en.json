@@ -525,9 +525,12 @@
         "to": "To",
         "diameter": "Diam.",
         "screenSlot": "Slot (mm)",
-        "type": "Type",
-        "typeInfo": "Material (or construction) of the screen that lets water into the well, e.g. PVC, geomechanical PVC, carbon steel or stainless steel.",
-        "typeFreeText": "This field is free text: if the material is not in the list, just type it (e.g. wire wound stainless steel, bridge slot) and it will be saved as-is.",
+        "type": "Material",
+        "typeInfo": "Material of the screen that lets water into the well, e.g. PVC, geomechanical PVC, carbon steel or stainless steel.",
+        "typeFreeText": "This field is free text: if the material is not in the list, just type it and it will be saved as-is.",
+        "slotType": "Type",
+        "slotTypeInfo": "Screen design, e.g. continuous slot (Johnson, wire-wrapped), slotted, bridge slot, louver, perforated or Nold type.",
+        "slotTypeFreeText": "This field is free text: if the type is not in the list, just type it and it will be saved as-is.",
         "addRow": "Add screen"
       },
       "holeFill": {
@@ -811,7 +814,8 @@
       "screen": {
         "title": "Screen",
         "tag": "SCREENED SECTIONS",
-        "type": "Type",
+        "type": "Material",
+        "slotType": "Type",
         "diameter": "Diam.",
         "slot": "Slot",
         "from": "From",

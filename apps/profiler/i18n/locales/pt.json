@@ -525,9 +525,12 @@
         "to": "Até",
         "diameter": "Diâm.",
         "screenSlot": "Abertura (mm)",
-        "type": "Tipo",
-        "typeInfo": "Material (ou tipo construtivo) do filtro por onde a água entra no poço, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
-        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo (ex.: aço inox espiralado, ponte/bridge slot) e ele será salvo como escrito.",
+        "type": "Material",
+        "typeInfo": "Material do filtro por onde a água entra no poço, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
+        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo e ele será salvo como escrito.",
+        "slotType": "Tipo",
+        "slotTypeInfo": "Tipo construtivo do filtro, ex.: espiralado (tipo Johnson), ranhurado, tipo ponte, veneziana, perfurado ou tipo Nold.",
+        "slotTypeFreeText": "Este campo é livre: se o tipo não estiver na lista, basta digitá-lo e ele será salvo como escrito.",
         "addRow": "Adicionar filtro"
       },
       "holeFill": {
@@ -811,7 +814,8 @@
       "screen": {
         "title": "Filtro",
         "tag": "SEÇÕES FILTRANTES",
-        "type": "Tipo",
+        "type": "Material",
+        "slotType": "Tipo",
         "diameter": "Diâm.",
         "slot": "Abertura",
         "from": "De",

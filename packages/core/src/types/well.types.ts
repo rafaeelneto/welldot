@@ -4,6 +4,7 @@ import type {
   CentralizerType,
   ConstructionMaterial,
   DrillingMethod,
+  ScreenSlotType,
 } from '../vocab/construction.vocab';
 import type { WellPurpose, WellType } from '../vocab/general.vocab';
 import type {
@@ -140,6 +141,8 @@ export type WellScreen = {
   diameter: number;
   /** Slot opening size in millimeters. */
   screen_slot: number;
+  /** Screen design (since v2.3). Recommended values: {@link SCREEN_SLOT_TYPES}. */
+  slot_type?: OpenVocab<ScreenSlotType>;
 };
 
 /** Material placed in the annular space between the casing and the borehole wall. */

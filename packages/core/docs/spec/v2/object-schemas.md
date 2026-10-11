@@ -97,13 +97,14 @@ A transition piece connecting two casing or screen sections of different diamete
 
 Slotted or wire-wound screen section.
 
-| Field         | Type   | Required | Description                                                                                                                                                               |
-| ------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `from`        | number | yes      | Start depth in meters.                                                                                                                                                    |
-| `to`          | number | yes      | End depth in meters.                                                                                                                                                      |
-| `type`        | string | yes      | Screen material. Open vocabulary: see [format-reference.md](format-reference.md) § Construction materials; other descriptions (e.g. `wire_wound`) remain valid free text. |
-| `diameter`    | number | yes      | Screen outer diameter in millimeters.                                                                                                                                     |
-| `screen_slot` | number | yes      | Slot opening size in millimeters.                                                                                                                                         |
+| Field         | Type   | Required | Description                                                                                                                                       |
+| ------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `from`        | number | yes      | Start depth in meters.                                                                                                                            |
+| `to`          | number | yes      | End depth in meters.                                                                                                                              |
+| `type`        | string | yes      | Screen material. Open vocabulary: see [format-reference.md](format-reference.md) § Construction materials. The screen design goes in `slot_type`. |
+| `diameter`    | number | yes      | Screen outer diameter in millimeters.                                                                                                             |
+| `screen_slot` | number | yes      | Slot opening size in millimeters.                                                                                                                 |
+| `slot_type`   | string | no       | Screen design _(since v2.3)_. Open vocabulary: see [format-reference.md](format-reference.md) § `well_screen[].slot_type`.                        |
 
 > **v1 migration:** v1's `screen_slot_mm` field is renamed to `screen_slot` in v2. The value is in millimeters before and after — no conversion needed. See § Units for the rule that screen slot is always in millimeters regardless of any application's display preference.
 
@@ -977,9 +978,10 @@ A ledger of water samples, each with its field and laboratory results. The full 
     {
       "from": 60,
       "to": 80,
-      "type": "wire_wound",
+      "type": "stainless_steel",
       "diameter": 150,
-      "screen_slot": 0.5
+      "screen_slot": 0.5,
+      "slot_type": "continuous_slot"
     }
   ],
   "surface_case": [{ "from": 0, "to": 3, "diameter": 300 }],

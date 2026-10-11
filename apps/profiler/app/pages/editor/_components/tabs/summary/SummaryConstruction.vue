@@ -3,6 +3,7 @@ import {
   CEMENT_PAD_TYPES,
   CENTRALIZER_TYPES,
   CONSTRUCTION_MATERIALS,
+  SCREEN_SLOT_TYPES,
 } from '@welldot/core';
 import {
   calculateHoleFillSegmentVolume,
@@ -131,6 +132,7 @@ const casingGroups = computed<SummaryGroup[]>(() => {
 
 const screenColumns = computed<SummaryColumn[]>(() => [
   { key: 'type', label: t('editor.summary.screen.type'), lead: true },
+  { key: 'slotType', label: t('editor.summary.screen.slotType') },
   { key: 'diameter', label: t('editor.summary.screen.diameter') },
   { key: 'slot', label: t('editor.summary.screen.slot'), align: 'right' },
   { key: 'from', label: t('editor.summary.screen.from'), align: 'right' },
@@ -145,6 +147,7 @@ const screenGroups = computed<SummaryGroup[]>(() => {
   const rows = items.map(s => ({
     cells: {
       type: s.type ? vocabLabel(CONSTRUCTION_MATERIALS, s.type) : '—',
+      slotType: s.slot_type ? vocabLabel(SCREEN_SLOT_TYPES, s.slot_type) : '—',
       diameter: formatDiameter(s.diameter),
       slot:
         s.screen_slot != null
@@ -165,7 +168,7 @@ const screenGroups = computed<SummaryGroup[]>(() => {
       total: {
         label: t('editor.summary.screen.total'),
         value: formatLength(totalLength),
-        colspan: 5,
+        colspan: 6,
       },
     },
   ];

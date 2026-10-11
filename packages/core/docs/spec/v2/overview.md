@@ -75,8 +75,12 @@ v2.3 additions:
   known only by its date; consumers MUST ignore the time of day
 - permit condition fulfillments gain sample_id (e.g. a water-quality
   monitoring condition)
+- well_screen[].slot_type (screen design: continuous_slot, slotted,
+  bridge_slot, louver, perforated, nold); type remains the screen
+  material
 - Recommended vocabularies for drilling_method, construction materials
   (well_case / well_screen / reduction type, riser_material),
+  well_screen slot_type,
   centralizer steels, cement_pad.type, history_logs severity,
   measurement_method and aquifer_analysis method; every recommended
   vocabulary is published by @welldot/core with en/pt labels

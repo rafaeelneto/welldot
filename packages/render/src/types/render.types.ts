@@ -321,7 +321,7 @@ export type TooltipLabels<T = string> = {
   surfaceCase: { title: T };
   holeFill: { title: T };
   wellCase: { title: T };
-  wellScreen: { title: T; slot: T };
+  wellScreen: { title: T; slot: T; material: T; slotType: T };
   reduction: { title: T };
   centralizer: { title: T; depth: T; spacing: T };
   pump: {

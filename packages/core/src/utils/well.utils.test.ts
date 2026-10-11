@@ -380,6 +380,16 @@ describe('serializeWell', () => {
   });
 
   describe('round-trip', () => {
+    it('keeps well_screen slot_type (v2.3)', () => {
+      const screen = makeWellScreen({
+        type: 'stainless_steel',
+        slot_type: 'continuous_slot',
+      });
+      const json = serializeWell({ ...emptyWell(), well_screen: [screen] });
+      expect(deserializeWell(json)!.well_screen).toEqual([screen]);
+      expect(parseWell(json).well_screen).toEqual([screen]);
+    });
+
     it('round-trips an empty well: arrays survive serialize → deserialize', () => {
       const restored = deserializeWell(serializeWell(emptyWell()));
       expect(restored).not.toBeNull();

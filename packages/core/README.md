@@ -318,6 +318,7 @@ Many `.well` string fields are **open**: any value (or an `x-` extension) is val
 | `WELL_PURPOSES`                                                                | `well_purpose[]`                                                                                    |
 | `DRILLING_METHODS`                                                             | `bore_hole[].drilling_method`                                                                       |
 | `CONSTRUCTION_MATERIALS`                                                       | `well_case[].type`, `well_screen[].type`, `reduction[].type`, `pump_installations[].riser_material` |
+| `SCREEN_SLOT_TYPES`                                                            | `well_screen[].slot_type`                                                                           |
 | `CENTRALIZER_TYPES`                                                            | `centralizers[].type`                                                                               |
 | `CEMENT_PAD_TYPES`                                                             | `cement_pad.type`                                                                                   |
 | `PUMP_TYPES`, `POWER_SOURCES`                                                  | `pump_installations[].type`, `.power_source`                                                        |

@@ -232,6 +232,9 @@
           },
           "screen_slot": {
             "type": "number"
+          },
+          "slot_type": {
+            "type": "string"
           }
         },
         "required": [

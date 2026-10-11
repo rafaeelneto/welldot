@@ -62,6 +62,8 @@ export const RENDER_LABELS: RenderLabelPack = {
     wellScreen: {
       title: { pt: 'FILTROS', en: 'SCREENS' },
       slot: { pt: 'Ranhura:', en: 'Slot:' },
+      material: { pt: 'Material:', en: 'Material:' },
+      slotType: { pt: 'Tipo:', en: 'Type:' },
     },
     reduction: { title: { pt: 'REDUÇÃO', en: 'REDUCTION' } },
     centralizer: {

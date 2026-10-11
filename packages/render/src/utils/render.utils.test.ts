@@ -101,7 +101,12 @@ const makeLabels = (): TooltipLabels => ({
   surfaceCase: { title: 'TUBO DE BOCA' },
   holeFill: { title: 'ESP. ANULAR' },
   wellCase: { title: 'REVESTIMENTO' },
-  wellScreen: { title: 'FILTROS', slot: 'Ranhura:' },
+  wellScreen: {
+    title: 'FILTROS',
+    slot: 'Ranhura:',
+    material: 'Material:',
+    slotType: 'Tipo:',
+  },
   reduction: { title: 'REDUÇÃO' },
   centralizer: {
     title: 'CENTRALIZADOR',

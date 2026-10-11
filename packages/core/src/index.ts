@@ -198,12 +198,14 @@ export {
   CENTRALIZER_TYPES,
   CONSTRUCTION_MATERIALS,
   DRILLING_METHODS,
+  SCREEN_SLOT_TYPES,
 } from './vocab/construction.vocab';
 export type {
   CementPadType,
   CentralizerType,
   ConstructionMaterial,
   DrillingMethod,
+  ScreenSlotType,
 } from './vocab/construction.vocab';
 export { WELL_PURPOSES, WELL_TYPES } from './vocab/general.vocab';
 export type { WellPurpose, WellType } from './vocab/general.vocab';

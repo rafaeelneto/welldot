@@ -7,6 +7,7 @@ import {
   CENTRALIZER_TYPES,
   CONSTRUCTION_MATERIALS,
   DRILLING_METHODS,
+  SCREEN_SLOT_TYPES,
 } from './construction.vocab';
 import { WELL_PURPOSES, WELL_TYPES } from './general.vocab';
 import {
@@ -72,6 +73,12 @@ const VOCABULARIES: [
     CONSTRUCTION_MATERIALS,
     'format-reference.md',
     '## Construction materials',
+  ],
+  [
+    'SCREEN_SLOT_TYPES',
+    SCREEN_SLOT_TYPES,
+    'format-reference.md',
+    '## `well_screen[].slot_type`',
   ],
   [
     'CENTRALIZER_TYPES',

@@ -94,7 +94,7 @@ the user explicitly asks.
 field is only acceptable when it drops **zero** detail or data — no lost measurements, materials,
 brand/equipment names, or qualifiers. When in doubt, transcribe closer to the original rather than
 condense it. This applies with extra weight to `hole_fill[].description`, and to `well_case.type`,
-`well_screen.type`, `reduction.type`, and `cement_pad.type` — see § Vocabulary tiers below: their
+`well_screen.type`, `well_screen.slot_type`, `reduction.type`, and `cement_pad.type` — see § Vocabulary tiers below: their
 recommended keys apply only when the report's wording maps to them losslessly.
 
 ---
@@ -178,7 +178,11 @@ transcribe the report's own phrase verbatim, in its own language:
 - `well_case[].type`, `reduction[].type`, `well_screen[].type`, `pump_installations[].riser_material`
   (construction materials): pvc, geomechanical_pvc, carbon_steel, galvanized_steel, stainless_steel,
   fiberglass — never invent others (`steel`, `hdpe`, `wire_wound`); keep the report's phrase when it
-  carries more (standard, wall class, screen construction)
+  carries more (standard, wall class)
+- `well_screen[].slot_type` (screen design, since v2.3): continuous_slot (espiralado / Johnson /
+  wire-wound), slotted (ranhurado), bridge_slot (tipo ponte), louver (veneziana), perforated (perfurado),
+  nold (filtro tipo Nold).
+  Never put the screen design in `well_screen[].type`
 - `well_type`: tubular, hand_dug, horizontal, infiltration_gallery (use `x-` prefix if none fit). This is
   the **construction method only** — never emit `artesian` (deprecated in v2.1); "artesiano/jorrante" is a
   hydraulic condition, recorded as a negative `static_level` in a `spot_measurement` when the report gives one
@@ -409,7 +413,7 @@ debris, or partial backfill reduced the depth; SIAGAS-style records with a separ
 5. `lithology[].texture` is an object `{code, vocabulary}` — never a bare string or the old
    `fgdc_texture` field name; `code` is numeric when `vocabulary` is `fgdc`
 6. `hole_fill[].type` is exactly `gravel_pack` or `seal` — but `well_case.type`, `reduction.type`,
-   `well_screen.type`, `cement_pad.type`, and `drilling_method` are **not** checked against any enum;
+   `well_screen.type`, `well_screen.slot_type`, `cement_pad.type`, and `drilling_method` are **not** checked against any enum;
    flag it as a bug in the extraction (not a data problem) if one of those was force-fit to a value the
    report didn't actually say
 7. `well_screen[].screen_slot` used, not the v1 `screen_slot_mm`
@@ -453,7 +457,8 @@ Present it with a brief summary:
   assumed coverage factor k)
 - Total depth (from `bore_hole`), and `well_depth` separately if the report gave a distinct current/
   usable depth
-- Any freetext "type" field (drilling_method, well_case/reduction/well_screen.type, cement_pad.type)
+- Any freetext "type" field (drilling_method, well_case/reduction/well_screen.type, well_screen.slot_type,
+  cement_pad.type)
   that was kept as the report's original wording rather than mapped to a recommended value
 - Fields absent in the report (intentionally omitted) that may need manual completion
 - Whether you worked from the live spec or the bundled offline copy

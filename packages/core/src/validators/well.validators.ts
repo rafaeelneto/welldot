@@ -99,6 +99,7 @@ export const WellScreenSchema = z.object({
   type: z.string(),
   diameter: z.number(),
   screen_slot: z.number(),
+  slot_type: z.string().optional(),
 });
 
 export const HoleFillSchema = z.object({

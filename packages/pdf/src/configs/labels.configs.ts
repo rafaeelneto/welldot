@@ -62,7 +62,8 @@ export const PDF_LABELS = {
       from: { en: 'From', pt: 'De' },
       title: { en: 'Screen', pt: 'Filtro' },
       to: { en: 'To', pt: 'Até' },
-      type: { en: 'Type', pt: 'Tipo' },
+      material: { en: 'Material', pt: 'Material' },
+      slotType: { en: 'Type', pt: 'Tipo' },
     },
     wellhead: {
       cementPad: {

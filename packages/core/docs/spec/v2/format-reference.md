@@ -313,6 +313,21 @@ Shared by `well_case[].type`, `well_screen[].type`, `reduction[].type` and `pump
 
 Non-canonical values SHOULD use the `x-` prefix.
 
+## `well_screen[].slot_type` — Recommended values _(since v2.3)_
+
+The screen design, independent of its material (`well_screen[].type`).
+
+| Value             | English         | Portuguese (BR)           |
+| ----------------- | --------------- | ------------------------- |
+| `continuous_slot` | Continuous slot | Espiralado (tipo Johnson) |
+| `slotted`         | Slotted         | Ranhurado                 |
+| `bridge_slot`     | Bridge slot     | Tipo ponte                |
+| `louver`          | Louver          | Veneziana                 |
+| `perforated`      | Perforated      | Perfurado                 |
+| `nold`            | Nold type       | Tipo Nold                 |
+
+`continuous_slot` is the wire-wrapped (wire-wound) screen. `nold` is the steel screen sold under that trade designation (_filtro tipo Nold_). Non-canonical values SHOULD use the `x-` prefix.
+
 ## `centralizers[].type` — Recommended values _(since v2.1)_
 
 | Value              | English          | Portuguese (BR)   |
