@@ -10,6 +10,7 @@ import {
   READING_SOURCES,
 } from '@welldot/core';
 import {
+  formatDate,
   formatMeterLabel,
   getActivePermit,
   getProductionByPeriod,
@@ -17,7 +18,6 @@ import {
   getRetractedProductionIds,
   todayCalendarDate,
 } from '@welldot/utils';
-import { format, parseISO } from 'date-fns';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
 import {
   headerCell,
@@ -29,10 +29,21 @@ import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content, TableCell } from '../types/pdfmake.types';
 import { packLabelValueRows } from './metadataTable';
 
-function entryInstant(e: ProductionEntry): string {
-  return e.type === 'meter_reading'
-    ? (e as MeterReading).datetime
-    : (e as DeclaredVolume).period_end;
+/**
+ * The instant an entry is listed at. Unknown (`x-…`) types use their own
+ * `datetime` when they carry one; entries without a date give `undefined`.
+ */
+function entryInstant(e: ProductionEntry): string | undefined {
+  if (e.type === 'meter_reading') return (e as MeterReading).datetime;
+  if (e.type === 'declared_volume') return (e as DeclaredVolume).period_end;
+  const datetime = (e as { datetime?: unknown }).datetime;
+  return typeof datetime === 'string' ? datetime : undefined;
+}
+
+/** Sort key: entries without a valid instant go last (the ledger is newest first). */
+function instantTime(e: ProductionEntry): number {
+  const time = new Date(entryInstant(e) ?? NaN).getTime();
+  return isNaN(time) ? -Infinity : time;
 }
 
 function percent(value: number, limit: number | undefined): string {
@@ -130,9 +141,7 @@ function buildLedgerTable(
   const retracted = getRetractedProductionIds(well);
   const entries = [...(well.production ?? [])].sort(
     (a, b) =>
-      new Date(entryInstant(b)).getTime() -
-        new Date(entryInstant(a)).getTime() ||
-      (b.sequence ?? 0) - (a.sequence ?? 0),
+      instantTime(b) - instantTime(a) || (b.sequence ?? 0) - (a.sequence ?? 0),
   );
   const fields = labels.operation.production.fields;
 
@@ -168,7 +177,7 @@ function buildLedgerTable(
     } else if (e.type === 'declared_volume') {
       const d = e as DeclaredVolume;
       details = [
-        `${format(parseISO(d.period_start), dateFormats.date)} → ${format(parseISO(d.period_end), dateFormats.date)}`,
+        `${formatDate(d.period_start, dateFormats.date) || '—'} → ${formatDate(d.period_end, dateFormats.date) || '—'}`,
         fmt.vocab(DECLARED_METHODS, d.method ?? 'estimated'),
       ].join(' · ');
       value = fmt.formatVolume(d.volume, 1);
@@ -184,7 +193,7 @@ function buildLedgerTable(
     const decoration = isRetracted ? { decoration: 'lineThrough' } : {};
 
     body.push([
-      format(parseISO(entryInstant(e)), dateFormats.dateTime),
+      formatDate(entryInstant(e), dateFormats.dateTime) || '—',
       marks.length ? `${typeLabel} (${marks.join(', ')})` : typeLabel,
       { text: [details, e.notes].filter(Boolean).join('\n') },
       {

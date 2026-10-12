@@ -137,4 +137,66 @@ describe('buildProductionSection', () => {
     expect(serialized).toMatch(/HM-1 · \d{4}-\d{2}-\d{2}/);
     expect(serialized).not.toMatch(/\d{2}\/\d{2}\/\d{4}/);
   });
+
+  it('keeps undated and custom-type entries without throwing', () => {
+    const production = [
+      {
+        id: 'r1',
+        type: 'meter_reading',
+        datetime: '2024-01-01T08:00:00-03:00',
+        meter_id: 'm1',
+        reading: 100,
+        notes: 'dated-reading',
+      },
+      {
+        id: 'x1',
+        type: 'x-energy_reading',
+        datetime: '2025-05-01T08:00:00-03:00',
+        'x-kwh': 18230,
+        notes: 'custom-type',
+      },
+      { id: 'x2', type: 'x-note', notes: 'undated-entry' },
+      {
+        id: 'r2',
+        type: 'meter_reading',
+        datetime: 'not-a-date',
+        meter_id: 'm1',
+        reading: 200,
+        notes: 'invalid-date',
+      },
+      {
+        id: 'd1',
+        type: 'declared_volume',
+        period_start: '2024-01-01T00:00:00-03:00',
+        volume: 1200,
+        notes: 'open-period',
+      },
+    ] as unknown as ProductionEntry[];
+
+    let serialized = '';
+    expect(() => {
+      serialized = JSON.stringify(
+        buildProductionSection(
+          baseWell({ meters: [meter], production }),
+          makeTestContext(
+            { dateFormats: { date: 'yyyy-MM-dd', dateTime: 'yyyy-MM-dd HH:mm' } },
+            lastSegmentLabels,
+          ),
+        ),
+      );
+    }).not.toThrow();
+
+    // The custom type is listed at its own datetime, newest first.
+    expect(serialized.indexOf('custom-type')).toBeLessThan(
+      serialized.indexOf('dated-reading'),
+    );
+    // Entries without a valid instant show a dash and go last.
+    expect(serialized).toMatch(/\d{4}-\d{2}-\d{2} → —/);
+    for (const note of ['undated-entry', 'invalid-date', 'open-period']) {
+      expect(serialized.indexOf(note)).toBeGreaterThan(
+        serialized.indexOf('dated-reading'),
+      );
+    }
+    expect(serialized).not.toContain('Invalid');
+  });
 });
