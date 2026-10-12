@@ -67,3 +67,66 @@ export function makeTestContext(
   });
   return labels ? { ...ctx, labels } : ctx;
 }
+
+/**
+ * Every `label \n value` cell under `node` (see `buildLabelValueTable`), as
+ * `label → value`. Labels are trimmed; a repeated label keeps every value.
+ */
+export function collectFields(node: unknown): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  const walk = (n: unknown): void => {
+    if (Array.isArray(n)) {
+      n.forEach(walk);
+      return;
+    }
+    if (!n || typeof n !== 'object') return;
+    const text = (n as { text?: unknown }).text;
+    if (
+      Array.isArray(text) &&
+      text.length === 2 &&
+      (text[0] as { style?: string }).style === 'metadataLabel' &&
+      (text[1] as { style?: string }).style === 'metadataValue'
+    ) {
+      const label = String((text[0] as { text: string }).text).trim();
+      (out[label] ??= []).push(String((text[1] as { text: string }).text));
+    }
+    Object.values(n).forEach(walk);
+  };
+  walk(node);
+  return out;
+}
+
+/** Text of a table cell: a string, or the `text` of a cell object. */
+export function cellText(cell: unknown): string {
+  if (typeof cell === 'string') return cell;
+  const text = (cell as { text?: unknown } | undefined)?.text;
+  if (typeof text === 'string') return text;
+  if (Array.isArray(text)) return text.map(cellText).join('');
+  return '';
+}
+
+/**
+ * Bodies of every table under `node` whose header row starts with
+ * `firstHeader`, as rows of cell texts from that header row on (a
+ * `withTableTitle` title row above it is skipped).
+ */
+export function findTables(node: unknown, firstHeader: string): string[][][] {
+  const out: string[][][] = [];
+  const walk = (n: unknown): void => {
+    if (Array.isArray(n)) {
+      n.forEach(walk);
+      return;
+    }
+    if (!n || typeof n !== 'object') return;
+    const body = (n as { table?: { body?: unknown[][] } }).table?.body;
+    const start =
+      body?.slice(0, 2).findIndex(row => cellText(row[0]) === firstHeader) ??
+      -1;
+    if (start >= 0) {
+      out.push(body!.slice(start).map(row => row.map(cellText)));
+    }
+    Object.values(n).forEach(walk);
+  };
+  walk(node);
+  return out;
+}

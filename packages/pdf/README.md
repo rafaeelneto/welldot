@@ -239,9 +239,29 @@ Applies defaults (`resolvePdfUnits`, `resolvePdfPage`), resolves labels for the 
 
 `buildMetadataTable`, `buildLithologySection`, `buildCaveSection`, `buildFractureSection`, `buildSectionTables`, `buildHydrodynamicEventsSection`, `buildHistoryLogSection`, `buildPumpInstallationSection`, `buildMeterSection`, `buildOperatingRegimeSection`, `buildProductionSection`, `buildPermitSection`, `buildWaterSampleSection`. All take `(well, ctx)` (`buildLithologySection` also takes `extras`). `PDF_SECTION_BUILDERS` maps section keys to them.
 
+How the operation sections are laid out:
+
+- **Hydrodynamic events**: one table, newest first. Columns: date/time, type, static level, last dynamic level, flow rate and operator, plus a notes column when an event has notes. Unknown values print as "—".
+- **Pumps, meters, permits, water samples**: one entry per item. Each entry has a header line (type, status or "current" marker, date or period) and a label/value grid in the general-information style (`buildFieldGrid`). Notes and attachments each take a full-width row. Entries are separated by `buildEntryDivider`.
+- **Permits** also get captioned tables: conditions (numbered, with responsible and deadline status), fulfillments (by condition number, deadline, author, description) and administrative history.
+- **Water samples**: the results table drops the fraction, location, method and flags columns when no result has a value for them.
+
+The grids use 4 columns, or 2 when `page.contentWidth` is under `WIDE_FIELD_GRID_MIN_WIDTH` (420 pt), for example in the compact side column.
+
 ### Layout helpers
 
-`buildHeaderContent`, `buildFooterContent`, `buildTextWatermark`, `buildImageWatermark`, `buildLegendTable(items, ctx, columns = LEGEND_COLUMNS)`, `lightLinesLayout`, `buildEntryDivider`, `buildRule`, `headerCell`, `rightCell`, `withTableTitle`.
+`buildHeaderContent`, `buildFooterContent`, `buildTextWatermark`, `buildImageWatermark`, `buildLegendTable(items, ctx, columns = LEGEND_COLUMNS)`, `lightLinesLayout`, `buildRule(width, color, margin?, lineWidth = 0.5)`, `headerCell`, `rightCell`, `withTableTitle`.
+
+Helpers for listing sections:
+
+- `buildEntryListing(title, entries, ctx)` keeps the title on the first entry's header and separates entries with `buildEntryDivider`, a 0.75 pt rule in `theme.colors.pageRule`.
+- `buildEntryHeader(title, marker, right)` builds an entry's header line.
+- `buildFieldGrid(fields, ctx, wide?)` and `buildLabelValueTable(fields, columns, wide?)` build label/value grids. `fieldGridColumns(ctx)` gives the column count.
+- `withTableCaption(caption, table)` adds a small caption that repeats with the table header and is never left alone at a page bottom.
+- `valueCell(text)` is a right-aligned cell that keeps a number on one line with its unit.
+- `attachmentName(attachment)` gives an attachment's display name.
+
+`buildDocDefinition` passes the content through `applyGlyphFallbacks`. It swaps characters the bundled fonts lack (`PDF_GLYPH_FALLBACKS`: superscript `⁻` → `−`, `⁺` → `+`, as in `HCO₃⁻`), so they don't print as missing-glyph boxes. SVG markup is left untouched.
 
 ### Runtime
 
@@ -249,7 +269,14 @@ Applies defaults (`resolvePdfUnits`, `resolvePdfPage`), resolves labels for the 
 
 ### Configs
 
-`PDF_LABELS`, `resolvePdfLabels(locale, overrides?)` (typed result, read as `labels.general.name`), `DEFAULT_PDF_THEME`, `PDF_PAGE_SIZES`, `WELLDOT_BRANDING`, `WELLDOT_LOGO_SVG`, `createPdfFormatters(ctx)` (also `formatDepth` / `formatDepthRange`). The label pack has `profile.columns`, `profile.caption`, `profile.continuation`, `profile.overlapRepeated`, `lithology`, `caves` and `fractures` groups for the profile formats, and the theme has `colors.profileCaption` and `colors.snapNote`.
+`PDF_LABELS`, `resolvePdfLabels(locale, overrides?)` (typed result, read as `labels.general.name`), `DEFAULT_PDF_THEME`, `PDF_PAGE_SIZES`, `WELLDOT_BRANDING`, `WELLDOT_LOGO_SVG`, `createPdfFormatters(ctx)` (also `formatDepth` / `formatDepthRange`). The label pack has `profile.columns`, `profile.caption`, `profile.continuation`, `profile.overlapRepeated`, `lithology`, `caves` and `fractures` groups for the profile formats, and the theme has `colors.profileCaption` and `colors.snapNote`. New labels for the operation sections:
+
+- `operation.attachments`
+- `operation.permit.conditions.{condition,number,status}`
+- `operation.permit.fulfill.{title,fulfilledAt,by,description}`
+- `operation.permit.history.{date,type,description,situation}`
+- `hydrodynamicEvents.fields.{datetime,type,notes}`
+- `waterQuality.pdf.flagsValidation`
 
 ---
 

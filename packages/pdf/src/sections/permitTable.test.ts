@@ -1,6 +1,12 @@
 import type { Permit } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
+import {
+  baseWell,
+  collectFields,
+  findTables,
+  lastSegmentLabels,
+  makeTestContext,
+} from '../test-utils';
 import { buildPermitSection } from './permitTable';
 
 const ctx = makeTestContext({}, lastSegmentLabels);
@@ -83,22 +89,61 @@ describe('buildPermitSection', () => {
     expect(text).toContain('1234/2025');
     expect(text).toContain('Human supply');
     expect(text).toContain('PRT-2024/0099');
-    expect(text).toContain(
-      'Install meter (Equipment installation · responsible: Ops team) — Fulfilled 11/05/2025',
-    );
-    expect(text).toContain('deadline 11/05/2025 · J. Silva · Meter installed');
-    expect(text).toContain('Overdue: 31/07/2025, 31/01/2026, 31/07/2026');
-    expect(text).toContain('Upcoming: 31/01/2027');
-    expect(text).toContain('portaria.pdf');
+
+    const fields = collectFields(section);
+    expect(fields.authority).toEqual(['SEMAS-PA']);
+    expect(fields['volumeLimits (Annual)']).toEqual(['109,500 m³']);
+    expect(fields.attachments).toEqual(['portaria.pdf']);
+
+    const [conditions, fulfillments] = findTables(section, 'number');
+    expect(conditions![0]).toEqual([
+      'number',
+      'condition',
+      'responsible',
+      'status',
+    ]);
+    expect(conditions![1]).toEqual([
+      '1',
+      'Install meter\nEquipment installation',
+      'Ops team',
+      'Fulfilled:\u00a011/05/2025',
+    ]);
+    expect(conditions![2]).toEqual([
+      '2',
+      'Semiannual report',
+      '',
+      'Overdue:\u00a031/07/2025, 31/01/2026, 31/07/2026\nUpcoming:\u00a031/01/2027',
+    ]);
+
+    expect(fulfillments![0]).toEqual([
+      'number',
+      'fulfilledAt',
+      'deadline',
+      'by',
+      'description',
+    ]);
+    expect(fulfillments).toHaveLength(2);
+    const [num, fulfilledAt, ...rest] = fulfillments![1]!;
+    expect(num).toBe('1');
+    expect(fulfilledAt).toMatch(/\/04\/2025$/);
+    expect(rest).toEqual(['11/05/2025', 'J. Silva', 'Meter installed']);
+  });
+
+  it('never prints a glyph the bundled fonts lack', () => {
+    const text = JSON.stringify(buildPermitSection(well, ctx, '2026-10-03'));
+    expect(text).not.toMatch(/[✓✔]/);
   });
 
   it('lists the administrative history oldest first', () => {
-    const text = JSON.stringify(buildPermitSection(well, ctx, '2026-10-03'));
-    expect(text).toContain('04/11/2024 · Filing · Request filed');
-    expect(text).toContain('15/12/2024 · Fee · Analysis fee · (done)');
-    expect(text.indexOf('Request filed')).toBeLessThan(
-      text.indexOf('Analysis fee'),
+    const [history] = findTables(
+      buildPermitSection(well, ctx, '2026-10-03'),
+      'date',
     );
+    expect(history).toEqual([
+      ['date', 'type', 'description', 'situation'],
+      ['04/11/2024', 'Filing', 'Request filed', ''],
+      ['15/12/2024', 'Fee', 'Analysis fee', 'done'],
+    ]);
   });
 
   it('shows the administrative status of a requested permit', () => {
@@ -109,11 +154,13 @@ describe('buildPermitSection', () => {
       request_identifier: 'PRT-1',
       status: 'requested',
     };
-    const text = JSON.stringify(
-      buildPermitSection(baseWell({ permits: [requested] }), ctx, '2026-10-03'),
+    const section = buildPermitSection(
+      baseWell({ permits: [requested] }),
+      ctx,
+      '2026-10-03',
     );
-    expect(text).toContain('Requested');
-    expect(text).toContain('requestIdentifier: PRT-1');
+    expect(JSON.stringify(section)).toContain('Requested');
+    expect(collectFields(section).requestIdentifier).toEqual(['PRT-1']);
   });
 
   it('lists the most recent permit first and marks the superseded one', () => {
@@ -152,12 +199,12 @@ describe('buildPermitSection', () => {
     );
     const text = JSON.stringify(section);
     expect(text).toContain('2025-02-10 → 2029-02-10');
-    expect(text).toContain('issuedAt: 2025-02-10');
-    expect(text).toContain('2024-11-04 · Filing · Request filed');
-    expect(text).toContain('Overdue: 2025-07-31, 2026-01-31, 2026-07-31');
-    expect(text).toContain('deadline 2025-05-11 · J. Silva');
+    expect(collectFields(section).issuedAt).toEqual(['2025-02-10']);
+    expect(findTables(section, 'date')[0]![1]![0]).toBe('2024-11-04');
+    expect(text).toContain('Overdue:\u00a02025-07-31, 2026-01-31, 2026-07-31');
+    expect(findTables(section, 'number')[1]![1]![2]).toBe('2025-05-11');
     expect(text).not.toMatch(/\d{2}\/\d{2}\/\d{4}/);
-    // Fulfillment lines use the theme's table header color.
+    // The condition category uses the theme's table header color.
     expect(text).toContain('"color":"#123456"');
   });
 });

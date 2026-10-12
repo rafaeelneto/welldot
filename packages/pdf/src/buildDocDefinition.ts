@@ -1,6 +1,7 @@
 import type { Well } from '@welldot/core';
 import { resolveBodyMargins, resolvePdfContext } from './context';
 import { buildFooterContent } from './layout/footer';
+import { applyGlyphFallbacks } from './layout/glyphFallbacks';
 import { buildHeaderContent } from './layout/header';
 import { buildLegendStrip, computeLegendStripHeight } from './layout/legend';
 import { withTableTitle } from './layout/tables';
@@ -13,6 +14,7 @@ import { buildLithologySection } from './sections/lithologyTable';
 import {
   buildMetadataTable,
   packLabelValueRows,
+  WIDE_FIELD_GRID_MIN_WIDTH,
 } from './sections/metadataTable';
 import { buildMeterSection } from './sections/meterTable';
 import { buildOperatingRegimeSection } from './sections/operatingRegimeTable';
@@ -100,9 +102,6 @@ export const LEAD_TOP_GAP = 6;
 
 /** Label/value columns of the general-info table in the compact side column. */
 export const COMPACT_METADATA_COLUMNS = 2;
-
-/** Narrowest content width (pt) that still takes three metadata columns. */
-const THREE_METADATA_COLUMNS_MIN_WIDTH = 420;
 
 /** The titled general-info table, or `null` when the well has no metadata. */
 function buildGeneralInfo(
@@ -244,7 +243,7 @@ export function buildCompactBlocks(
 ): Content[] {
   const ctx = toPdfContext(options);
   const metadataColumns =
-    ctx.page.contentWidth < THREE_METADATA_COLUMNS_MIN_WIDTH
+    ctx.page.contentWidth < WIDE_FIELD_GRID_MIN_WIDTH
       ? COMPACT_METADATA_COLUMNS
       : undefined;
   const generalInfo =
@@ -487,7 +486,7 @@ export function buildDocDefinition(
 
   const doc: TDocumentDefinition = {
     ...buildDocShell(ctx),
-    content,
+    content: applyGlyphFallbacks(content),
     info: {
       title: ctx.metadata.title ?? ctx.title,
       author: ctx.metadata.author,

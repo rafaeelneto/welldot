@@ -132,7 +132,10 @@ export const PDF_LABELS = {
   },
   hydrodynamicEvents: {
     fields: {
+      datetime: { en: 'Date / Time', pt: 'Data / Hora' },
+      notes: { en: 'Notes', pt: 'Observações' },
       operator: { en: 'Operator', pt: 'Operador' },
+      type: { en: 'Type', pt: 'Tipo' },
     },
     stats: {
       flowRate: { en: 'FLOW RATE Q', pt: 'VAZÃO Q' },
@@ -148,6 +151,7 @@ export const PDF_LABELS = {
     unit: { en: 'Unit', pt: 'Unidade' },
   },
   operation: {
+    attachments: { en: 'Attachments', pt: 'Anexos' },
     meter: {
       current: { en: 'Current', pt: 'Atual' },
       fields: {
@@ -187,7 +191,10 @@ export const PDF_LABELS = {
     },
     permit: {
       conditions: {
+        condition: { en: 'Condition', pt: 'Condicionante' },
+        number: { en: '#', pt: 'Nº' },
         responsible: { en: 'Responsible', pt: 'Responsável' },
+        status: { en: 'Status', pt: 'Situação' },
         title: { en: 'Conditions', pt: 'Condicionantes' },
         undated: { en: 'Undated', pt: 'Sem prazo' },
       },
@@ -273,12 +280,20 @@ export const PDF_LABELS = {
         notes: { en: 'Notes', pt: 'Observações' },
       },
       fulfill: {
+        by: { en: 'By', pt: 'Por' },
         deadline: { en: 'Deadline', pt: 'Prazo' },
+        description: { en: 'Description', pt: 'Descrição' },
+        fulfilledAt: { en: 'Fulfilled on', pt: 'Cumprida em' },
+        title: { en: 'Fulfillments', pt: 'Cumprimentos' },
       },
       history: {
+        date: { en: 'Date', pt: 'Data' },
+        description: { en: 'Description', pt: 'Descrição' },
         done: { en: 'Done', pt: 'Concluída' },
         dueDate: { en: 'Due', pt: 'Prazo' },
+        situation: { en: 'Status', pt: 'Situação' },
         title: { en: 'History', pt: 'Histórico' },
+        type: { en: 'Type', pt: 'Tipo' },
       },
       noExpiry: { en: 'no fixed expiry', pt: 'sem vencimento' },
       title: { en: 'Permits', pt: 'Outorgas' },
@@ -519,6 +534,10 @@ export const PDF_LABELS = {
       method: { en: 'Method', pt: 'Método' },
       flags: { en: 'Lab flags', pt: 'Flags do laboratório' },
       validation: { en: 'Validation', pt: 'Validação' },
+      flagsValidation: {
+        en: 'Flags / validation',
+        pt: 'Flags / validação',
+      },
       exceedances: { en: 'Exceedances', pt: 'Excedências' },
       limitSet: { en: 'Limit set', pt: 'Conjunto de limites' },
     },

@@ -2,7 +2,12 @@ import type { OperatingRegime, Well } from '@welldot/core';
 import { formatNumber, getCurrentRegime } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters } from '../formatters';
-import { headerCell, rightCell, withTableTitle } from '../layout/tables';
+import {
+  headerCell,
+  rightCell,
+  valueCell,
+  withTableTitle,
+} from '../layout/tables';
 import type { PdfContext } from '../types/options.types';
 import type { Content, TableCell } from '../types/pdfmake.types';
 
@@ -43,7 +48,7 @@ export function buildOperatingRegimeSection(
       r.id === currentId
         ? `${date}  (${labels.operation.regime.inForce})`
         : date,
-      rightCell(fmt.formatFlow(r.flow_rate, 2)),
+      valueCell(fmt.formatFlow(r.flow_rate, 2)),
       rightCell(
         r.daily_operating_time != null
           ? formatNumber(r.daily_operating_time, { maximumFractionDigits: 2 })

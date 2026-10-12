@@ -152,7 +152,7 @@ describe('buildHistoryLogSection', () => {
     expect(serialized).toContain(' · Inactive');
   });
 
-  it('honors a custom dateTime format and the theme divider color', () => {
+  it('honors a custom dateTime format and draws the divider in the page rule color', () => {
     const logs: HistoryLogEntry[] = [
       {
         id: 'a',
@@ -173,7 +173,8 @@ describe('buildHistoryLogSection', () => {
         makeTestContext(
           {
             dateFormats: { dateTime: "yyyy-MM-dd '@' HH:mm" },
-            theme: { colors: { divider: '#123456' } },
+            theme: { colors: { pageRule: '#123456' } },
+            page: { size: 'A3' },
           },
           lastSegmentLabels,
         ),
@@ -181,7 +182,8 @@ describe('buildHistoryLogSection', () => {
     );
     expect(serialized).toMatch(/2024-03-05 @ \d{2}:\d{2}/);
     expect(serialized).not.toContain('05/03/2024');
-    expect(serialized).toContain('#123456');
+    expect(serialized).toContain('"lineColor":"#123456"');
+    expect(serialized).toContain('"lineWidth":0.75');
   });
 
   it('resolves labels from the package label pack', () => {

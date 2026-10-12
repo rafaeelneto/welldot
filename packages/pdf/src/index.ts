@@ -61,7 +61,11 @@ export { buildHistoryLogSection } from './sections/historyLogTable';
 export { buildHydrodynamicEventsSection } from './sections/hydrodynamicEventsTable';
 export { buildLithologySection } from './sections/lithologyTable';
 export {
+  WIDE_FIELD_GRID_MIN_WIDTH,
+  buildFieldGrid,
+  buildLabelValueTable,
   buildMetadataTable,
+  fieldGridColumns,
   packLabelValueRows,
 } from './sections/metadataTable';
 export { buildMeterSection } from './sections/meterTable';
@@ -74,6 +78,10 @@ export { buildWaterSampleSection } from './sections/waterSampleTable';
 
 // Layout
 export { buildFooterContent } from './layout/footer';
+export {
+  PDF_GLYPH_FALLBACKS,
+  applyGlyphFallbacks,
+} from './layout/glyphFallbacks';
 export { buildHeaderContent } from './layout/header';
 export {
   LEGEND_COLUMNS,
@@ -93,11 +101,16 @@ export {
   measureProfileStart,
 } from './layout/measureProfileStart';
 export {
+  attachmentName,
   buildEntryDivider,
+  buildEntryHeader,
+  buildEntryListing,
   buildRule,
   headerCell,
   lightLinesLayout,
   rightCell,
+  valueCell,
+  withTableCaption,
   withTableTitle,
 } from './layout/tables';
 export { buildImageWatermark, buildTextWatermark } from './layout/watermark';
@@ -123,6 +136,8 @@ export type { ResolvedPdfLabels } from './configs/labels.utils';
 export type { CreateWellPdfOptions, WellPdf } from './createWellPdf';
 export type { PdfFormatters } from './formatters';
 export type { ProfileStartPosition } from './layout/measureProfileStart';
+export type { ListingEntry } from './layout/tables';
+export type { MetaField } from './sections/metadataTable';
 export type {
   BuildSvgProfilesOptions,
   BuildSvgProfilesResult,

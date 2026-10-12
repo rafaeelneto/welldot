@@ -19,7 +19,12 @@ import {
 } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
-import { headerCell, rightCell, withTableTitle } from '../layout/tables';
+import {
+  headerCell,
+  rightCell,
+  valueCell,
+  withTableTitle,
+} from '../layout/tables';
 import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content, TableCell } from '../types/pdfmake.types';
 import { packLabelValueRows } from './metadataTable';
@@ -93,10 +98,10 @@ function buildAnnualTable(
   buckets.forEach(b => {
     const row: TableCell[] = [
       b.period,
-      rightCell(fmt.formatVolume(b.metered, 1)),
-      rightCell(fmt.formatVolume(b.estimated, 1)),
-      rightCell(fmt.formatVolume(b.total, 1)),
-      rightCell(b.reported ? fmt.formatVolume(b.reported, 1) : '—'),
+      valueCell(fmt.formatVolume(b.metered, 1)),
+      valueCell(fmt.formatVolume(b.estimated, 1)),
+      valueCell(fmt.formatVolume(b.total, 1)),
+      valueCell(b.reported ? fmt.formatVolume(b.reported, 1) : '—'),
     ];
     if (limit) row.push(rightCell(percent(b.total, limit)));
     body.push(row);
@@ -182,7 +187,12 @@ function buildLedgerTable(
       format(parseISO(entryInstant(e)), dateFormats.dateTime),
       marks.length ? `${typeLabel} (${marks.join(', ')})` : typeLabel,
       { text: [details, e.notes].filter(Boolean).join('\n') },
-      { text: value, style: 'columnRight', ...decoration } as TableCell,
+      {
+        text: value,
+        style: 'columnRight',
+        noWrap: true,
+        ...decoration,
+      } as TableCell,
     ]);
   });
 

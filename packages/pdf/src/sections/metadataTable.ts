@@ -6,9 +6,18 @@ import { createPdfFormatters } from '../formatters';
 import type { PdfContext } from '../types/options.types';
 import type { ContentTable, TableCell } from '../types/pdfmake.types';
 
-interface MetaField {
+/** One `label \n value` cell of a label/value grid. */
+export interface MetaField {
   label: string;
   value: string;
+}
+
+/** Narrowest content width (pt) that still takes a wide label/value grid. */
+export const WIDE_FIELD_GRID_MIN_WIDTH = 420;
+
+/** Label/value columns of a field grid at `ctx.page.contentWidth`: 4, or 2 when narrow. */
+export function fieldGridColumns(ctx: Pick<PdfContext, 'page'>): number {
+  return ctx.page.contentWidth < WIDE_FIELD_GRID_MIN_WIDTH ? 2 : 4;
 }
 
 function labelValueCell(field: MetaField, colSpan?: number): TableCell {
@@ -40,6 +49,50 @@ export function packLabelValueRows(
     while (lastRow.length < columns) lastRow.push({ width: '*', text: '' });
   }
   return rows;
+}
+
+/**
+ * Label/value grid in the general-info style: `fields` packed `columns` per
+ * row, then each `wide` field (notes, attachments…) on its own full-width
+ * row. Returns `null` when both lists are empty.
+ */
+export function buildLabelValueTable(
+  fields: MetaField[],
+  columns: number,
+  wide: MetaField[] = [],
+): ContentTable | null {
+  if (fields.length === 0 && wide.length === 0) return null;
+
+  const body = packLabelValueRows(fields, columns);
+  // Free text reads poorly squeezed into a single narrow column.
+  for (const field of wide) {
+    body.push([
+      labelValueCell(field, columns),
+      ...Array.from({ length: columns - 1 }, () => ({})),
+    ]);
+  }
+  return {
+    layout: 'noBorders',
+    table: {
+      widths: Array<'*'>(columns).fill('*'),
+      dontBreakRows: false,
+      body,
+    },
+  };
+}
+
+/**
+ * {@link buildLabelValueTable} sized to `ctx.page.contentWidth` (see
+ * {@link fieldGridColumns}), with a small top margin to sit under an entry
+ * header. Used by the per-entry cards (pumps, meters, permits, samples).
+ */
+export function buildFieldGrid(
+  fields: MetaField[],
+  ctx: Pick<PdfContext, 'page'>,
+  wide: MetaField[] = [],
+): ContentTable | null {
+  const table = buildLabelValueTable(fields, fieldGridColumns(ctx), wide);
+  return table ? { ...table, margin: [0, 2, 0, 0] } : null;
 }
 
 /**
@@ -117,24 +170,9 @@ export function buildMetadataTable(
     ? { label: labels.general.observationsLabel, value: well.obs }
     : null;
 
-  if (fields.length === 0 && !observations) return null;
-
-  const body = packLabelValueRows(fields, columns);
-  // Always its own full-width row at the end, starting at the first column —
-  // free-text notes read poorly squeezed into a single narrow column.
-  if (observations) {
-    body.push([
-      labelValueCell(observations, columns),
-      ...Array.from({ length: columns - 1 }, () => ({})),
-    ]);
-  }
-
-  return {
-    layout: 'noBorders',
-    table: {
-      widths: Array<'*'>(columns).fill('*'),
-      dontBreakRows: false,
-      body,
-    },
-  };
+  return buildLabelValueTable(
+    fields,
+    columns,
+    observations ? [observations] : [],
+  );
 }
