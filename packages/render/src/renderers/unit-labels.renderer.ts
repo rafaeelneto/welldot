@@ -8,12 +8,10 @@ import { DrawContext } from '~/types/render.types';
  * Adjacent layers sharing the same unit value are merged into a single strip
  * segment. Each segment is drawn as a filled rect with divider lines at its
  * top and bottom edges; a rotated text label is added when the segment is tall
- * enough. Returns early if the feature is disabled via
- * `ctx.renderConfig.unitLabels.active` or if `data` is empty.
+ * enough. Clears the strip first, then returns early if the feature is
+ * disabled via `ctx.renderConfig.unitLabels.active` or if `data` is empty.
  */
 export function drawUnitLabels(ctx: DrawContext, data: Lithology[]): void {
-  if (!ctx.renderConfig.unitLabels.active || !data.length) return;
-
   const {
     groups: { unitLabelsGroup },
     depthFrom,
@@ -25,6 +23,7 @@ export function drawUnitLabels(ctx: DrawContext, data: Lithology[]): void {
   } = ctx;
 
   unitLabelsGroup.selectAll('*').remove();
+  if (!renderConfig.unitLabels.active || !data.length) return;
 
   const ru = renderConfig.unitLabels;
   const rut = theme.unitLabels;

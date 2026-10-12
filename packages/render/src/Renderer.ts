@@ -353,6 +353,51 @@ export class WellRenderer {
   }
 
   /**
+   * Removes everything drawn on every panel (layers, labels, axis,
+   * highlights) and keeps the structure `prepareSvg()` built, so the next
+   * `draw()` needs no new `prepareSvg()`. `draw()` calls it for an empty well.
+   */
+  public clear(): void {
+    const c = this.classes;
+    const layerGroups = [
+      c.overview.group,
+      c.columnHeaders.group,
+      c.yAxis,
+      c.unitLabels.group,
+      c.lithology.group,
+      c.caves.group,
+      c.labels.lithology.group,
+      c.highlights.geologicGroup,
+      c.highlights.constructionGroup,
+      c.highlights.fracturesGroup,
+      c.markers.group,
+      c.cementPad.group,
+      c.boreHole.group,
+      c.surfaceCase.group,
+      c.holeFill.group,
+      c.wellCase.group,
+      c.wellScreen.group,
+      c.reduction.group,
+      c.pump.group,
+      c.centralizer.group,
+      c.conflict.group,
+      c.constructionLabels.group,
+      c.overlap.group,
+    ];
+    for (const { svg } of this.instanceStates) {
+      for (const cls of layerGroups) {
+        svg.select(`.${cls}`).selectAll('*').interrupt().remove();
+      }
+      // The fractures group also holds its highlights subgroup: drop only the items.
+      svg
+        .select(`.${c.fractures.group}`)
+        .selectAll(`g.${c.fractures.item}`)
+        .interrupt()
+        .remove();
+    }
+  }
+
+  /**
    * Initialises the SVG DOM structure and preloads FGDC textures.
    * Must be called once before the first `draw()`.
    */
@@ -364,7 +409,9 @@ export class WellRenderer {
   }
 
   /**
-   * Renders the well profile into all configured SVG panels.
+   * Renders the well profile into all configured SVG panels. Layers the
+   * profile no longer has are removed; an empty well (`isWellEmpty`) clears
+   * the panels (see {@link clear}).
    * @param profile - The well data to render.
    * @param options.units - Override the instance-level measurement units for this render.
    * @param options.locale - Override the instance-level locale for this render.
@@ -378,7 +425,10 @@ export class WellRenderer {
       highlights?: Highlights;
     } = {},
   ) {
-    if (isWellEmpty(profile)) return;
+    if (isWellEmpty(profile)) {
+      this.clear();
+      return;
+    }
 
     if (profile.version !== 2) {
       console.warn(

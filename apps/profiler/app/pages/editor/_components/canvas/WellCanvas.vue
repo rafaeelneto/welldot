@@ -114,7 +114,11 @@ async function initRenderer() {
 function redraw() {
   if (!wellRenderer) return;
   const profile = well.value;
-  if (!profile || isWellEmpty(profile)) return;
+  // Cleared or empty well: wipe the previous drawing under the empty overlay.
+  if (!profile || isWellEmpty(profile)) {
+    wellRenderer.clear();
+    return;
+  }
   wellRenderer.draw(profile, {
     units: {
       length: uiStore.lengthUnit,

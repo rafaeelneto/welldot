@@ -11,12 +11,10 @@ import { getLithologyFill, getYAxisFunctions } from '~/utils/render.utils';
  *
  * Each lithology layer is drawn as a rect spanning `geoXLeft` to `geoXRight`
  * at the depth position determined by `ctx.yScale`. Fill textures are resolved
- * via `getLithologyFill` using the FGDC texture config. Returns early if
- * `data` is empty.
+ * via `getLithologyFill` using the FGDC texture config. An empty `data`
+ * removes the layers already drawn.
  */
 export function drawLithology(ctx: DrawContext, data: Lithology[]): void {
-  if (!data.length) return;
-
   const {
     groups: { lithologyGroup },
     svg,

@@ -70,6 +70,7 @@
     "@types/d3-tip": "^3.5.8",
     "@types/sanitize-html": "^2.16.1",
     "@welldot/lint": "workspace:*",
+    "jsdom": "^23.2.0",
     "tsup": "^8.3.0",
     "typescript": "^5.3.3",
     "vite": "^8.0.9",
