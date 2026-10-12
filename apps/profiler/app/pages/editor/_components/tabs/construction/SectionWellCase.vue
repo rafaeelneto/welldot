@@ -47,7 +47,7 @@ function addWellCase() {
 }
 
 function deleteWellCase(index: number) {
-  profileStore.well.well_case.splice(index, 1);
+  profileStore.removeWellFeature('well_case', index);
 }
 
 function updateWellCase(index: number, prop: string, value: unknown) {

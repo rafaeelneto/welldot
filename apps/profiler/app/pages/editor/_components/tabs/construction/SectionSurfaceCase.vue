@@ -30,7 +30,7 @@ function addSurfaceCase() {
 }
 
 function deleteSurfaceCase(index: number) {
-  profileStore.well.surface_case.splice(index, 1);
+  profileStore.removeWellFeature('surface_case', index);
 }
 
 function updateSurfaceCase(index: number, prop: string, value: unknown) {

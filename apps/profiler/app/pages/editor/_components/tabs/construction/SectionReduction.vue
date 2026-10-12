@@ -60,7 +60,7 @@ function addReduction() {
 }
 
 function deleteReduction(index: number) {
-  profileStore.well.reduction.splice(index, 1);
+  profileStore.removeWellFeature('reduction', index);
 }
 
 function updateReduction(index: number, prop: string, value: unknown) {

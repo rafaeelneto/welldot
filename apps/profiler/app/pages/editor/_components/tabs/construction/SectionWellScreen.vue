@@ -66,7 +66,7 @@ function addWellScreen() {
 }
 
 function deleteWellScreen(index: number) {
-  profileStore.well.well_screen.splice(index, 1);
+  profileStore.removeWellFeature('well_screen', index);
 }
 
 function updateWellScreen(index: number, prop: string, value: unknown) {
