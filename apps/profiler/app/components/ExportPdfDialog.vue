@@ -19,6 +19,47 @@ const actionsDisabled = computed(
 const kickerClass =
   'text-[10px] font-semibold tracking-widest uppercase text-content-400';
 
+/** Largest 1:N the scale controls accept. */
+const SCALE_MAX = 5000;
+
+const formatOptions = computed(() => [
+  { label: t('editor.exportPdfDialog.format.compact'), value: 'compact' },
+  { label: t('editor.exportPdfDialog.format.detailed'), value: 'detailed' },
+]);
+
+const isCompact = computed(() => pdfExportStore.format === 'compact');
+
+// "Follow the content" (compact, no page splitting) and "Fit to one page"
+// (any format, with or without splitting) exclude each other and replace the
+// scale. Page splitting only turns "Follow the content" off.
+const matchContentModel = computed({
+  get: () => pdfExportStore.profileFit === 'content',
+  set: (value: boolean) =>
+    (pdfExportStore.profileFit = value ? 'content' : 'scale'),
+});
+const fitPageModel = computed({
+  get: () => pdfExportStore.profileFit === 'page',
+  set: (value: boolean) =>
+    (pdfExportStore.profileFit = value ? 'page' : 'scale'),
+});
+
+const scaleDisabled = computed(
+  () =>
+    pdfExportStore.profileFit === 'page' ||
+    (isCompact.value &&
+      !pdfExportStore.breakPages &&
+      pdfExportStore.profileFit === 'content'),
+);
+
+watch(
+  () => pdfExportStore.breakPages,
+  breakPages => {
+    if (breakPages && pdfExportStore.profileFit === 'content') {
+      pdfExportStore.profileFit = 'scale';
+    }
+  },
+);
+
 const metadataPositionOptions = computed(() => [
   {
     label: t('editor.exportPdfDialog.metadataSection.before'),
@@ -122,17 +163,74 @@ const endInfoCount = computed(() =>
             <InputText v-model="pdfExportStore.header" class="w-full" />
           </section>
 
-          <!-- Page breaks -->
+          <!-- Profile format, page breaks and scale -->
           <section class="flex flex-col gap-3">
             <span :class="kickerClass">{{
-              t('editor.exportPdfDialog.pageBreaks.title')
+              t('editor.exportPdfDialog.format.title')
             }}</span>
+            <SelectButton
+              v-model="pdfExportStore.format"
+              :options="formatOptions"
+              option-label="label"
+              option-value="value"
+              :allow-empty="false"
+              class="w-full *:flex-1"
+            />
             <label
               class="flex items-center gap-2.5 text-sm text-content-0 cursor-pointer"
             >
               <Checkbox v-model="pdfExportStore.breakPages" binary />
-              {{ t('editor.exportPdfDialog.pageBreaks.split') }}
+              {{ t('editor.exportPdfDialog.format.split') }}
             </label>
+            <div class="flex items-center gap-4">
+              <Slider
+                v-model="pdfExportStore.scale"
+                :min="1"
+                :max="SCALE_MAX"
+                :disabled="scaleDisabled"
+                class="flex-1"
+              />
+              <div class="flex items-center gap-1 shrink-0">
+                <span class="font-mono text-xs text-content-400">1 :</span>
+                <InputNumber
+                  v-model="pdfExportStore.scale"
+                  :min="1"
+                  :max="SCALE_MAX"
+                  :use-grouping="false"
+                  :disabled="scaleDisabled"
+                  input-class="font-mono text-xs w-full max-w-20"
+                />
+              </div>
+            </div>
+            <label
+              v-if="isCompact"
+              class="flex items-center gap-2.5 text-sm"
+              :class="
+                pdfExportStore.breakPages
+                  ? 'text-content-400 cursor-not-allowed'
+                  : 'text-content-0 cursor-pointer'
+              "
+            >
+              <Checkbox
+                v-model="matchContentModel"
+                binary
+                :disabled="pdfExportStore.breakPages"
+              />
+              {{ t('editor.exportPdfDialog.format.matchContent') }}
+            </label>
+            <label
+              class="flex items-center gap-2.5 text-sm text-content-0 cursor-pointer"
+            >
+              <Checkbox v-model="fitPageModel" binary />
+              {{ t('editor.exportPdfDialog.format.fitPage') }}
+            </label>
+            <p class="text-xs text-content-400">
+              {{
+                isCompact
+                  ? t('editor.exportPdfDialog.format.compactHint')
+                  : t('editor.exportPdfDialog.format.detailedHint')
+              }}
+            </p>
           </section>
 
           <!-- Metadata section placement -->
@@ -170,33 +268,6 @@ const endInfoCount = computed(() =>
             <ShareVisibilityChecklist
               v-if="pdfExportStore.useCustomVisibility"
             />
-          </section>
-
-          <!-- Scale -->
-          <section class="flex flex-col gap-3">
-            <span :class="kickerClass">{{
-              t('editor.exportPdfDialog.scale.title')
-            }}</span>
-            <div class="flex flex-col items-end gap-6">
-              <div class="flex items-center gap-3 w-full">
-                <Slider
-                  v-model="pdfExportStore.scale"
-                  :min="1"
-                  :max="850"
-                  class="flex-1"
-                />
-              </div>
-              <div class="flex items-center gap-1 shrink-0">
-                <span class="font-mono text-xs text-content-400">1 :</span>
-                <InputNumber
-                  v-model="pdfExportStore.scale"
-                  :min="1"
-                  :max="850"
-                  :use-grouping="false"
-                  input-class="font-mono text-xs w-full max-w-20"
-                />
-              </div>
-            </div>
           </section>
 
           <!-- Initial information -->

@@ -14,6 +14,7 @@ const d3 = { ...d3module, tip: d3tip };
 import {
   isWellEmpty,
   type Constructive,
+  type Lithology,
   type Reduction,
   type SurfaceCase,
   type Units,
@@ -47,6 +48,7 @@ import {
 import { drawAnnotationLabels } from './renderers/annotation-labels.renderer';
 import { drawCaves } from './renderers/caves.renderer';
 import { drawCentralizers } from './renderers/centralizers.renderer';
+import { drawColumnHeaders } from './renderers/column-headers.renderer';
 import { drawConstructionLabels } from './renderers/construction-labels.renderer';
 import { drawConstructive } from './renderers/construction.renderer';
 import { drawFractures } from './renderers/fractures.renderer';
@@ -57,10 +59,17 @@ import {
   getWellLegendItems,
   WellLegendItem,
 } from './renderers/legend.renderer';
-import { drawLithology } from './renderers/lithology.renderer';
+import {
+  drawLithology,
+  drawLithologySwatch,
+} from './renderers/lithology.renderer';
+import { drawMarkers } from './renderers/markers.renderer';
+import { drawOverlap } from './renderers/overlap.renderer';
+import { drawOverview } from './renderers/overview.renderer';
 import { drawPump } from './renderers/pump.renderer';
 import { drawUnitLabels } from './renderers/unit-labels.renderer';
 import { asSvgElement } from './utils/d3.utils';
+import { resolvePanelWindows } from './utils/layout.utils';
 import { buildSvgStyleBlock } from './utils/render.styles';
 import {
   filterByDepth,
@@ -185,6 +194,12 @@ export class WellRenderer {
       .attr('width', 100000)
       .attr('height', 10000);
 
+    svg
+      .append('g')
+      .attr('class', this.classes.overview.group)
+      .attr('transform', `translate(0, ${margins.top})`);
+    svg.append('g').attr('class', this.classes.columnHeaders.group);
+
     const poco = svg.append('g').attr('class', this.classes.wellGroup);
 
     const geologic = poco
@@ -217,6 +232,11 @@ export class WellRenderer {
       .append('g')
       .attr('class', this.classes.highlights.fracturesGroup);
 
+    poco
+      .append('g')
+      .attr('class', this.classes.markers.group)
+      .attr('transform', `translate(${margins.left}, ${margins.top})`);
+
     construction.append('g').attr('class', this.classes.cementPad.group);
     construction.append('g').attr('class', this.classes.boreHole.group);
     construction.append('g').attr('class', this.classes.surfaceCase.group);
@@ -234,9 +254,24 @@ export class WellRenderer {
       .append('g')
       .attr('class', this.classes.highlights.constructionGroup);
 
+    // Last child of the well group, so the band hatches over everything.
+    poco
+      .append('g')
+      .attr('class', this.classes.overlap.group)
+      .attr('transform', `translate(${margins.left}, ${margins.top})`);
+
     Object.values(this.textures).forEach(texture => svg.call(texture));
 
-    return { svg, height, width, margins, clipId, clipRectId };
+    return {
+      svg,
+      height,
+      width,
+      margins,
+      clipId,
+      clipRectId,
+      depthRange: inst.depthRange,
+      repeatedTo: inst.repeatedTo,
+    };
   }
 
   /** Renders a standalone legend into the element matched by `selector`. */
@@ -264,6 +299,20 @@ export class WellRenderer {
       classNames: this.classes.legend,
       textures: this.renderConfig.textures,
     });
+  }
+
+  /**
+   * Renders one lithology layer's fill as a `size`×`size` square into its
+   * own SVG matched by `selector`, with its texture defined inside (e.g. for
+   * a swatch in a PDF table). Call after `prepareSvg()`, which loads the
+   * FGDC textures.
+   */
+  public renderLithologySwatch(
+    selector: string,
+    layer: Lithology,
+    size = 10,
+  ): void {
+    drawLithologySwatch(selector, layer, { size, theme: this.theme });
   }
 
   /**
@@ -347,38 +396,13 @@ export class WellRenderer {
     const maxValues = getProfileLastItemsDepths(profile);
     const maxYValues = d3.max(maxValues) || 0;
 
-    if (this.instanceStates.length === 1) {
-      this.drawLogToInstance(
-        this.instanceStates[0],
-        profile,
-        0,
-        maxYValues,
-        highlights,
-      );
-      return;
-    }
-
-    const totalHeight =
-      this.instanceStates.reduce((s, st) => s + st.height, 0) || 1;
-    const yScaleGlobal = d3
-      .scaleLinear()
-      .domain([0, maxYValues])
-      .range([0, totalHeight]);
-
-    let currentDepth = 0;
-    for (const state of this.instanceStates) {
-      const maxSvgDepth = yScaleGlobal.invert(
-        yScaleGlobal(currentDepth) + state.height,
-      );
-      this.drawLogToInstance(
-        state,
-        profile,
-        currentDepth,
-        maxSvgDepth,
-        highlights,
-      );
-      currentDepth = maxSvgDepth;
-    }
+    // Explicit `depthRange`s when every panel has one; otherwise the depth is
+    // split in proportion to the panel heights, back to back.
+    const windows = resolvePanelWindows(this.instanceStates, maxYValues);
+    this.instanceStates.forEach((state, i) => {
+      const [from, to] = windows[i]!;
+      this.drawLogToInstance(state, profile, from, to, maxYValues, highlights);
+    });
   }
 
   private drawLogToInstance(
@@ -386,6 +410,7 @@ export class WellRenderer {
     profile: RenderableWell,
     depthFrom: number,
     depthTo: number,
+    totalDepth: number,
     highlights: Highlights = {},
   ) {
     const svg = state.svg;
@@ -421,6 +446,12 @@ export class WellRenderer {
       `.${this.classes.highlights.fracturesGroup}`,
     );
     const unitLabelsGroup = svg.select(`.${this.classes.unitLabels.group}`);
+    const overviewGroup = svg.select(`.${this.classes.overview.group}`);
+    const columnHeadersGroup = svg.select(
+      `.${this.classes.columnHeaders.group}`,
+    );
+    const markersGroup = svg.select(`.${this.classes.markers.group}`);
+    const overlapGroup = svg.select(`.${this.classes.overlap.group}`);
 
     const svgWidth = state.width + state.margins.left + state.margins.right;
     const svgHeight = state.height + state.margins.top + state.margins.bottom;
@@ -540,6 +571,10 @@ export class WellRenderer {
       highlightsGeologicGroup,
       highlightsConstructionGroup,
       highlightsFracturesGroup,
+      overviewGroup,
+      columnHeadersGroup,
+      markersGroup,
+      overlapGroup,
     };
 
     const ctx: DrawContext = {
@@ -554,6 +589,8 @@ export class WellRenderer {
       geoXRight,
       depthFrom,
       depthTo,
+      totalDepth,
+      repeatedTo: state.repeatedTo,
       yScale: yScaleLocal,
       transition,
       tooltips,
@@ -663,6 +700,11 @@ export class WellRenderer {
         well_case: constructionData.well_case.filter(inDepth),
         well_screen: constructionData.well_screen.filter(inDepth),
       });
+      drawMarkers(zoomedCtx, {
+        lithology: profile.lithology ?? [],
+        fractures: profile.fractures ?? [],
+      });
+      drawOverlap(zoomedCtx);
       drawHighlights(zoomedCtx, highlights);
       this.onZoom?.(transform.k);
     };
@@ -693,6 +735,13 @@ export class WellRenderer {
         well_case: filteredConstruction.well_case,
         well_screen: filteredConstruction.well_screen,
       });
+      drawMarkers(ctx, {
+        lithology: profile.lithology ?? [],
+        fractures: profile.fractures ?? [],
+      });
+      drawOverview(ctx, profile.lithology ?? []);
+      drawColumnHeaders(ctx);
+      drawOverlap(ctx);
       svg.select(`#${state.clipRectId}`).attr('y', 0).attr('height', svgHeight);
       drawHighlights(ctx, highlights);
     };

@@ -61,6 +61,10 @@ export type InstanceState = {
   margins: { left: number; right: number; top: number; bottom: number };
   clipId: string;
   clipRectId: string;
+  /** Explicit depth window of the panel (see `SvgInstance.depthRange`). */
+  depthRange?: [number, number];
+  /** Bottom of the band repeated from the previous panel (see `SvgInstance.repeatedTo`). */
+  repeatedTo?: number;
   /** The d3-zoom behavior bound to this panel's `<svg>`, when zoom or pan is enabled. */
   zoomNode?: ZoomBehavior<SVGSVGElement, unknown>;
 };
@@ -152,6 +156,46 @@ export type LabelsTheme = {
     caveLabelFontSize?: number;
   };
 };
+/** Mini-map drawn by `RenderConfig.overview`. */
+export type OverviewTheme = {
+  stroke: string;
+  strokeWidth: number;
+  /** Fill of layers without a `color`. */
+  emptyFill: string;
+  /** Outline of the window marking the panel's depth range. */
+  windowStroke: string;
+  windowStrokeWidth: number;
+};
+/** Column titles drawn by `RenderConfig.columnHeaders`. */
+export type ColumnHeadersTheme = {
+  fontSize: number;
+  color: string;
+  fontFamily?: string;
+  fontWeight?: string | number;
+  ruleStroke: string;
+  ruleStrokeWidth: number;
+};
+/** Layer and fracture markers drawn by `RenderConfig.markers`. */
+export type MarkersTheme = {
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  color: string;
+  fontSize: number;
+  fontFamily?: string;
+  fontWeight?: string | number;
+};
+/** Hatched band drawn over the depths a panel repeats from the previous one. */
+export type OverlapTheme = {
+  stroke: string;
+  strokeWidth: number;
+  /** Spacing of the hatch lines in pixels. */
+  size: number;
+  ruleStroke: string;
+  labelColor: string;
+  fontSize: number;
+  fontFamily?: string;
+};
 export type LegendTheme = {
   borderStrokeWidth: number;
   fractureStrokeWidth: number;
@@ -172,6 +216,10 @@ export type WellTheme = {
 } & ConstructionTheme &
   LabelsTheme & {
     legend: LegendTheme;
+    overview: OverviewTheme;
+    columnHeaders: ColumnHeadersTheme;
+    markers: MarkersTheme;
+    overlap: OverlapTheme;
   };
 
 export type ComponentsClassNames = {
@@ -267,6 +315,26 @@ export type ComponentsClassNames = {
     fracturePoly: string;
     caveFill: string;
     constructionRect: string;
+  };
+  overview: {
+    group: string;
+    item: string;
+    window: string;
+  };
+  columnHeaders: {
+    group: string;
+    text: string;
+    rule: string;
+  };
+  markers: {
+    group: string;
+    lithology: string;
+    fracture: string;
+  };
+  overlap: {
+    group: string;
+    band: string;
+    label: string;
   };
   highlights: {
     geologicGroup: string;
@@ -372,7 +440,25 @@ export type RenderLabelPack = {
     cave: RenderLocalizedText;
     caveWater: RenderLocalizedText;
   };
+  columnHeaders: Record<
+    keyof RenderConfig['columnHeaders']['labels'],
+    RenderLocalizedText
+  >;
+  continuation: { prefix: RenderLocalizedText };
+  overlap: { label: RenderLocalizedText };
 };
+
+/** Sub-items of the lithology annotations (`RenderConfig.labels.lithology`). */
+export type LithologyLabelItem =
+  | 'depth'
+  | 'description'
+  | 'dividers'
+  /** Bold `geologic_unit` line and italic `aquifer_unit` line. */
+  | 'units'
+  /** Square of the layer's fill before the depth range. */
+  | 'swatch'
+  /** Rule above each annotation, as wide as the annotation. */
+  | 'rules';
 
 /** Full rendering behaviour configuration. Use `INTERACTIVE_RENDER_CONFIG` or `STATIC_RENDER_CONFIG` as a starting point. */
 export type RenderConfig = {
@@ -453,6 +539,12 @@ export type RenderConfig = {
   textures?: TexturesConfig;
   constructionLabels: {
     active: boolean;
+    /**
+     * `left` (default): each label ends `xOffset` px left of its own casing
+     * wall. `right`: labels start `xOffset` px right of the construction
+     * column, in one aligned column.
+     */
+    side?: 'left' | 'right';
     xOffset: number;
     labelRadius: number;
     labelMaxWidth?: number;
@@ -465,8 +557,17 @@ export type RenderConfig = {
   labels: {
     /** false = hide all; true = show all; array = show only listed types */
     active: boolean | ('lithology' | 'fractures' | 'caves')[];
-    /** Fine-grained lithology sub-item control; defaults to true when lithology is active */
-    lithology?: boolean | ('depth' | 'description' | 'dividers')[];
+    /** Fine-grained lithology sub-item control; `true` = depth, description and dividers */
+    lithology?: boolean | LithologyLabelItem[];
+    /**
+     * Marks layers and construction items that start above the panel (they
+     * continue from the previous one): `↑ {prefix} · from–to` on lithology
+     * annotations, a leading `↑` on construction labels.
+     */
+    continuation: {
+      active: boolean;
+      prefix: string;
+    };
     typeLabels?: {
       fracture?: string;
       fractureWater?: string;
@@ -498,6 +599,46 @@ export type RenderConfig = {
     outerEdgeWidth: number;
   };
   legend: LegendRenderConfig;
+  /**
+   * Mini-map: the whole well's lithology drawn as a thin column in the
+   * panel's left margin, with a window outlining the panel's depth range.
+   */
+  overview: {
+    active: boolean;
+    /** Left edge in SVG coordinates. */
+    x: number;
+    width: number;
+    /** Height in pixels; capped at the panel's drawing height. */
+    height: number;
+  };
+  /**
+   * Column titles drawn in the panel's top margin, over a rule that sits
+   * `construction.cementPad.height` px above the drawing area (clear of the
+   * pad). The top margin must hold `height` plus that.
+   */
+  columnHeaders: {
+    active: boolean;
+    /** Height of the header row, taken from the top margin. */
+    height: number;
+    labels: {
+      depth: string;
+      lithology: string;
+      construction: string;
+      /** Shown only when lithology annotations are drawn. */
+      description: string;
+    };
+  };
+  /** Circled 1-based index on each lithology layer, `F{n}` next to each fracture. */
+  markers: {
+    lithology: boolean;
+    fractures: boolean;
+    radius: number;
+  };
+  /** Band over the depths a panel repeats (`SvgInstance.repeatedTo`). */
+  overlap: {
+    /** `{range}` is replaced by the repeated depth range, e.g. `116–124 m`. */
+    label: string;
+  };
   highlights: {
     stroke: string;
     strokeWidth: number;
@@ -557,6 +698,18 @@ export type SvgInstance = {
     top: number;
     bottom: number;
   };
+  /**
+   * Depth window `[from, to]` (m) drawn in this panel. When every panel has
+   * one, `draw()` uses them instead of splitting the depth in proportion to
+   * the panel heights, so panels may overlap or skip depths.
+   */
+  depthRange?: [number, number];
+  /**
+   * Depth (m) down to which the panel repeats the bottom of the previous
+   * one. The repeated band `[depthRange[0], repeatedTo]` is hatched and
+   * labelled with `RenderConfig.overlap.label`.
+   */
+  repeatedTo?: number;
 };
 
 /** All SVG group selections created in initInstanceSvg. */
@@ -581,6 +734,10 @@ export type DrawGroups = {
   highlightsGeologicGroup: SvgSelection;
   highlightsConstructionGroup: SvgSelection;
   highlightsFracturesGroup: SvgSelection;
+  overviewGroup: SvgSelection;
+  columnHeadersGroup: SvgSelection;
+  markersGroup: SvgSelection;
+  overlapGroup: SvgSelection;
 };
 
 /**
@@ -617,6 +774,10 @@ export type DrawContext = {
   geoXRight: number;
   depthFrom: number;
   depthTo: number;
+  /** Deepest depth of the whole profile (m); the overview's domain. */
+  totalDepth: number;
+  /** Bottom of the band repeated from the previous panel, if any. */
+  repeatedTo?: number;
   /** Active depth→pixel scale; replaced (not mutated) on each zoom event. */
   yScale: ScaleLinear<number, number>;
   transition: Transition<BaseType, unknown, null, undefined>;

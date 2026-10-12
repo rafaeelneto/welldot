@@ -17,6 +17,13 @@ export interface PdfLabelTree {
 
 /** Default label pack. Leaves are `{ en, pt }`; resolve with `resolvePdfLabels`. */
 export const PDF_LABELS = {
+  caves: {
+    description: { en: 'Description', pt: 'Descrição' },
+    dry: { en: 'dry cave', pt: 'caverna seca' },
+    fromTo: { en: 'From–to', pt: 'De–até' },
+    title: { en: 'Caves', pt: 'Cavernas' },
+    wet: { en: 'wet cave', pt: 'caverna com água' },
+  },
   construction: {
     boreHole: {
       diameter: { en: 'Diam.', pt: 'Diâm.' },
@@ -94,6 +101,13 @@ export const PDF_LABELS = {
     finalInfoTitle: { en: 'Final information', pt: 'Informações finais' },
     legendTitle: { en: 'Legend', pt: 'Legenda' },
   },
+  fractures: {
+    depth: { en: 'Depth', pt: 'Prof.' },
+    description: { en: 'Description', pt: 'Descrição' },
+    fracture: { en: 'fracture', pt: 'fratura' },
+    fractureWater: { en: 'open fracture', pt: 'fratura aberta' },
+    title: { en: 'Fractures', pt: 'Fraturas' },
+  },
   general: {
     constructionDate: { en: 'Construction Date', pt: 'Data de Construção' },
     coordinates: { en: 'Coordinates', pt: 'Coordenadas' },
@@ -126,6 +140,12 @@ export const PDF_LABELS = {
       ne: { en: 'SWL', pt: 'NE' },
     },
     title: { en: 'Hydrodynamic Events', pt: 'Eventos Hidrodinâmicos' },
+  },
+  lithology: {
+    description: { en: 'Description', pt: 'Descrição' },
+    fromTo: { en: 'From–to', pt: 'De–até' },
+    title: { en: 'Lithology', pt: 'Litologia' },
+    unit: { en: 'Unit', pt: 'Unidade' },
   },
   operation: {
     meter: {
@@ -382,6 +402,37 @@ export const PDF_LABELS = {
       },
       inForce: { en: 'Regime in force', pt: 'Regime vigente' },
       title: { en: 'Operating regime', pt: 'Regime de operação' },
+    },
+  },
+  profile: {
+    caption: {
+      continuesOnPage: {
+        en: 'continues on p. {page} ↓',
+        pt: 'continua na pág. {page} ↓',
+      },
+      continuesTo: {
+        en: 'continues ↓ to {depth}',
+        pt: 'continua ↓ até {depth}',
+      },
+      snappedContact: {
+        en: 'break set at the {depth} contact ({above} / {below})',
+        pt: 'quebra ajustada ao contato {depth} ({above} / {below})',
+      },
+    },
+    columns: {
+      construction: { en: 'CONSTRUCTION', pt: 'CONSTRUÇÃO' },
+      depth: { en: 'DEPTH', pt: 'PROF.' },
+      description: {
+        en: 'GEOLOGICAL DESCRIPTION',
+        pt: 'DESCRIÇÃO GEOLÓGICA',
+      },
+      lithology: { en: 'LITH.', pt: 'LIT.' },
+      well: { en: 'WELL', pt: 'POÇO' },
+    },
+    continuation: { en: 'continued', pt: 'continuação' },
+    overlapRepeated: {
+      en: '{range} repeated from previous page',
+      pt: '{range} repetido da pág. anterior',
     },
   },
   waterQuality: {

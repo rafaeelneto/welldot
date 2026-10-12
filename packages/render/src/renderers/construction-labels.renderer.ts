@@ -36,14 +36,17 @@ export function drawConstructionLabels(
 
   const occupied: { top: number; bot: number }[] = [];
 
-  const placeLabel = (d: WellCase | WellScreen, text: string) => {
+  const onRight = clc.side === 'right';
+  const continuation = ctx.renderConfig.labels.continuation;
+
+  const placeLabel = (d: WellCase | WellScreen, label: string) => {
     const clampedFrom = Math.max(d.from, ctx.depthFrom);
     const clampedTo = Math.min(d.to, ctx.depthTo);
     if (clampedFrom >= clampedTo) return;
 
+    const text =
+      continuation?.active && d.from < ctx.depthFrom ? `↑ ${label}` : label;
     const midY = ctx.yScale((clampedFrom + clampedTo) / 2);
-    const leftEdgeX = (ctx.POCO_CENTER - xScale(d.diameter)) / 2;
-    const labelRightX = leftEdgeX - clc.xOffset;
     const charW = clct.fontSize * 0.52;
     const lineH = clct.fontSize * 1.35;
     const vertPad = 6;
@@ -62,8 +65,15 @@ export function drawConstructionLabels(
       boxW = text.length * charW + 8;
     }
 
+    // `left`: the box ends xOffset px left of the item's own wall.
+    // `right`: every box starts xOffset px right of the construction column.
+    const labelRightX = onRight
+      ? (ctx.POCO_CENTER + ctx.POCO_WIDTH) / 2 + clc.xOffset + boxW
+      : (ctx.POCO_CENTER - xScale(d.diameter)) / 2 - clc.xOffset;
+
     const labelH = lines.length * lineH + vertPad;
-    let labelY = midY - labelH / 2;
+    // Right-side labels hang from the item's top, like a column of notes.
+    let labelY = onRight ? ctx.yScale(clampedFrom) + 1 : midY - labelH / 2;
 
     for (const pos of occupied) {
       if (labelY < pos.bot && labelY + labelH > pos.top) labelY = pos.bot + 2;
@@ -83,18 +93,18 @@ export function drawConstructionLabels(
 
     const textEl = ctx.groups.constructionLabelsGroup
       .append('text')
-      .attr('x', labelRightX - 4)
+      .attr('x', onRight ? labelRightX - boxW + 4 : labelRightX - 4)
       .attr('y', labelY + lineH * 0.85)
       .attr('font-size', clct.fontSize)
       .attr('font-family', clct.fontFamily ?? 'sans-serif')
       .attr('font-weight', clct.fontWeight ?? 400)
-      .attr('text-anchor', 'end')
+      .attr('text-anchor', onRight ? 'start' : 'end')
       .attr('fill', clct.labelColor ?? '#303030');
 
     lines.forEach((line, i) => {
       textEl
         .append('tspan')
-        .attr('x', labelRightX - 4)
+        .attr('x', onRight ? labelRightX - boxW + 4 : labelRightX - 4)
         .attr('dy', i === 0 ? 0 : lineH)
         .text(line);
     });

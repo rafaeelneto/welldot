@@ -33,8 +33,37 @@ export interface ResolvedInfoItem {
   value: string;
 }
 
-/** Content sections, in their default order. */
+/**
+ * Profile layout.
+ * - `detailed`: full-width profile with lithology, construction and
+ *   depth-aligned descriptions; page breaks snap to lithology contacts, each
+ *   page repeats the bottom of the previous one and shows a mini-map.
+ * - `compact`: narrow profile column (depth, lithology, well) with numbered
+ *   layer and fracture markers; the lithology, construction, fracture and
+ *   other section tables flow in the column to its right.
+ */
+export type PdfProfileFormat = 'compact' | 'detailed';
+
+/**
+ * How the profile's height is chosen.
+ * - `scale`: from `scale` (1:N).
+ * - `content`: compact format without `breakPages` only, as tall as the
+ *   tables beside it.
+ * - `page`: the whole profile fits on one page, in the space left under the
+ *   content above it (either format, with or without `breakPages`; with
+ *   page breaks the rest of the document still flows onto further pages).
+ */
+export type PdfProfileFit = 'scale' | 'content' | 'page';
+
+/**
+ * Content sections, in their default order. `lithology`, `caves` and
+ * `fractures` are tables of the `compact` format only (the `detailed`
+ * profile already shows them) and always stay together in that order.
+ */
 export type PdfSectionKey =
+  | 'lithology'
+  | 'caves'
+  | 'fractures'
   | 'construction'
   | 'hydrodynamicEvents'
   | 'historyLog'
@@ -137,6 +166,10 @@ export interface PdfThemeColors {
   exceedance: string;
   brandName: string;
   brandSubtitle: string;
+  /** Captions under the profile panels ("continues on p. 2"). */
+  profileCaption: string;
+  /** Rule and note of a page break snapped to a lithology contact. */
+  snapNote: string;
 }
 
 export interface PdfThemeFontSizes {
@@ -220,6 +253,14 @@ export interface PdfExportOptions {
   breakPages?: boolean;
   /** 1:N profile scale. Defaults to `500`. */
   scale?: number;
+  /** Profile layout. Defaults to `detailed`. */
+  format?: PdfProfileFormat;
+  /**
+   * How the profile height is chosen (see {@link PdfProfileFit}). `content`
+   * outside the compact format without `breakPages` is treated as `scale`.
+   * Defaults to `scale`.
+   */
+  profileFit?: PdfProfileFit;
   /** Where the general-info table goes relative to the profile. Defaults to `before`. */
   metadataPosition?: 'before' | 'after' | null;
   headingInfo?: ResolvedInfoItem[];
@@ -289,6 +330,9 @@ export interface PdfContext {
   title: string;
   breakPages: boolean;
   scale: number;
+  format: PdfProfileFormat;
+  /** `content` only with the compact format and no `breakPages`. */
+  profileFit: PdfProfileFit;
   metadataPosition: 'before' | 'after' | null;
   headingInfo: ResolvedInfoItem[];
   endInfo: ResolvedInfoItem[];
@@ -332,6 +376,38 @@ export interface RenderedSvg {
    * `breakPages` is on).
    */
   breakBefore?: boolean;
+}
+
+/** One profile panel: its SVG and the depths it draws. */
+export interface RenderedProfilePanel extends RenderedSvg {
+  depthFrom: number;
+  depthTo: number;
+}
+
+/** Rendered pieces some sections need besides the profile and legend. */
+export interface PdfRenderedExtras {
+  /**
+   * Fill swatch of each lithology layer, by index in `well.lithology`
+   * (compact lithology table). Missing entries fall back to the layer color.
+   */
+  lithologySwatches?: (RenderedSvg | null)[];
+  /**
+   * Compact format: how many of the side column's blocks (see
+   * `buildCompactBlocks`) stay beside the profile. The rest follow below it
+   * at full width, filling the space the profile leaves once it ends.
+   * Omitted: every block stays in the side column. Measured by
+   * `measureCompactSideSplit`.
+   */
+  compactSideSplit?: number;
+  /**
+   * With `breakPages`: the first block (or table row / stack item) that
+   * would run into the legend strip at the foot of the first profile page,
+   * started on the next page instead. `scope` is `side` for the compact side
+   * column, `after` for the content that follows the profile; `block`
+   * indexes that list and `row` the block's table body row or stack item.
+   * Measured by `measureLegendBreak`.
+   */
+  legendBreak?: { scope: 'side' | 'after'; block: number; row?: number };
 }
 
 /** One legend entry: its label and its standalone symbol SVG. */

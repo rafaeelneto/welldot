@@ -18,9 +18,11 @@ export const DEFAULT_PDF_THEME: PdfTheme = {
     exceedance: '#b91c1c',
     brandName: '#1a1a2e',
     brandSubtitle: '#888888',
+    profileCaption: '#6b6b6b',
+    snapNote: '#1f6b3a',
   },
   fontSizes: {
-    body: 11,
+    body: 8,
     title: 12,
     sectionTitle: 13,
     tableHeader: 9,

@@ -9,6 +9,8 @@ import type {
   PdfContext,
   PdfExportOptions,
   PdfPageOptions,
+  PdfProfileFit,
+  PdfProfileFormat,
   PdfSectionKey,
   PdfUnits,
   ResolvedPdfPage,
@@ -16,6 +18,9 @@ import type {
 
 /** Default section order. */
 export const PDF_SECTION_KEYS: readonly PdfSectionKey[] = [
+  'lithology',
+  'caves',
+  'fractures',
   'construction',
   'hydrodynamicEvents',
   'historyLog',
@@ -90,11 +95,37 @@ export function resolvePdfUnits(units: PdfUnits = {}): Required<PdfUnits> {
   };
 }
 
+/** Sections that always follow `lithology`, in this order. */
+const GEOLOGY_FOLLOWERS: readonly PdfSectionKey[] = ['caves', 'fractures'];
+
 function resolveSectionOrder(order?: PdfSectionKey[]): PdfSectionKey[] {
   const picked = (order ?? []).filter(
     (k, i, arr) => PDF_SECTION_KEYS.includes(k) && arr.indexOf(k) === i,
   );
-  return [...picked, ...PDF_SECTION_KEYS.filter(k => !picked.includes(k))];
+  const resolved = [
+    ...picked,
+    ...PDF_SECTION_KEYS.filter(k => !picked.includes(k)),
+  ].filter(k => !GEOLOGY_FOLLOWERS.includes(k));
+  // Lithology, caves and fractures always read together, in that order.
+  resolved.splice(resolved.indexOf('lithology') + 1, 0, ...GEOLOGY_FOLLOWERS);
+  return resolved;
+}
+
+/**
+ * `page` applies to either format, with or without page breaks. `content`
+ * needs the compact format (the detailed profile has nothing beside it)
+ * without page breaks. Anything else resolves to `scale`.
+ */
+function resolveProfileFit(
+  fit: PdfProfileFit | undefined,
+  format: PdfProfileFormat,
+  breakPages: boolean,
+): PdfProfileFit {
+  if (fit === 'page') return 'page';
+  if (fit === 'content' && format === 'compact' && !breakPages) {
+    return 'content';
+  }
+  return 'scale';
 }
 
 /**
@@ -113,13 +144,17 @@ export function resolvePdfContext(options: PdfExportOptions = {}): PdfContext {
   ) as Record<PdfSectionKey, boolean>;
 
   const branding = options.branding ?? {};
+  const breakPages = options.breakPages ?? true;
+  const format = options.format ?? 'detailed';
 
   return {
     locale,
     labels,
     title,
-    breakPages: options.breakPages ?? true,
+    breakPages,
     scale: options.scale ?? 500,
+    format,
+    profileFit: resolveProfileFit(options.profileFit, format, breakPages),
     metadataPosition:
       options.metadataPosition === undefined
         ? 'before'

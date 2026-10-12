@@ -386,9 +386,15 @@
       "valuePlaceholder": "Valor",
       "syncedTooltip": "Valor sincronizado com o perfil",
       "deleteItem": "Remover",
-      "pageBreaks": {
-        "title": "Quebra de páginas",
-        "split": "Dividir perfil em páginas"
+      "format": {
+        "title": "Formato do perfil",
+        "compact": "Compacto",
+        "detailed": "Detalhado",
+        "split": "Dividir perfil em páginas",
+        "matchContent": "Acompanhar conteúdo",
+        "fitPage": "Limitar a uma página (A4)",
+        "compactHint": "Acompanhar conteúdo exige a divisão em páginas desligada",
+        "detailedHint": "Quebras ajustadas a contatos, com sobreposição e mini-mapa"
       },
       "metadataSection": {
         "title": "Seção de metadados",
@@ -399,9 +405,6 @@
       "visibilitySection": {
         "title": "Decidir o que compartilhar",
         "toggle": "Usar minha seleção de compartilhamento"
-      },
-      "scale": {
-        "title": "Escala"
       },
       "metadataFields": {
         "name": "Nome",

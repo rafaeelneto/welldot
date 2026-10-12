@@ -31,13 +31,18 @@ src/
     highlights.renderer.ts
     legend.renderer.ts
     unit-labels.renderer.ts
-    annotation-labels.renderer.ts
+    annotation-labels.renderer.ts   ← descriptions (units/swatch/rules), continuation labels
+    column-headers.renderer.ts      ← opt-in column titles in the top margin
+    overview.renderer.ts            ← opt-in mini-map + window of the panel's depths
+    markers.renderer.ts             ← opt-in ① layer / F1 fracture markers
+    overlap.renderer.ts             ← hatched band a panel repeats (SvgInstance.repeatedTo)
   utils/
     d3.utils.ts
     format.utils.ts
     geometry.utils.ts
     key.utils.ts
     render.utils.ts                 ← filterByDepth, populateTooltips, preloadFgdcTextures
+    layout.utils.ts                 ← pure panel windows, header positions, marker/overview geometry
     render.styles.ts                ← buildSvgStyleBlock (inlined CSS)
     tooltips.utils.ts
   data/

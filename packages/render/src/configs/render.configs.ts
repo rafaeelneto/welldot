@@ -119,6 +119,19 @@ export const RENDER_LABELS: RenderLabelPack = {
     cave: { pt: 'caverna', en: 'cave' },
     caveWater: { pt: 'caverna úmida', en: 'wet cave' },
   },
+  columnHeaders: {
+    depth: { pt: 'PROF.', en: 'DEPTH' },
+    lithology: { pt: 'LIT.', en: 'LITH.' },
+    construction: { pt: 'CONSTRUÇÃO', en: 'CONSTRUCTION' },
+    description: { pt: 'DESCRIÇÃO GEOLÓGICA', en: 'GEOLOGICAL DESCRIPTION' },
+  },
+  continuation: { prefix: { pt: 'continuação', en: 'continued' } },
+  overlap: {
+    label: {
+      pt: '{range} repetido da pág. anterior',
+      en: '{range} repeated from previous page',
+    },
+  },
 };
 
 /** Resolves every `RenderLocalizedText` leaf of a flat group to a plain string for `locale`. */
@@ -156,8 +169,9 @@ function resolveTooltipLabels(locale: 'en' | 'pt'): TooltipLabels {
 
 /**
  * Returns a copy of `config` with `constructionLabels.labels`, `legend.labels`,
- * `tooltipLabels`, and `labels.typeLabels` resolved from `RENDER_LABELS` for
- * `locale`. Every other field of `config` is preserved unchanged.
+ * `tooltipLabels`, `labels.typeLabels`, `labels.continuation.prefix`,
+ * `columnHeaders.labels` and `overlap.label` resolved from `RENDER_LABELS`
+ * for `locale`. Every other field of `config` is preserved unchanged.
  */
 export function applyRenderLocale(
   config: RenderConfig,
@@ -178,6 +192,18 @@ export function applyRenderLocale(
     labels: {
       ...config.labels,
       typeLabels: resolveGroup(RENDER_LABELS.typeLabels, locale),
+      continuation: {
+        ...config.labels.continuation,
+        prefix: resolveRenderLabel(RENDER_LABELS.continuation.prefix, locale),
+      },
+    },
+    columnHeaders: {
+      ...config.columnHeaders,
+      labels: resolveGroup(RENDER_LABELS.columnHeaders, locale),
+    },
+    overlap: {
+      ...config.overlap,
+      label: resolveRenderLabel(RENDER_LABELS.overlap.label, locale),
     },
   };
 }
@@ -260,6 +286,39 @@ export const DEFAULT_WELL_THEME: WellTheme = {
     headerFontWeight: 600,
     bodyFontWeight: 400,
   },
+  overview: {
+    stroke: '#303030',
+    strokeWidth: 0.5,
+    emptyFill: '#d9d9d9',
+    windowStroke: '#c0392b',
+    windowStrokeWidth: 1.2,
+  },
+  columnHeaders: {
+    fontSize: 6.5,
+    color: '#303030',
+    fontFamily: 'sans-serif',
+    fontWeight: 600,
+    ruleStroke: '#101010',
+    ruleStrokeWidth: 1,
+  },
+  markers: {
+    fill: '#ffffff',
+    stroke: '#101010',
+    strokeWidth: 0.6,
+    color: '#101010',
+    fontSize: 6,
+    fontFamily: 'sans-serif',
+    fontWeight: 600,
+  },
+  overlap: {
+    stroke: '#9a9a9a',
+    strokeWidth: 0.6,
+    size: 6,
+    ruleStroke: '#9a9a9a',
+    labelColor: '#555555',
+    fontSize: 6.5,
+    fontFamily: 'monospace',
+  },
   legend: {
     borderStrokeWidth: 0.8,
     fractureStrokeWidth: 1.5,
@@ -338,6 +397,10 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
     stackingGap: 0,
     fractureLabelLeaderGap: 5,
     lithology: true,
+    continuation: {
+      active: false,
+      prefix: resolveRenderLabel(RENDER_LABELS.continuation.prefix, 'pt'),
+    },
   },
   unitLabels: {
     active: true,
@@ -401,6 +464,16 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
       conflict: 'Conflito',
     },
   },
+  overview: { active: false, x: 4, width: 8, height: 200 },
+  columnHeaders: {
+    active: false,
+    height: 14,
+    labels: resolveGroup(RENDER_LABELS.columnHeaders, 'pt'),
+  },
+  markers: { lithology: false, fractures: false, radius: 4.5 },
+  overlap: {
+    label: resolveRenderLabel(RENDER_LABELS.overlap.label, 'pt'),
+  },
   highlights: DEFAULT_HIGHLIGHT_CONFIG,
 };
 
@@ -454,6 +527,10 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
     descriptionMaxWidth: 226,
     stackingLineHeight: 11,
     stackingGap: 0,
+    continuation: {
+      active: false,
+      prefix: resolveRenderLabel(RENDER_LABELS.continuation.prefix, 'pt'),
+    },
   },
   unitLabels: {
     active: false,
@@ -515,6 +592,16 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
       cementPad: 'Laje de cimento',
       conflict: 'Conflito',
     },
+  },
+  overview: { active: false, x: 4, width: 8, height: 200 },
+  columnHeaders: {
+    active: false,
+    height: 14,
+    labels: resolveGroup(RENDER_LABELS.columnHeaders, 'pt'),
+  },
+  markers: { lithology: false, fractures: false, radius: 4.5 },
+  overlap: {
+    label: resolveRenderLabel(RENDER_LABELS.overlap.label, 'pt'),
   },
   highlights: DEFAULT_HIGHLIGHT_CONFIG,
 };

@@ -21,6 +21,10 @@ export interface PdfFormatters {
     _value: number | null | undefined,
     _fractionDigits?: number,
   ): string;
+  /** Depth with only the decimals it needs (`12 m`, `12.5 m`). */
+  formatDepth(_value: number | null | undefined): string;
+  /** Depth interval with one unit suffix (`0–12 m`). */
+  formatDepthRange(_from: number, _to: number): string;
   formatDiameter(
     _value: number | null | undefined,
     _fractionDigits?: number,
@@ -77,6 +81,22 @@ export function createPdfFormatters(
     return formatNumber(displayValue, { fractionDigits, suffix: lengthUnit });
   }
 
+  function depthNumber(value: number): string {
+    const displayValue = lengthUnit === 'ft' ? metersToFeet(value) : value;
+    return formatNumber(displayValue, {
+      maximumFractionDigits: lengthUnit === 'ft' ? 1 : 2,
+    });
+  }
+
+  function formatDepth(value: number | null | undefined): string {
+    if (value == null) return '—';
+    return `${depthNumber(value)} ${lengthUnit}`;
+  }
+
+  function formatDepthRange(from: number, to: number): string {
+    return `${depthNumber(from)}–${depthNumber(to)} ${lengthUnit}`;
+  }
+
   function formatDiameter(
     value: number | null | undefined,
     fractionDigits = 1,
@@ -127,6 +147,8 @@ export function createPdfFormatters(
     vocab: (vocab, value) => getVocabLabel(vocab, value, locale),
     vocabList: (vocab, values) => formatVocabList(vocab, values, locale),
     formatLength,
+    formatDepth,
+    formatDepthRange,
     formatDiameter,
     formatVolume,
     formatFlow,

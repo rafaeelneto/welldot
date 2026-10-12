@@ -3,6 +3,7 @@
 import type { RenderableWell } from '@welldot/render';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { resolveBodyMargins, resolvePdfPage } from '../context';
+import { computeLegendStripHeight } from '../layout/legend';
 import { makeTestContext } from '../test-utils';
 import {
   buildSvgProfiles,
@@ -10,6 +11,7 @@ import {
   computeProfileWidth,
   computeTotalSvgHeight,
   FIT_EPSILON,
+  LEGEND_GAP,
   PDF_CONTENT_WIDTH,
   PDF_MARGINS,
   planProfilePanels,
@@ -23,16 +25,29 @@ const drawnSelectors: string[] = [];
 const rendererOptions: unknown[] = [];
 const panelWidths: number[] = [];
 const panelHeights: number[] = [];
+const panelInstances: {
+  depthRange?: [number, number];
+  repeatedTo?: number;
+}[] = [];
+const wellLegendLabels: string[] = [];
 vi.mock('@welldot/render', () => ({
-  STATIC_RENDER_CONFIG: { legend: { height: 44 } },
+  STATIC_RENDER_CONFIG: { legend: { height: 44, labels: {} } },
+  getWellLegendItems: () => wellLegendLabels.map(label => ({ label })),
   applyRenderLocale: (config: unknown) => config,
   WellRenderer: class {
     private svgs: { selector: string }[];
     constructor(
-      svgs: { selector: string; width: number; height: number }[],
+      svgs: {
+        selector: string;
+        width: number;
+        height: number;
+        depthRange?: [number, number];
+        repeatedTo?: number;
+      }[],
       options: unknown,
     ) {
       this.svgs = svgs;
+      panelInstances.push(...svgs);
       drawnSelectors.push(...svgs.map(s => s.selector));
       panelWidths.push(...svgs.map(s => s.width));
       panelHeights.push(...svgs.map(s => s.height));
@@ -53,6 +68,11 @@ vi.mock('@welldot/render', () => ({
       const el = document.querySelector(selector);
       el?.setAttribute('width', '28');
       el?.setAttribute('height', '16');
+    }
+    renderLithologySwatch(selector: string, _layer: unknown, size: number) {
+      const el = document.querySelector(selector);
+      el?.setAttribute('width', String(size));
+      el?.setAttribute('height', String(size));
     }
   },
 }));
@@ -159,6 +179,28 @@ describe('planProfilePanels', () => {
     }
   });
 
+  it('keeps the first-panel reserve free and only on the first panel', () => {
+    const panels = planProfilePanels({
+      totalHeight: fullDrawing * 2,
+      breakPages: true,
+      pageHeight,
+      firstPageRemaining: 400,
+      firstPanelReserve: 30,
+    });
+    expect(panels[0]!.height).toBeCloseTo(400 - FIT_EPSILON - 30);
+    expect(panels[1]!.height).toBeCloseTo(pageHeight);
+    expect(drawingSum(panels)).toBeCloseTo(fullDrawing * 2);
+
+    const pushed = planProfilePanels({
+      totalHeight: fullDrawing * 2,
+      breakPages: true,
+      pageHeight,
+      firstPageRemaining: padding + 50,
+      firstPanelReserve: 30,
+    });
+    expect(pushed[0]).toEqual({ height: pageHeight - 30, breakBefore: true });
+  });
+
   it('emits one panel for an empty profile', () => {
     expect(
       planProfilePanels({ totalHeight: 0, breakPages: true, pageHeight }),
@@ -172,6 +214,7 @@ describe('buildSvgProfiles', () => {
     rendererOptions.length = 0;
     panelWidths.length = 0;
     panelHeights.length = 0;
+    panelInstances.length = 0;
   });
 
   it('creates one panel per computed page height and reads back their markup', async () => {
@@ -247,7 +290,9 @@ describe('page-aware geometry', () => {
   it('fills the whole page body of the default A4 page', () => {
     // 841.89 − (30 + 10) − (30 + 30) − FIT_EPSILON
     expect(computePageSvgHeight()).toBeCloseTo(841.89 - 100 - FIT_EPSILON);
-    expect(PDF_CONTENT_WIDTH).toBeCloseTo(595.28 - 60 - 50);
+    expect(PDF_CONTENT_WIDTH).toBeCloseTo(
+      595.28 - 60 - PDF_MARGINS.left - PDF_MARGINS.right,
+    );
   });
 
   it('matches the document body margins for any page', () => {
@@ -262,7 +307,9 @@ describe('page-aware geometry', () => {
       );
     }
     const a3 = resolvePdfPage({ size: 'A3' });
-    expect(computeProfileWidth(a3)).toBeCloseTo(841.89 - 60 - 50);
+    expect(computeProfileWidth(a3)).toBeCloseTo(
+      841.89 - 60 - PDF_MARGINS.left - PDF_MARGINS.right,
+    );
   });
 
   it('passes theme fonts, page width and profile overrides to the renderer', async () => {
@@ -282,7 +329,9 @@ describe('page-aware geometry', () => {
       }),
     );
 
-    expect(panelWidths[0]).toBeCloseTo(841.89 - 60 - 50);
+    expect(panelWidths[0]).toBeCloseTo(
+      841.89 - 60 - PDF_MARGINS.left - PDF_MARGINS.right,
+    );
     expect(rendererOptions[0]).toMatchObject({
       locale: 'en',
       renderConfig: {
@@ -295,5 +344,140 @@ describe('page-aware geometry', () => {
         constructionLabels: { fontFamily: 'Inter' },
       },
     });
+  });
+});
+
+describe('buildSvgProfiles formats', () => {
+  const lithology = [
+    { from: 0, to: 12, color: '#7a3b2e', texture: { code: 607 } },
+    { from: 12, to: 455, color: '#3d3d3d', texture: { code: 701 } },
+    { from: 455, to: 615, color: '#e5a98c', texture: { code: 607 } },
+  ];
+  const well = {
+    ...makeWell(),
+    lithology,
+    bore_hole: [{ from: 0, to: 615, diameter: 300 }],
+  } as unknown as RenderableWell;
+
+  beforeEach(() => {
+    panelInstances.length = 0;
+    panelWidths.length = 0;
+  });
+
+  const mount = () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    return container;
+  };
+
+  it('pages the detailed profile with overlaps and a caption per break', async () => {
+    const container = mount();
+    const ctx = makeTestContext({ locale: 'pt', breakPages: true, scale: 700 });
+    const result = await buildSvgProfiles(well, container, ctx, {
+      firstPageRemaining: 500,
+    });
+
+    expect(panelInstances.length).toBeGreaterThan(1);
+    expect(panelInstances[0]!.depthRange![0]).toBe(0);
+    expect(panelInstances[0]!.repeatedTo).toBeUndefined();
+    expect(panelInstances[1]!.repeatedTo).toBe(
+      panelInstances[0]!.depthRange![1],
+    );
+    expect(panelInstances[panelInstances.length - 1]!.depthRange![1]).toBe(615);
+    expect(result.lithologySwatches).toEqual([]);
+    expect(result.svgs[0]!.markup).toMatch(/continua ↓ até|quebra ajustada/);
+  });
+
+  it('draws the compact column, its captions and one swatch per layer', async () => {
+    const container = mount();
+    const ctx = makeTestContext({
+      locale: 'pt',
+      format: 'compact',
+      breakPages: true,
+      scale: 2000,
+    });
+    const result = await buildSvgProfiles(well, container, ctx, {
+      firstPageRemaining: 300,
+      startPage: 1,
+    });
+
+    expect(panelWidths[0]).toBeLessThan(ctx.page.contentWidth / 2);
+    expect(result.scale).toBe(2000);
+    expect(result.lithologySwatches).toHaveLength(3);
+    expect(result.lithologySwatches[0]).toMatchObject({ width: 9, height: 9 });
+    const last = result.svgs[result.svgs.length - 1]!;
+    expect(last.markup).toContain('>1:2.000</text>');
+    if (result.svgs.length > 1) {
+      expect(result.svgs[0]!.markup).toContain('continua na pág. 2');
+    }
+  });
+
+  it('fits the compact profile to the given drawing height', async () => {
+    const container = mount();
+    const ctx = makeTestContext({
+      format: 'compact',
+      breakPages: false,
+      profileFit: 'content',
+    });
+    const result = await buildSvgProfiles(well, container, ctx, {
+      drawingHeight: 400,
+    });
+
+    expect(panelInstances).toHaveLength(1);
+    expect(panelHeights[panelHeights.length - 1]).toBeCloseTo(400);
+    expect(result.scale).toBeCloseTo(computeTotalSvgHeight(615, 1) / 400);
+  });
+
+  it('fits the detailed profile to one page without page breaks', async () => {
+    const container = mount();
+    const ctx = makeTestContext({ breakPages: false, profileFit: 'page' });
+    const result = await buildSvgProfiles(well, container, ctx, {
+      drawingHeight: 500,
+    });
+
+    expect(panelInstances).toHaveLength(1);
+    expect(panelInstances[0]!.depthRange).toEqual([0, 615]);
+    expect(panelHeights[panelHeights.length - 1]).toBeCloseTo(500);
+    expect(result.scale).toBeCloseTo(computeTotalSvgHeight(615, 1) / 500);
+  });
+
+  it('ignores drawingHeight at a fixed scale', async () => {
+    const container = mount();
+    const ctx = makeTestContext({ breakPages: true, scale: 700 });
+    const result = await buildSvgProfiles(well, container, ctx, {
+      drawingHeight: 500,
+    });
+    expect(result.scale).toBe(700);
+  });
+
+  it('keeps a page-fitted profile on one page when pages break', async () => {
+    const container = mount();
+    const ctx = makeTestContext({ breakPages: true, profileFit: 'page' });
+    const result = await buildSvgProfiles(well, container, ctx, {
+      firstPageRemaining: 400,
+      drawingHeight: 400 - FIT_EPSILON - PDF_MARGINS.top - PDF_MARGINS.bottom,
+    });
+
+    expect(panelInstances).toHaveLength(1);
+    expect(panelInstances[0]!.depthRange).toEqual([0, 615]);
+    expect(result.svgs[0]!.breakBefore).toBe(false);
+  });
+
+  it('keeps the legend strip height free under the first panel', async () => {
+    const container = mount();
+    const ctx = makeTestContext({ breakPages: true, scale: 700 });
+    const labels = ['Perfuração', 'Revestimento'];
+    wellLegendLabels.push(...labels);
+    try {
+      await buildSvgProfiles(well, container, ctx, { firstPageRemaining: 500 });
+    } finally {
+      wellLegendLabels.length = 0;
+    }
+    const reserve = computeLegendStripHeight(labels, ctx) + LEGEND_GAP;
+    expect(
+      panelHeights[panelHeights.length - panelInstances.length],
+    ).toBeCloseTo(
+      500 - FIT_EPSILON - PDF_MARGINS.top - PDF_MARGINS.bottom - reserve,
+    );
   });
 });

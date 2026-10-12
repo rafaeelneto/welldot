@@ -6,6 +6,43 @@ import type { DrawContext } from '~/types/render.types';
 
 type Interval = { from: number; to: number; diameter: number };
 
+/** Vertical extent (px) of the pump parts inside one panel. */
+export type PumpSpans = {
+  /** Bottom of the riser, never below the panel. */
+  riserBottom: number;
+  /** Visible part of the body, or `null` when it is off the panel. */
+  body: {
+    top: number;
+    bottom: number;
+    /** Cut by the panel edge (drawn square there, without rounding). */
+    cutTop: boolean;
+    cutBottom: boolean;
+  } | null;
+};
+
+/**
+ * Clamps the riser and body to the panel's drawing area `[panelTop,
+ * panelBottom]`, so neither runs past a page break. The riser hangs from
+ * `panelTop` down to the body top (`intakeY − bodyHeight`).
+ */
+export function getPumpSpans(
+  panelTop: number,
+  panelBottom: number,
+  bodyTop: number,
+  intakeY: number,
+): PumpSpans {
+  const riserBottom = Math.min(Math.max(panelTop, bodyTop), panelBottom);
+  const top = Math.max(bodyTop, panelTop);
+  const bottom = Math.min(intakeY, panelBottom);
+  return {
+    riserBottom,
+    body:
+      bottom > top
+        ? { top, bottom, cutTop: top > bodyTop, cutBottom: bottom < intakeY }
+        : null,
+  };
+}
+
 /** Diameter of the first interval covering `depth`, or `undefined`. */
 function diameterAt(items: Interval[], depth: number): number | undefined {
   return items.find(i => depth >= i.from && depth <= i.to)?.diameter;
@@ -74,7 +111,12 @@ export function drawPump(
   const yIntake = ctx.yScale(intake);
   const yBodyTop = yIntake - cfg.bodyHeight;
   const yRiserTop = ctx.yScale(Math.max(0, ctx.depthFrom));
-  const yRiserBottom = Math.max(yRiserTop, yBodyTop);
+  const { riserBottom: yRiserBottom, body } = getPumpSpans(
+    yRiserTop,
+    ctx.yScale(ctx.depthTo),
+    yBodyTop,
+    yIntake,
+  );
   const r = Math.min(3, (bodyRight - bodyLeft) / 4);
 
   const entered = selection
@@ -100,24 +142,32 @@ export function drawPump(
     .attr('stroke', theme.riserStroke)
     .attr('stroke-width', theme.riserStrokeWidth);
 
+  // Rounded corners only where the body is not cut by the panel edge.
+  let bodyPath = '';
+  if (body) {
+    const rt = body.cutTop ? 0 : Math.min(r, (body.bottom - body.top) / 2);
+    const rb = body.cutBottom ? 0 : Math.min(r, (body.bottom - body.top) / 2);
+    const { top, bottom } = body;
+    bodyPath =
+      `M${bodyLeft + rt},${top}H${bodyRight - rt}Q${bodyRight},${top} ${bodyRight},${top + rt}` +
+      `V${bottom - rb}Q${bodyRight},${bottom} ${bodyRight - rb},${bottom}` +
+      `H${bodyLeft + rb}Q${bodyLeft},${bottom} ${bodyLeft},${bottom - rb}` +
+      `V${top + rt}Q${bodyLeft},${top} ${bodyLeft + rt},${top}Z`;
+  }
+
   merged
     .select(`.${cls.item}-body`)
-    .attr(
-      'd',
-      `M${bodyLeft + r},${yBodyTop}H${bodyRight - r}Q${bodyRight},${yBodyTop} ${bodyRight},${yBodyTop + r}` +
-        `V${yIntake - r}Q${bodyRight},${yIntake} ${bodyRight - r},${yIntake}` +
-        `H${bodyLeft + r}Q${bodyLeft},${yIntake} ${bodyLeft},${yIntake - r}` +
-        `V${yBodyTop + r}Q${bodyLeft},${yBodyTop} ${bodyLeft + r},${yBodyTop}Z`,
-    )
+    .attr('d', bodyPath)
     .attr('fill', theme.fill)
     .attr('stroke', theme.stroke)
     .attr('stroke-width', theme.strokeWidth);
 
-  // Intake screen (crivo): short horizontal hatches near the bottom of the body.
+  // Intake screen (crivo): short horizontal hatches near the bottom of the
+  // body, only where the body is drawn.
   const hatchY = [
     yIntake - cfg.bodyHeight * 0.3,
     yIntake - cfg.bodyHeight * 0.15,
-  ];
+  ].filter(y => body && y > body.top && y < body.bottom);
   merged
     .select(`.${cls.item}-intake`)
     .attr(

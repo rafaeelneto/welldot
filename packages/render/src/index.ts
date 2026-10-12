@@ -17,6 +17,7 @@ export {
 export type { WellLegendItem } from './renderers/legend.renderer';
 export type {
   CaveTheme,
+  ColumnHeadersTheme,
   ComponentsClassNames,
   ConstructionTheme,
   DeepPartial,
@@ -26,8 +27,12 @@ export type {
   LabelsTheme,
   LegendRenderConfig,
   LegendTheme,
+  LithologyLabelItem,
   LithologyTextureTheme,
   LithologyTheme,
+  MarkersTheme,
+  OverlapTheme,
+  OverviewTheme,
   RenderConfig,
   RenderLabelPack,
   RenderLocalizedText,

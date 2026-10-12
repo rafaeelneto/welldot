@@ -41,12 +41,16 @@ export interface ContentText {
   color?: string;
   alignment?: Alignment;
   decoration?: string;
+  /** Keep the text on one line. */
+  noWrap?: boolean;
   width?: ColumnWidth;
   margin?: Margins;
   colSpan?: number;
 }
 
 export interface ContentColumns {
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
   columns: Content[];
   columnGap?: number;
   width?: ColumnWidth;
@@ -54,6 +58,11 @@ export interface ContentColumns {
 }
 
 export interface ContentStack {
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
+  pageBreak?: 'before' | 'after';
+  /** Draw at fixed page coordinates, outside the flow. */
+  absolutePosition?: AbsolutePosition;
   stack: Content[];
   margin?: Margins;
   width?: ColumnWidth;
@@ -79,6 +88,9 @@ export interface TableLayout {
 }
 
 export interface ContentTable {
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
+  pageBreak?: 'before' | 'after';
   table: {
     headerRows?: number;
     widths?: ColumnWidth[];
@@ -98,6 +110,8 @@ export interface AbsolutePosition {
 }
 
 export interface ContentSvg {
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
   svg: string;
   width?: number;
   height?: number;
@@ -128,8 +142,19 @@ export interface CanvasLine {
   lineColor?: string;
 }
 
+export interface CanvasRect {
+  type: 'rect';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  color?: string;
+  lineWidth?: number;
+  lineColor?: string;
+}
+
 export interface ContentCanvas {
-  canvas: CanvasLine[];
+  canvas: (CanvasLine | CanvasRect)[];
   margin?: Margins;
 }
 

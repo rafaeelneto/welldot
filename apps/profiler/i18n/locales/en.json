@@ -386,9 +386,15 @@
       "valuePlaceholder": "Value",
       "syncedTooltip": "Value synced with the profile",
       "deleteItem": "Remove",
-      "pageBreaks": {
-        "title": "Page breaks",
-        "split": "Split profile into pages"
+      "format": {
+        "title": "Profile format",
+        "compact": "Compact",
+        "detailed": "Detailed",
+        "split": "Split profile into pages",
+        "matchContent": "Follow the content",
+        "fitPage": "Fit to one page (A4)",
+        "compactHint": "Following the content needs page splitting off",
+        "detailedHint": "Page breaks snap to contacts, with overlap and a mini-map"
       },
       "metadataSection": {
         "title": "Metadata section",
@@ -399,9 +405,6 @@
       "visibilitySection": {
         "title": "Decide what to share",
         "toggle": "Use my share selection"
-      },
-      "scale": {
-        "title": "Scale"
       },
       "metadataFields": {
         "name": "Name",

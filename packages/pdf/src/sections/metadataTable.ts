@@ -44,12 +44,14 @@ export function packLabelValueRows(
 
 /**
  * Builds the well-metadata table (name, type, driller, construction date,
- * coordinates, elevation, observations), omitting fields with no value and
- * returning `null` when none are populated.
+ * coordinates, elevation, observations) in `columns` label/value columns
+ * (default 3), omitting fields with no value and returning `null` when none
+ * are populated.
  */
 export function buildMetadataTable(
   well: Well,
   ctx: PdfContext,
+  columns = 3,
 ): ContentTable | null {
   const { labels } = ctx;
   const { formatLength, vocab, vocabList } = createPdfFormatters(ctx);
@@ -117,17 +119,20 @@ export function buildMetadataTable(
 
   if (fields.length === 0 && !observations) return null;
 
-  const body = packLabelValueRows(fields, 3);
+  const body = packLabelValueRows(fields, columns);
   // Always its own full-width row at the end, starting at the first column —
   // free-text notes read poorly squeezed into a single narrow column.
   if (observations) {
-    body.push([labelValueCell(observations, 3), {}, {}]);
+    body.push([
+      labelValueCell(observations, columns),
+      ...Array.from({ length: columns - 1 }, () => ({})),
+    ]);
   }
 
   return {
     layout: 'noBorders',
     table: {
-      widths: ['*', '*', '*'],
+      widths: Array<'*'>(columns).fill('*'),
       dontBreakRows: false,
       body,
     },

@@ -3,10 +3,15 @@ export { buildDefaultPdfFilename, createWellPdf } from './createWellPdf';
 
 // Document assembly
 export {
+  COMPACT_COLUMNS_ID,
+  LEGEND_STRIP_ID,
   PDF_SECTION_BUILDERS,
+  buildCompactBlocks,
+  buildCompactSideContent,
   buildDocDefinition,
   buildDocShell,
   buildLeadContent,
+  startOnNextPage,
   toPdfContext,
 } from './buildDocDefinition';
 export {
@@ -21,6 +26,7 @@ export {
 // Profile SVG (browser only)
 export {
   FIT_EPSILON,
+  LEGEND_GAP,
   MIN_FIRST_PANEL_HEIGHT,
   PDF_CONTENT_WIDTH,
   PDF_MARGINS,
@@ -31,14 +37,29 @@ export {
   computeTotalSvgHeight,
   planProfilePanels,
 } from './svg/buildSvgProfiles';
+export {
+  OVERLAP_HEIGHT,
+  SNAP_RATIO,
+  planDetailedPanels,
+} from './svg/planDetailedPanels';
+export {
+  COMPACT_COLUMN_GAP,
+  COMPACT_PROFILE_RATIO,
+  computeCompactColumnWidth,
+  computeCompactSideWidth,
+  getLithologyContacts,
+} from './svg/profileLayouts';
 
 // Runtime
 export { loadPdfMake } from './runtime/pdfmake';
 export { loadDefaultPdfFonts, registerPdfFonts } from './runtime/registerFonts';
 
 // Sections
+export { buildCaveSection } from './sections/caveTable';
+export { buildFractureSection } from './sections/fractureTable';
 export { buildHistoryLogSection } from './sections/historyLogTable';
 export { buildHydrodynamicEventsSection } from './sections/hydrodynamicEventsTable';
+export { buildLithologySection } from './sections/lithologyTable';
 export {
   buildMetadataTable,
   packLabelValueRows,
@@ -54,9 +75,21 @@ export { buildWaterSampleSection } from './sections/waterSampleTable';
 // Layout
 export { buildFooterContent } from './layout/footer';
 export { buildHeaderContent } from './layout/header';
-export { LEGEND_COLUMNS, buildLegendTable } from './layout/legend';
 export {
+  LEGEND_COLUMNS,
+  LEGEND_ROW_HEIGHT,
+  buildLegendStrip,
+  buildLegendTable,
+  computeLegendStripHeight,
+  packLegendRows,
+} from './layout/legend';
+export {
+  COMPACT_SPLIT_MIN_ROOM,
   PROFILE_PROBE_ID,
+  SIDE_END_PROBE_ID,
+  measureCompactContentHeight,
+  measureCompactSideSplit,
+  measureLegendBreak,
   measureProfileStart,
 } from './layout/measureProfileStart';
 export {
@@ -97,6 +130,11 @@ export type {
   ProfilePanel,
 } from './svg/buildSvgProfiles';
 export type {
+  DetailedPanel,
+  PlanDetailedPanelsOptions,
+} from './svg/planDetailedPanels';
+export type { ContactSnap } from './svg/profileLayouts';
+export type {
   CoordinateFormat,
   PdfBranding,
   PdfContext,
@@ -112,7 +150,10 @@ export type {
   PdfPageContentFn,
   PdfPageOptions,
   PdfPageSizeName,
+  PdfProfileFit,
+  PdfProfileFormat,
   PdfProfileOptions,
+  PdfRenderedExtras,
   PdfSectionKey,
   PdfSectionsOptions,
   PdfTheme,
@@ -122,6 +163,7 @@ export type {
   PdfUnits,
   PdfWatermark,
   RenderedLegendItem,
+  RenderedProfilePanel,
   RenderedSvg,
   ResolvedInfoItem,
   ResolvedPdfPage,
