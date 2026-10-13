@@ -11,9 +11,21 @@ const props = defineProps<{
 defineOptions({ inheritAttrs: false });
 
 const inputRef = ref<{ $el: HTMLInputElement } | null>(null);
-const localValue = ref<string>('');
+// RevoGrid passes the typed key when editing starts by typing, the cell's
+// current value otherwise.
+const localValue = ref<string>(
+  props.val === undefined || props.val === null ? '' : String(props.val),
+);
 
-onMounted(() => nextTick(() => inputRef.value?.$el?.focus()));
+onMounted(() =>
+  nextTick(() => {
+    const el = inputRef.value?.$el;
+    if (!el) return;
+    el.focus();
+    const end = el.value.length;
+    el.setSelectionRange(end, end);
+  }),
+);
 
 function commit(preventFocus = true) {
   props.save(localValue.value, preventFocus);
