@@ -20,7 +20,7 @@ import {
   MEASUREMENT_METHODS,
 } from './hydrodynamic.vocab';
 import {
-  DECLARED_METHODS,
+  ESTIMATION_METHODS,
   MAINTENANCE_TYPES,
   METER_TYPES,
   POWER_SOURCES,
@@ -120,7 +120,12 @@ const VOCABULARIES: [
   ],
   ['METER_TYPES', METER_TYPES, 'format-reference.md', '## `meters[].type`'],
   ['READING_SOURCES', READING_SOURCES, 'format-reference.md', '**`source`**'],
-  ['DECLARED_METHODS', DECLARED_METHODS, 'format-reference.md', '**`method`**'],
+  [
+    'ESTIMATION_METHODS',
+    ESTIMATION_METHODS,
+    'format-reference.md',
+    '**`method`**',
+  ],
   [
     'MEASUREMENT_METHODS',
     MEASUREMENT_METHODS,

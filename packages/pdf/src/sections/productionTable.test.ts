@@ -42,12 +42,12 @@ describe('buildProductionSection', () => {
         corrects: 'r2',
       },
       {
-        id: 'd1',
-        type: 'declared_volume',
-        period_start: '2024-01-01T00:00:00-03:00',
-        period_end: '2025-01-01T00:00:00-03:00',
+        id: 'e1',
+        type: 'estimated_volume',
+        period_start: '2023-01-01T00:00:00-03:00',
+        period_end: '2024-01-01T00:00:00-03:00',
         volume: 1200,
-        method: 'reported',
+        method: 'flow_time',
       },
     ];
     const serialized = JSON.stringify(
@@ -55,9 +55,11 @@ describe('buildProductionSection', () => {
     );
     // metered = 1100 − 100; the retracted 9999 reading does not count.
     expect(serialized).toContain('1,000.0 m³');
-    // reported volume is shown for comparison.
+    // The estimate predates the meter, so it counts in full in 2023.
     expect(serialized).toContain('1,200.0 m³');
+    expect(serialized).toContain('"2023"');
     expect(serialized).toContain('"2024"');
+    expect(serialized).toContain('Flow × operating time');
     expect(serialized).toContain('retracted');
     expect(serialized).toContain('correction');
     expect(serialized).toContain('lineThrough');
@@ -102,6 +104,8 @@ describe('buildProductionSection', () => {
     );
     expect(serialized).toContain('ofLimit');
     expect(serialized).toContain('50%');
+    // Year, metered, total and % of limit: no estimated column without estimates.
+    expect(serialized).toContain('"widths":["*","auto","auto","auto"]');
   });
 
   it('honors custom date formats in the ledger', () => {
@@ -115,7 +119,7 @@ describe('buildProductionSection', () => {
       },
       {
         id: 'd1',
-        type: 'declared_volume',
+        type: 'estimated_volume',
         period_start: '2024-01-01T00:00:00-03:00',
         period_end: '2025-01-01T00:00:00-03:00',
         volume: 1200,
@@ -166,7 +170,7 @@ describe('buildProductionSection', () => {
       },
       {
         id: 'd1',
-        type: 'declared_volume',
+        type: 'estimated_volume',
         period_start: '2024-01-01T00:00:00-03:00',
         volume: 1200,
         notes: 'open-period',
@@ -179,7 +183,9 @@ describe('buildProductionSection', () => {
         buildProductionSection(
           baseWell({ meters: [meter], production }),
           makeTestContext(
-            { dateFormats: { date: 'yyyy-MM-dd', dateTime: 'yyyy-MM-dd HH:mm' } },
+            {
+              dateFormats: { date: 'yyyy-MM-dd', dateTime: 'yyyy-MM-dd HH:mm' },
+            },
             lastSegmentLabels,
           ),
         ),

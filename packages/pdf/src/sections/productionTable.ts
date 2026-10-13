@@ -1,11 +1,11 @@
 import type {
-  DeclaredVolume,
+  EstimatedVolume,
   MeterReading,
   ProductionEntry,
   Well,
 } from '@welldot/core';
 import {
-  DECLARED_METHODS,
+  ESTIMATION_METHODS,
   PRODUCTION_ENTRY_TYPES,
   READING_SOURCES,
 } from '@welldot/core';
@@ -35,7 +35,7 @@ import { packLabelValueRows } from './metadataTable';
  */
 function entryInstant(e: ProductionEntry): string | undefined {
   if (e.type === 'meter_reading') return (e as MeterReading).datetime;
-  if (e.type === 'declared_volume') return (e as DeclaredVolume).period_end;
+  if (e.type === 'estimated_volume') return (e as EstimatedVolume).period_end;
   const datetime = (e as { datetime?: unknown }).datetime;
   return typeof datetime === 'string' ? datetime : undefined;
 }
@@ -51,7 +51,7 @@ function percent(value: number, limit: number | undefined): string {
   return `${Math.round((value / limit) * 100)}%`;
 }
 
-/** Total / metered / estimated / reported, plus unknown intervals. */
+/** Total / metered / estimated, plus unknown intervals. */
 function buildTotals(
   well: Well,
   fmt: PdfFormatters,
@@ -65,10 +65,6 @@ function buildTotals(
     {
       label: totalLabels.estimated,
       value: fmt.formatVolume(totals.estimated, 1),
-    },
-    {
-      label: totalLabels.reported,
-      value: fmt.formatVolume(totals.reported, 1),
     },
   ];
   if (totals.unknown_intervals) {
@@ -95,14 +91,15 @@ function buildAnnualTable(
     v => v.period === 'annual',
   )?.volume;
   const totalLabels = labels.operation.production.totals;
+  // The estimated column only shows when some year has an estimate.
+  const hasEstimates = buckets.some(b => b.estimated > 0);
 
   const header: TableCell[] = [
     headerCell(labels.operation.production.periods.year),
     headerCell(totalLabels.metered, true),
-    headerCell(totalLabels.estimated, true),
-    headerCell(totalLabels.total, true),
-    headerCell(totalLabels.reported, true),
   ];
+  if (hasEstimates) header.push(headerCell(totalLabels.estimated, true));
+  header.push(headerCell(totalLabels.total, true));
   if (limit) header.push(headerCell(labels.operation.production.ofLimit, true));
 
   const body: TableCell[][] = [header];
@@ -110,10 +107,9 @@ function buildAnnualTable(
     const row: TableCell[] = [
       b.period,
       valueCell(fmt.formatVolume(b.metered, 1)),
-      valueCell(fmt.formatVolume(b.estimated, 1)),
-      valueCell(fmt.formatVolume(b.total, 1)),
-      valueCell(b.reported ? fmt.formatVolume(b.reported, 1) : '—'),
     ];
+    if (hasEstimates) row.push(valueCell(fmt.formatVolume(b.estimated, 1)));
+    row.push(valueCell(fmt.formatVolume(b.total, 1)));
     if (limit) row.push(rightCell(percent(b.total, limit)));
     body.push(row);
   });
@@ -121,9 +117,7 @@ function buildAnnualTable(
   return withTableTitle(labels.operation.production.annual, {
     layout: 'lightHorizontalLines',
     table: {
-      widths: limit
-        ? ['*', 'auto', 'auto', 'auto', 'auto', 'auto']
-        : ['*', 'auto', 'auto', 'auto', 'auto'],
+      widths: ['*', ...header.slice(1).map(() => 'auto')],
       headerRows: 1,
       dontBreakRows: true,
       body,
@@ -174,12 +168,14 @@ function buildLedgerTable(
         .filter(Boolean)
         .join(' · ');
       value = fmt.formatVolume(r.reading, 3);
-    } else if (e.type === 'declared_volume') {
-      const d = e as DeclaredVolume;
+    } else if (e.type === 'estimated_volume') {
+      const d = e as EstimatedVolume;
       details = [
         `${formatDate(d.period_start, dateFormats.date) || '—'} → ${formatDate(d.period_end, dateFormats.date) || '—'}`,
-        fmt.vocab(DECLARED_METHODS, d.method ?? 'estimated'),
-      ].join(' · ');
+        d.method ? fmt.vocab(ESTIMATION_METHODS, d.method) : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
       value = fmt.formatVolume(d.volume, 1);
     } else {
       details = '';

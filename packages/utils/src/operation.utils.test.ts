@@ -25,7 +25,11 @@ import {
   type OperationWarningCode,
 } from './operation.utils';
 import { getRetractedEventIds } from './profile.utils';
-import { getRetractedIds, instantLocalDate } from './shared.utils';
+import {
+  getRetractedIds,
+  instantLocalDate,
+  instantOffset,
+} from './shared.utils';
 
 const TODAY = '2026-10-05';
 
@@ -65,7 +69,7 @@ const reading = (
   ...patch,
 });
 
-const declared = (
+const estimated = (
   id: string,
   period_start: string,
   period_end: string,
@@ -73,7 +77,7 @@ const declared = (
   patch: Record<string, unknown> = {},
 ): ProductionEntry => ({
   id,
-  type: 'declared_volume',
+  type: 'estimated_volume',
   period_start,
   period_end,
   volume,
@@ -190,6 +194,15 @@ describe('getRetractedIds', () => {
       ] as HydrodynamicEvent[],
     });
     expect([...getRetractedEventIds(well)]).toEqual(['e1']);
+  });
+});
+
+describe('instantOffset', () => {
+  it('returns the offset as written', () => {
+    expect(instantOffset('2025-04-02T23:30:00-03:00')).toBe('-03:00');
+    expect(instantOffset('2025-04-02T00:30:00.250+09:00')).toBe('+09:00');
+    expect(instantOffset('2025-04-02T00:30:00z')).toBe('Z');
+    expect(instantOffset('2025-04-02T00:30:00')).toBeUndefined();
   });
 });
 
@@ -338,7 +351,6 @@ describe('getProductionTotal', () => {
       metered: 133550,
       estimated: 0,
       total: 133550,
-      reported: 0,
       unknown_intervals: 0,
     });
   });
@@ -363,10 +375,10 @@ describe('getProductionTotal', () => {
         reading('r1', '2025-01-01T00:00:00Z', 0),
         reading('r2', '2025-01-11T00:00:00Z', 100),
         // Half of this period overlaps the meter interval.
-        declared('d1', '2025-01-06T00:00:00Z', '2025-01-16T00:00:00Z', 50),
-        // Fully outside meter coverage; method-less counts as estimated.
-        declared('d2', '2025-03-01T00:00:00Z', '2025-03-31T00:00:00Z', 70, {
-          method: 'estimated',
+        estimated('d1', '2025-01-06T00:00:00Z', '2025-01-16T00:00:00Z', 50),
+        // Fully outside meter coverage.
+        estimated('d2', '2025-03-01T00:00:00Z', '2025-03-31T00:00:00Z', 70, {
+          method: 'flow_time',
         }),
       ],
     });
@@ -374,20 +386,43 @@ describe('getProductionTotal', () => {
       metered: 100,
       estimated: 95,
       total: 195,
-      reported: 0,
       unknown_intervals: 0,
     });
   });
 
-  it('keeps reported volumes out of the total', () => {
+  it('counts an estimate whatever its method', () => {
     const well = makeWell({
       production: [
-        declared('d1', '2025-01-01T00:00:00Z', '2025-02-01T00:00:00Z', 900, {
+        estimated('a', '2025-01-01T00:00:00Z', '2025-02-01T00:00:00Z', 10, {
+          method: 'user_statement',
+        }),
+        estimated('b', '2025-02-01T00:00:00Z', '2025-03-01T00:00:00Z', 20, {
           method: 'reported',
+        }),
+        estimated('c', '2025-03-01T00:00:00Z', '2025-04-01T00:00:00Z', 30, {
+          method: 'x-pump-curve',
         }),
       ],
     });
-    expect(getProductionTotal(well)).toMatchObject({ total: 0, reported: 900 });
+    expect(getProductionTotal(well)).toMatchObject({
+      estimated: 60,
+      total: 60,
+    });
+  });
+
+  it('excludes legacy declared_volume entries as unknown types', () => {
+    const well = makeWell({
+      production: [
+        {
+          id: 'old',
+          type: 'declared_volume',
+          period_start: '2025-01-01T00:00:00Z',
+          period_end: '2025-02-01T00:00:00Z',
+          volume: 900,
+        } as never,
+      ],
+    });
+    expect(getProductionTotal(well).total).toBe(0);
   });
 
   it('counts unknown intervals without adding volume', () => {
@@ -405,10 +440,10 @@ describe('getProductionTotal', () => {
     });
   });
 
-  it('ignores declared volumes with an invalid period', () => {
+  it('ignores estimated volumes with an invalid period', () => {
     const well = makeWell({
       production: [
-        declared('d1', '2025-02-01T00:00:00Z', '2025-01-01T00:00:00Z', 10),
+        estimated('d1', '2025-02-01T00:00:00Z', '2025-01-01T00:00:00Z', 10),
       ],
     });
     expect(getProductionTotal(well).total).toBe(0);
@@ -420,27 +455,59 @@ describe('getProductionTotal', () => {
 });
 
 describe('getProductionByPeriod', () => {
-  it('allocates meter intervals to the local date of their end', () => {
-    const well = specExample();
+  it('prorates a meter interval by time across periods', () => {
+    const well = makeWell({
+      meters: [meter()],
+      production: [
+        reading('r1', '2025-01-01T00:00:00Z', 0),
+        reading('r2', '2026-01-01T00:00:00Z', 365),
+      ],
+    });
+    // The interval ends on the boundary, so 2026 gets nothing.
     expect(getProductionByPeriod(well, 'year')).toEqual([
       {
-        period: '2026',
-        metered: 133550,
+        period: '2025',
+        metered: 365,
         estimated: 0,
-        total: 133550,
-        reported: 0,
+        total: 365,
         unknown_intervals: 0,
       },
     ]);
-    expect(
-      getProductionByPeriod(well, 'month').map(b => [b.period, b.metered]),
-    ).toEqual([
-      ['2026-03', 81240],
-      ['2026-09', 52310],
+    const months = getProductionByPeriod(well, 'month');
+    expect(months.map(b => b.period)).toEqual([
+      '2025-01',
+      '2025-02',
+      '2025-03',
+      '2025-04',
+      '2025-05',
+      '2025-06',
+      '2025-07',
+      '2025-08',
+      '2025-09',
+      '2025-10',
+      '2025-11',
+      '2025-12',
     ]);
-    expect(getProductionByPeriod(well, 'day').map(b => b.period)).toEqual([
-      '2026-03-05',
-      '2026-09-30',
+    expect(months[0]!.metered).toBeCloseTo(31);
+    expect(months[1]!.metered).toBeCloseTo(28);
+    const days = getProductionByPeriod(well, 'day');
+    expect(days).toHaveLength(365);
+    expect(days.every(b => Math.abs(b.metered - 1) < 1e-9)).toBe(true);
+  });
+
+  it('cuts at local midnight in the offset of the span start', () => {
+    const well = makeWell({
+      meters: [meter({ installed_at: '2024-12-01T00:00:00-03:00' })],
+      production: [
+        reading('r1', '2024-12-31T00:00:00-03:00', 0),
+        reading('r2', '2025-01-02T00:00:00-03:00', 20),
+      ],
+    });
+    expect(
+      getProductionByPeriod(well, 'year').map(b => [b.period, b.metered]),
+    ).toEqual([
+      ['2024', 10],
+      ['2025', 10],
     ]);
   });
 
@@ -453,27 +520,88 @@ describe('getProductionByPeriod', () => {
         reading('r2', '2024-12-31T22:30:00-03:00', 10),
       ],
     });
-    expect(getProductionByPeriod(well, 'year')[0]?.period).toBe('2024');
+    expect(getProductionByPeriod(well, 'year').map(b => b.period)).toEqual([
+      '2024',
+    ]);
   });
 
-  it('allocates declared volumes to the local date of period_end, ascending', () => {
+  it('prorates estimates over their uncovered time only', () => {
     const well = makeWell({
+      meters: [meter()],
       production: [
-        declared('d2', '2025-03-01T00:00:00Z', '2025-03-31T00:00:00Z', 30, {
-          method: 'reported',
-        }),
-        declared('d1', '2025-01-01T00:00:00Z', '2025-01-31T00:00:00Z', 20),
+        reading('r1', '2025-01-01T00:00:00Z', 0),
+        reading('r2', '2025-01-11T00:00:00Z', 100),
+        // 10 days; the 5 in December are uncovered.
+        estimated('e1', '2024-12-27T00:00:00Z', '2025-01-06T00:00:00Z', 100),
       ],
     });
     expect(
       getProductionByPeriod(well, 'month').map(b => [
         b.period,
+        b.metered,
         b.estimated,
-        b.reported,
       ]),
     ).toEqual([
-      ['2025-01', 20, 0],
-      ['2025-03', 0, 30],
+      ['2024-12', 0, 50],
+      ['2025-01', 100, 0],
+    ]);
+  });
+
+  it('marks an unknown interval in every period it touches', () => {
+    const well = makeWell({
+      meters: [meter()],
+      production: [
+        reading('r1', '2025-01-15T00:00:00Z', 900),
+        reading('r2', '2025-03-15T00:00:00Z', 100),
+      ],
+    });
+    expect(
+      getProductionByPeriod(well, 'month').map(b => [
+        b.period,
+        b.unknown_intervals,
+        b.total,
+      ]),
+    ).toEqual([
+      ['2025-01', 1, 0],
+      ['2025-02', 1, 0],
+      ['2025-03', 1, 0],
+    ]);
+  });
+
+  it('puts a zero-length interval in the period of its instant', () => {
+    const well = makeWell({
+      meters: [meter()],
+      production: [
+        reading('r1', '2025-05-10T00:00:00Z', 0),
+        reading('r2', '2025-05-10T00:00:00Z', 7, { sequence: 1 }),
+      ],
+    });
+    expect(
+      getProductionByPeriod(well, 'month').map(b => [b.period, b.metered]),
+    ).toEqual([['2025-05', 7]]);
+  });
+
+  it('adds up to the total', () => {
+    const well = specExample();
+    well.production!.push(
+      estimated(
+        'e1',
+        '2025-01-01T00:00:00-03:00',
+        '2025-04-02T09:00:00-03:00',
+        9100,
+      ),
+    );
+    const total = getProductionTotal(well);
+    for (const period of ['day', 'month', 'year'] as const) {
+      const buckets = getProductionByPeriod(well, period);
+      const sum = (k: 'metered' | 'estimated') =>
+        buckets.reduce((acc, b) => acc + b[k], 0);
+      expect(sum('metered')).toBeCloseTo(total.metered, 6);
+      expect(sum('estimated')).toBeCloseTo(total.estimated, 6);
+    }
+    expect(getProductionByPeriod(well, 'year').map(b => b.period)).toEqual([
+      '2025',
+      '2026',
     ]);
   });
 });
@@ -655,13 +783,13 @@ describe('getOperationWarnings', () => {
   it('flags unresolved corrects and correction cycles', () => {
     const well = makeWell({
       production: [
-        declared('a', '2025-01-01T00:00:00Z', '2025-02-01T00:00:00Z', 1, {
+        estimated('a', '2025-01-01T00:00:00Z', '2025-02-01T00:00:00Z', 1, {
           corrects: 'b',
         }),
-        declared('b', '2025-01-01T00:00:00Z', '2025-02-01T00:00:00Z', 1, {
+        estimated('b', '2025-01-01T00:00:00Z', '2025-02-01T00:00:00Z', 1, {
           corrects: 'a',
         }),
-        declared('c', '2025-01-01T00:00:00Z', '2025-02-01T00:00:00Z', 1, {
+        estimated('c', '2025-01-01T00:00:00Z', '2025-02-01T00:00:00Z', 1, {
           corrects: 'ghost',
         }),
       ],
@@ -676,29 +804,26 @@ describe('getOperationWarnings', () => {
     ).toEqual([['a'], ['b']]);
   });
 
-  it('flags a declared period that does not end after it starts', () => {
+  it('flags an estimate period that does not end after it starts', () => {
     const well = makeWell({
       production: [
-        declared('d1', '2025-01-01T00:00:00Z', '2025-01-01T00:00:00Z', 5),
+        estimated('d1', '2025-01-01T00:00:00Z', '2025-01-01T00:00:00Z', 5),
       ],
     });
     expect(getOperationWarnings(well, TODAY)).toContainEqual({
-      code: 'declared_period_invalid',
+      code: 'estimate_period_invalid',
       ids: ['d1'],
     });
   });
 
-  it('flags estimated volumes overlapping a meter, not reported ones', () => {
+  it('flags estimated volumes overlapping a meter', () => {
     const well = makeWell({
       meters: [meter()],
       production: [
         reading('r1', '2025-01-01T00:00:00Z', 0),
         reading('r2', '2025-01-11T00:00:00Z', 100),
-        declared('est', '2025-01-06T00:00:00Z', '2025-01-16T00:00:00Z', 50),
-        declared('rep', '2025-01-06T00:00:00Z', '2025-01-16T00:00:00Z', 50, {
-          method: 'reported',
-        }),
-        declared('out', '2025-02-01T00:00:00Z', '2025-02-10T00:00:00Z', 50),
+        estimated('est', '2025-01-06T00:00:00Z', '2025-01-16T00:00:00Z', 50),
+        estimated('out', '2025-02-01T00:00:00Z', '2025-02-10T00:00:00Z', 50),
       ],
     });
     const flagged = getOperationWarnings(well, TODAY)

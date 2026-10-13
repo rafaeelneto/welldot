@@ -215,7 +215,7 @@ The `.well` format distinguishes two kinds of temporal values:
 - `pump_installations[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
 - `permits[].updated_at`, `permits[].history[].updated_at`, `permits[].conditions[].fulfillments[].datetime`, `updated_at` _(since v2.3)_
 - `meters[].installed_at`, `removed_at`, `updated_at` _(since v2.3)_
-- `production[].datetime` (`meter_reading`); `production[].period_start`, `period_end` (`declared_volume`) _(since v2.3)_
+- `production[].datetime` (`meter_reading`); `production[].period_start`, `period_end` (`estimated_volume`) _(since v2.3)_
 - `operating_regime[].effective_from`, `updated_at` _(since v2.3)_
 - `water_samples[].datetime`, `laboratory.received_at`, `results[].analyzed_at`, `results[].validation.validated_at` _(since v2.3)_
 
@@ -442,7 +442,7 @@ Non-canonical values SHOULD use the `x-` prefix.
 
 ## `production[]` — Recommended values _(since v2.3)_
 
-**`type`** — the entry discriminator: `meter_reading` (a totalizer register value) or `declared_volume` (a volume declared for a period, without a meter). Non-canonical entry types SHOULD use the `x-` prefix; parsers preserve them and exclude them from volume derivations.
+**`type`** — the entry discriminator: `meter_reading` (a totalizer register value) or `estimated_volume` (a volume estimated for a period, without a meter). Non-canonical entry types SHOULD use the `x-` prefix; parsers preserve them and exclude them from volume derivations.
 
 **`source`** (`meter_reading`):
 
@@ -451,14 +451,13 @@ Non-canonical values SHOULD use the `x-` prefix.
 | `manual`    | Leitura manual  |
 | `telemetry` | Telemetria      |
 
-**`method`** (`declared_volume`):
+**`method`** (`estimated_volume`) — the basis of the estimate. Descriptive only: it never changes how the volume is counted.
 
-| Value       | Portuguese (BR)           | Description                                                                                       |
-| ----------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| `estimated` | Estimado                  | Computed outside the file (e.g. flow × time). Counts only for time not covered by meter readings. |
-| `reported`  | Declarado ao órgão gestor | As declared to a regulator. Kept for comparison; never added to production totals.                |
-
-An absent `method` is treated as `estimated`.
+| Value            | Portuguese (BR)           | Description                                                        |
+| ---------------- | ------------------------- | ------------------------------------------------------------------ |
+| `flow_time`      | Vazão × tempo de operação | Flow rate times operating time (hour meter, operating regime).     |
+| `energy`         | Consumo de energia        | Derived from the pump's energy consumption.                        |
+| `user_statement` | Informado pelo usuário    | Stated by the owner or operator, without a documented calculation. |
 
 ## `water_samples[]` — Recommended values _(since v2.3)_
 
@@ -749,7 +748,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 
 - `permits[].volume_limits[].volume`
 - `meters[].max_reading`
-- `production[].reading` (`meter_reading`), `production[].volume` (`declared_volume`)
+- `production[].reading` (`meter_reading`), `production[].volume` (`estimated_volume`)
 - `water_samples[].purge.volume`
 
 **Hour (`h`)** — daily operating time _(since v2.3)_:

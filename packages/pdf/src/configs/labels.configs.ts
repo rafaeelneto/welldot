@@ -318,8 +318,8 @@ export const PDF_LABELS = {
         volume: { en: 'Volume', pt: 'Volume' },
         method: { en: 'Method', pt: 'Método' },
         methodInfo: {
-          en: 'Estimated volumes count only where no meter reading covers the period. Reported volumes (as declared to a regulator) are kept for comparison and never added to the total.',
-          pt: 'Volumes estimados só contam onde nenhuma leitura de hidrômetro cobre o período. Volumes declarados (ao órgão gestor) ficam apenas para comparação e nunca somam ao total.',
+          en: 'How the volume was estimated. Estimated volumes count only where no meter reading covers the period.',
+          pt: 'Como o volume foi estimado. Volumes estimados só contam onde nenhuma leitura de hidrômetro cobre o período.',
         },
         notes: { en: 'Notes', pt: 'Observações' },
       },
@@ -338,11 +338,6 @@ export const PDF_LABELS = {
         },
         metered: { en: 'Metered', pt: 'Medido' },
         estimated: { en: 'Estimated', pt: 'Estimado' },
-        reported: { en: 'Reported', pt: 'Declarado' },
-        reportedInfo: {
-          en: 'Volumes declared to a regulator, for comparison only.',
-          pt: 'Volumes declarados ao órgão gestor, apenas para comparação.',
-        },
       },
       unknownIntervalsLabel: {
         en: 'Unknown intervals',

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type {
-  DeclaredVolume,
+  EstimatedVolume,
   Meter,
   MeterReading,
   ProductionEntry,
 } from '@welldot/core';
-import { DECLARED_METHODS, READING_SOURCES } from '@welldot/core';
+import { ESTIMATION_METHODS, READING_SOURCES } from '@welldot/core';
 import { formatISO } from 'date-fns';
 import { meterLabel } from '~/utils/operationVocab';
 
@@ -24,7 +24,7 @@ const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 const { volumeUnit } = useUnitFormat();
 
-type EntryType = 'meter_reading' | 'declared_volume';
+type EntryType = 'meter_reading' | 'estimated_volume';
 
 const typeOptions = computed(() => [
   {
@@ -32,8 +32,8 @@ const typeOptions = computed(() => [
     label: t('editor.operation.production.types.meter_reading'),
   },
   {
-    value: 'declared_volume',
-    label: t('editor.operation.production.types.declared_volume'),
+    value: 'estimated_volume',
+    label: t('editor.operation.production.types.estimated_volume'),
   },
 ]);
 
@@ -50,7 +50,7 @@ const meterOptions = computed(() =>
   })),
 );
 const sourceOptions = computed(() => vocabOptions(READING_SOURCES));
-const methodOptions = computed(() => vocabOptions(DECLARED_METHODS));
+const methodOptions = computed(() => vocabOptions(ESTIMATION_METHODS));
 
 /** Local copy — nothing reaches the ledger until Save. */
 const form = reactive({
@@ -106,17 +106,18 @@ watch(
 
 function seedForm(e: ProductionEntry | null) {
   const reading = e?.type === 'meter_reading' ? (e as MeterReading) : null;
-  const declared = e?.type === 'declared_volume' ? (e as DeclaredVolume) : null;
-  form.type = declared ? 'declared_volume' : 'meter_reading';
+  const estimate =
+    e?.type === 'estimated_volume' ? (e as EstimatedVolume) : null;
+  form.type = estimate ? 'estimated_volume' : 'meter_reading';
   form.datetime = reading ? new Date(reading.datetime) : new Date();
   form.meterId =
     reading?.meter_id ?? meters.value.find(m => !m.removed_at)?.id ?? null;
   form.reading = reading?.reading ?? null;
   form.source = reading?.source ?? null;
-  form.periodStart = declared ? new Date(declared.period_start) : null;
-  form.periodEnd = declared ? new Date(declared.period_end) : null;
-  form.volume = declared?.volume ?? null;
-  form.method = declared?.method ?? null;
+  form.periodStart = estimate ? new Date(estimate.period_start) : null;
+  form.periodEnd = estimate ? new Date(estimate.period_end) : null;
+  form.volume = estimate?.volume ?? null;
+  form.method = estimate?.method ?? null;
   form.notes = e?.notes ?? '';
 }
 
@@ -134,7 +135,7 @@ const optionalText = (v: string | null) => v?.trim() || undefined;
 /** Fields owned by each entry type, stripped when the type changes. */
 const TYPE_FIELDS: Record<EntryType, string[]> = {
   meter_reading: ['datetime', 'meter_id', 'reading', 'source'],
-  declared_volume: ['period_start', 'period_end', 'volume', 'method'],
+  estimated_volume: ['period_start', 'period_end', 'volume', 'method'],
 };
 
 /**
@@ -147,7 +148,7 @@ function save() {
 
   const base: Record<string, unknown> = { ...model.value };
   const otherType: EntryType =
-    form.type === 'meter_reading' ? 'declared_volume' : 'meter_reading';
+    form.type === 'meter_reading' ? 'estimated_volume' : 'meter_reading';
   for (const key of TYPE_FIELDS[otherType]) delete base[key];
 
   // Instants keep the local offset: daily/monthly buckets use the date part
@@ -162,7 +163,7 @@ function save() {
           source: optionalText(form.source),
         }
       : {
-          type: 'declared_volume' as const,
+          type: 'estimated_volume' as const,
           period_start: formatISO(form.periodStart!),
           period_end: formatISO(form.periodEnd!),
           volume: form.volume!,
@@ -281,7 +282,7 @@ function save() {
         </Message>
       </template>
 
-      <!-- ── Declared volume ────────────────────────────────────────────── -->
+      <!-- ── Estimated volume ───────────────────────────────────────────── -->
       <template v-else>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <WellLabeledField
@@ -316,7 +317,7 @@ function save() {
           size="small"
           variant="simple"
         >
-          {{ t('editor.operation.warnings.declared_period_invalid') }}
+          {{ t('editor.operation.warnings.estimate_period_invalid') }}
         </Message>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <WellLabeledField

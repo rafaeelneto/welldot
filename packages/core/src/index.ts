@@ -10,7 +10,7 @@ export type {
   ConditionFulfillment,
   ConstantRateEvent,
   Constructive,
-  DeclaredVolume,
+  EstimatedVolume,
   Filtration,
   Fracture,
   Geologic,
@@ -86,7 +86,7 @@ export {
   CentralizerSchema,
   ConditionFulfillmentSchema,
   ConstantRateEventSchema,
-  DeclaredVolumeSchema,
+  EstimatedVolumeSchema,
   FiltrationSchema,
   FractureSchema,
   HistoryLogEntrySchema,
@@ -227,7 +227,7 @@ export type {
   MeasurementMethod,
 } from './vocab/hydrodynamic.vocab';
 export {
-  DECLARED_METHODS,
+  ESTIMATION_METHODS,
   MAINTENANCE_TYPES,
   METER_TYPES,
   POWER_SOURCES,
@@ -235,7 +235,7 @@ export {
   READING_SOURCES,
 } from './vocab/operation.vocab';
 export type {
-  DeclaredMethod,
+  EstimationMethod,
   MaintenanceType,
   MeterType,
   PowerSource,

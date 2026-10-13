@@ -26,3 +26,11 @@ export function getRetractedIds(
 export function instantLocalDate(instant: string): string {
   return instant.slice(0, 10);
 }
+
+/**
+ * UTC offset written on an RFC 3339 instant (`Z`, `+hh:mm` or `-hh:mm`), or
+ * `undefined` when the string carries none.
+ */
+export function instantOffset(instant: string): string | undefined {
+  return /(Z|[+-]\d{2}:\d{2})$/i.exec(instant)?.[1]?.toUpperCase();
+}

@@ -16,7 +16,7 @@ import type {
   MeasurementMethod,
 } from '../vocab/hydrodynamic.vocab';
 import type {
-  DeclaredMethod,
+  EstimationMethod,
   MaintenanceType,
   MeterType,
   PowerSource,
@@ -670,7 +670,7 @@ export type Meter = {
 export type ProductionEntryBase = {
   /** Unique within `production`. UUID v4 recommended. */
   id: string;
-  /** `meter_reading` or `declared_volume`. */
+  /** `meter_reading` or `estimated_volume`. */
   type: string;
   /** `production[].id` of the entry this one retracts (ledger correction). */
   corrects?: string;
@@ -692,9 +692,12 @@ export type MeterReading = ProductionEntryBase & {
   source?: OpenVocab<ReadingSource>;
 };
 
-/** A volume declared for a period, without a meter. Since v2.3. */
-export type DeclaredVolume = ProductionEntryBase & {
-  type: 'declared_volume';
+/**
+ * A volume produced in a period, estimated without a meter (e.g. flow ×
+ * operating time). Counts only for time no meter interval covers. Since v2.3.
+ */
+export type EstimatedVolume = ProductionEntryBase & {
+  type: 'estimated_volume';
   /** RFC 3339 instant the period starts. */
   period_start: string;
   /** RFC 3339 instant the period ends. Later than `period_start`. */
@@ -702,18 +705,17 @@ export type DeclaredVolume = ProductionEntryBase & {
   /** Volume in m³. */
   volume: number;
   /**
-   * `estimated` (e.g. flow × time; counts only where no meter covers) or
-   * `reported` (as declared to a regulator; never added to totals). Absent
-   * means `estimated`. Recommended values: {@link DECLARED_METHODS}.
+   * Basis of the estimate. Descriptive only: it never changes how the volume
+   * is counted. Recommended values: {@link ESTIMATION_METHODS}.
    */
-  method?: OpenVocab<DeclaredMethod>;
+  method?: OpenVocab<EstimationMethod>;
 };
 
 /**
  * One entry of the append-only `production` ledger, discriminated by `type`.
  * Corrected with `corrects`, never edited in place. Since v2.3.
  */
-export type ProductionEntry = MeterReading | DeclaredVolume;
+export type ProductionEntry = MeterReading | EstimatedVolume;
 
 /**
  * How the well is intended to run from `effective_from` on. A mutable record;

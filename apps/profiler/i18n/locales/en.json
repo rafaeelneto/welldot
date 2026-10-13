@@ -1111,7 +1111,7 @@
         "noMeters": "Add a meter first to record its readings.",
         "types": {
           "meter_reading": "Meter reading",
-          "declared_volume": "Declared volume"
+          "estimated_volume": "Estimated volume"
         },
         "fields": {
           "type": "Type",
@@ -1126,16 +1126,14 @@
           "periodEnd": "Period end",
           "volume": "Volume",
           "method": "Method",
-          "methodInfo": "Estimated volumes count only where no meter reading covers the period. Reported volumes (as declared to a regulator) are kept for comparison and never added to the total.",
+          "methodInfo": "How the volume was estimated (flow × time, energy use…). Descriptive only: estimated volumes count only where no meter reading covers the period.",
           "notes": "Notes"
         },
         "totals": {
           "total": "Total",
           "totalInfo": "Metered plus estimated volumes. Meters take precedence over estimates.",
           "metered": "Metered",
-          "estimated": "Estimated",
-          "reported": "Reported",
-          "reportedInfo": "Volumes declared to a regulator, for comparison only."
+          "estimated": "Estimated"
         },
         "unknownIntervals": "{n} interval between readings has an unknown volume (the register went down and the meter has no register capacity). | {n} intervals between readings have an unknown volume (the register went down and the meter has no register capacity).",
         "unknownIntervalsLabel": "Unknown intervals",
@@ -1360,7 +1358,7 @@
         "duplicate_production_id": "Two production entries share the same id.",
         "corrects_unresolved": "The corrected entry does not exist in this file.",
         "corrects_cycle": "The correction chain loops back on itself.",
-        "declared_period_invalid": "The period end must be after its start.",
+        "estimate_period_invalid": "The period end must be after its start.",
         "estimated_overlaps_meter": "This estimated volume overlaps meter readings; the meter takes precedence.",
         "duplicate_regime_id": "Two regimes share the same id.",
         "regime_duplicate_effective_from": "Another regime starts at the same instant.",

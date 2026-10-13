@@ -1,5 +1,5 @@
 import type {
-  DeclaredVolume,
+  EstimatedVolume,
   HistoryLogEntry,
   Meter,
   MeterReading,
@@ -13,7 +13,11 @@ import { getVocabLabel, METER_TYPES } from '@welldot/core';
 
 import { formatDate } from './date.utils';
 import { getPermitStatus, todayCalendarDate } from './permit.utils';
-import { getRetractedIds, instantLocalDate } from './shared.utils';
+import {
+  getRetractedIds,
+  instantLocalDate,
+  instantOffset,
+} from './shared.utils';
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
 // Instants are compared as points in time (parsed with their offset); bucket
@@ -32,18 +36,13 @@ function isMeterReading(entry: ProductionEntry): entry is MeterReading {
   );
 }
 
-function isDeclaredVolume(entry: ProductionEntry): entry is DeclaredVolume {
-  return entry.type === 'declared_volume' && typeof entry.volume === 'number';
+function isEstimatedVolume(entry: ProductionEntry): entry is EstimatedVolume {
+  return entry.type === 'estimated_volume' && typeof entry.volume === 'number';
 }
 
-/** `method: "reported"` is the only non-estimated method. */
-function isReported(entry: DeclaredVolume): boolean {
-  return entry.method === 'reported';
-}
-
-/** Valid declared period: both instants parse and `period_end` is later. */
-function declaredPeriod(
-  entry: DeclaredVolume,
+/** Valid estimate period: both instants parse and `period_end` is later. */
+function estimatePeriod(
+  entry: EstimatedVolume,
 ): { start: number; end: number } | undefined {
   const start = toTime(entry.period_start);
   const end = toTime(entry.period_end);
@@ -217,14 +216,12 @@ export type ProductionTotals = {
   /** Sum (m³) of the known meter interval volumes. */
   metered: number;
   /**
-   * Sum (m³) of `estimated` (or method-less) declared volumes, each counted
-   * only for the fraction of its period not covered by a meter interval.
+   * Sum (m³) of `estimated_volume` entries, each counted only for the
+   * fraction of its period not covered by a meter interval.
    */
   estimated: number;
   /** `metered + estimated`. */
   total: number;
-  /** Sum (m³) of `reported` declared volumes. Never part of `total`. */
-  reported: number;
   /** Number of meter intervals whose volume is unknown. */
   unknown_intervals: number;
 };
@@ -234,75 +231,70 @@ export type ProductionBucket = ProductionTotals & {
   period: string;
 };
 
+/**
+ * One volume spread linearly over `[start, end]`: a meter interval, or an
+ * estimated volume minus the time `cover` (meter coverage) takes from it.
+ */
 type Contribution = {
-  date: string;
-  metered: number;
-  estimated: number;
-  reported: number;
-  unknown: number;
+  kind: 'metered' | 'estimated';
+  /** RFC 3339 instants as written. */
+  start: string;
+  end: string;
+  /** m³ over the whole span; `null` when unknown (meter interval). */
+  volume: number | null;
+  /** Spans where the volume does not count. */
+  cover: Span[];
 };
 
-/**
- * Everything that feeds the totals, each keyed by a local date: meter
- * intervals by the date of their end, declared volumes by the date of
- * `period_end`.
- */
+/** Everything that feeds the totals, as spans of time. */
 function getProductionContributions(well: Well): Contribution[] {
   const intervals = getMeterIntervals(well);
   const cover = mergeSpans(
     intervals.map(i => ({ start: toTime(i.start), end: toTime(i.end) })),
   );
   const out: Contribution[] = intervals.map(i => ({
-    date: instantLocalDate(i.end),
-    metered: i.volume ?? 0,
-    estimated: 0,
-    reported: 0,
-    unknown: i.volume === null ? 1 : 0,
+    kind: 'metered',
+    start: i.start,
+    end: i.end,
+    volume: i.volume,
+    cover: [],
   }));
 
   for (const entry of getEffectiveProduction(well)) {
-    if (!isDeclaredVolume(entry)) continue;
-    const span = declaredPeriod(entry);
-    if (!span) continue;
-    const date = instantLocalDate(entry.period_end);
-    if (isReported(entry)) {
-      out.push({
-        date,
-        metered: 0,
-        estimated: 0,
-        reported: entry.volume,
-        unknown: 0,
-      });
-      continue;
-    }
-    const uncovered = 1 - coveredLength(span, cover) / (span.end - span.start);
+    if (!isEstimatedVolume(entry) || !estimatePeriod(entry)) continue;
     out.push({
-      date,
-      metered: 0,
-      estimated: entry.volume * uncovered,
-      reported: 0,
-      unknown: 0,
+      kind: 'estimated',
+      start: entry.period_start,
+      end: entry.period_end,
+      volume: entry.volume,
+      cover,
     });
   }
   return out;
 }
 
-function emptyTotals(): ProductionTotals {
-  return {
-    metered: 0,
-    estimated: 0,
-    total: 0,
-    reported: 0,
-    unknown_intervals: 0,
-  };
+/**
+ * Volume of `c` that falls in `[a, b)`: its volume prorated by the share of
+ * its span outside `c.cover`. A zero-length span yields its whole volume.
+ */
+function allocate(c: Contribution, a: number, b: number): number {
+  if (c.volume === null) return 0;
+  const start = toTime(c.start);
+  const end = toTime(c.end);
+  if (!(end > start)) return c.volume;
+  const slice = { start: a, end: b };
+  const counted = b - a - coveredLength(slice, c.cover);
+  return (c.volume * counted) / (end - start);
 }
 
-function addContribution(t: ProductionTotals, c: Contribution): void {
-  t.metered += c.metered;
-  t.estimated += c.estimated;
+function emptyTotals(): ProductionTotals {
+  return { metered: 0, estimated: 0, total: 0, unknown_intervals: 0 };
+}
+
+function addVolume(t: ProductionTotals, c: Contribution, volume: number): void {
+  if (c.volume === null) t.unknown_intervals += 1;
+  else t[c.kind] += volume;
   t.total = t.metered + t.estimated;
-  t.reported += c.reported;
-  t.unknown_intervals += c.unknown;
 }
 
 const PERIOD_KEY_LENGTH: Record<ProductionPeriod, number> = {
@@ -311,30 +303,80 @@ const PERIOD_KEY_LENGTH: Record<ProductionPeriod, number> = {
   day: 10,
 };
 
+/** Local date (`YYYY-MM-DD`) starting the period after the one holding `date`. */
+function nextPeriodStart(date: string, period: ProductionPeriod): string {
+  const y = Number(date.slice(0, 4));
+  const m = Number(date.slice(5, 7));
+  const d = Number(date.slice(8, 10));
+  const next =
+    period === 'year'
+      ? Date.UTC(y + 1, 0, 1)
+      : period === 'month'
+        ? Date.UTC(y, m, 1)
+        : Date.UTC(y, m - 1, d + 1);
+  return new Date(next).toISOString().slice(0, 10);
+}
+
+type PeriodSlice = { key: string; start: number; end: number };
+
+/**
+ * Cuts `[start, end]` at the local period boundaries, which are midnights in
+ * the offset written on `start`. A zero-length span is one empty slice in
+ * the period of `end`.
+ */
+function periodSlices(
+  start: string,
+  end: string,
+  period: ProductionPeriod,
+): PeriodSlice[] {
+  const len = PERIOD_KEY_LENGTH[period];
+  const s = toTime(start);
+  const e = toTime(end);
+  if (!(e > s)) {
+    return [{ key: instantLocalDate(end).slice(0, len), start: e, end: e }];
+  }
+  const offset = instantOffset(start) ?? 'Z';
+  const slices: PeriodSlice[] = [];
+  let date = instantLocalDate(start);
+  let from = s;
+  for (;;) {
+    const nextDate = nextPeriodStart(date, period);
+    const boundary = toTime(`${nextDate}T00:00:00${offset}`);
+    if (!(boundary < e)) {
+      slices.push({ key: date.slice(0, len), start: from, end: e });
+      return slices;
+    }
+    slices.push({ key: date.slice(0, len), start: from, end: boundary });
+    date = nextDate;
+    from = boundary;
+  }
+}
+
 /**
  * Production per day, month or year (.well v2.3 derived values), ascending
- * by period key. Only periods with at least one contribution are returned.
+ * by period key. Only periods that a contribution touches are returned.
  *
- * Simplification: a meter interval is allocated whole to the period of the
- * local date of its end (r₂), and a declared volume to the period of the
- * local date of its `period_end`; volumes are not prorated across period
- * boundaries. Local dates are the date part of the instant as written.
- * Precedence follows {@link getProductionTotal}.
+ * Every volume is prorated linearly by time across period boundaries: a
+ * meter interval over [r₁, r₂], an estimated volume over the uncovered part
+ * of its period. Boundaries are local midnights in the offset written on the
+ * span's start, and period keys are local dates as written. An interval of
+ * unknown volume counts in `unknown_intervals` of every period it touches.
+ * Precedence follows {@link getProductionTotal}; the buckets add up to it.
  */
 export function getProductionByPeriod(
   well: Well,
   period: ProductionPeriod,
 ): ProductionBucket[] {
-  const len = PERIOD_KEY_LENGTH[period];
   const buckets = new Map<string, ProductionBucket>();
   for (const c of getProductionContributions(well)) {
-    const key = c.date.slice(0, len);
-    let bucket = buckets.get(key);
-    if (!bucket) {
-      bucket = { period: key, ...emptyTotals() };
-      buckets.set(key, bucket);
+    for (const slice of periodSlices(c.start, c.end, period)) {
+      let bucket = buckets.get(slice.key);
+      if (!bucket) {
+        bucket = { period: slice.key, ...emptyTotals() };
+        buckets.set(slice.key, bucket);
+      }
+      addVolume(bucket, c, allocate(c, slice.start, slice.end));
     }
-    addContribution(bucket, c);
   }
   return [...buckets.values()].sort((a, b) =>
     a.period < b.period ? -1 : a.period > b.period ? 1 : 0,
@@ -346,18 +388,18 @@ export function getProductionByPeriod(
  *
  * - Meter intervals with a known volume are `metered`; unknown ones are
  *   counted in `unknown_intervals` and add nothing.
- * - An `estimated` (or method-less) `declared_volume` counts only for the time
- *   not covered by any meter interval (the meter wins), prorated linearly by
- *   the uncovered fraction of its period. Intervals of unknown volume still
- *   count as covered.
- * - A `reported` `declared_volume` is kept in `reported` for comparison and
- *   never added to `total`.
- * - Retracted entries, entries of unknown types and declared volumes with an
+ * - An `estimated_volume` counts only for the time not covered by any meter
+ *   interval (the meter wins), prorated linearly by the uncovered fraction of
+ *   its period. Intervals of unknown volume still count as covered. Its
+ *   `method` plays no part.
+ * - Retracted entries, entries of unknown types and estimated volumes with an
  *   invalid period are ignored.
  */
 export function getProductionTotal(well: Well): ProductionTotals {
   const totals = emptyTotals();
-  for (const c of getProductionContributions(well)) addContribution(totals, c);
+  for (const c of getProductionContributions(well)) {
+    addVolume(totals, c, allocate(c, toTime(c.start), toTime(c.end)));
+  }
   return totals;
 }
 
@@ -463,7 +505,7 @@ export type OperationWarningCode =
   | 'duplicate_production_id'
   | 'corrects_unresolved'
   | 'corrects_cycle'
-  | 'declared_period_invalid'
+  | 'estimate_period_invalid'
   | 'estimated_overlaps_meter'
   | 'duplicate_regime_id'
   | 'regime_duplicate_effective_from'
@@ -517,10 +559,10 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
  * - `corrects_unresolved` — `corrects` points to no entry. ids: [production].
  * - `corrects_cycle` — the `corrects` chain loops back. ids: [production],
  *   once per entry in the cycle.
- * - `declared_period_invalid` — `period_end` not after `period_start`, or an
- *   unparseable instant. ids: [production].
- * - `estimated_overlaps_meter` — an estimated (or method-less) declared volume
- *   overlapping a meter interval; the meter wins. ids: [production].
+ * - `estimate_period_invalid` — an `estimated_volume` whose `period_end` is
+ *   not after `period_start`, or an unparseable instant. ids: [production].
+ * - `estimated_overlaps_meter` — an `estimated_volume` overlapping a meter
+ *   interval; the meter wins. ids: [production].
  *
  * Operating regime:
  * - `duplicate_regime_id` — ids: [regime id].
@@ -631,17 +673,13 @@ export function getOperationWarnings(
       ) {
         push('reading_outside_installation', [p.id, meter.id]);
       }
-    } else if (p.type === 'declared_volume') {
-      const span = declaredPeriod(p as DeclaredVolume);
+    } else if (p.type === 'estimated_volume') {
+      const span = estimatePeriod(p as EstimatedVolume);
       if (!span) {
-        push('declared_period_invalid', [p.id]);
+        push('estimate_period_invalid', [p.id]);
         continue;
       }
-      if (
-        isDeclaredVolume(p) &&
-        !isReported(p) &&
-        coveredLength(span, cover) > 0
-      ) {
+      if (isEstimatedVolume(p) && coveredLength(span, cover) > 0) {
         push('estimated_overlaps_meter', [p.id]);
       }
     }

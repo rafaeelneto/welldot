@@ -68,8 +68,8 @@ export const PRODUCTION_ENTRY_TYPES = closedVocab<ProductionEntry['type']>()([
     label: { en: 'Meter reading', pt: 'Leitura de hidrômetro' },
   },
   {
-    value: 'declared_volume',
-    label: { en: 'Declared volume', pt: 'Volume declarado' },
+    value: 'estimated_volume',
+    label: { en: 'Estimated volume', pt: 'Volume estimado' },
   },
 ]);
 

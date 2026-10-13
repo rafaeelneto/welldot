@@ -54,13 +54,23 @@ export const READING_SOURCES = [
 
 export type ReadingSource = (typeof READING_SOURCES)[number]['value'];
 
-/** Recommended `production[].method` values of a `declared_volume` (since v2.3). */
-export const DECLARED_METHODS = [
-  { value: 'estimated', label: { en: 'Estimated', pt: 'Estimado' } },
-  { value: 'reported', label: { en: 'Reported', pt: 'Declarado' } },
+/** Recommended `production[].method` values of an `estimated_volume` (since v2.3). */
+export const ESTIMATION_METHODS = [
+  {
+    value: 'flow_time',
+    label: { en: 'Flow × operating time', pt: 'Vazão × tempo de operação' },
+  },
+  {
+    value: 'energy',
+    label: { en: 'Energy consumption', pt: 'Consumo de energia' },
+  },
+  {
+    value: 'user_statement',
+    label: { en: 'User statement', pt: 'Informado pelo usuário' },
+  },
 ] as const satisfies readonly VocabEntry[];
 
-export type DeclaredMethod = (typeof DECLARED_METHODS)[number]['value'];
+export type EstimationMethod = (typeof ESTIMATION_METHODS)[number]['value'];
 
 /** Recommended `history_logs[].maintenance_type` values (since v2.3). */
 export const MAINTENANCE_TYPES = [

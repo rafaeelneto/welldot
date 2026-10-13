@@ -1111,7 +1111,7 @@
         "noMeters": "Adicione um hidrômetro antes de registrar leituras.",
         "types": {
           "meter_reading": "Leitura de hidrômetro",
-          "declared_volume": "Volume declarado"
+          "estimated_volume": "Volume estimado"
         },
         "fields": {
           "type": "Tipo",
@@ -1126,16 +1126,14 @@
           "periodEnd": "Fim do período",
           "volume": "Volume",
           "method": "Método",
-          "methodInfo": "Volumes estimados só contam onde nenhuma leitura de hidrômetro cobre o período. Volumes declarados (ao órgão gestor) ficam apenas para comparação e nunca somam ao total.",
+          "methodInfo": "Como o volume foi estimado (vazão × tempo, consumo de energia…). É só descritivo: volumes estimados contam apenas onde nenhuma leitura de hidrômetro cobre o período.",
           "notes": "Observações"
         },
         "totals": {
           "total": "Total",
           "totalInfo": "Volumes medidos mais estimados. O hidrômetro tem precedência sobre estimativas.",
           "metered": "Medido",
-          "estimated": "Estimado",
-          "reported": "Declarado",
-          "reportedInfo": "Volumes declarados ao órgão gestor, apenas para comparação."
+          "estimated": "Estimado"
         },
         "unknownIntervals": "{n} intervalo entre leituras tem volume desconhecido (o totalizador diminuiu e o hidrômetro não tem capacidade informada). | {n} intervalos entre leituras têm volume desconhecido (o totalizador diminuiu e o hidrômetro não tem capacidade informada).",
         "unknownIntervalsLabel": "Intervalos desconhecidos",
@@ -1360,7 +1358,7 @@
         "duplicate_production_id": "Dois registros de produção têm o mesmo id.",
         "corrects_unresolved": "O registro corrigido não existe neste arquivo.",
         "corrects_cycle": "A cadeia de correções volta a si mesma.",
-        "declared_period_invalid": "O fim do período deve ser posterior ao início.",
+        "estimate_period_invalid": "O fim do período deve ser posterior ao início.",
         "estimated_overlaps_meter": "Este volume estimado se sobrepõe a leituras de hidrômetro; o hidrômetro prevalece.",
         "duplicate_regime_id": "Dois regimes têm o mesmo id.",
         "regime_duplicate_effective_from": "Outro regime começa no mesmo instante.",

@@ -2313,11 +2313,11 @@ describe('v2.3 — meters, production, operating_regime and log fields', () => {
       },
       {
         id: 'p5',
-        type: 'declared_volume',
+        type: 'estimated_volume',
         period_start: '2025-01-01T00:00:00-03:00',
         period_end: '2025-04-01T00:00:00-03:00',
         volume: 12000,
-        method: 'reported',
+        method: 'flow_time',
       },
       {
         id: 'p6',
@@ -2382,7 +2382,7 @@ describe('v2.3 — meters, production, operating_regime and log fields', () => {
     ).toThrow();
   });
 
-  it('parseWell rejects a declared_volume without period_end', () => {
+  it('parseWell rejects an estimated_volume without period_end', () => {
     const { period_end: _p, ...noEnd } = OPS_DOC.production[4];
     expect(() =>
       parseWell(JSON.stringify({ ...OPS_DOC, production: [noEnd] })),

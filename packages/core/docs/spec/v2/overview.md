@@ -35,9 +35,11 @@ v2.3 additions:
   history; device facts only (type, serial, nominal diameter,
   max_reading for rollover)
 - production (optional ProductionEntry[]): append-only ledger of
-  meter_reading entries (register values in m³) and declared_volume
-  entries (estimated or reported volumes for a period); volumes are
-  derived from consecutive readings, never stored as totals
+  meter_reading entries (register values in m³) and estimated_volume
+  entries (volumes estimated for a period without a meter); volumes
+  are derived from consecutive readings, never stored as totals.
+  Volumes declared to a regulator are not production data: they are
+  the fulfillment of the permit's reporting condition
 - operating_regime (optional OperatingRegime[]): declared flow rate,
   daily operating time and days per week, each entry in force from
   effective_from
@@ -101,7 +103,7 @@ v2.3 clarifications:
 - Volume derivation is normative: rollover via max_reading, never
   across two meters, unknown (never zero or negative) where readings
   do not cover; metered volume takes precedence over estimated
-  declared volumes, and reported volumes are never added to totals
+  volumes
 - history_logs category change_of_use is no longer a recommended
   value; a change of use is an event entry (the current use lives in
   well_purpose)
