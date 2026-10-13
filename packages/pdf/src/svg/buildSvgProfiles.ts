@@ -7,6 +7,7 @@ import type {
 } from '@welldot/render';
 import {
   applyRenderLocale,
+  getProfileTopDepth,
   getWellLegendItems,
   STATIC_RENDER_CONFIG,
   WellRenderer,
@@ -322,6 +323,9 @@ export async function buildSvgProfiles(
     : 'pt';
 
   const totalDepth = Math.max(0, ...getProfileLastItemsDepths(well));
+  // Negative when pipes stick up above the ground: the first panel starts there.
+  const topDepth = getProfileTopDepth(well);
+  const drawnDepth = totalDepth - topDepth;
   const pageHeight = computePageSvgHeight(page);
 
   const localizedStaticConfig = applyRenderLocale(
@@ -353,8 +357,8 @@ export async function buildSvgProfiles(
       ? (options.drawingHeight ?? 0) - legendReserve
       : (options.drawingHeight ?? 0);
   const scale =
-    ctx.profileFit !== 'scale' && fitHeight > 0 && totalDepth
-      ? computeTotalSvgHeight(totalDepth, 1) / fitHeight
+    ctx.profileFit !== 'scale' && fitHeight > 0 && drawnDepth
+      ? computeTotalSvgHeight(drawnDepth, 1) / fitHeight
       : ctx.scale;
   const firstPanelReserve = breakPages ? legendReserve : 0;
   const ptPerMeter = computeTotalSvgHeight(1, scale);
@@ -363,9 +367,9 @@ export async function buildSvgProfiles(
   let layout: ProfileLayout;
   if (compact) {
     layout = buildCompactLayout(ctx, computeCompactColumnWidth(page));
-    let depth = 0;
+    let depth = topDepth;
     panels = planProfilePanels({
-      totalHeight: totalDepth * ptPerMeter,
+      totalHeight: drawnDepth * ptPerMeter,
       breakPages,
       pageHeight,
       firstPageRemaining,
@@ -388,6 +392,7 @@ export async function buildSvgProfiles(
     });
     panels = planDetailedPanels({
       totalDepth,
+      topDepth,
       ptPerMeter,
       contacts: getLithologyContacts(well.lithology as Lithology[]),
       breakPages,

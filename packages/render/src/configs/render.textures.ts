@@ -61,7 +61,7 @@ export type TexturesConfig = {
 };
 
 export type WellTextures = {
-  pad: ReturnType<typeof textures.lines>;
+  pad: ReturnType<typeof textures.paths>;
   conflict: ReturnType<typeof textures.lines>;
   cave_dry: ReturnType<typeof textures.lines>;
   cave_wet: ReturnType<typeof textures.lines>;
@@ -70,6 +70,16 @@ export type WellTextures = {
   well_screen: ReturnType<typeof textures.paths>;
   surface_case: ReturnType<typeof textures.lines>;
 };
+
+/** Small dot of radius `r` at (x, y), as a closed path. */
+const dot = (x: number, y: number, r: number) =>
+  `M${x - r},${y}a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0Z`;
+
+/** Concrete aggregate tile of side `s`: two triangles and two dots. */
+export const concreteAggregate = (s: number): string =>
+  `M${s * 0.08},${s * 0.42}l${s * 0.3},0l${-s * 0.12},${-s * 0.26}Z` +
+  `M${s * 0.55},${s * 0.92}l${s * 0.26},${-s * 0.06}l${-s * 0.16},${-s * 0.2}Z` +
+  `${dot(s * 0.72, s * 0.24, s * 0.06)}${dot(s * 0.22, s * 0.78, s * 0.05)}`;
 
 export function createWellTextures(cfg?: TexturesConfig): WellTextures {
   const pad: PadTextureConfig = {
@@ -126,11 +136,15 @@ export function createWellTextures(cfg?: TexturesConfig): WellTextures {
   } as SurfaceCaseTextureConfig;
 
   return {
+    // Concrete: aggregate (small triangles and dots) on a light ground, so it
+    // reads apart from the seal's diagonals and the gravel pack's circles.
     pad: textures
-      .lines()
-      .heavier(10)
-      .thinner(1.5)
+      .paths()
+      .d(concreteAggregate)
+      .size(6)
+      .strokeWidth(0.4)
       .stroke(pad.stroke)
+      .fill(pad.stroke)
       .background(pad.background),
     conflict: textures.lines().heavier().stroke(conflict.stroke),
     cave_dry: textures

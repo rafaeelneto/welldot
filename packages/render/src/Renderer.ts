@@ -15,15 +15,12 @@ import {
   isWellEmpty,
   type Constructive,
   type Lithology,
-  type Reduction,
-  type SurfaceCase,
   type Units,
   type Well,
 } from '@welldot/core';
 import {
   formatNumber,
   getCurrentPump,
-  getProfileDiamValues,
   getProfileLastItemsDepths,
 } from '@welldot/utils';
 import {
@@ -50,7 +47,11 @@ import { drawCaves } from './renderers/caves.renderer';
 import { drawCentralizers } from './renderers/centralizers.renderer';
 import { drawColumnHeaders } from './renderers/column-headers.renderer';
 import { drawConstructionLabels } from './renderers/construction-labels.renderer';
-import { drawConstructive } from './renderers/construction.renderer';
+import {
+  drawCementPad,
+  drawConstructive,
+  layoutConstruction,
+} from './renderers/construction.renderer';
 import { drawFractures } from './renderers/fractures.renderer';
 import { drawHighlights } from './renderers/highlights.renderer';
 import {
@@ -69,7 +70,7 @@ import { drawOverview } from './renderers/overview.renderer';
 import { drawPump } from './renderers/pump.renderer';
 import { drawUnitLabels } from './renderers/unit-labels.renderer';
 import { asSvgElement } from './utils/d3.utils';
-import { resolvePanelWindows } from './utils/layout.utils';
+import { getProfileTopDepth, resolvePanelWindows } from './utils/layout.utils';
 import { buildSvgStyleBlock } from './utils/render.styles';
 import {
   filterByDepth,
@@ -448,7 +449,11 @@ export class WellRenderer {
 
     // Explicit `depthRange`s when every panel has one; otherwise the depth is
     // split in proportion to the panel heights, back to back.
-    const windows = resolvePanelWindows(this.instanceStates, maxYValues);
+    const windows = resolvePanelWindows(
+      this.instanceStates,
+      maxYValues,
+      getProfileTopDepth(profile),
+    );
     this.instanceStates.forEach((state, i) => {
       const [from, to] = windows[i]!;
       this.drawLogToInstance(state, profile, from, to, maxYValues, highlights);
@@ -687,40 +692,10 @@ export class WellRenderer {
           return transform.k * spanH(d as SpanDatum);
         });
 
-      // Surface case: update fill rect y/height and side line y1/y2
-      surfaceCaseGroup
-        .selectAll(`g.${this.classes.surfaceCase.rect}`)
-        .each((d: unknown, i, nodes) => {
-          if (!d) return;
-          const sc = d as SurfaceCase;
-          const g = d3.select(nodes[i] as Element);
-          const y = transform.applyY(spanY(sc));
-          const h = transform.k * spanH(sc);
-          g.select('.surface-case-fill').attr('y', y).attr('height', h);
-          g.selectAll('.surface-case-side')
-            .attr('y1', y)
-            .attr('y2', y + h);
-        });
-
-      // Reduction: recompute trapezoid points (x is zoom-invariant, only y moves)
-      const maxXValsReduction = getProfileDiamValues(constructionData);
-      const xScaleReduction = d3
-        .scaleLinear()
-        .domain([0, d3.max(maxXValsReduction) || 0])
-        .range([0, POCO_WIDTH]);
-
-      reductionGroup
-        .selectAll(`polygon.${this.classes.reduction.item}`)
-        .attr('points', (d: unknown) => {
-          const r = d as Reduction;
-          const yTop = transform.applyY(spanY(r));
-          const yBot = yTop + transform.k * spanH(r);
-          const xTopLeft = (POCO_CENTER - xScaleReduction(r.diam_from)) / 2;
-          const xTopRight = (POCO_CENTER + xScaleReduction(r.diam_from)) / 2;
-          const xBotLeft = (POCO_CENTER - xScaleReduction(r.diam_to)) / 2;
-          const xBotRight = (POCO_CENTER + xScaleReduction(r.diam_to)) / 2;
-          return `${xTopLeft},${yTop} ${xTopRight},${yTop} ${xBotRight},${yBot} ${xBotLeft},${yBot}`;
-        });
+      // Construction outlines, shoes, reductions and the cement pad follow
+      // the rescaled y; the pad is paths, so the rect rescale above skips it.
+      layoutConstruction(zoomedCtx);
+      drawCementPad(zoomedCtx, constructionData.cement_pad);
 
       // Fractures: recompute transform so rotation pivot tracks the scaled depth
       fracturesGroup

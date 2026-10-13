@@ -41,6 +41,11 @@ export interface DetailedPanel {
 export interface PlanDetailedPanelsOptions {
   /** Deepest depth of the profile (m). */
   totalDepth: number;
+  /**
+   * Topmost depth (m) the profile draws; negative when pipes stick up above
+   * the ground (`getProfileTopDepth` from `@welldot/render`). Defaults to `0`.
+   */
+  topDepth?: number;
   /** Drawing points per metre at the 1:N scale. */
   ptPerMeter: number;
   /** Lithology contacts, by depth. */
@@ -99,10 +104,11 @@ export function planDetailedPanels(
     firstPanelReserve = 0,
   } = options;
   const total = Math.max(0, options.totalDepth);
+  const top = Math.min(0, options.topDepth ?? 0);
   const single: DetailedPanel = {
-    height: total * ptPerMeter + padding,
+    height: (total - top) * ptPerMeter + padding,
     breakBefore: false,
-    depthFrom: 0,
+    depthFrom: top,
     depthTo: total,
   };
   if (!breakPages || total === 0 || ptPerMeter <= 0) return [single];
@@ -120,7 +126,10 @@ export function planDetailedPanels(
       Math.min(firstPageRemaining - FIT_EPSILON, pageHeight) -
       padding -
       reserve;
-    if (first >= minFirstPanel || (first > 0 && first >= total * ptPerMeter)) {
+    if (
+      first >= minFirstPanel ||
+      (first > 0 && first >= (total - top) * ptPerMeter)
+    ) {
       room = first;
     } else {
       breakBefore = true;
@@ -128,7 +137,7 @@ export function planDetailedPanels(
   }
 
   const panels: DetailedPanel[] = [];
-  let from = 0;
+  let from = top;
   let repeatedTo: number | undefined;
 
   for (;;) {
@@ -163,7 +172,7 @@ export function planDetailedPanels(
       overlap / ptPerMeter,
       MAX_OVERLAP_RATIO * fullSpan,
     );
-    from = Math.max(0, to - overlapDepth);
+    from = Math.max(top, to - overlapDepth);
     repeatedTo = to;
     room = fullDrawing;
     breakBefore = true;

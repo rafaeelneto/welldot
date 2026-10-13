@@ -251,6 +251,11 @@ describe('getCementPadRect', () => {
   it('follows the surface line', () => {
     expect(getCementPadRect(100, 60, 25, config).y).toBe(17);
   });
+
+  it('widens so each slab keeps 1.5 × its height beside a wide opening', () => {
+    // opening 130 + 2 × 12 = 154 > 140
+    expect(getCementPadRect(100, 60, 0, config, 130).width).toBe(154);
+  });
 });
 
 describe('makeSeededPrng', () => {

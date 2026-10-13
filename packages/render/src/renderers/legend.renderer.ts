@@ -19,6 +19,12 @@ import {
   WellTextures,
   createWellTextures,
 } from '../configs/render.textures';
+import {
+  getCementPadGeometry,
+  pipeWallsPath,
+  screenEndPath,
+  shoePath,
+} from '../utils/construction.geometry';
 import { getConflictAreas, mergeConflicts } from '../utils/render.utils';
 
 const d3 = { ...d3module };
@@ -369,17 +375,22 @@ function drawLegendSymbol(
     const riserHalf = rw * 0.12;
     const bodyHalf = rw * 0.28;
     const bodyTop = y1 + rh * 0.4;
-    for (const x of [midX - riserHalf, midX + riserHalf]) {
-      symG
-        .append('line')
-        .attr('class', cls.constructionRect)
-        .attr('x1', x)
-        .attr('x2', x)
-        .attr('y1', y1)
-        .attr('y2', bodyTop)
-        .attr('stroke', theme.pump.riserStroke)
-        .attr('stroke-width', theme.pump.riserStrokeWidth);
-    }
+    symG
+      .append('rect')
+      .attr('class', cls.constructionRect)
+      .attr('x', midX - riserHalf)
+      .attr('y', y1)
+      .attr('width', 2 * riserHalf)
+      .attr('height', bodyTop - y1)
+      .attr('fill', theme.pump.riserFill)
+      .attr('stroke', 'none');
+    symG
+      .append('path')
+      .attr('class', cls.constructionRect)
+      .attr('d', pipeWallsPath(midX - riserHalf, midX + riserHalf, y1, bodyTop))
+      .attr('fill', 'none')
+      .attr('stroke', theme.pump.riserStroke)
+      .attr('stroke-width', theme.pump.riserStrokeWidth);
     symG
       .append('path')
       .attr('class', cls.constructionRect)
@@ -391,30 +402,111 @@ function drawLegendSymbol(
       .attr('stroke', theme.pump.stroke)
       .attr('stroke-width', theme.pump.strokeWidth);
   } else if (item.subKind === 'reduction') {
+    // Slanted walls only, open at both ends, like the profile.
     const topW = rw * 0.5;
     const y1 = rowSymY - rh / 2;
     const y2 = rowSymY + rh / 2;
     const midX = cx + rw / 2;
+    const tl = `${midX - topW / 2},${y1}`;
+    const tr = `${midX + topW / 2},${y1}`;
     symG
       .append('polygon')
       .attr('class', cls.constructionRect)
-      .attr(
-        'points',
-        `${midX - topW / 2},${y1} ${midX + topW / 2},${y1} ${cx + rw},${y2} ${cx},${y2}`,
-      )
+      .attr('points', `${tl} ${tr} ${cx + rw},${y2} ${cx},${y2}`)
       .attr('fill', theme.reduction.fill)
+      .attr('stroke', 'none');
+    symG
+      .append('path')
+      .attr('class', cls.constructionRect)
+      .attr('d', `M${tl}L${cx},${y2}M${tr}L${cx + rw},${y2}`)
+      .attr('fill', 'none')
       .attr('stroke', theme.reduction.stroke)
       .attr('stroke-width', theme.legend.itemStrokeWidth);
+  } else if (
+    item.subKind === 'wellCase' ||
+    item.subKind === 'wellScreen' ||
+    item.subKind === 'boreHole'
+  ) {
+    // Open walls like the profile: the casing ends on its shoe, the borehole
+    // on its bottom line, the screen shows its top and base marks.
+    const y1 = rowSymY - rh / 2;
+    const y2 = rowSymY + rh / 2;
+    const shoe = 3;
+    const xL = cx + shoe;
+    const xR = cx + rw - shoe;
+    const style = {
+      wellCase: { fill: theme.wellCase.fill, stroke: theme.wellCase.stroke },
+      wellScreen: {
+        fill: legendTextures.well_screen.url(),
+        stroke: theme.wellScreen.stroke,
+      },
+      boreHole: { fill: theme.boreHole.fill, stroke: theme.boreHole.stroke },
+    }[item.subKind];
+    symG
+      .append('rect')
+      .attr('class', cls.constructionRect)
+      .attr('x', xL)
+      .attr('y', y1)
+      .attr('width', xR - xL)
+      .attr('height', rh)
+      .attr('fill', style.fill)
+      .attr('stroke', 'none');
+    const walls = symG
+      .append('path')
+      .attr('class', cls.constructionRect)
+      .attr(
+        'd',
+        pipeWallsPath(xL, xR, y1, y2) +
+          (item.subKind === 'boreHole' ? `M${xL},${y2}H${xR}` : ''),
+      )
+      .attr('fill', 'none')
+      .attr('stroke', style.stroke)
+      .attr('stroke-width', theme.legend.itemStrokeWidth);
+    if (item.subKind === 'boreHole')
+      walls.attr('stroke-dasharray', theme.boreHole.strokeDasharray);
+    if (item.subKind === 'wellCase')
+      symG
+        .append('path')
+        .attr('class', cls.constructionRect)
+        .attr('d', shoePath(xL, xR, y2, shoe))
+        .attr('fill', style.stroke)
+        .attr('stroke', 'none');
+    if (item.subKind === 'wellScreen')
+      symG
+        .append('path')
+        .attr('class', cls.constructionRect)
+        .attr(
+          'd',
+          screenEndPath(xL, xR, y1 + 0.5) + screenEndPath(xL, xR, y2 - 0.5),
+        )
+        .attr('fill', 'none')
+        .attr('stroke', style.stroke)
+        .attr('stroke-width', theme.wellScreen.endStrokeWidth)
+        .attr('stroke-dasharray', '2, 1.5');
+  } else if (item.subKind === 'cementPad') {
+    // Two slabs around a pipe opening, with break lines at the outer ends.
+    const h = rh * 0.6;
+    const { slabs } = getCementPadGeometry(
+      rw,
+      2 * cx + rw,
+      rowSymY + h / 2,
+      { widthRatio: 1, height: h },
+      rw * 0.3,
+    );
+    for (const d of slabs)
+      symG
+        .append('path')
+        .attr('class', cls.constructionRect)
+        .attr('d', d)
+        .attr('fill', legendTextures.pad.url())
+        .attr('stroke', theme.cementPad.stroke)
+        .attr('stroke-width', theme.legend.itemStrokeWidth)
+        .attr('stroke-linejoin', RC);
   } else {
     const symMap: Record<
       string,
       { fill: string; stroke: string; dasharray?: string }
     > = {
-      boreHole: {
-        fill: theme.boreHole.fill,
-        stroke: theme.boreHole.stroke,
-        dasharray: theme.boreHole.strokeDasharray,
-      },
       holeFillGravel: {
         fill: legendTextures.gravel_pack.url(),
         stroke: theme.holeFill.stroke,
@@ -422,15 +514,6 @@ function drawLegendSymbol(
       holeFillSeal: {
         fill: legendTextures.seal.url(),
         stroke: theme.holeFill.stroke,
-      },
-      wellCase: { fill: theme.wellCase.fill, stroke: theme.wellCase.stroke },
-      wellScreen: {
-        fill: legendTextures.well_screen.url(),
-        stroke: theme.wellScreen.stroke,
-      },
-      cementPad: {
-        fill: legendTextures.pad.url(),
-        stroke: theme.cementPad.stroke,
       },
       conflict: {
         fill: legendTextures.conflict.url(),

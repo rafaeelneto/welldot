@@ -50,3 +50,4 @@ export {
   getLengthUnit,
   resolveRenderLabel,
 } from './utils/format.utils';
+export { getProfileTopDepth } from './utils/layout.utils';

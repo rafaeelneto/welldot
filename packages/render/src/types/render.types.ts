@@ -103,7 +103,13 @@ export type ConstructionTheme = {
   surfaceCase: { stroke: string; strokeWidth: number };
   holeFill: { stroke: string; strokeWidth: number };
   wellCase: { fill: string; stroke: string; strokeWidth: number };
-  wellScreen: { stroke: string; strokeWidth: number };
+  wellScreen: {
+    stroke: string;
+    strokeWidth: number;
+    /** Width of the dashed line at each screen's top and base. */
+    endStrokeWidth: number;
+    endDasharray: string;
+  };
   reduction: { fill: string; stroke: string; strokeWidth: number };
   centralizer: { fill: string; stroke: string; strokeWidth: number };
   /** Current pump body and its riser pipe (`.well` v2.3 `pump_installations`). */
@@ -111,6 +117,8 @@ export type ConstructionTheme = {
     fill: string;
     stroke: string;
     strokeWidth: number;
+    /** Riser interior: a tone between the casing's and the body's, so the riser reads as part of the pump, not as a casing. */
+    riserFill: string;
     riserStroke: string;
     riserStrokeWidth: number;
   };
@@ -508,14 +516,33 @@ export type RenderConfig = {
   };
   construction: {
     /**
-     * Fixed-size pad drawn above the surface. The profile's `cement_pad`
-     * width and thickness don't change it (they only show in the tooltip).
+     * Fixed-size pad drawn above the surface as two slabs around the
+     * outermost pipe, with break lines at the outer ends (not to scale). The
+     * profile's `cement_pad` width and thickness don't change it (they only
+     * show in the tooltip).
      */
     cementPad: {
-      /** Pad width as a ratio of the construction column width. */
+      /** Pad width as a ratio of the construction column width; widened when the pipe opening needs it. */
       widthRatio: number;
       /** Pad height in pixels (constant regardless of zoom). */
       height: number;
+    };
+    /**
+     * Casing shoe: a filled triangle outside each wall where the casing /
+     * screen string really ends (not at panel cuts or joints).
+     */
+    casingShoe: {
+      active: boolean;
+      /** Triangle leg in pixels (constant regardless of zoom). */
+      size: number;
+    };
+    /**
+     * Screen ends: a dashed line across the pipe at the top and base of
+     * every screen (not at panel cuts). Styled by `theme.wellScreen`
+     * `endStrokeWidth` / `endDasharray`.
+     */
+    screenEnds: {
+      active: boolean;
     };
     surfaceCase: {
       diameterPaddingRatio: number;

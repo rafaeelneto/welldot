@@ -35,6 +35,18 @@ describe('planDetailedPanels', () => {
     ]);
   });
 
+  it('starts at the top of a pipe sticking up above the ground', () => {
+    expect(plan({ breakPages: false, topDepth: -2 })[0]).toEqual({
+      height: 617 * ptPerMeter + padding,
+      breakBefore: false,
+      depthFrom: -2,
+      depthTo: 615,
+    });
+    const panels = plan({ topDepth: -2 });
+    expect(panels[0]).toMatchObject({ depthFrom: -2, depthTo: 118 });
+    expect(panels[panels.length - 1]!.depthTo).toBe(615);
+  });
+
   it('fills pages at the exact scale and repeats the bottom of each page', () => {
     const panels = plan();
     const overlap = OVERLAP_HEIGHT / ptPerMeter;

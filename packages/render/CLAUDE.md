@@ -43,6 +43,7 @@ src/
     key.utils.ts
     render.utils.ts                 ← filterByDepth, populateTooltips, preloadFgdcTextures
     layout.utils.ts                 ← pure panel windows, header positions, marker/overview geometry
+    construction.geometry.ts        ← pure construction shapes: open pipe walls, casing shoe, borehole outline, annulus fill, cement pad
     render.styles.ts                ← buildSvgStyleBlock (inlined CSS)
     tooltips.utils.ts
   data/
@@ -95,4 +96,5 @@ What to update: the Quick Start example if it no longer compiles, the options/co
 - `textures.js` and `d3-tip` are runtime deps; do not remove them.
 - `sanitize-html` is used before injecting any user-supplied strings into SVG.
 - All sub-renderers receive a `DrawContext` (scales, groups, config) — do not pass the raw `Well` to them directly.
+- Construction items are drawn open (walls only) and closed only where they physically end; see `construction.geometry.ts`. Their geometry is set by `layoutConstruction()`, which both `drawConstructive()` and the zoom handler call — keep new construction shapes there, not in the zoom handler.
 - Only `.well` v2 (`version: 2`) is supported. v1 files must be normalized via `deserializeWell()` from `@welldot/core` before rendering.

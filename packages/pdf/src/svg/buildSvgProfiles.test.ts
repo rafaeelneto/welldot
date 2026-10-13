@@ -34,6 +34,7 @@ vi.mock('@welldot/render', () => ({
   STATIC_RENDER_CONFIG: { legend: { height: 44, labels: {} } },
   getWellLegendItems: () => wellLegendLabels.map(label => ({ label })),
   applyRenderLocale: (config: unknown) => config,
+  getProfileTopDepth: () => 0,
   WellRenderer: class {
     private svgs: { selector: string }[];
     constructor(

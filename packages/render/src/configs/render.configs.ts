@@ -230,7 +230,7 @@ export const DEFAULT_WELL_THEME: WellTheme = {
       crackStrokeWidth: 0.7,
     },
   },
-  cementPad: { stroke: '#303030', strokeWidth: 2 },
+  cementPad: { stroke: '#303030', strokeWidth: 1 },
   boreHole: {
     fill: '#ffffff',
     stroke: '#191919',
@@ -239,17 +239,23 @@ export const DEFAULT_WELL_THEME: WellTheme = {
     strokeWidth: 1.2,
   },
   surfaceCase: { stroke: '#000000', strokeWidth: 4 },
-  holeFill: { stroke: '#303030', strokeWidth: 2 },
+  holeFill: { stroke: '#303030', strokeWidth: 1.2 },
   wellCase: { fill: '#ffffff', stroke: '#303030', strokeWidth: 2 },
-  wellScreen: { stroke: '#303030', strokeWidth: 2 },
+  wellScreen: {
+    stroke: '#303030',
+    strokeWidth: 2,
+    endStrokeWidth: 0.75,
+    endDasharray: '3, 2',
+  },
   reduction: { fill: '#ffffff', stroke: '#303030', strokeWidth: 2 },
   centralizer: { fill: 'none', stroke: '#303030', strokeWidth: 1.4 },
   pump: {
     fill: '#5b6b7a',
     stroke: '#202020',
     strokeWidth: 1.2,
-    riserStroke: '#4a5560',
-    riserStrokeWidth: 1.6,
+    riserFill: '#a3adb7',
+    riserStroke: '#2f3a44',
+    riserStrokeWidth: 1,
   },
   conflict: { stroke: '#e52117', strokeWidth: 4 },
   unitLabels: {
@@ -375,7 +381,9 @@ export const STATIC_RENDER_CONFIG: RenderConfig = {
     },
   },
   construction: {
-    cementPad: { widthRatio: 1.4, height: 8 },
+    cementPad: { widthRatio: 1.4, height: 6 },
+    casingShoe: { active: true, size: 4 },
+    screenEnds: { active: true },
     surfaceCase: { diameterPaddingRatio: 0.1 },
     centralizer: { markerHalfHeight: 4 },
     pump: {
@@ -507,7 +515,9 @@ export const INTERACTIVE_RENDER_CONFIG: RenderConfig = {
     },
   },
   construction: {
-    cementPad: { widthRatio: 1.4, height: 8 },
+    cementPad: { widthRatio: 1.4, height: 6 },
+    casingShoe: { active: true, size: 4 },
+    screenEnds: { active: true },
     surfaceCase: { diameterPaddingRatio: 0.1 },
     centralizer: { markerHalfHeight: 4 },
     pump: {

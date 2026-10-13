@@ -1,22 +1,47 @@
 import type { Fracture, Lithology } from '@welldot/core';
 
 /**
+ * Topmost depth (m) the profile draws: `0` (the surface), or above it when
+ * a casing, screen or surface case starts at a negative depth (pipe
+ * stick-up above the ground).
+ */
+export function getProfileTopDepth(profile: {
+  surface_case?: { from: number }[];
+  well_case?: { from: number }[];
+  well_screen?: { from: number }[];
+}): number {
+  return Math.min(
+    0,
+    ...[
+      ...(profile.surface_case ?? []),
+      ...(profile.well_case ?? []),
+      ...(profile.well_screen ?? []),
+    ]
+      .map(i => i.from)
+      .filter(Number.isFinite),
+  );
+}
+
+/**
  * Depth window `[from, to]` of each panel. When every panel has a
- * `depthRange` those are used as they are; otherwise the depth `[0, total]`
- * is split in proportion to the panel heights, back to back.
+ * `depthRange` those are used as they are; otherwise the depth
+ * `[topDepth, total]` is split in proportion to the panel heights, back to
+ * back. `topDepth` (default `0`) is negative when pipes stick up above the
+ * ground (see {@link getProfileTopDepth}).
  */
 export function resolvePanelWindows(
   panels: { height: number; depthRange?: [number, number] }[],
   totalDepth: number,
+  topDepth = 0,
 ): [number, number][] {
   if (panels.length > 0 && panels.every(p => p.depthRange)) {
     return panels.map(p => [p.depthRange![0], p.depthRange![1]]);
   }
-  if (panels.length === 1) return [[0, totalDepth]];
+  if (panels.length === 1) return [[topDepth, totalDepth]];
 
   const totalHeight = panels.reduce((s, p) => s + p.height, 0) || 1;
-  const metersPerPx = totalDepth / totalHeight;
-  let current = 0;
+  const metersPerPx = (totalDepth - topDepth) / totalHeight;
+  let current = topDepth;
   return panels.map(p => {
     const from = current;
     current = from + p.height * metersPerPx;

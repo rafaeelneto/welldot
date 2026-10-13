@@ -7,6 +7,7 @@ import type {
   Highlights,
   SvgSelection,
 } from '~/types/render.types';
+import { getPadDiameters } from '~/utils/construction.geometry';
 import { getCementPadRect } from '~/utils/render.utils';
 
 /**
@@ -137,14 +138,21 @@ export function drawHighlights(ctx: DrawContext, hl: Highlights): void {
 
   if (
     hl.cement_pad &&
-    ctx.depthFrom === 0 &&
+    ctx.depthFrom <= 0 &&
+    ctx.depthTo > 0 &&
     ctx.constructionData.cement_pad?.thickness
   ) {
+    const { opening, outer } = getPadDiameters(
+      ctx.constructionData,
+      constructionConfig.surfaceCase.diameterPaddingRatio,
+    );
     const pad = getCementPadRect(
       ctx.POCO_WIDTH,
       ctx.POCO_CENTER,
       ctx.yScale(0),
       constructionConfig.cementPad,
+      xScaleConstr(opening),
+      xScaleConstr(outer),
     );
     drawHighlightItem(
       ctx,

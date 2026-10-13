@@ -5,6 +5,7 @@ import {
   getFractureMarkers,
   getLithologyMarkers,
   getOverviewGeometry,
+  getProfileTopDepth,
   resolvePanelWindows,
 } from './layout.utils';
 
@@ -128,5 +129,38 @@ describe('formatOverlapLabel', () => {
     expect(
       formatOverlapLabel('{range} repetido da pág. anterior', '116–124 m'),
     ).toBe('116–124 m repetido da pág. anterior');
+  });
+});
+
+describe('getProfileTopDepth', () => {
+  it('is the surface when nothing sticks up', () => {
+    expect(getProfileTopDepth({ well_case: [{ from: 0 }] })).toBe(0);
+    expect(getProfileTopDepth({})).toBe(0);
+  });
+
+  it('is the top of a pipe above the ground', () => {
+    expect(
+      getProfileTopDepth({
+        well_case: [{ from: -2 }, { from: 60 }],
+        surface_case: [{ from: -0.5 }],
+      }),
+    ).toBe(-2);
+  });
+});
+
+describe('resolvePanelWindows from a top above the surface', () => {
+  it('starts the single panel at the top depth', () => {
+    expect(resolvePanelWindows([{ height: 100 }], 100, -2)).toEqual([
+      [-2, 100],
+    ]);
+  });
+
+  it('splits from the top depth', () => {
+    expect(
+      resolvePanelWindows([{ height: 100 }, { height: 100 }], 98, -2),
+    ).toEqual([
+      [-2, 48],
+      [48, 98],
+    ]);
   });
 });

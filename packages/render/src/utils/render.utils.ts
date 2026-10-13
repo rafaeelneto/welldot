@@ -2,6 +2,7 @@ import textures from 'textures';
 
 import { Lithology } from '@welldot/core';
 import { Conflict, SvgSelection } from '~/types/render.types';
+import { getCementPadGeometry } from '~/utils/construction.geometry';
 import { importFgdcTextures } from '~/utils/fgdcTextures';
 
 // Re-exports so consumers and tests can still import from this single barrel.
@@ -14,24 +15,29 @@ export const fractureDip = (dip: number | null | undefined): number =>
   typeof dip === 'number' && Number.isFinite(dip) ? dip : 0;
 
 /**
- * Cement pad rect in construction-group coordinates. Its size is fixed: a
- * `widthRatio` of the construction column width, `height` px tall, resting on
- * the surface line `surfaceY`. The pad's real width and thickness are left
- * out, so it never overflows the panel whatever the diameters or depth range.
+ * Box around the cement pad in construction-group coordinates, resting on the
+ * surface line `surfaceY`. Its size is fixed in px (see
+ * `getCementPadGeometry`): the pad's real width and thickness are left out,
+ * so it never overflows the panel whatever the diameters or depth range.
+ * `openingWidth` is the px width of the pipe through the pad, `outerWidth`
+ * of the widest item it covers.
  */
 export function getCementPadRect(
   pocoWidth: number,
   pocoCenter: number,
   surfaceY: number,
   config: { widthRatio: number; height: number },
+  openingWidth = 0,
+  outerWidth = openingWidth,
 ): { x: number; y: number; width: number; height: number } {
-  const width = pocoWidth * config.widthRatio;
-  return {
-    x: (pocoCenter - width) / 2,
-    y: surfaceY - config.height,
-    width,
-    height: config.height,
-  };
+  return getCementPadGeometry(
+    pocoWidth,
+    pocoCenter,
+    surfaceY,
+    config,
+    openingWidth,
+    outerWidth,
+  ).bbox;
 }
 
 let _fgdcTextures: Record<string, string> = {};
