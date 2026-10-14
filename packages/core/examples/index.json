@@ -1,5 +1,56 @@
 {
   "version": 1,
+  "categories": [
+    {
+      "id": "crystalline",
+      "title": {
+        "pt": "Cristalino",
+        "en": "Crystalline"
+      }
+    },
+    {
+      "id": "sedimentary",
+      "title": {
+        "pt": "Sedimentar",
+        "en": "Sedimentary"
+      }
+    },
+    {
+      "id": "karst",
+      "title": {
+        "pt": "Carste",
+        "en": "Karst"
+      }
+    },
+    {
+      "id": "shallow",
+      "title": {
+        "pt": "Raso",
+        "en": "Shallow"
+      }
+    },
+    {
+      "id": "permits",
+      "title": {
+        "pt": "Outorgas",
+        "en": "Permits"
+      }
+    },
+    {
+      "id": "water_quality",
+      "title": {
+        "pt": "Qualidade da água",
+        "en": "Water quality"
+      }
+    },
+    {
+      "id": "problem_cases",
+      "title": {
+        "pt": "Casos-problema",
+        "en": "Problem cases"
+      }
+    }
+  ],
   "examples": [
     {
       "slug": "coluna-mg-cristalino-abastecimento",
@@ -19,6 +70,7 @@
         "production",
         "pumping_test"
       ],
+      "categories": ["crystalline", "permits"],
       "well_depth": 204,
       "well_type": "tubular",
       "place": "Coluna/MG",
@@ -36,10 +88,61 @@
         "en": "Bambuí limestone with a cavity, old test record, 1989 analysis, plugged in 2021."
       },
       "tags": ["karst", "industrial", "decommissioned"],
+      "categories": ["karst", "problem_cases"],
       "well_depth": 218,
       "well_type": "tubular",
       "place": "Sete Lagoas/MG",
       "thumbnail": "thumbs/sete-lagoas-mg-carste-industrial.svg"
+    },
+    {
+      "slug": "irece-ba-carste-bambui",
+      "file": "irece-ba-carste-bambui.well",
+      "title": {
+        "pt": "Carste de Irecê: cavernas e nitrato",
+        "en": "Irecê karst: caves and nitrate"
+      },
+      "summary": {
+        "pt": "Calcário Bambuí com cavernas, 85 m³/h/m de vazão específica, água muito dura e nitrato acima do limite em 2023.",
+        "en": "Bambuí limestone with caves, 85 m³/h/m specific capacity, very hard water and nitrate above the limit in 2023."
+      },
+      "tags": [
+        "karst",
+        "caves",
+        "public_supply",
+        "nitrate",
+        "hardness",
+        "drought"
+      ],
+      "categories": ["karst", "water_quality"],
+      "well_depth": 60,
+      "well_type": "tubular",
+      "place": "Irecê/BA",
+      "thumbnail": "thumbs/irece-ba-carste-bambui.svg"
+    },
+    {
+      "slug": "lagoa-santa-mg-carste-abastecimento",
+      "file": "lagoa-santa-mg-carste-abastecimento.well",
+      "title": {
+        "pt": "Abastecimento no carste de Lagoa Santa",
+        "en": "Public supply in the Lagoa Santa karst"
+      },
+      "summary": {
+        "pt": "100 m³/h com 3 m de rebaixamento, teste de 24 h, telemetria e outorga renovada com vazão reduzida na APA.",
+        "en": "100 m³/h with 3 m of drawdown, 24 h test, telemetry and a permit renewed with a lower rate inside the protected area."
+      },
+      "tags": [
+        "karst",
+        "public_supply",
+        "permits",
+        "production",
+        "pumping_test",
+        "protected_area"
+      ],
+      "categories": ["karst", "permits"],
+      "well_depth": 78,
+      "well_type": "tubular",
+      "place": "Lagoa Santa/MG",
+      "thumbnail": "thumbs/lagoa-santa-mg-carste-abastecimento.svg"
     },
     {
       "slug": "minas-novas-mg-cadastro-incompleto",
@@ -53,10 +156,61 @@
         "en": "Macaúbas schist; construction and lithology only, no test or analysis."
       },
       "tags": ["crystalline", "incomplete"],
+      "categories": ["crystalline", "problem_cases"],
       "well_depth": 210,
       "well_type": "tubular",
       "place": "Minas Novas/MG",
       "thumbnail": "thumbs/minas-novas-mg-cadastro-incompleto.svg"
+    },
+    {
+      "slug": "quixeramobim-ce-cristalino-salobro",
+      "file": "quixeramobim-ce-cristalino-salobro.well",
+      "title": {
+        "pt": "Água salobra no cristalino do semiárido",
+        "en": "Brackish water in semi-arid crystalline rock"
+      },
+      "summary": {
+        "pt": "Biotita-xisto fraturado, STD de 3,5 g/L, dessalinizador comunitário e salinidade na seca de 2012–2017.",
+        "en": "Fractured biotite schist, 3.5 g/L TDS, community desalinator and salinity during the 2012–2017 drought."
+      },
+      "tags": [
+        "crystalline",
+        "brackish",
+        "desalination",
+        "community_supply",
+        "water_quality",
+        "drought"
+      ],
+      "categories": ["crystalline", "water_quality"],
+      "well_depth": 60,
+      "well_type": "tubular",
+      "place": "Quixeramobim/CE",
+      "thumbnail": "thumbs/quixeramobim-ce-cristalino-salobro.svg"
+    },
+    {
+      "slug": "colatina-es-gnaisse-rural",
+      "file": "colatina-es-gnaisse-rural.well",
+      "title": {
+        "pt": "Poço rural em gnaisse: de uso insignificante a outorga",
+        "en": "Rural gneiss well: from insignificant use to a permit"
+      },
+      "summary": {
+        "pt": "Uma fratura produtora a 67 m, certidão de uso insignificante, outorga para irrigação com hidrômetro e declarações anuais.",
+        "en": "One producing fracture at 67 m, insignificant-use certificate, irrigation permit with a meter and yearly reports."
+      },
+      "tags": [
+        "crystalline",
+        "rural",
+        "permits",
+        "irrigation",
+        "production",
+        "pumping_test"
+      ],
+      "categories": ["crystalline", "permits"],
+      "well_depth": 80,
+      "well_type": "tubular",
+      "place": "Colatina/ES",
+      "thumbnail": "thumbs/colatina-es-gnaisse-rural.svg"
     },
     {
       "slug": "rinopolis-sp-estratigrafico-guarani",
@@ -70,6 +224,7 @@
         "en": "Bauru, 1092 m of basalt and confined Guarani; flowing, alkaline thermal water."
       },
       "tags": ["deep", "guarani", "flowing", "thermal", "decommissioned"],
+      "categories": ["sedimentary"],
       "well_depth": 1561,
       "well_type": "tubular",
       "place": "Rinópolis/SP",
@@ -93,6 +248,7 @@
         "telescoping",
         "nitrate"
       ],
+      "categories": ["sedimentary", "water_quality"],
       "well_depth": 201,
       "well_type": "tubular",
       "place": "Estrela d'Oeste/SP",
@@ -110,6 +266,7 @@
         "en": "Casing from 0.7 m, duplicated grout and an implausible test."
       },
       "tags": ["inconsistent", "basalt"],
+      "categories": ["problem_cases"],
       "well_depth": 207,
       "well_type": "tubular",
       "place": "Gastão Vidigal/SP",
@@ -134,6 +291,7 @@
         "permits",
         "production"
       ],
+      "categories": ["sedimentary", "permits"],
       "well_depth": 265,
       "well_type": "tubular",
       "place": "Belém/PA",
@@ -151,6 +309,7 @@
         "en": "Current regulatory flow: CNARH, permit with conditions, meter and monthly readings."
       },
       "tags": ["sedimentary", "permits", "production", "regulatory"],
+      "categories": ["sedimentary", "permits"],
       "well_depth": 60,
       "well_type": "tubular",
       "place": "Belém/PA",
@@ -168,6 +327,7 @@
         "en": "PH < 5, values below DL, duplicate, blank and bacterial contamination."
       },
       "tags": ["sedimentary", "water_quality", "censored"],
+      "categories": ["sedimentary", "water_quality"],
       "well_depth": 60,
       "well_type": "tubular",
       "place": "Icoaraci, Belém/PA",
@@ -185,6 +345,7 @@
         "en": "Specific capacity loss, camera inspection, failed rehabilitation and plugging."
       },
       "tags": ["sedimentary", "clogging", "maintenance", "decommissioned"],
+      "categories": ["sedimentary", "problem_cases"],
       "well_depth": 102,
       "well_type": "tubular",
       "place": "Belém/PA",
@@ -202,6 +363,7 @@
         "en": "12 m jetted well, 48 m³/h, contaminated by sewage and abandoned unplugged."
       },
       "tags": ["shallow", "abandoned", "contamination"],
+      "categories": ["shallow", "problem_cases"],
       "well_depth": 12,
       "well_type": "tubular",
       "place": "Belém/PA",
@@ -219,6 +381,7 @@
         "en": "Head above ground, 52 h test and Jacob analysis (T = 0.003 m²/s)."
       },
       "tags": ["sedimentary", "flowing", "pumping_test", "aquifer_analysis"],
+      "categories": ["sedimentary"],
       "well_depth": 160,
       "well_type": "tubular",
       "place": "Santarém/PA",
@@ -236,10 +399,36 @@
         "en": "10 m hand-dug well, 2024 flood, coliforms and disinfection."
       },
       "tags": ["hand_dug", "rural", "water_quality"],
+      "categories": ["shallow", "water_quality"],
       "well_depth": 10,
       "well_type": "hand_dug",
       "place": "São Gabriel/RS",
       "thumbnail": "thumbs/sao-gabriel-rs-cacimba.svg"
+    },
+    {
+      "slug": "extremoz-rn-barreiras-raso",
+      "file": "extremoz-rn-barreiras-raso.well",
+      "title": {
+        "pt": "Poço raso no Dunas-Barreiras com nitrato",
+        "en": "Shallow Dunas-Barreiras well with nitrate"
+      },
+      "summary": {
+        "pt": "26 m, filtros de inox, jorrante em 1978 e hoje 3 m abaixo do terreno; nitrato acima de 10 mg/L N desde 2020.",
+        "en": "26 m, stainless screens, flowing in 1978 and now 3 m below ground; nitrate above 10 mg/L N since 2020."
+      },
+      "tags": [
+        "shallow",
+        "sedimentary",
+        "public_supply",
+        "nitrate",
+        "contamination",
+        "water_quality"
+      ],
+      "categories": ["shallow", "sedimentary", "water_quality"],
+      "well_depth": 26,
+      "well_type": "tubular",
+      "place": "Extremoz/RN",
+      "thumbnail": "thumbs/extremoz-rn-barreiras-raso.svg"
     },
     {
       "slug": "belem-pa-monitoramento-posto",
@@ -253,6 +442,7 @@
         "en": "2\" well, low-flow sampling and BTEX decline during remediation."
       },
       "tags": ["monitoring", "contamination", "water_quality"],
+      "categories": ["shallow", "water_quality"],
       "well_depth": 12,
       "well_type": "tubular",
       "place": "Belém/PA",

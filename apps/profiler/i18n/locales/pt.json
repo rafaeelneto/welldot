@@ -404,7 +404,6 @@
       "unsaved": "Não salvo",
       "layers": "Camadas"
     },
-    "clearWell": "Limpar poço",
     "confirmOpen": {
       "header": "Abrir arquivo",
       "message": "Há alterações não salvas. Abrir um novo arquivo irá descartá-las.",
@@ -556,7 +555,9 @@
     },
     "canvas": {
       "empty": "Nenhum dado de poço ainda",
-      "reload": "Recarregar visualização"
+      "reload": "Recarregar visualização",
+      "startTitle": "Comece um poço",
+      "newWell": "Novo poço"
     },
     "construction": {
       "tag": "Construtivo · Poço",
@@ -1964,9 +1965,7 @@
       }
     },
     "examples": {
-      "title": "Comece por um exemplo",
       "open": "Abrir exemplo",
-      "drawerTitle": "Poços de exemplo",
       "loading": "Carregando exemplos",
       "loadError": "Não foi possível carregar os exemplos. Verifique a conexão e tente de novo.",
       "disclaimer": "Baseados em poços reais do SIAGAS (SGB). Nomes, outorgas, análises e dados de operação são ilustrativos.",
@@ -1974,6 +1973,61 @@
         "header": "Abrir exemplo",
         "message": "Há alterações não salvas. Abrir um exemplo irá descartá-las.",
         "accept": "Abrir mesmo assim",
+        "reject": "Cancelar"
+      }
+    },
+    "newWell": {
+      "button": "Novo poço",
+      "kicker": "Novo poço",
+      "title": "Por onde começar?",
+      "close": "Fechar",
+      "back": "Voltar",
+      "note": "Seu poço atual não é apagado até você escolher uma opção.",
+      "dropHint": "Solte o arquivo .well para abrir",
+      "loadError": "Não foi possível ler este arquivo como um poço .well.",
+      "groups": {
+        "start": "Começar",
+        "import": "Importar"
+      },
+      "blank": {
+        "title": "Em branco",
+        "subtitle": "Perfil vazio, do zero"
+      },
+      "examples": {
+        "title": "Exemplos",
+        "subtitle": "Nenhum poço pronto | 1 poço pronto | {count} poços prontos",
+        "subtitleLoading": "Poços prontos para explorar",
+        "kicker": "Exemplos",
+        "heading": "Comece por um poço real",
+        "all": "Todos",
+        "open": "Abrir"
+      },
+      "open": {
+        "title": "Abrir arquivo .well",
+        "subtitle": "Do computador ou arraste aqui",
+        "subtitleMobile": "Do dispositivo"
+      },
+      "paste": {
+        "title": "Colar JSON",
+        "subtitle": "Conteúdo de um .well",
+        "placeholder": "Cole aqui o conteúdo de um arquivo .well",
+        "waiting": "Aguardando conteúdo",
+        "valid": "Poço válido",
+        "unnamed": "sem nome",
+        "empty": "O JSON é válido, mas não descreve nenhuma camada ou elemento do poço.",
+        "invalidJson": "JSON inválido: {detail}",
+        "invalidWell": "Não é um .well válido: {detail}",
+        "sample": "Colar exemplo",
+        "open": "Abrir poço"
+      },
+      "siagas": {
+        "subtitle": "Pelo código do poço"
+      },
+      "confirmBlank": {
+        "header": "Começar em branco",
+        "message": "O poço atual será substituído por um perfil vazio.",
+        "messageUnsaved": "Há alterações não salvas. Começar em branco irá descartá-las.",
+        "accept": "Começar em branco",
         "reject": "Cancelar"
       }
     }

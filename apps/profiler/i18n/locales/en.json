@@ -404,7 +404,6 @@
       "unsaved": "Unsaved",
       "layers": "Layers"
     },
-    "clearWell": "Clear well",
     "confirmOpen": {
       "header": "Open file",
       "message": "You have unsaved changes. Opening a new file will discard them.",
@@ -556,7 +555,9 @@
     },
     "canvas": {
       "empty": "No well data yet",
-      "reload": "Reload visualization"
+      "reload": "Reload visualization",
+      "startTitle": "Start a well",
+      "newWell": "New well"
     },
     "construction": {
       "tag": "Construction · Well",
@@ -1964,9 +1965,7 @@
       }
     },
     "examples": {
-      "title": "Start from an example",
       "open": "Open example",
-      "drawerTitle": "Example wells",
       "loading": "Loading examples",
       "loadError": "Could not load the examples. Check your connection and try again.",
       "disclaimer": "Based on real wells from the SIAGAS registry (SGB). Names, permits, analyses and operating data are illustrative.",
@@ -1974,6 +1973,61 @@
         "header": "Open example",
         "message": "You have unsaved changes. Opening an example will discard them.",
         "accept": "Open anyway",
+        "reject": "Cancel"
+      }
+    },
+    "newWell": {
+      "button": "New well",
+      "kicker": "New well",
+      "title": "Where do you want to start?",
+      "close": "Close",
+      "back": "Back",
+      "note": "Your current well is kept until you pick an option.",
+      "dropHint": "Drop the .well file to open it",
+      "loadError": "This file could not be read as a .well profile.",
+      "groups": {
+        "start": "Start",
+        "import": "Import"
+      },
+      "blank": {
+        "title": "Blank",
+        "subtitle": "Empty profile, from scratch"
+      },
+      "examples": {
+        "title": "Examples",
+        "subtitle": "No ready-made wells | 1 ready-made well | {count} ready-made wells",
+        "subtitleLoading": "Ready-made wells to explore",
+        "kicker": "Examples",
+        "heading": "Start from a real well",
+        "all": "All",
+        "open": "Open"
+      },
+      "open": {
+        "title": "Open .well file",
+        "subtitle": "From your computer, or drop it here",
+        "subtitleMobile": "From your device"
+      },
+      "paste": {
+        "title": "Paste JSON",
+        "subtitle": "Contents of a .well",
+        "placeholder": "Paste the contents of a .well file here",
+        "waiting": "Waiting for content",
+        "valid": "Valid well",
+        "unnamed": "unnamed",
+        "empty": "The JSON is valid but describes no layer or well element.",
+        "invalidJson": "Invalid JSON: {detail}",
+        "invalidWell": "Not a valid .well: {detail}",
+        "sample": "Paste example",
+        "open": "Open well"
+      },
+      "siagas": {
+        "subtitle": "By the well code"
+      },
+      "confirmBlank": {
+        "header": "Start blank",
+        "message": "The current well will be replaced by an empty profile.",
+        "messageUnsaved": "There are unsaved changes. Starting blank will discard them.",
+        "accept": "Start blank",
         "reject": "Cancel"
       }
     }

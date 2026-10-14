@@ -1,0 +1,1087 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3100003115"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço PT-07 — ETA Joana D’Arc (Lagoa Santa/MG)",
+  "well_driller": "Percussora Mineira de Poços Ltda.",
+  "construction_date": "1987-01-26",
+  "obs": "Poço de abastecimento urbano no carste de Lagoa Santa, dentro da APA Carste de Lagoa Santa. Revestimento de aço de 10\" até 59 m, atravessando o calcário intemperizado; abaixo, poço aberto no calcário da Formação Sete Lagoas, com um conduto produtor a 70 m. Produz 100 m³/h com 3 m de rebaixamento. A outorga renovada em 2023 reduziu a vazão por causa do impacto do bombeamento nas lagoas cársticas.",
+  "well_id": [
+    {
+      "authority": "Operadora",
+      "id": "PT-07",
+      "primary": true
+    },
+    {
+      "authority": "IGAM",
+      "id": "Cadastro 1998/002113"
+    },
+    {
+      "authority": "CNARH",
+      "id": "310002113"
+    }
+  ],
+  "location": {
+    "lat": -19.63972,
+    "lng": -43.90083,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "original_crs": "EPSG:31983"
+    }
+  },
+  "well_depth": 78,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 60,
+      "diameter": 305,
+      "drilling_method": "percussion"
+    },
+    {
+      "from": 60,
+      "to": 78,
+      "diameter": 254,
+      "drilling_method": "percussion"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.9,
+      "to": 59.16,
+      "type": "carbon_steel",
+      "diameter": 273
+    }
+  ],
+  "reduction": [],
+  "well_screen": [],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 5,
+      "type": "seal",
+      "diameter": 305,
+      "description": "Cimentação do espaço anular"
+    },
+    {
+      "from": 5,
+      "to": 59.16,
+      "type": "gravel_pack",
+      "diameter": 305,
+      "description": "Material da formação (desmoronamento natural do anular)"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 59,
+      "description": "Rocha carbonática intemperizada e decomposta, argilosa",
+      "color": "#b9a27c",
+      "texture": {
+        "code": 623,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Sete Lagoas (Grupo Bambuí)",
+      "aquifer_unit": "Cobertura argilosa"
+    },
+    {
+      "from": 59,
+      "to": 78,
+      "description": "Calcário cinza",
+      "color": "#7d8b99",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Sete Lagoas (Grupo Bambuí)",
+      "aquifer_unit": "Aquífero cárstico Sete Lagoas"
+    }
+  ],
+  "fractures": [],
+  "caves": [
+    {
+      "from": 69.5,
+      "to": 71,
+      "water_intake": true,
+      "description": "Conduto cárstico: perda de circulação e queda do trépano; entrada d’água principal."
+    }
+  ],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "1987-01-26T07:00:00-03:00",
+      "operator": "Percussora Mineira de Poços Ltda.",
+      "static_level": 20.3,
+      "notes": "Ficha de 1987: nível estático, nível dinâmico final e vazão.",
+      "steps": [
+        {
+          "rate": 120,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1440,
+              "depth": 22.83
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-02",
+      "type": "constant_rate",
+      "datetime": "2019-08-05T07:00:00-03:00",
+      "operator": "Consultoria Hidrogeológica Bambuí",
+      "equipment": "Bomba do poço; transdutor de pressão e medidor elétrico; vazão pelo medidor eletromagnético",
+      "static_level": 24.6,
+      "static_level_precision": 0.01,
+      "measurement_method": "pressure_transducer",
+      "notes": "Teste de 24 h para a renovação da outorga.",
+      "steps": [
+        {
+          "rate": 110,
+          "rate_precision": 1,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 24.86
+            },
+            {
+              "elapsed": 2,
+              "depth": 25.13
+            },
+            {
+              "elapsed": 3,
+              "depth": 25.29
+            },
+            {
+              "elapsed": 4,
+              "depth": 25.4
+            },
+            {
+              "elapsed": 5,
+              "depth": 25.49
+            },
+            {
+              "elapsed": 6,
+              "depth": 25.56
+            },
+            {
+              "elapsed": 8,
+              "depth": 25.67
+            },
+            {
+              "elapsed": 10,
+              "depth": 25.76
+            },
+            {
+              "elapsed": 12,
+              "depth": 25.83
+            },
+            {
+              "elapsed": 15,
+              "depth": 25.92
+            },
+            {
+              "elapsed": 20,
+              "depth": 26.03
+            },
+            {
+              "elapsed": 25,
+              "depth": 26.12
+            },
+            {
+              "elapsed": 30,
+              "depth": 26.19
+            },
+            {
+              "elapsed": 40,
+              "depth": 26.3
+            },
+            {
+              "elapsed": 50,
+              "depth": 26.39
+            },
+            {
+              "elapsed": 60,
+              "depth": 26.46
+            },
+            {
+              "elapsed": 75,
+              "depth": 26.55
+            },
+            {
+              "elapsed": 90,
+              "depth": 26.62
+            },
+            {
+              "elapsed": 120,
+              "depth": 26.73
+            },
+            {
+              "elapsed": 150,
+              "depth": 26.82
+            },
+            {
+              "elapsed": 180,
+              "depth": 26.89
+            },
+            {
+              "elapsed": 240,
+              "depth": 27
+            },
+            {
+              "elapsed": 300,
+              "depth": 27.09
+            },
+            {
+              "elapsed": 360,
+              "depth": 27.16
+            },
+            {
+              "elapsed": 420,
+              "depth": 27.22
+            },
+            {
+              "elapsed": 480,
+              "depth": 27.27
+            },
+            {
+              "elapsed": 540,
+              "depth": 27.32
+            },
+            {
+              "elapsed": 600,
+              "depth": 27.36
+            },
+            {
+              "elapsed": 720,
+              "depth": 27.43
+            },
+            {
+              "elapsed": 840,
+              "depth": 27.49
+            },
+            {
+              "elapsed": 960,
+              "depth": 27.54
+            },
+            {
+              "elapsed": 1080,
+              "depth": 27.59
+            },
+            {
+              "elapsed": 1260,
+              "depth": 27.65
+            },
+            {
+              "elapsed": 1440,
+              "depth": 27.7
+            }
+          ]
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 27.44
+          },
+          {
+            "elapsed": 2,
+            "depth": 27.17
+          },
+          {
+            "elapsed": 3,
+            "depth": 27.01
+          },
+          {
+            "elapsed": 4,
+            "depth": 26.9
+          },
+          {
+            "elapsed": 5,
+            "depth": 26.81
+          },
+          {
+            "elapsed": 6,
+            "depth": 26.74
+          },
+          {
+            "elapsed": 8,
+            "depth": 26.63
+          },
+          {
+            "elapsed": 10,
+            "depth": 26.55
+          },
+          {
+            "elapsed": 12,
+            "depth": 26.47
+          },
+          {
+            "elapsed": 15,
+            "depth": 26.39
+          },
+          {
+            "elapsed": 20,
+            "depth": 26.28
+          },
+          {
+            "elapsed": 25,
+            "depth": 26.19
+          },
+          {
+            "elapsed": 30,
+            "depth": 26.12
+          },
+          {
+            "elapsed": 40,
+            "depth": 26.01
+          },
+          {
+            "elapsed": 50,
+            "depth": 25.93
+          },
+          {
+            "elapsed": 60,
+            "depth": 25.86
+          },
+          {
+            "elapsed": 75,
+            "depth": 25.77
+          },
+          {
+            "elapsed": 90,
+            "depth": 25.71
+          },
+          {
+            "elapsed": 120,
+            "depth": 25.6
+          },
+          {
+            "elapsed": 150,
+            "depth": 25.52
+          },
+          {
+            "elapsed": 180,
+            "depth": 25.46
+          },
+          {
+            "elapsed": 240,
+            "depth": 25.36
+          },
+          {
+            "elapsed": 300,
+            "depth": 25.29
+          },
+          {
+            "elapsed": 360,
+            "depth": 25.23
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-03",
+      "type": "spot_measurement",
+      "datetime": "2025-09-02T06:00:00-03:00",
+      "operator": "Operadora — Controle Operacional",
+      "static_level": 26.1,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Medição anual da condicionante, poço parado havia 8 h."
+    }
+  ],
+  "cement_pad": {
+    "type": "reinforced_concrete",
+    "width": 2,
+    "thickness": 0.2,
+    "length": 2
+  },
+  "aquifer_analysis": [
+    {
+      "id": "an-1987",
+      "datetime": "1987-01-28T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "x-specific_capacity",
+      "static_level": 20.3,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 22.83,
+      "flow_rate": 120,
+      "specific_capacity": 47.43
+    },
+    {
+      "id": "an-2019",
+      "datetime": "2019-08-12T10:00:00-03:00",
+      "analyst": "Consultoria Hidrogeológica Bambuí",
+      "source_event_ids": [
+        "evt-02"
+      ],
+      "method": "cooper_jacob",
+      "static_level": 24.6,
+      "static_level_source_id": "evt-02",
+      "dynamic_level": 27.7,
+      "flow_rate": 110,
+      "specific_capacity": 35.48,
+      "transmissivity": 0.00621,
+      "storativity": null,
+      "notes": "Transmissividade alta, controlada pelo conduto. O nível estático caiu 4,3 m desde 1987, acompanhando o rebaixamento regional."
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-2012",
+      "installed_at": "2012-11-26T09:00:00-03:00",
+      "installed_by": "Operadora — Manutenção Eletromecânica",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "KSB",
+      "model": "UPA 200-11/4",
+      "intake_depth": 45,
+      "rated_flow_rate": 100,
+      "rated_head": 60,
+      "rated_power": 30,
+      "stages": 4,
+      "riser_diameter": 150,
+      "riser_material": "carbon_steel",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 380,
+        "phases": 3,
+        "cable_section": 25,
+        "cable_length": 60
+      }
+    }
+  ],
+  "permits": [
+    {
+      "id": "outorga-2012",
+      "type": "abstraction_permit",
+      "authority": "IGAM",
+      "status": "granted",
+      "identifier": "Portaria IGAM nº 02218/2012",
+      "request_identifier": "Processo nº 11402/2011",
+      "issued_at": "2012-10-30",
+      "valid_until": "2022-10-30",
+      "renewal_requested_at": "2022-06-15",
+      "water_use": [
+        "human_supply"
+      ],
+      "flow_rate": 100,
+      "daily_operating_time": 20,
+      "volume_limits": [
+        {
+          "period": "daily",
+          "volume": 2000
+        },
+        {
+          "period": "annual",
+          "volume": 730000
+        }
+      ],
+      "conditions": [
+        {
+          "id": "c1",
+          "description": "Manter medidor de vazão com telemetria na saída do poço.",
+          "category": "equipment_installation",
+          "responsible": "Operadora",
+          "due_after": "P90D",
+          "fulfillments": [
+            {
+              "id": "f1",
+              "datetime": "2013-01-01T00:00:00-03:00",
+              "due_date": "2013-01-28",
+              "description": "Medidor eletromagnético DN150 com telemetria em operação.",
+              "author": "Operadora"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": "h1",
+          "date": "2011-08-22",
+          "type": "filing",
+          "description": "Pedido de outorga para o poço existente (regularização)."
+        },
+        {
+          "id": "h2",
+          "date": "2012-10-30",
+          "type": "decision",
+          "description": "Outorga deferida por 10 anos."
+        }
+      ]
+    },
+    {
+      "id": "outorga-2023",
+      "type": "abstraction_permit",
+      "authority": "IGAM",
+      "status": "granted",
+      "identifier": "Portaria IGAM nº 01377/2023",
+      "request_identifier": "Processo SEI nº 2240.01.0021904/2022-11",
+      "issued_at": "2023-08-14",
+      "valid_from": "2023-08-14",
+      "valid_until": "2033-08-14",
+      "water_use": [
+        "human_supply"
+      ],
+      "flow_rate": 90,
+      "daily_operating_time": 18,
+      "volume_limits": [
+        {
+          "period": "daily",
+          "volume": 1620
+        },
+        {
+          "period": "annual",
+          "volume": 591300
+        }
+      ],
+      "conditions": [
+        {
+          "id": "c1",
+          "description": "Medir o nível estático uma vez por ano, com o poço parado há pelo menos 6 h, e informar ao IGAM até 30 de setembro.",
+          "category": "monitoring",
+          "responsible": "Operadora — Controle Operacional",
+          "first_due": "2024-09-30",
+          "recurrence": "P1Y",
+          "fulfillments": [
+            {
+              "id": "f-2025",
+              "datetime": "2025-09-10T10:00:00-03:00",
+              "due_date": "2025-09-30",
+              "description": "Nível estático de 02/09/2025 informado.",
+              "author": "Operadora",
+              "event_id": "evt-03"
+            }
+          ]
+        },
+        {
+          "id": "c2",
+          "description": "Enviar análise físico-química e bacteriológica da água bruta a cada ano.",
+          "category": "monitoring",
+          "responsible": "Operadora — Laboratório",
+          "first_due": "2024-08-14",
+          "recurrence": "P1Y",
+          "fulfillments": [
+            {
+              "id": "f-2024",
+              "datetime": "2024-07-30T10:00:00-03:00",
+              "due_date": "2024-08-14",
+              "description": "Laudo da coleta de julho de 2024.",
+              "author": "Operadora",
+              "sample_id": "am-2024"
+            }
+          ]
+        },
+        {
+          "id": "c3",
+          "description": "Não aprofundar o poço nem aumentar a vazão sem nova outorga, por estar em área de influência das lagoas cársticas da APA.",
+          "category": "environmental",
+          "responsible": "Operadora"
+        }
+      ],
+      "history": [
+        {
+          "id": "h1",
+          "date": "2022-06-15",
+          "type": "renewal",
+          "description": "Pedido de renovação com o teste de bombeamento de 2019."
+        },
+        {
+          "id": "h2",
+          "date": "2023-02-03",
+          "type": "notification",
+          "description": "IGAM pede estudo do efeito do bombeamento sobre a Lagoa Santa.",
+          "done": true
+        },
+        {
+          "id": "h3",
+          "date": "2023-08-14",
+          "type": "decision",
+          "description": "Renovação deferida com vazão reduzida de 100 para 90 m³/h e 18 h/dia."
+        }
+      ],
+      "supersedes": "outorga-2012"
+    }
+  ],
+  "meters": [
+    {
+      "id": "mv-1",
+      "installed_at": "2013-01-01T00:00:00-03:00",
+      "type": "electromagnetic",
+      "manufacturer": "Siemens",
+      "model": "SITRANS FM MAG 5000",
+      "serial": "SM12-90377",
+      "nominal_diameter": 150,
+      "notes": "Telemetria com envio diário ao centro de controle."
+    }
+  ],
+  "production": [
+    {
+      "id": "prd-01",
+      "type": "meter_reading",
+      "datetime": "2013-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 0,
+      "source": "telemetry",
+      "notes": "Leitura inicial."
+    },
+    {
+      "id": "prd-02",
+      "type": "meter_reading",
+      "datetime": "2014-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 598400,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-03",
+      "type": "meter_reading",
+      "datetime": "2015-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 1201900,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-04",
+      "type": "meter_reading",
+      "datetime": "2016-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 1786300,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-05",
+      "type": "meter_reading",
+      "datetime": "2017-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 2369800,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-06",
+      "type": "meter_reading",
+      "datetime": "2018-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 2951200,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-07",
+      "type": "meter_reading",
+      "datetime": "2019-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 3542700,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-08",
+      "type": "meter_reading",
+      "datetime": "2020-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 4127100,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-09",
+      "type": "meter_reading",
+      "datetime": "2021-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 4716400,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-10",
+      "type": "meter_reading",
+      "datetime": "2022-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 5301600,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-11",
+      "type": "meter_reading",
+      "datetime": "2023-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 5884900,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-12",
+      "type": "meter_reading",
+      "datetime": "2024-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 6433200,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-13",
+      "type": "meter_reading",
+      "datetime": "2025-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 6969800,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-14",
+      "type": "meter_reading",
+      "datetime": "2026-01-01T00:00:00-03:00",
+      "meter_id": "mv-1",
+      "reading": 7508500,
+      "source": "telemetry"
+    }
+  ],
+  "operating_regime": [
+    {
+      "id": "reg-2012",
+      "effective_from": "2012-11-26T09:00:00-03:00",
+      "flow_rate": 100,
+      "daily_operating_time": 16,
+      "days_per_week": 7
+    },
+    {
+      "id": "reg-2023",
+      "effective_from": "2023-08-14T00:00:00-03:00",
+      "flow_rate": 90,
+      "daily_operating_time": 16,
+      "days_per_week": 7,
+      "notes": "Inversor de frequência ajustado ao limite da nova outorga."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-1993",
+      "datetime": "1993-11-02T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 289,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "apparent_color",
+            "vocabulary": "welldot"
+          },
+          "value": 5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.45,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 57,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 1.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 0.64,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 0.19,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 0.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "alkalinity_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 146,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 147,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "fluoride",
+            "vocabulary": "welldot"
+          },
+          "value": 0.07,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.1,
+          "measured_in": "lab",
+          "fraction": "total"
+        }
+      ]
+    },
+    {
+      "id": "am-2024",
+      "datetime": "2024-07-09T08:30:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "wellhead_tap",
+        "pump_installation_id": "pump-2012"
+      },
+      "collected_by": "Operadora — Laboratório",
+      "laboratory": {
+        "name": "Laboratório Central da Operadora",
+        "report_number": "LC-24/07112"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 23.4,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 334,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.4,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.3,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 63,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 2.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 3.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 0.6,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 4.2,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 3,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 1.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "alkalinity_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 160,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 167,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "fluoride",
+            "vocabulary": "welldot"
+          },
+          "value": 0.09,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "qualifier": "<",
+          "value": 0.05,
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1987-02-10T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço entra em operação na ETA Joana D’Arc.",
+      "hydrodynamic_event_ids": [
+        "evt-01"
+      ]
+    },
+    {
+      "id": "log-02",
+      "datetime": "2012-11-26T09:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "pump_service",
+      "pump_installation_id": "pump-2012",
+      "description": "Troca do conjunto motobomba e instalação de inversor de frequência.",
+      "author": "Operadora — Manutenção Eletromecânica"
+    },
+    {
+      "id": "log-03",
+      "datetime": "2013-01-01T00:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "meter_calibration",
+      "meter_id": "mv-1",
+      "description": "Medidor eletromagnético com telemetria instalado, conforme condicionante da outorga."
+    },
+    {
+      "id": "log-04",
+      "datetime": "2019-08-06T09:00:00-03:00",
+      "category": "event",
+      "description": "Teste de 24 h e recuperação para a renovação da outorga.",
+      "author": "Consultoria Hidrogeológica Bambuí",
+      "hydrodynamic_event_ids": [
+        "evt-02"
+      ]
+    }
+  ]
+}

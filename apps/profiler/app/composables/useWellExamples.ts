@@ -7,6 +7,8 @@ export interface WellExample {
   title: { pt: string; en: string };
   summary: { pt: string; en: string };
   tags: string[];
+  /** Ids of the `WellExampleCategory` filters this example appears under. */
+  categories: string[];
   well_depth: number;
   well_type: string;
   place: string;
@@ -14,8 +16,15 @@ export interface WellExample {
   thumbnail: string;
 }
 
+/** A filter of the example list, in the order the index declares them. */
+export interface WellExampleCategory {
+  id: string;
+  title: { pt: string; en: string };
+}
+
 interface WellExampleIndex {
   version: number;
+  categories: WellExampleCategory[];
   examples: WellExample[];
 }
 
@@ -32,6 +41,10 @@ export function useWellExamples() {
   const confirm = useConfirm();
 
   const examples = useState<WellExample[] | null>('well-examples', () => null);
+  const categories = useState<WellExampleCategory[]>(
+    'well-example-categories',
+    () => [],
+  );
   const failed = useState('well-examples-failed', () => false);
   const loadingSlug = useState<string | null>(
     'well-examples-loading',
@@ -44,6 +57,7 @@ export function useWellExamples() {
       const index = await $fetch<WellExampleIndex>(
         `${EXAMPLES_BASE}/index.json`,
       );
+      categories.value = index.categories ?? [];
       examples.value = index.examples;
       failed.value = false;
     } catch {
@@ -59,12 +73,17 @@ export function useWellExamples() {
     return locale.value === 'pt' ? text.pt : text.en;
   }
 
+  /** The raw `.well` text of an example. */
+  function fetchExampleText(example: WellExample): Promise<string> {
+    return $fetch<string>(`${EXAMPLES_BASE}/${example.file}`, {
+      responseType: 'text',
+    });
+  }
+
   async function _load(example: WellExample): Promise<boolean> {
     loadingSlug.value = example.slug;
     try {
-      const json = await $fetch<string>(`${EXAMPLES_BASE}/${example.file}`, {
-        responseType: 'text',
-      });
+      const json = await fetchExampleText(example);
       // An example is not the file the user opened: Save must ask for a name.
       persistence.clearHandle();
       return store.loadWell(json);
@@ -96,10 +115,12 @@ export function useWellExamples() {
 
   return {
     examples,
+    categories,
     failed,
     loadingSlug,
     fetchExamples,
     openExample,
+    fetchExampleText,
     exampleText,
     thumbnailUrl,
   };

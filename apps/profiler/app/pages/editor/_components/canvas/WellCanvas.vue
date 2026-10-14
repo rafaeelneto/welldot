@@ -8,11 +8,11 @@ import {
 import { isWellEmpty } from '@welldot/core';
 import { useDark } from '@vueuse/core';
 import ZoomControls from './ZoomControls.vue';
-import ExamplePicker from '../examples/ExamplePicker.vue';
 
 const { t, locale } = useI18n();
 const profileStore = useProfileStore();
 const uiStore = useUiStore();
+const newWell = useNewWellDialog();
 
 const svgId = `well-canvas-${Math.random().toString(36).slice(2, 8)}`;
 const containerRef = ref<HTMLElement | null>(null);
@@ -198,12 +198,14 @@ onUnmounted(() => {
         </template>
       </ClientOnly>
 
-      <!-- Empty or cleared well: start from an example -->
+      <!-- Empty well: the "New well" dialog offers the ways to start -->
       <div
         v-if="isEmpty"
-        class="absolute inset-0 overflow-y-auto flex justify-center px-6 py-8"
+        class="absolute inset-0 flex items-center justify-center px-6 py-8"
       >
-        <div class="w-full max-w-sm flex flex-col gap-4 my-auto">
+        <div
+          class="w-full max-w-xs flex flex-col items-center gap-4 text-center"
+        >
           <div class="flex flex-col gap-1">
             <span class="font-mono text-xs text-content-400">{{
               t('editor.canvas.empty')
@@ -211,12 +213,31 @@ onUnmounted(() => {
             <h3
               class="m-0 font-serif text-xl font-medium tracking-tight text-content-0"
             >
-              {{ t('editor.examples.title') }}
+              {{ t('editor.canvas.startTitle') }}
             </h3>
           </div>
-          <ClientOnly>
-            <ExamplePicker />
-          </ClientOnly>
+          <div class="flex flex-wrap justify-center gap-2">
+            <Button
+              :label="t('editor.canvas.newWell')"
+              size="small"
+              @click="newWell.open()"
+            >
+              <template #icon>
+                <Icon name="ph:file-plus-duotone" class="size-4 shrink-0" />
+              </template>
+            </Button>
+            <Button
+              :label="t('editor.examples.open')"
+              size="small"
+              severity="secondary"
+              outlined
+              @click="newWell.open('examples')"
+            >
+              <template #icon>
+                <Icon name="ph:books-duotone" class="size-4 shrink-0" />
+              </template>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

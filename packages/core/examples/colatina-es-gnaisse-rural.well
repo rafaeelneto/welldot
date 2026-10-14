@@ -1,0 +1,1047 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3100007879"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço tubular — Sítio Coqueiro (Colatina/ES)",
+  "well_driller": "Capixaba Sondagens e Poços Ltda.",
+  "construction_date": "1999-11-04",
+  "obs": "Poço de propriedade rural em gnaisse do Complexo Paraíba do Sul, sob 20 m de saprolito. Perfurado em 1999 e deixado sem bomba até 2017, quando passou a abastecer a casa e o lavador de café. Primeiro uso declarado como insignificante; em 2022, com a irrigação por gotejamento do cafezal, passou a exigir outorga.",
+  "well_id": [
+    {
+      "authority": "Proprietário",
+      "id": "PT-01",
+      "primary": true
+    },
+    {
+      "authority": "AGERH",
+      "id": "Cadastro 2017/0004981"
+    },
+    {
+      "authority": "CNARH",
+      "id": "320004981"
+    }
+  ],
+  "location": {
+    "lat": -19.60889,
+    "lng": -40.51389,
+    "elevation": 71,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31984"
+    }
+  },
+  "well_depth": 80,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 20.5,
+      "diameter": 237
+    },
+    {
+      "from": 20.5,
+      "to": 27.5,
+      "diameter": 203
+    },
+    {
+      "from": 27.5,
+      "to": 80,
+      "diameter": 152
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.5,
+      "to": 27.5,
+      "type": "geomechanical_pvc",
+      "diameter": 168
+    }
+  ],
+  "reduction": [],
+  "well_screen": [],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 5,
+      "type": "seal",
+      "diameter": 237,
+      "description": "Cimentação do espaço anular"
+    },
+    {
+      "from": 5,
+      "to": 27.5,
+      "type": "gravel_pack",
+      "diameter": 237,
+      "description": "Brita no anular do revestimento"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 20.5,
+      "description": "Rocha intemperizada e decomposta (saprolito de gnaisse, argilo-arenoso)",
+      "color": "#c08a5a",
+      "texture": {
+        "code": 708,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Complexo Paraíba do Sul",
+      "aquifer_unit": "Manto de alteração"
+    },
+    {
+      "from": 20.5,
+      "to": 80,
+      "description": "Gnaisse cinza bandado, fraturamento raro",
+      "color": "#8a8a86",
+      "texture": {
+        "code": 708,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Complexo Paraíba do Sul",
+      "aquifer_unit": "Aquífero fissural"
+    }
+  ],
+  "fractures": [
+    {
+      "depth": 67,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fratura aberta, única entrada d’água relevante",
+      "swarm": false,
+      "azimuth": 40,
+      "dip": 70
+    }
+  ],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "1999-11-07T07:00:00-03:00",
+      "operator": "Capixaba Sondagens e Poços Ltda.",
+      "static_level": 3,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "steps": [
+        {
+          "rate": 7.2,
+          "rate_precision": 0.2,
+          "duration": 720,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 26.96
+            },
+            {
+              "elapsed": 2,
+              "depth": 29.82
+            },
+            {
+              "elapsed": 3,
+              "depth": 31.49
+            },
+            {
+              "elapsed": 4,
+              "depth": 32.67
+            },
+            {
+              "elapsed": 5,
+              "depth": 33.6
+            },
+            {
+              "elapsed": 6,
+              "depth": 34.35
+            },
+            {
+              "elapsed": 8,
+              "depth": 35.53
+            },
+            {
+              "elapsed": 10,
+              "depth": 36.46
+            },
+            {
+              "elapsed": 12,
+              "depth": 37.21
+            },
+            {
+              "elapsed": 15,
+              "depth": 38.13
+            },
+            {
+              "elapsed": 20,
+              "depth": 39.32
+            },
+            {
+              "elapsed": 25,
+              "depth": 40.24
+            },
+            {
+              "elapsed": 30,
+              "depth": 40.99
+            },
+            {
+              "elapsed": 40,
+              "depth": 42.17
+            },
+            {
+              "elapsed": 50,
+              "depth": 43.1
+            },
+            {
+              "elapsed": 60,
+              "depth": 43.85
+            },
+            {
+              "elapsed": 75,
+              "depth": 44.77
+            },
+            {
+              "elapsed": 90,
+              "depth": 45.52
+            },
+            {
+              "elapsed": 120,
+              "depth": 46.71
+            },
+            {
+              "elapsed": 150,
+              "depth": 47.63
+            },
+            {
+              "elapsed": 180,
+              "depth": 48.38
+            },
+            {
+              "elapsed": 240,
+              "depth": 49.57
+            },
+            {
+              "elapsed": 300,
+              "depth": 50.49
+            },
+            {
+              "elapsed": 360,
+              "depth": 51.24
+            },
+            {
+              "elapsed": 420,
+              "depth": 51.88
+            },
+            {
+              "elapsed": 480,
+              "depth": 52.43
+            },
+            {
+              "elapsed": 540,
+              "depth": 52.91
+            },
+            {
+              "elapsed": 600,
+              "depth": 53.35
+            },
+            {
+              "elapsed": 720,
+              "depth": 54.1
+            }
+          ]
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 30.15
+          },
+          {
+            "elapsed": 2,
+            "depth": 27.3
+          },
+          {
+            "elapsed": 3,
+            "depth": 25.63
+          },
+          {
+            "elapsed": 4,
+            "depth": 24.45
+          },
+          {
+            "elapsed": 5,
+            "depth": 23.53
+          },
+          {
+            "elapsed": 6,
+            "depth": 22.79
+          },
+          {
+            "elapsed": 8,
+            "depth": 21.61
+          },
+          {
+            "elapsed": 10,
+            "depth": 20.7
+          },
+          {
+            "elapsed": 12,
+            "depth": 19.96
+          },
+          {
+            "elapsed": 15,
+            "depth": 19.06
+          },
+          {
+            "elapsed": 20,
+            "depth": 17.9
+          },
+          {
+            "elapsed": 25,
+            "depth": 17.01
+          },
+          {
+            "elapsed": 30,
+            "depth": 16.28
+          },
+          {
+            "elapsed": 40,
+            "depth": 15.15
+          },
+          {
+            "elapsed": 50,
+            "depth": 14.28
+          },
+          {
+            "elapsed": 60,
+            "depth": 13.58
+          },
+          {
+            "elapsed": 75,
+            "depth": 12.74
+          },
+          {
+            "elapsed": 90,
+            "depth": 12.07
+          },
+          {
+            "elapsed": 120,
+            "depth": 11.03
+          },
+          {
+            "elapsed": 150,
+            "depth": 10.25
+          },
+          {
+            "elapsed": 180,
+            "depth": 9.64
+          },
+          {
+            "elapsed": 240,
+            "depth": 8.72
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-02",
+      "type": "spot_measurement",
+      "datetime": "2017-05-22T09:00:00-03:00",
+      "operator": "Capixaba Sondagens e Poços Ltda.",
+      "static_level": 4.6,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Antes de equipar o poço, após 18 anos parado."
+    },
+    {
+      "id": "evt-03",
+      "type": "constant_rate",
+      "datetime": "2022-06-14T07:00:00-03:00",
+      "operator": "Consultoria Hidrogeológica Rio Doce",
+      "equipment": "Bomba instalada; medidor elétrico de nível; hidrômetro",
+      "static_level": 5.2,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Teste curto exigido no pedido de outorga.",
+      "steps": [
+        {
+          "rate": 4,
+          "rate_precision": 0.1,
+          "duration": 240,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 16.47
+            },
+            {
+              "elapsed": 2,
+              "depth": 18.16
+            },
+            {
+              "elapsed": 3,
+              "depth": 19.14
+            },
+            {
+              "elapsed": 4,
+              "depth": 19.84
+            },
+            {
+              "elapsed": 5,
+              "depth": 20.39
+            },
+            {
+              "elapsed": 6,
+              "depth": 20.83
+            },
+            {
+              "elapsed": 8,
+              "depth": 21.53
+            },
+            {
+              "elapsed": 10,
+              "depth": 22.07
+            },
+            {
+              "elapsed": 12,
+              "depth": 22.51
+            },
+            {
+              "elapsed": 15,
+              "depth": 23.06
+            },
+            {
+              "elapsed": 20,
+              "depth": 23.76
+            },
+            {
+              "elapsed": 25,
+              "depth": 24.3
+            },
+            {
+              "elapsed": 30,
+              "depth": 24.74
+            },
+            {
+              "elapsed": 40,
+              "depth": 25.44
+            },
+            {
+              "elapsed": 50,
+              "depth": 25.99
+            },
+            {
+              "elapsed": 60,
+              "depth": 26.43
+            },
+            {
+              "elapsed": 75,
+              "depth": 26.97
+            },
+            {
+              "elapsed": 90,
+              "depth": 27.41
+            },
+            {
+              "elapsed": 120,
+              "depth": 28.11
+            },
+            {
+              "elapsed": 150,
+              "depth": 28.66
+            },
+            {
+              "elapsed": 180,
+              "depth": 29.1
+            },
+            {
+              "elapsed": 240,
+              "depth": 29.8
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cement_pad": {
+    "type": "concrete",
+    "width": 1,
+    "thickness": 0.15,
+    "length": 1
+  },
+  "aquifer_analysis": [
+    {
+      "id": "an-1999",
+      "datetime": "1999-11-09T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "cooper_jacob",
+      "static_level": 3,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 54.1,
+      "flow_rate": 7.2,
+      "specific_capacity": 0.141,
+      "transmissivity": 0.0000385,
+      "storativity": null,
+      "notes": "Uma única fratura produtora; rebaixamento quase até a entrada d’água. Vazão recomendada: 4 m³/h."
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-2017",
+      "installed_at": "2017-05-23T09:00:00-03:00",
+      "installed_by": "Capixaba Sondagens e Poços Ltda.",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Schneider",
+      "model": "SUB 15 4R",
+      "intake_depth": 52,
+      "rated_flow_rate": 4,
+      "rated_head": 90,
+      "rated_power": 1.5,
+      "stages": 15,
+      "riser_diameter": 32,
+      "riser_material": "pvc",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 220,
+        "phases": 1,
+        "cable_section": 4,
+        "cable_length": 60
+      }
+    }
+  ],
+  "permits": [
+    {
+      "id": "insig-2017",
+      "type": "exemption",
+      "authority": "AGERH",
+      "status": "granted",
+      "identifier": "Certidão de uso insignificante nº 2017/004981",
+      "issued_at": "2017-06-12",
+      "valid_until": "2022-06-12",
+      "water_use": [
+        "human_supply",
+        "commercial"
+      ],
+      "flow_rate": 1.5,
+      "volume_limits": [
+        {
+          "period": "daily",
+          "volume": 12
+        }
+      ],
+      "notes": "Uso doméstico e lavagem de café, abaixo do limite de uso insignificante."
+    },
+    {
+      "id": "outorga-2023",
+      "type": "abstraction_permit",
+      "authority": "AGERH",
+      "status": "granted",
+      "identifier": "Portaria AGERH nº 0412/2023",
+      "request_identifier": "Processo E-Docs 2022-7KQ3M",
+      "issued_at": "2023-03-08",
+      "valid_from": "2023-03-08",
+      "valid_until": "2033-03-08",
+      "water_use": [
+        "human_supply",
+        "irrigation"
+      ],
+      "flow_rate": 4,
+      "daily_operating_time": 8,
+      "volume_limits": [
+        {
+          "period": "daily",
+          "volume": 32
+        },
+        {
+          "period": "annual",
+          "volume": 8000
+        }
+      ],
+      "conditions": [
+        {
+          "id": "c1",
+          "description": "Instalar hidrômetro na saída do poço.",
+          "category": "equipment_installation",
+          "responsible": "Proprietário",
+          "due_after": "P90D",
+          "fulfillments": [
+            {
+              "id": "f1",
+              "datetime": "2023-04-20T10:00:00-03:00",
+              "due_date": "2023-06-06",
+              "description": "Hidrômetro DN25 instalado e lacrado.",
+              "author": "Proprietário"
+            }
+          ]
+        },
+        {
+          "id": "c2",
+          "description": "Informar à AGERH, até 31 de janeiro, o volume captado no ano anterior.",
+          "category": "reporting",
+          "responsible": "Proprietário",
+          "first_due": "2024-01-31",
+          "recurrence": "P1Y",
+          "fulfillments": [
+            {
+              "id": "f-2024",
+              "datetime": "2024-01-18T10:00:00-03:00",
+              "due_date": "2024-01-31",
+              "description": "Declaração de 2023: 5.112 m³ (abril a dezembro).",
+              "author": "Proprietário"
+            },
+            {
+              "id": "f-2025",
+              "datetime": "2025-01-27T10:00:00-03:00",
+              "due_date": "2025-01-31",
+              "description": "Declaração de 2024: 7.430 m³.",
+              "author": "Proprietário"
+            },
+            {
+              "id": "f-2026",
+              "datetime": "2026-01-22T10:00:00-03:00",
+              "due_date": "2026-01-31",
+              "description": "Declaração de 2025: 7.760 m³.",
+              "author": "Proprietário"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": "h1",
+          "date": "2022-07-05",
+          "type": "filing",
+          "description": "Pedido de outorga para irrigação do cafezal, com o teste de bombeamento de junho de 2022."
+        },
+        {
+          "id": "h2",
+          "date": "2022-11-10",
+          "type": "notification",
+          "description": "AGERH pede análise físico-química da água.",
+          "done": true
+        },
+        {
+          "id": "h3",
+          "date": "2023-03-08",
+          "type": "decision",
+          "description": "Outorga deferida por 10 anos."
+        }
+      ],
+      "supersedes": "insig-2017"
+    }
+  ],
+  "meters": [
+    {
+      "id": "hid-1",
+      "installed_at": "2023-04-20T09:30:00-03:00",
+      "type": "mechanical",
+      "manufacturer": "Saga",
+      "model": "Unimag DN25",
+      "serial": "SG23-118402",
+      "nominal_diameter": 25,
+      "max_reading": 99999
+    }
+  ],
+  "production": [
+    {
+      "id": "prd-01",
+      "type": "meter_reading",
+      "datetime": "2023-04-20T10:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 0,
+      "source": "manual",
+      "notes": "Leitura de instalação."
+    },
+    {
+      "id": "prd-02",
+      "type": "meter_reading",
+      "datetime": "2024-01-02T08:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 5112,
+      "source": "manual"
+    },
+    {
+      "id": "prd-03",
+      "type": "meter_reading",
+      "datetime": "2025-01-02T08:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 12542,
+      "source": "manual"
+    },
+    {
+      "id": "prd-04",
+      "type": "meter_reading",
+      "datetime": "2026-01-02T08:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 20302,
+      "source": "manual"
+    },
+    {
+      "id": "prd-05",
+      "type": "meter_reading",
+      "datetime": "2026-07-01T08:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 23951,
+      "source": "manual"
+    }
+  ],
+  "operating_regime": [
+    {
+      "id": "reg-2017",
+      "effective_from": "2017-05-23T09:00:00-03:00",
+      "flow_rate": 1.5,
+      "daily_operating_time": 4,
+      "days_per_week": 7
+    },
+    {
+      "id": "reg-2023",
+      "effective_from": "2023-04-20T10:00:00-03:00",
+      "flow_rate": 4,
+      "daily_operating_time": 6,
+      "days_per_week": 6,
+      "notes": "Gotejamento em turnos, de maio a outubro."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-1999",
+      "datetime": "1999-12-11T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 555,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.15,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 44.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 12.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 43,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 7.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 24.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 255,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 10,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 162,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "fluoride",
+            "vocabulary": "welldot"
+          },
+          "value": 0.14,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.13,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "manganese",
+            "vocabulary": "welldot"
+          },
+          "value": 0.05,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "qualifier": "not_detected",
+          "detection_limit": 0.1
+        }
+      ]
+    },
+    {
+      "id": "am-2022",
+      "datetime": "2022-11-22T09:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Pedido de outorga",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge",
+        "pump_installation_id": "pump-2017"
+      },
+      "collected_by": "Consultoria Hidrogeológica Rio Doce",
+      "laboratory": {
+        "name": "Laboratório de Águas do Vale do Rio Doce",
+        "report_number": "LAV-22/3310"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 590,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.2,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 1.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 47,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 13.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 45,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 7.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 27,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 276,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 12,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 171,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.21,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "manganese",
+            "vocabulary": "welldot"
+          },
+          "value": 0.06,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 0.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1999-11-09T17:00:00-03:00",
+      "category": "event",
+      "description": "Perfuração e teste de 12 h concluídos. Vazão baixa; poço lacrado sem bomba.",
+      "author": "Capixaba Sondagens e Poços Ltda.",
+      "hydrodynamic_event_ids": [
+        "evt-01"
+      ]
+    },
+    {
+      "id": "log-02",
+      "datetime": "1999-12-11T09:00:00-03:00",
+      "category": "status_change",
+      "status": "inactive",
+      "description": "Poço não instalado.",
+      "sample_ids": [
+        "am-1999"
+      ]
+    },
+    {
+      "id": "log-03",
+      "datetime": "2017-05-23T09:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "pump_service",
+      "pump_installation_id": "pump-2017",
+      "description": "Bomba submersa instalada a 52 m.",
+      "author": "Capixaba Sondagens e Poços Ltda.",
+      "hydrodynamic_event_ids": [
+        "evt-02"
+      ]
+    },
+    {
+      "id": "log-04",
+      "datetime": "2017-05-23T12:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço em operação para a casa e o lavador de café."
+    },
+    {
+      "id": "log-05",
+      "datetime": "2022-06-14T17:00:00-03:00",
+      "category": "event",
+      "description": "Teste de 4 h a 4 m³/h para o pedido de outorga de irrigação.",
+      "author": "Consultoria Hidrogeológica Rio Doce",
+      "hydrodynamic_event_ids": [
+        "evt-03"
+      ],
+      "sample_ids": [
+        "am-2022"
+      ]
+    }
+  ]
+}
