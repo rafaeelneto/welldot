@@ -19,7 +19,7 @@ src/
   operation.utils.test.ts ← Vitest tests (spec complete example golden test included)
   waterQuality.utils.ts ← v2.3 water_samples: ledger, sample depth, ion balance, Piper/Stiff, QA/QC, exceedances, warnings
   waterQuality.utils.test.ts ← Vitest tests (spec complete example golden test included)
-  shared.utils.ts       ← getRetractedIds + instantLocalDate, shared by the modules above (avoids import cycles)
+  shared.utils.ts       ← getRetractedIds + instantLocalDate + instantOffset, shared by the modules above (avoids import cycles)
   number.utils.ts       ← formatNumber (locale-aware number display formatting)
   number.utils.test.ts  ← Vitest tests (comprehensive coverage)
   date.utils.ts         ← formatDate, calendar-date parse/format (date-fns)
@@ -62,11 +62,11 @@ src/
 | `getPermitTimeline(permit)`                                                    | History steps + condition fulfillments, newest first                                                      |
 | `getPermitWarnings(well, today?)`                                              | v2.3 permits, history and condition fulfillment validation warnings                                       |
 | `parseDateDuration` / `addDateDuration` / `todayCalendarDate`                  | ISO 8601 date-duration parsing and calendar-date arithmetic                                               |
-| `getRetractedIds(entries)` / `instantLocalDate(instant)`                       | Generic ledger retraction set / local date of an instant as written                                       |
+| `getRetractedIds(entries)` / `instantLocalDate(instant)` / `instantOffset`     | Generic ledger retraction set / local date and UTC offset of an instant as written                        |
 | `getRetractedProductionIds(well)` / `getEffectiveProduction(well)`             | v2.3 production ledger: retracted ids / non-retracted entries                                             |
 | `getCurrentMeters(well)`                                                       | Open `meters` entries, newest installation first                                                          |
 | `getMeterIntervals(well)`                                                      | Normative per-meter interval volumes (rollover, unknown = `null`)                                         |
-| `getProductionTotal(well)` / `getProductionByPeriod(well, period)`             | Metered + uncovered estimated volumes; reported kept apart (m³)                                           |
+| `getProductionTotal(well)` / `getProductionByPeriod(well, period)`             | Metered + uncovered estimated volumes (m³); by period prorated by time                                    |
 | `getCurrentRegime(well, at?)`                                                  | `operating_regime` entry in force at an instant                                                           |
 | `getCurrentWellStatus(well)` / `getCurrentWellStatusEntry(well)`               | Latest `status_change` status (undefined = unknown) / its log entry                                       |
 | `getOperationWarnings(well, today?)`                                           | v2.3 meters/production/regime/history_logs/analysis warnings                                              |
@@ -87,6 +87,7 @@ src/
 | `formatCoord` / `ddToDms` / `parseToDd` / `clampLat` / `clampLng`              | Coordinate display and parsing                                                                            |
 | `resolveDiameterUnitLabel` / `resolveFlowUnitLabel` / `resolveVolumeUnitLabel` | Unit display symbols                                                                                      |
 | `lastReading` / `allStepReadings` / `stepRate` / `derivedStepDuration`         | Hydrodynamic event reading helpers                                                                        |
+| `pumpingTimeline` / `availablePumpingCharts` / `*Series`                       | Pumping-test clock (steps back to back, then recovery) and plot series                                    |
 | `permitLabel` / `getActivePermit` / `formatMeterLabel`                         | Permit and meter display labels; active permit for compliance                                             |
 | `PERMIT_STATUSES` / `CONDITION_DEADLINE_STATUSES`                              | en/pt-labeled vocabularies of the derived statuses (use with core `getVocabLabel`)                        |
 | `parameterUnitSymbol` / `formatWaterQualityResult`                             | Result unit symbol / value text (translated words passed in as strings)                                   |

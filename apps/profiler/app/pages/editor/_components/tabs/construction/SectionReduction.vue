@@ -60,7 +60,7 @@ function addReduction() {
 }
 
 function deleteReduction(index: number) {
-  profileStore.well.reduction.splice(index, 1);
+  profileStore.removeWellFeature('reduction', index);
 }
 
 function updateReduction(index: number, prop: string, value: unknown) {
@@ -100,6 +100,7 @@ function reorderReduction(from: number, to: number) {
       :labels="{
         showPendingTextures: t('editor.showPendingTextures'),
         columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
       }"
       @add="addReduction"
       @delete="deleteReduction"

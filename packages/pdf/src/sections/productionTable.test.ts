@@ -42,12 +42,12 @@ describe('buildProductionSection', () => {
         corrects: 'r2',
       },
       {
-        id: 'd1',
-        type: 'declared_volume',
-        period_start: '2024-01-01T00:00:00-03:00',
-        period_end: '2025-01-01T00:00:00-03:00',
+        id: 'e1',
+        type: 'estimated_volume',
+        period_start: '2023-01-01T00:00:00-03:00',
+        period_end: '2024-01-01T00:00:00-03:00',
         volume: 1200,
-        method: 'reported',
+        method: 'flow_time',
       },
     ];
     const serialized = JSON.stringify(
@@ -55,9 +55,11 @@ describe('buildProductionSection', () => {
     );
     // metered = 1100 − 100; the retracted 9999 reading does not count.
     expect(serialized).toContain('1,000.0 m³');
-    // reported volume is shown for comparison.
+    // The estimate predates the meter, so it counts in full in 2023.
     expect(serialized).toContain('1,200.0 m³');
+    expect(serialized).toContain('"2023"');
     expect(serialized).toContain('"2024"');
+    expect(serialized).toContain('Flow × operating time');
     expect(serialized).toContain('retracted');
     expect(serialized).toContain('correction');
     expect(serialized).toContain('lineThrough');
@@ -102,6 +104,8 @@ describe('buildProductionSection', () => {
     );
     expect(serialized).toContain('ofLimit');
     expect(serialized).toContain('50%');
+    // Year, metered, total and % of limit: no estimated column without estimates.
+    expect(serialized).toContain('"widths":["*","auto","auto","auto"]');
   });
 
   it('honors custom date formats in the ledger', () => {
@@ -115,7 +119,7 @@ describe('buildProductionSection', () => {
       },
       {
         id: 'd1',
-        type: 'declared_volume',
+        type: 'estimated_volume',
         period_start: '2024-01-01T00:00:00-03:00',
         period_end: '2025-01-01T00:00:00-03:00',
         volume: 1200,
@@ -136,5 +140,69 @@ describe('buildProductionSection', () => {
     // The meter label (installation date) follows the date format too.
     expect(serialized).toMatch(/HM-1 · \d{4}-\d{2}-\d{2}/);
     expect(serialized).not.toMatch(/\d{2}\/\d{2}\/\d{4}/);
+  });
+
+  it('keeps undated and custom-type entries without throwing', () => {
+    const production = [
+      {
+        id: 'r1',
+        type: 'meter_reading',
+        datetime: '2024-01-01T08:00:00-03:00',
+        meter_id: 'm1',
+        reading: 100,
+        notes: 'dated-reading',
+      },
+      {
+        id: 'x1',
+        type: 'x-energy_reading',
+        datetime: '2025-05-01T08:00:00-03:00',
+        'x-kwh': 18230,
+        notes: 'custom-type',
+      },
+      { id: 'x2', type: 'x-note', notes: 'undated-entry' },
+      {
+        id: 'r2',
+        type: 'meter_reading',
+        datetime: 'not-a-date',
+        meter_id: 'm1',
+        reading: 200,
+        notes: 'invalid-date',
+      },
+      {
+        id: 'd1',
+        type: 'estimated_volume',
+        period_start: '2024-01-01T00:00:00-03:00',
+        volume: 1200,
+        notes: 'open-period',
+      },
+    ] as unknown as ProductionEntry[];
+
+    let serialized = '';
+    expect(() => {
+      serialized = JSON.stringify(
+        buildProductionSection(
+          baseWell({ meters: [meter], production }),
+          makeTestContext(
+            {
+              dateFormats: { date: 'yyyy-MM-dd', dateTime: 'yyyy-MM-dd HH:mm' },
+            },
+            lastSegmentLabels,
+          ),
+        ),
+      );
+    }).not.toThrow();
+
+    // The custom type is listed at its own datetime, newest first.
+    expect(serialized.indexOf('custom-type')).toBeLessThan(
+      serialized.indexOf('dated-reading'),
+    );
+    // Entries without a valid instant show a dash and go last.
+    expect(serialized).toMatch(/\d{4}-\d{2}-\d{2} → —/);
+    for (const note of ['undated-entry', 'invalid-date', 'open-period']) {
+      expect(serialized.indexOf(note)).toBeGreaterThan(
+        serialized.indexOf('dated-reading'),
+      );
+    }
+    expect(serialized).not.toContain('Invalid');
   });
 });

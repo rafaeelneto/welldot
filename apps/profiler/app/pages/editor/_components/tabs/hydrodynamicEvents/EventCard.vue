@@ -6,10 +6,14 @@ import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import RecordCard, {
   type RecordAction,
 } from '~/components/records/RecordCard.vue';
+import EventSparkline from './charts/EventSparkline.vue';
 import EventStats from './EventStats.vue';
 
 const props = defineProps<{ event: HydrodynamicEvent }>();
-const emit = defineEmits<{ edit: [event: HydrodynamicEvent] }>();
+const emit = defineEmits<{
+  view: [id: string];
+  edit: [event: HydrodynamicEvent];
+}>();
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -55,6 +59,12 @@ const meta = computed(() => [
 ]);
 
 const actions = computed<RecordAction[]>(() => [
+  {
+    key: 'view',
+    label: t('editor.hydrodynamicEvents.view.open'),
+    icon: 'ph:eye-duotone',
+    onClick: () => emit('view', props.event.id),
+  },
   {
     key: 'edit',
     label: t('editor.edit'),
@@ -103,23 +113,11 @@ const actions = computed<RecordAction[]>(() => [
 
     <EventStats :event="event" />
 
-    <!-- sparkline chart -->
-    <svg
-      v-if="hasSparkline(event)"
-      class="w-full mt-1 text-primary-400"
-      height="56"
-      viewBox="0 0 200 40"
-      preserveAspectRatio="none"
-    >
-      <polyline
-        :points="sparklinePoints(event)"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-      />
-    </svg>
+    <EventSparkline
+      :event="event"
+      class="mt-1"
+      @click="emit('view', event.id)"
+    />
 
     <!-- equipment / recovery -->
     <div

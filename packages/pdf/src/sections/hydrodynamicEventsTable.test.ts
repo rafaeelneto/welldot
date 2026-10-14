@@ -1,6 +1,11 @@
 import type { HydrodynamicEvent } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
+import {
+  baseWell,
+  findTables,
+  lastSegmentLabels,
+  makeTestContext,
+} from '../test-utils';
 import { buildHydrodynamicEventsSection } from './hydrodynamicEventsTable';
 
 const ctx = makeTestContext({}, lastSegmentLabels);
@@ -37,6 +42,10 @@ describe('buildHydrodynamicEventsSection', () => {
     expect(serialized).toContain('15.20 m');
     expect(serialized).toContain('8.0 m³/h');
     expect(serialized).toContain('Acme Drilling');
+    // Values never wrap away from their unit.
+    expect(serialized).toContain(
+      '{"text":"8.0 m³/h","style":"columnRight","noWrap":true}',
+    );
   });
 
   it('uses pumping_rate for recovery_only events', () => {
@@ -71,7 +80,7 @@ describe('buildHydrodynamicEventsSection', () => {
     expect(serialized).toContain('custom_test');
   });
 
-  it('sorts events most recent first', () => {
+  it('lists one row per event, most recent first', () => {
     const events: HydrodynamicEvent[] = [
       {
         id: 'old',
@@ -87,23 +96,34 @@ describe('buildHydrodynamicEventsSection', () => {
       },
     ];
     const well = baseWell({ hydrodynamic_events: events });
-    const section = buildHydrodynamicEventsSection(well, ctx) as {
-      stack: unknown[];
-    };
-    const items = section.stack;
-    // items[0] is the title+header anchor (no stats); items[1] is the
-    // newest event's stats block; a divider then the next event follow.
-    expect(JSON.stringify(items[1])).toContain('2.00 m');
-    expect(JSON.stringify(items[3])).toContain('1.00 m');
+    const [table] = findTables(
+      buildHydrodynamicEventsSection(well, ctx),
+      'datetime',
+    );
+    expect(table![0]).toEqual([
+      'datetime',
+      'type',
+      'ne',
+      'nd',
+      'flowRate',
+      'operator',
+    ]);
+    expect(table).toHaveLength(1 + 2);
+    expect(table![1]![2]).toBe('2.00 m');
+    expect(table![2]![2]).toBe('1.00 m');
+    // No reading, no rate: unknown, never zero.
+    expect(table![1]![3]).toBe('—');
+    expect(table![1]![4]).toBe('—');
   });
 
-  it('separates events with a divider', () => {
+  it('adds a notes column only when an event has notes', () => {
     const events: HydrodynamicEvent[] = [
       {
         id: 'a',
         type: 'spot_measurement',
         datetime: '2024-01-01T00:00:00Z',
         static_level: 1,
+        notes: 'Logger reset',
       },
       {
         id: 'b',
@@ -113,12 +133,12 @@ describe('buildHydrodynamicEventsSection', () => {
       },
     ];
     const well = baseWell({ hydrodynamic_events: events });
-    const section = buildHydrodynamicEventsSection(well, ctx) as {
-      stack: unknown[];
-    };
-    const items = section.stack;
-    // anchor (title+header), first event's stats block, divider, second event.
-    expect(items).toHaveLength(4);
+    const [table] = findTables(
+      buildHydrodynamicEventsSection(well, ctx),
+      'datetime',
+    );
+    expect(table![0]).toContain('notes');
+    expect(table![2]).toContain('Logger reset');
   });
 
   it('formats the event datetime with a custom dateFormats.dateTime', () => {
@@ -141,33 +161,5 @@ describe('buildHydrodynamicEventsSection', () => {
       ),
     );
     expect(serialized).toContain('2024-01-02 03:04');
-  });
-
-  it('colors the entry divider with the theme divider color and page width', () => {
-    const events: HydrodynamicEvent[] = [
-      {
-        id: 'a',
-        type: 'spot_measurement',
-        datetime: '2024-01-01T00:00:00Z',
-        static_level: 1,
-      },
-      {
-        id: 'b',
-        type: 'spot_measurement',
-        datetime: '2024-01-02T00:00:00Z',
-        static_level: 2,
-      },
-    ];
-    const well = baseWell({ hydrodynamic_events: events });
-    const custom = makeTestContext(
-      { theme: { colors: { divider: '#abcdef' } }, page: { size: 'A3' } },
-      lastSegmentLabels,
-    );
-    const section = buildHydrodynamicEventsSection(well, custom) as {
-      stack: { canvas?: { lineColor: string; x2: number }[] }[];
-    };
-    const line = section.stack[2]!.canvas![0]!;
-    expect(line.lineColor).toBe('#abcdef');
-    expect(line.x2).toBe(custom.page.contentWidth);
   });
 });

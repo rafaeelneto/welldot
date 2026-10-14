@@ -525,12 +525,12 @@ function commit(sample: WaterSample) {
           :info="t('editor.waterQuality.fields.sampleTypeInfo')"
           :info-label="t('editor.fieldInfo')"
         >
-          <Select
+          <WellComboSelect
             v-model="form.sampleType"
             :options="sampleTypeOptions"
             option-label="label"
             option-value="value"
-            editable
+            :hint="t('editor.comboHint')"
             :invalid="!form.sampleType?.trim()"
             class="w-full"
           />
@@ -564,10 +564,10 @@ function commit(sample: WaterSample) {
           :info="t('editor.waterQuality.fields.campaignInfo')"
           :info-label="t('editor.fieldInfo')"
         >
-          <Select
+          <WellComboSelect
             v-model="form.campaign"
             :options="campaignOptions"
-            editable
+            :hint="t('editor.comboHint')"
             show-clear
             class="w-full"
           />
@@ -589,12 +589,12 @@ function commit(sample: WaterSample) {
           :info="t('editor.waterQuality.fields.samplingMethodInfo')"
           :info-label="t('editor.fieldInfo')"
         >
-          <Select
+          <WellComboSelect
             v-model="form.samplingMethod"
             :options="methodOptions"
             option-label="label"
             option-value="value"
-            editable
+            :hint="t('editor.comboHint')"
             show-clear
             class="w-full"
           />
@@ -619,12 +619,12 @@ function commit(sample: WaterSample) {
           <WellLabeledField
             :label="t('editor.waterQuality.samplingPoint.type')"
           >
-            <Select
+            <WellComboSelect
               v-model="form.pointType"
               :options="pointTypeOptions"
               option-label="label"
               option-value="value"
-              editable
+              :hint="t('editor.comboHint')"
               show-clear
               :invalid="pointFieldsWithoutType"
               class="w-full"
@@ -635,12 +635,12 @@ function commit(sample: WaterSample) {
             :info="t('editor.waterQuality.samplingPoint.deviceInfo')"
             :info-label="t('editor.fieldInfo')"
           >
-            <Select
+            <WellComboSelect
               v-model="form.device"
               :options="deviceOptions"
               option-label="label"
               option-value="value"
-              editable
+              :hint="t('editor.comboHint')"
               show-clear
               class="w-full"
             />

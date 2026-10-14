@@ -1,6 +1,11 @@
 import type { Meter } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
+import {
+  baseWell,
+  collectFields,
+  lastSegmentLabels,
+  makeTestContext,
+} from '../test-utils';
 import { buildMeterSection } from './meterTable';
 
 const ctx = makeTestContext({}, lastSegmentLabels);
@@ -77,9 +82,9 @@ describe('buildMeterSection', () => {
     const serialized = JSON.stringify(
       buildMeterSection(baseWell({ meters }), ctx),
     );
-    expect(serialized).toContain('model: Saga MAG-50');
-    expect(serialized).toContain('install-photo.jpg');
-    expect(serialized).toContain('nota-fiscal.pdf');
+    const fields = collectFields(JSON.parse(serialized));
+    expect(fields.model).toEqual(['Saga MAG-50']);
+    expect(fields.attachments).toEqual(['install-photo.jpg\nnota-fiscal.pdf']);
   });
 
   it('lists who installed and removed the unit', () => {
@@ -100,8 +105,9 @@ describe('buildMeterSection', () => {
     const serialized = JSON.stringify(
       buildMeterSection(baseWell({ meters: list }), ctx),
     );
-    expect(serialized).toContain('installedBy: Perfurações Silva');
-    expect(serialized).toContain('removedBy: Hidro Serviços');
+    const fields = collectFields(JSON.parse(serialized));
+    expect(fields.installedBy).toEqual(['Perfurações Silva']);
+    expect(fields.removedBy).toEqual(['Hidro Serviços']);
     expect(serialized).not.toContain('Ignored Crew');
   });
 

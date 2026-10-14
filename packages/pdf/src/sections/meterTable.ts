@@ -1,17 +1,16 @@
-import type { Attachment, Meter, Well } from '@welldot/core';
+import type { Meter, Well } from '@welldot/core';
 import { METER_TYPES } from '@welldot/core';
 import { getCurrentMeters } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
-import { buildEntryDivider } from '../layout/tables';
+import {
+  attachmentName,
+  buildEntryHeader,
+  buildEntryListing,
+} from '../layout/tables';
 import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content } from '../types/pdfmake.types';
-
-function attachmentName(attachment: Attachment): string {
-  return (
-    attachment.filename ?? attachment.uri.split('/').pop() ?? attachment.uri
-  );
-}
+import { buildFieldGrid, type MetaField } from './metadataTable';
 
 function formatPeriod(m: Meter, dateFormat: string): string {
   const from = format(parseISO(m.installed_at), dateFormat);
@@ -20,120 +19,82 @@ function formatPeriod(m: Meter, dateFormat: string): string {
     : from;
 }
 
-/** Type label, a "current" marker for open installations, and the period. */
-function buildHeader(
+/** Equipment, crew and register fields that have a value. */
+function specFields(
   m: Meter,
-  isCurrent: boolean,
   fmt: PdfFormatters,
-  ctx: PdfContext,
-): Content {
-  const { labels } = ctx;
-  return {
-    columns: [
-      {
-        text: [
-          {
-            text: m.type
-              ? fmt.vocab(METER_TYPES, m.type)
-              : labels.operation.meter.untyped,
-            style: 'tableHeader',
-          },
-          {
-            text: isCurrent ? `   ${labels.operation.meter.current}` : '',
-            style: 'metadataLabel',
-          },
-        ],
-        width: '*',
-      },
-      {
-        text: formatPeriod(m, ctx.dateFormats.date),
-        style: 'metadataLabel',
-        alignment: 'right',
-        width: 'auto',
-      },
-    ],
-  };
-}
-
-function specLines(m: Meter, fmt: PdfFormatters, labels: PdfLabels): string[] {
+  labels: PdfLabels,
+): MetaField[] {
   const fields = labels.operation.meter.fields;
   const equipment = [m.manufacturer, m.model].filter(Boolean).join(' ');
 
   return [
-    equipment && `${fields.model}: ${equipment}`,
-    m.serial && `${fields.serial}: ${m.serial}`,
-    m.installed_by && `${fields.installedBy}: ${m.installed_by}`,
-    m.removed_at && m.removed_by && `${fields.removedBy}: ${m.removed_by}`,
-    m.nominal_diameter != null &&
-      `${fields.nominalDiameter}: ${fmt.formatDiameter(m.nominal_diameter)}`,
-    m.max_reading != null &&
-      `${fields.maxReading}: ${fmt.formatVolume(m.max_reading, 0)}`,
-  ].filter((line): line is string => !!line);
+    equipment && { label: fields.model, value: equipment },
+    m.serial && { label: fields.serial, value: m.serial },
+    m.installed_by && { label: fields.installedBy, value: m.installed_by },
+    m.removed_at &&
+      m.removed_by && { label: fields.removedBy, value: m.removed_by },
+    m.nominal_diameter != null && {
+      label: fields.nominalDiameter,
+      value: fmt.formatDiameter(m.nominal_diameter),
+    },
+    m.max_reading != null && {
+      label: fields.maxReading,
+      value: fmt.formatVolume(m.max_reading, 0),
+    },
+  ].filter((field): field is MetaField => !!field);
 }
 
-function buildBody(m: Meter, fmt: PdfFormatters, labels: PdfLabels): Content[] {
-  const blocks: Content[] = [];
-  const lines = specLines(m, fmt, labels);
-  if (lines.length) {
-    blocks.push({
-      text: lines.join('   ·   '),
-      fontSize: 9,
-      margin: [0, 4, 0, 0],
-    });
-  }
-  if (m.notes) {
-    blocks.push({ text: m.notes, fontSize: 10, margin: [0, 4, 0, 0] });
-  }
+/** Notes and attachments, each on its own full-width row. */
+function wideFields(m: Meter, labels: PdfLabels): MetaField[] {
   const attachments = m.attachments ?? [];
-  if (attachments.length) {
-    blocks.push({
-      stack: attachments.map(a => ({
-        text: `•  ${attachmentName(a)}`,
-        style: 'metadataLabel',
-      })),
-      margin: [10, 4, 0, 0],
-    });
-  }
-  return blocks;
+  return [
+    m.notes && { label: labels.operation.meter.fields.notes, value: m.notes },
+    attachments.length > 0 && {
+      label: labels.operation.attachments,
+      value: attachments.map(attachmentName).join('\n'),
+    },
+  ].filter((field): field is MetaField => !!field);
+}
+
+function buildBody(m: Meter, fmt: PdfFormatters, ctx: PdfContext): Content[] {
+  const grid = buildFieldGrid(
+    specFields(m, fmt, ctx.labels),
+    ctx,
+    wideFields(m, ctx.labels),
+  );
+  return grid ? [grid] : [];
 }
 
 /**
- * Builds the `meters` listing (.well v2.3), most recent installation first.
- * Returns `null` when there are none. The title is bound to the first
- * entry's header inside an `unbreakable` block, as in the pump section.
+ * Builds the `meters` listing (.well v2.3), most recent installation first:
+ * a header (type, "current" marker, period) and a label/value grid per
+ * meter. Returns `null` when there are none.
  */
 export function buildMeterSection(well: Well, ctx: PdfContext): Content | null {
   const meters = well.meters;
   if (!meters?.length) return null;
 
+  const { labels } = ctx;
   const fmt = createPdfFormatters(ctx);
   const currentIds = new Set(getCurrentMeters(well).map(m => m.id));
   const sorted = [...meters].sort(
     (a, b) =>
       new Date(b.installed_at).getTime() - new Date(a.installed_at).getTime(),
   );
-  const [first, ...rest] = sorted;
 
-  const items: Content[] = [
-    {
-      stack: [
-        { text: ' ' },
-        { text: ctx.labels.operation.meter.title, style: 'title' },
-        buildHeader(first!, currentIds.has(first!.id), fmt, ctx),
-      ],
-      unbreakable: true,
-    },
-    ...buildBody(first!, fmt, ctx.labels),
-  ];
-  rest.forEach(m => {
-    items.push(buildEntryDivider(ctx));
-    items.push({
-      stack: [
-        buildHeader(m, currentIds.has(m.id), fmt, ctx),
-        ...buildBody(m, fmt, ctx.labels),
-      ],
-    });
-  });
-
-  return { stack: items };
+  return buildEntryListing(
+    labels.operation.meter.title,
+    sorted.map(m => ({
+      header: buildEntryHeader(
+        m.type
+          ? fmt.vocab(METER_TYPES, m.type)
+          : labels.operation.meter.untyped,
+        currentIds.has(m.id) ? labels.operation.meter.current : null,
+        formatPeriod(m, ctx.dateFormats.date),
+      ),
+      body: buildBody(m, fmt, ctx),
+    })),
+    ctx,
+  );
 }

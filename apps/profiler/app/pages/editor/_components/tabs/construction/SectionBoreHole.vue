@@ -49,7 +49,7 @@ function addBoreHole() {
 }
 
 function deleteBoreHole(index: number) {
-  profileStore.well.bore_hole.splice(index, 1);
+  profileStore.removeWellFeature('bore_hole', index);
 }
 
 function updateBoreHole(index: number, prop: string, value: unknown) {
@@ -98,6 +98,7 @@ function syncWellDepth() {
       :labels="{
         showPendingTextures: t('editor.showPendingTextures'),
         columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
       }"
       @add="addBoreHole"
       @delete="deleteBoreHole"

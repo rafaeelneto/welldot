@@ -370,6 +370,13 @@ export const useProfileStore = defineStore(
       });
     }
 
+    /** Remove the item at `index` from a feature array (one undoable step). */
+    function removeWellFeature(key: WellArrayKey, index: number): void {
+      updateWell(draft => {
+        (draft[key] as unknown[]).splice(index, 1);
+      });
+    }
+
     /**
      * Append a new item to a feature array.
      * For chaining types, `from`/`to` are overridden so the item starts exactly
@@ -483,6 +490,7 @@ export const useProfileStore = defineStore(
       clear,
       markClean,
       reorderWellFeature,
+      removeWellFeature,
       addWellFeature,
       updateWellFeature,
     };

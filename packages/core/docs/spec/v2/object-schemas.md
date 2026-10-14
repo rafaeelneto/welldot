@@ -97,13 +97,14 @@ A transition piece connecting two casing or screen sections of different diamete
 
 Slotted or wire-wound screen section.
 
-| Field         | Type   | Required | Description                                                                                                                                                               |
-| ------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `from`        | number | yes      | Start depth in meters.                                                                                                                                                    |
-| `to`          | number | yes      | End depth in meters.                                                                                                                                                      |
-| `type`        | string | yes      | Screen material. Open vocabulary: see [format-reference.md](format-reference.md) § Construction materials; other descriptions (e.g. `wire_wound`) remain valid free text. |
-| `diameter`    | number | yes      | Screen outer diameter in millimeters.                                                                                                                                     |
-| `screen_slot` | number | yes      | Slot opening size in millimeters.                                                                                                                                         |
+| Field         | Type   | Required | Description                                                                                                                                       |
+| ------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `from`        | number | yes      | Start depth in meters.                                                                                                                            |
+| `to`          | number | yes      | End depth in meters.                                                                                                                              |
+| `type`        | string | yes      | Screen material. Open vocabulary: see [format-reference.md](format-reference.md) § Construction materials. The screen design goes in `slot_type`. |
+| `diameter`    | number | yes      | Screen outer diameter in millimeters.                                                                                                             |
+| `screen_slot` | number | yes      | Slot opening size in millimeters.                                                                                                                 |
+| `slot_type`   | string | no       | Screen design _(since v2.3)_. Open vocabulary: see [format-reference.md](format-reference.md) § `well_screen[].slot_type`.                        |
 
 > **v1 migration:** v1's `screen_slot_mm` field is renamed to `screen_slot` in v2. The value is in millimeters before and after — no conversion needed. See § Units for the rule that screen slot is always in millimeters regardless of any application's display preference.
 
@@ -667,7 +668,7 @@ Identifiers are free strings preserved verbatim, because agencies use diverse fo
 | `suspended` | Suspensa        | Temporarily halted by the authority.                            |
 | `revoked`   | Revogada        | Cancelled by the authority.                                     |
 | `denied`    | Indeferida      | The request was refused.                                        |
-| `withdrawn` | Desistida       | The request or permit was given up by the holder.               |
+| `withdrawn` | Cancelada       | The request or permit was given up by the holder.               |
 
 The change itself (notice of suspension, decision) is recorded as a `history` step, with the document attached.
 
@@ -841,13 +842,13 @@ A ledger: the append-only record of water produced by the well. An erroneous ent
 
 ### Common fields
 
-| Field      | Type    | Required | Description                                                                           |
-| ---------- | ------- | -------- | ------------------------------------------------------------------------------------- |
-| `id`       | string  | yes      | Unique within `production`. UUID v4 recommended.                                      |
-| `type`     | string  | yes      | `meter_reading` or `declared_volume`. Non-canonical types SHOULD use the `x-` prefix. |
-| `corrects` | string  | no       | `production[].id` of the entry this one retracts.                                     |
-| `sequence` | integer | no       | Tie-breaker for identical instants, lower first.                                      |
-| `notes`    | string  | no       |                                                                                       |
+| Field      | Type    | Required | Description                                                                            |
+| ---------- | ------- | -------- | -------------------------------------------------------------------------------------- |
+| `id`       | string  | yes      | Unique within `production`. UUID v4 recommended.                                       |
+| `type`     | string  | yes      | `meter_reading` or `estimated_volume`. Non-canonical types SHOULD use the `x-` prefix. |
+| `corrects` | string  | no       | `production[].id` of the entry this one retracts.                                      |
+| `sequence` | integer | no       | Tie-breaker for identical instants, lower first.                                       |
+| `notes`    | string  | no       |                                                                                        |
 
 An entry of a known `type` that lacks its required fields is rejected. Entries of unknown (`x-`) types are preserved with their extra members and are excluded from volume derivations.
 
@@ -862,14 +863,16 @@ An entry of a known `type` that lacks its required fields is rejected. Entries o
 
 A totalizer value is cumulative, so telemetry needs no aggregation field: storing fewer points loses no volume. The producing application decides the density written to the file.
 
-### `declared_volume`
+### `estimated_volume`
 
-| Field          | Type             | Required | Unit | Description                                                                                |
-| -------------- | ---------------- | -------- | ---- | ------------------------------------------------------------------------------------------ |
-| `period_start` | string (instant) | yes      |      | Start of the declared period.                                                              |
-| `period_end`   | string (instant) | yes      |      | End of the declared period. Later than `period_start`.                                     |
-| `volume`       | number           | yes      | m³   | Volume produced in the period.                                                             |
-| `method`       | string           | no       |      | `estimated` (e.g. flow × time) or `reported` (as declared to a regulator). See Precedence. |
+A volume produced in a period, estimated without a meter (e.g. before a meter was installed, or while it was out of service).
+
+| Field          | Type             | Required | Unit | Description                                                                              |
+| -------------- | ---------------- | -------- | ---- | ---------------------------------------------------------------------------------------- |
+| `period_start` | string (instant) | yes      |      | Start of the declared period.                                                            |
+| `period_end`   | string (instant) | yes      |      | End of the declared period. Later than `period_start`.                                   |
+| `volume`       | number           | yes      | m³   | Volume produced in the period.                                                           |
+| `method`       | string           | no       |      | Basis of the estimate: `flow_time`, `energy`, `user_statement`, `x-…`. Descriptive only. |
 
 ### Volume derivation (normative)
 
@@ -883,20 +886,19 @@ Corrected entries are ignored throughout. Readings of each meter are ordered by 
 
 ### Precedence
 
-- A `declared_volume` with `method: "estimated"` counts only for time not covered by meter readings. Overlap emits a warning, and the meter wins.
-- A `declared_volume` with `method: "reported"` is never added to production totals. It is kept as the legal declaration and compared against the derived volume.
-- A `declared_volume` without `method` is treated as `estimated`.
+- An `estimated_volume` counts only for time not covered by meter readings, prorated linearly by the uncovered fraction of its period. Overlap emits a warning, and the meter wins. `method` plays no part in this rule.
+- Volumes declared to a regulator (annual use declarations) are not production entries. They are the fulfillment of the permit's reporting condition (`permits[].conditions[].fulfillments`), with the declaration attached.
 
 ### Derived values
 
-Volume per period (day, month, year); average flow over a period; compliance against `permits[].volume_limits` and `monthly_schedule`. None of these are stored.
+Volume per period (day, month, year), prorated linearly by time across period boundaries; average flow over a period; compliance against `permits[].volume_limits` and `monthly_schedule`. None of these are stored.
 
 ### Validation (warnings, never rejection)
 
 - A reading outside its meter's installation window, or a `meter_id` that does not resolve.
 - A decreasing reading on a meter without `max_reading` (unknown interval).
-- An `estimated` declared volume overlapping metered time.
-- A `declared_volume` whose `period_end` is not later than `period_start`.
+- An `estimated_volume` overlapping metered time.
+- An `estimated_volume` whose `period_end` is not later than `period_start`.
 - A `corrects` cycle, or a `corrects` reference that does not resolve.
 
 ---
@@ -977,9 +979,10 @@ A ledger of water samples, each with its field and laboratory results. The full 
     {
       "from": 60,
       "to": 80,
-      "type": "wire_wound",
+      "type": "stainless_steel",
       "diameter": 150,
-      "screen_slot": 0.5
+      "screen_slot": 0.5,
+      "slot_type": "continuous_slot"
     }
   ],
   "surface_case": [{ "from": 0, "to": 3, "diameter": 300 }],
@@ -1308,12 +1311,12 @@ A ledger of water samples, each with its field and laboratory results. The full 
     },
     {
       "id": "p-0003",
-      "type": "declared_volume",
-      "period_start": "2025-04-02T09:00:00-03:00",
-      "period_end": "2026-01-01T00:00:00-03:00",
-      "volume": 1450000,
-      "method": "reported",
-      "notes": "Declaração anual de uso ao órgão gestor."
+      "type": "estimated_volume",
+      "period_start": "2025-01-01T00:00:00-03:00",
+      "period_end": "2025-04-02T09:00:00-03:00",
+      "volume": 436800,
+      "method": "flow_time",
+      "notes": "Regime r-0001 (300 m³/h × 16 h/dia × 91 dias), antes do hidrômetro."
     },
     {
       "id": "p-0004",

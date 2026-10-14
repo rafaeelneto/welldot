@@ -31,6 +31,8 @@ type StyleRef = string | string[];
 
 export interface ContentText {
   text: string | ContentText[];
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
   style?: StyleRef;
   font?: string;
   fontSize?: number;
@@ -39,12 +41,16 @@ export interface ContentText {
   color?: string;
   alignment?: Alignment;
   decoration?: string;
+  /** Keep the text on one line. */
+  noWrap?: boolean;
   width?: ColumnWidth;
   margin?: Margins;
   colSpan?: number;
 }
 
 export interface ContentColumns {
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
   columns: Content[];
   columnGap?: number;
   width?: ColumnWidth;
@@ -52,6 +58,11 @@ export interface ContentColumns {
 }
 
 export interface ContentStack {
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
+  pageBreak?: 'before' | 'after';
+  /** Draw at fixed page coordinates, outside the flow. */
+  absolutePosition?: AbsolutePosition;
   stack: Content[];
   margin?: Margins;
   width?: ColumnWidth;
@@ -77,6 +88,9 @@ export interface TableLayout {
 }
 
 export interface ContentTable {
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
+  pageBreak?: 'before' | 'after';
   table: {
     headerRows?: number;
     widths?: ColumnWidth[];
@@ -96,6 +110,8 @@ export interface AbsolutePosition {
 }
 
 export interface ContentSvg {
+  /** Node id, reported back to `pageBreakBefore`. */
+  id?: string;
   svg: string;
   width?: number;
   height?: number;
@@ -126,8 +142,19 @@ export interface CanvasLine {
   lineColor?: string;
 }
 
+export interface CanvasRect {
+  type: 'rect';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  color?: string;
+  lineWidth?: number;
+  lineColor?: string;
+}
+
 export interface ContentCanvas {
-  canvas: CanvasLine[];
+  canvas: (CanvasLine | CanvasRect)[];
   margin?: Margins;
 }
 
@@ -183,6 +210,29 @@ export interface TDocumentDefinition {
     _pageCount: number,
   ) => Content | Content[] | undefined;
   styles?: StyleDictionary;
+  /** Called for each laid-out node; return `true` to force a page break before it. */
+  pageBreakBefore?: (_node: PageBreakNodeInfo) => boolean;
+}
+
+/** Where pdfmake placed a node (`DocumentContext.getCurrentPosition`). */
+export interface NodePosition {
+  pageNumber: number;
+  /** Page height minus the top and bottom page margins. */
+  pageInnerHeight: number;
+  pageInnerWidth: number;
+  left: number;
+  top: number;
+  /** `(top − top margin) / pageInnerHeight`. */
+  verticalRatio: number;
+  horizontalRatio: number;
+}
+
+/** The node summary pdfmake hands to `pageBreakBefore`. */
+export interface PageBreakNodeInfo {
+  id?: string;
+  startPosition: NodePosition;
+  pageNumbers: number[];
+  pages: number;
 }
 
 export interface TFontFamily {
@@ -197,6 +247,7 @@ export interface TFontDictionary {
 }
 
 export interface TCreatedPdf {
+  getBuffer(): Promise<Uint8Array>;
   getDataUrl(): Promise<string>;
   getBlob(): Promise<Blob>;
   download(_filename?: string): Promise<void>;

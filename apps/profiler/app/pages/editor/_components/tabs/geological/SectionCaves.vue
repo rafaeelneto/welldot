@@ -43,7 +43,7 @@ function addCave() {
 }
 
 function deleteCave(index: number) {
-  profileStore.well.caves.splice(index, 1);
+  profileStore.removeWellFeature('caves', index);
 }
 
 function updateCave(index: number, prop: string, value: unknown) {

@@ -213,7 +213,9 @@ export function useWellGridColumns(options: UseWellGridColumnsOptions) {
     color: VGridVueEditor(GridColorPickerEditor),
     unit: columnEditor(GridUnitEditor),
     select: columnEditor(GridSelectEditor),
-    combo: columnEditor(GridComboEditor),
+    combo: columnEditor(GridComboEditor, () => ({
+      hint: labels.value.comboHint,
+    })),
     texture: columnEditor(GridTextureSelectEditor, () => ({
       placeholder: labels.value.texturePlaceholder,
       showPending: labels.value.showPendingTextures,

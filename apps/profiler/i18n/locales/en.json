@@ -226,6 +226,7 @@
   "editor": {
     "well": "Well",
     "fieldInfo": "More information",
+    "comboHint": "Suggestions — you can also type your own value",
     "deleteRow": "Delete row",
     "showPendingTextures": "Show pending textures",
     "save": "Save",
@@ -259,7 +260,8 @@
         "diameter": "Diameter",
         "flow": "Flow rate",
         "power": "Power",
-        "volume": "Volume"
+        "volume": "Volume",
+        "inches": "in."
       },
       "coordinates": {
         "title": "Coordinates",
@@ -384,9 +386,15 @@
       "valuePlaceholder": "Value",
       "syncedTooltip": "Value synced with the profile",
       "deleteItem": "Remove",
-      "pageBreaks": {
-        "title": "Page breaks",
-        "split": "Split profile into pages"
+      "format": {
+        "title": "Profile format",
+        "compact": "Compact",
+        "detailed": "Detailed",
+        "split": "Split profile into pages",
+        "matchContent": "Follow the content",
+        "fitPage": "Fit to one page (A4)",
+        "compactHint": "Following the content needs page splitting off",
+        "detailedHint": "Page breaks snap to contacts, with overlap and a mini-map"
       },
       "metadataSection": {
         "title": "Metadata section",
@@ -397,9 +405,6 @@
       "visibilitySection": {
         "title": "Decide what to share",
         "toggle": "Use my share selection"
-      },
-      "scale": {
-        "title": "Scale"
       },
       "metadataFields": {
         "name": "Name",
@@ -523,9 +528,12 @@
         "to": "To",
         "diameter": "Diam.",
         "screenSlot": "Slot (mm)",
-        "type": "Type",
-        "typeInfo": "Material (or construction) of the screen that lets water into the well, e.g. PVC, geomechanical PVC, carbon steel or stainless steel.",
-        "typeFreeText": "This field is free text: if the material is not in the list, just type it (e.g. wire wound stainless steel, bridge slot) and it will be saved as-is.",
+        "type": "Material",
+        "typeInfo": "Material of the screen that lets water into the well, e.g. PVC, geomechanical PVC, carbon steel or stainless steel.",
+        "typeFreeText": "This field is free text: if the material is not in the list, just type it and it will be saved as-is.",
+        "slotType": "Type",
+        "slotTypeInfo": "Screen design, e.g. continuous slot (Johnson, wire-wrapped), slotted, bridge slot, louver, perforated or Nold type.",
+        "slotTypeFreeText": "This field is free text: if the type is not in the list, just type it and it will be saved as-is.",
         "addRow": "Add screen"
       },
       "holeFill": {
@@ -809,7 +817,8 @@
       "screen": {
         "title": "Screen",
         "tag": "SCREENED SECTIONS",
-        "type": "Type",
+        "type": "Material",
+        "slotType": "Type",
         "diameter": "Diam.",
         "slot": "Slot",
         "from": "From",
@@ -965,7 +974,87 @@
       "retracted": "Retracted",
       "retractedInfo": "A later event corrects this one. It stays in the file but no longer counts.",
       "correction": "Correction",
-      "correctionInfo": "This event corrects an earlier one."
+      "correctionInfo": "This event corrects an earlier one.",
+      "charts": {
+        "title": "Charts",
+        "empty": "Not enough readings to draw charts.",
+        "kinds": {
+          "hydrograph": "Level × time",
+          "semilog": "Drawdown × log t",
+          "recovery": "Recovery (Theis)",
+          "stepTest": "Step test"
+        },
+        "axes": {
+          "time": "Time since start (min)",
+          "elapsed": "Time since step start (min)",
+          "level": "Water level (m)",
+          "drawdown": "Drawdown s (m)",
+          "residualDrawdown": "Residual drawdown s′ (m)",
+          "ratio": "t/t′",
+          "flowRate": "Flow rate Q ({unit})",
+          "specificDrawdown": "s/Q (m per {unit})"
+        },
+        "legend": {
+          "step": "Step {n}",
+          "pumping": "Pumping",
+          "recovery": "Recovery",
+          "staticLevel": "SWL",
+          "pumpStop": "Pump stop",
+          "fit": "Fit s/Q = B + C·Q",
+          "fitValues": "B = {b} · C = {c}",
+          "drawdownVsRate": "s × Q"
+        },
+        "tooltip": {
+          "time": "t",
+          "elapsed": "Δt",
+          "level": "Level",
+          "drawdown": "s",
+          "ratio": "t/t′",
+          "rate": "Q"
+        }
+      },
+      "view": {
+        "open": "View",
+        "title": "Hydrodynamic event",
+        "edit": "Edit",
+        "close": "Close",
+        "tabs": {
+          "overview": "Overview",
+          "readings": "Readings"
+        },
+        "sections": {
+          "details": "Details",
+          "notes": "Notes and files",
+          "links": "Links",
+          "stepSummary": "Step summary",
+          "step": "Step {n}",
+          "recovery": "Recovery"
+        },
+        "columns": {
+          "step": "Step",
+          "rate": "Q ({unit})",
+          "duration": "Duration (min)",
+          "finalLevel": "Final level (m)",
+          "drawdown": "s (m)",
+          "specificDrawdown": "s/Q (m per {unit})",
+          "specificCapacity": "Q/s ({unit})",
+          "elapsed": "Δt (min)",
+          "testTime": "t (min)",
+          "level": "Level (m)",
+          "recoveryElapsed": "t′ (min)",
+          "ratio": "t/t′",
+          "residualDrawdown": "s′ (m)"
+        },
+        "clockInfo": "Δt restarts at each step; t runs from the start of the first step.",
+        "noReadings": "No readings recorded.",
+        "links": {
+          "corrects": "Corrects",
+          "correctedBy": "Corrected by",
+          "historyLogs": "History log entries",
+          "missing": "Record not found: {id}",
+          "empty": "No links to other records."
+        }
+      }
     },
     "attachments": {
       "documentType": "Document type",
@@ -1102,7 +1191,7 @@
         "noMeters": "Add a meter first to record its readings.",
         "types": {
           "meter_reading": "Meter reading",
-          "declared_volume": "Declared volume"
+          "estimated_volume": "Estimated volume"
         },
         "fields": {
           "type": "Type",
@@ -1117,16 +1206,14 @@
           "periodEnd": "Period end",
           "volume": "Volume",
           "method": "Method",
-          "methodInfo": "Estimated volumes count only where no meter reading covers the period. Reported volumes (as declared to a regulator) are kept for comparison and never added to the total.",
+          "methodInfo": "How the volume was estimated (flow × time, energy use…). Descriptive only: estimated volumes count only where no meter reading covers the period.",
           "notes": "Notes"
         },
         "totals": {
           "total": "Total",
           "totalInfo": "Metered plus estimated volumes. Meters take precedence over estimates.",
           "metered": "Metered",
-          "estimated": "Estimated",
-          "reported": "Reported",
-          "reportedInfo": "Volumes declared to a regulator, for comparison only."
+          "estimated": "Estimated"
         },
         "unknownIntervals": "{n} interval between readings has an unknown volume (the register went down and the meter has no register capacity). | {n} intervals between readings have an unknown volume (the register went down and the meter has no register capacity).",
         "unknownIntervalsLabel": "Unknown intervals",
@@ -1351,7 +1438,7 @@
         "duplicate_production_id": "Two production entries share the same id.",
         "corrects_unresolved": "The corrected entry does not exist in this file.",
         "corrects_cycle": "The correction chain loops back on itself.",
-        "declared_period_invalid": "The period end must be after its start.",
+        "estimate_period_invalid": "The period end must be after its start.",
         "estimated_overlaps_meter": "This estimated volume overlaps meter readings; the meter takes precedence.",
         "duplicate_regime_id": "Two regimes share the same id.",
         "regime_duplicate_effective_from": "Another regime starts at the same instant.",

@@ -2,10 +2,25 @@ import type { Well } from '@welldot/core';
 import { format } from 'date-fns';
 import { buildDocDefinition } from './buildDocDefinition';
 import { resolvePdfContext } from './context';
+import {
+  measureCompactContentHeight,
+  measureCompactSideSplit,
+  measureLegendBreak,
+  measureProfileStart,
+} from './layout/measureProfileStart';
 import { loadPdfMake } from './runtime/pdfmake';
 import { registerPdfFonts } from './runtime/registerFonts';
-import { buildSvgProfiles } from './svg/buildSvgProfiles';
-import type { PdfExportOptions, PdfFontsConfig } from './types/options.types';
+import {
+  buildSvgProfiles,
+  computePageSvgHeight,
+  PDF_MARGINS,
+} from './svg/buildSvgProfiles';
+import { FIT_EPSILON, MIN_FIRST_PANEL_HEIGHT } from './svg/planDetailedPanels';
+import type {
+  PdfExportOptions,
+  PdfFontsConfig,
+  PdfRenderedExtras,
+} from './types/options.types';
 import type {
   PdfMakeStatic,
   TCreatedPdf,
@@ -60,9 +75,9 @@ function createHiddenContainer(): HTMLElement {
 }
 
 /**
- * One-call export in the browser: renders the profile SVGs, loads pdfmake
- * and fonts, builds the document and returns the created PDF with
- * blob/download/print helpers.
+ * One-call export in the browser: loads pdfmake and fonts, measures where
+ * the profile starts, renders the profile SVGs to fill each page, builds
+ * the document and returns the created PDF with blob/download/print helpers.
  *
  * Pass a well already prepared for export (normalized, redacted if needed).
  *
@@ -83,24 +98,82 @@ export async function createWellPdf(
   const cancelled = () => isCancelled?.() ?? false;
   const ctx = resolvePdfContext(options);
 
+  const instance = pdfMake ?? (await loadPdfMake());
+  await registerPdfFonts(instance, fonts);
+  if (cancelled()) return null;
+
+  // Lay out what precedes the profile first, so its first panel fills
+  // exactly the space left on that page.
+  const start = await measureProfileStart(well, ctx, instance);
+  if (cancelled()) return null;
+
+  // Profile sized to the compact tables beside it, or to the space left on
+  // one page (the next page's body when too little is left on this one).
+  let drawingHeight: number | undefined;
+  const padding = PDF_MARGINS.top + PDF_MARGINS.bottom;
+  if (ctx.profileFit === 'content') {
+    const height = await measureCompactContentHeight(well, ctx, instance);
+    if (height != null) drawingHeight = height - padding;
+  } else if (ctx.profileFit === 'page') {
+    const onePage =
+      start ??
+      (await measureProfileStart(well, { ...ctx, breakPages: true }, instance));
+    if (onePage) {
+      const room = onePage.remaining - FIT_EPSILON - padding;
+      drawingHeight =
+        room >= MIN_FIRST_PANEL_HEIGHT
+          ? room
+          : computePageSvgHeight(ctx.page) - padding;
+    }
+  }
+  if (cancelled()) return null;
+
   const target = container ?? createHiddenContainer();
   let svgResult;
   try {
-    svgResult = await buildSvgProfiles(well, target, ctx);
+    svgResult = await buildSvgProfiles(well, target, ctx, {
+      firstPageRemaining: start?.remaining,
+      startPage: start?.pageNumber,
+      drawingHeight,
+    });
   } finally {
     if (!container) target.remove();
   }
   if (cancelled()) return null;
 
-  const instance = pdfMake ?? (await loadPdfMake());
-  await registerPdfFonts(instance, fonts);
+  const extras: PdfRenderedExtras = {
+    lithologySwatches: svgResult.lithologySwatches,
+  };
+  // Compact: the tables that start after the profile ends take the full
+  // width instead of leaving the profile column empty.
+  extras.compactSideSplit = await measureCompactSideSplit(
+    well,
+    svgResult.svgs,
+    svgResult.legendItems,
+    ctx,
+    instance,
+    extras,
+  );
+  if (cancelled()) return null;
+
+  // Whatever would run into the legend strip at the foot of the first
+  // profile page starts on the next page instead.
+  extras.legendBreak = await measureLegendBreak(
+    well,
+    svgResult.svgs,
+    svgResult.legendItems,
+    ctx,
+    instance,
+    extras,
+  );
   if (cancelled()) return null;
 
   const built = buildDocDefinition(
     well,
     svgResult.svgs,
-    svgResult.legendSvg,
+    svgResult.legendItems,
     ctx,
+    extras,
   );
   const docDefinition = transformDocDefinition?.(built) ?? built;
   const pdf = instance.createPdf(docDefinition);

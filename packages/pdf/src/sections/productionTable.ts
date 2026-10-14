@@ -1,15 +1,16 @@
 import type {
-  DeclaredVolume,
+  EstimatedVolume,
   MeterReading,
   ProductionEntry,
   Well,
 } from '@welldot/core';
 import {
-  DECLARED_METHODS,
+  ESTIMATION_METHODS,
   PRODUCTION_ENTRY_TYPES,
   READING_SOURCES,
 } from '@welldot/core';
 import {
+  formatDate,
   formatMeterLabel,
   getActivePermit,
   getProductionByPeriod,
@@ -17,17 +18,32 @@ import {
   getRetractedProductionIds,
   todayCalendarDate,
 } from '@welldot/utils';
-import { format, parseISO } from 'date-fns';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
-import { headerCell, rightCell, withTableTitle } from '../layout/tables';
+import {
+  headerCell,
+  rightCell,
+  valueCell,
+  withTableTitle,
+} from '../layout/tables';
 import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content, TableCell } from '../types/pdfmake.types';
 import { packLabelValueRows } from './metadataTable';
 
-function entryInstant(e: ProductionEntry): string {
-  return e.type === 'meter_reading'
-    ? (e as MeterReading).datetime
-    : (e as DeclaredVolume).period_end;
+/**
+ * The instant an entry is listed at. Unknown (`x-…`) types use their own
+ * `datetime` when they carry one; entries without a date give `undefined`.
+ */
+function entryInstant(e: ProductionEntry): string | undefined {
+  if (e.type === 'meter_reading') return (e as MeterReading).datetime;
+  if (e.type === 'estimated_volume') return (e as EstimatedVolume).period_end;
+  const datetime = (e as { datetime?: unknown }).datetime;
+  return typeof datetime === 'string' ? datetime : undefined;
+}
+
+/** Sort key: entries without a valid instant go last (the ledger is newest first). */
+function instantTime(e: ProductionEntry): number {
+  const time = new Date(entryInstant(e) ?? NaN).getTime();
+  return isNaN(time) ? -Infinity : time;
 }
 
 function percent(value: number, limit: number | undefined): string {
@@ -35,7 +51,7 @@ function percent(value: number, limit: number | undefined): string {
   return `${Math.round((value / limit) * 100)}%`;
 }
 
-/** Total / metered / estimated / reported, plus unknown intervals. */
+/** Total / metered / estimated, plus unknown intervals. */
 function buildTotals(
   well: Well,
   fmt: PdfFormatters,
@@ -49,10 +65,6 @@ function buildTotals(
     {
       label: totalLabels.estimated,
       value: fmt.formatVolume(totals.estimated, 1),
-    },
-    {
-      label: totalLabels.reported,
-      value: fmt.formatVolume(totals.reported, 1),
     },
   ];
   if (totals.unknown_intervals) {
@@ -79,25 +91,25 @@ function buildAnnualTable(
     v => v.period === 'annual',
   )?.volume;
   const totalLabels = labels.operation.production.totals;
+  // The estimated column only shows when some year has an estimate.
+  const hasEstimates = buckets.some(b => b.estimated > 0);
 
   const header: TableCell[] = [
     headerCell(labels.operation.production.periods.year),
     headerCell(totalLabels.metered, true),
-    headerCell(totalLabels.estimated, true),
-    headerCell(totalLabels.total, true),
-    headerCell(totalLabels.reported, true),
   ];
+  if (hasEstimates) header.push(headerCell(totalLabels.estimated, true));
+  header.push(headerCell(totalLabels.total, true));
   if (limit) header.push(headerCell(labels.operation.production.ofLimit, true));
 
   const body: TableCell[][] = [header];
   buckets.forEach(b => {
     const row: TableCell[] = [
       b.period,
-      rightCell(fmt.formatVolume(b.metered, 1)),
-      rightCell(fmt.formatVolume(b.estimated, 1)),
-      rightCell(fmt.formatVolume(b.total, 1)),
-      rightCell(b.reported ? fmt.formatVolume(b.reported, 1) : '—'),
+      valueCell(fmt.formatVolume(b.metered, 1)),
     ];
+    if (hasEstimates) row.push(valueCell(fmt.formatVolume(b.estimated, 1)));
+    row.push(valueCell(fmt.formatVolume(b.total, 1)));
     if (limit) row.push(rightCell(percent(b.total, limit)));
     body.push(row);
   });
@@ -105,9 +117,7 @@ function buildAnnualTable(
   return withTableTitle(labels.operation.production.annual, {
     layout: 'lightHorizontalLines',
     table: {
-      widths: limit
-        ? ['*', 'auto', 'auto', 'auto', 'auto', 'auto']
-        : ['*', 'auto', 'auto', 'auto', 'auto'],
+      widths: ['*', ...header.slice(1).map(() => 'auto')],
       headerRows: 1,
       dontBreakRows: true,
       body,
@@ -125,9 +135,7 @@ function buildLedgerTable(
   const retracted = getRetractedProductionIds(well);
   const entries = [...(well.production ?? [])].sort(
     (a, b) =>
-      new Date(entryInstant(b)).getTime() -
-        new Date(entryInstant(a)).getTime() ||
-      (b.sequence ?? 0) - (a.sequence ?? 0),
+      instantTime(b) - instantTime(a) || (b.sequence ?? 0) - (a.sequence ?? 0),
   );
   const fields = labels.operation.production.fields;
 
@@ -160,12 +168,14 @@ function buildLedgerTable(
         .filter(Boolean)
         .join(' · ');
       value = fmt.formatVolume(r.reading, 3);
-    } else if (e.type === 'declared_volume') {
-      const d = e as DeclaredVolume;
+    } else if (e.type === 'estimated_volume') {
+      const d = e as EstimatedVolume;
       details = [
-        `${format(parseISO(d.period_start), dateFormats.date)} → ${format(parseISO(d.period_end), dateFormats.date)}`,
-        fmt.vocab(DECLARED_METHODS, d.method ?? 'estimated'),
-      ].join(' · ');
+        `${formatDate(d.period_start, dateFormats.date) || '—'} → ${formatDate(d.period_end, dateFormats.date) || '—'}`,
+        d.method ? fmt.vocab(ESTIMATION_METHODS, d.method) : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
       value = fmt.formatVolume(d.volume, 1);
     } else {
       details = '';
@@ -179,10 +189,15 @@ function buildLedgerTable(
     const decoration = isRetracted ? { decoration: 'lineThrough' } : {};
 
     body.push([
-      format(parseISO(entryInstant(e)), dateFormats.dateTime),
+      formatDate(entryInstant(e), dateFormats.dateTime) || '—',
       marks.length ? `${typeLabel} (${marks.join(', ')})` : typeLabel,
       { text: [details, e.notes].filter(Boolean).join('\n') },
-      { text: value, style: 'columnRight', ...decoration } as TableCell,
+      {
+        text: value,
+        style: 'columnRight',
+        noWrap: true,
+        ...decoration,
+      } as TableCell,
     ]);
   });
 

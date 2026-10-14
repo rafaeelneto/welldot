@@ -1,10 +1,12 @@
 import { mount } from '@vue/test-utils';
 import InputNumber from 'primevue/inputnumber';
 import { describe, expect, it, vi } from 'vitest';
-import { defineComponent, h, type PropType } from 'vue';
+import { defineComponent, h, nextTick, type PropType } from 'vue';
 import { welldotGlobal } from '../test/mountOptions';
 import type { WellDeleteButtonProps } from '../types';
+import GridComboEditor from './cells/GridComboEditor.vue';
 import GridDeleteCell from './cells/GridDeleteCell.vue';
+import GridTextEditor from './cells/GridTextEditor.vue';
 import GridUnitCell from './cells/GridUnitCell.vue';
 import GridUnitEditor from './cells/GridUnitEditor.vue';
 import WellGridDeleteButton from './parts/WellGridDeleteButton.vue';
@@ -122,6 +124,42 @@ describe('GridUnitEditor', () => {
   );
 });
 
+describe('GridTextEditor', () => {
+  function mountEditor(val: unknown) {
+    const save = vi.fn();
+    const close = vi.fn();
+    const wrapper = mount(GridTextEditor, {
+      props: { val, save, close },
+      global: welldotGlobal(),
+      attachTo: document.body,
+    });
+    return { wrapper, save, close, input: wrapper.get('input') };
+  }
+
+  it('opens with the current value and keeps it on blur', async () => {
+    const { wrapper, save, input } = mountEditor('Arenito');
+    expect(input.element.value).toBe('Arenito');
+    await input.trigger('blur');
+    expect(save).toHaveBeenCalledWith('Arenito', true);
+    wrapper.unmount();
+  });
+
+  it('puts the caret after the value', async () => {
+    const { wrapper, input } = mountEditor('Arenito');
+    await nextTick();
+    expect(document.activeElement).toBe(input.element);
+    expect(input.element.selectionStart).toBe(7);
+    expect(input.element.selectionEnd).toBe(7);
+    wrapper.unmount();
+  });
+
+  it.each([undefined, null])('starts empty for %s', val => {
+    const { wrapper, input } = mountEditor(val);
+    expect(input.element.value).toBe('');
+    wrapper.unmount();
+  });
+});
+
 describe('GridDeleteCell', () => {
   const model = { from: 0, to: 10 };
 
@@ -185,5 +223,42 @@ describe('GridDeleteCell', () => {
     expect(received.at(-1)).toEqual({ index: 5, row: model, label: 'Remover' });
     await wrapper.get('a.trash').trigger('click');
     expect(requestDelete).toHaveBeenCalledWith(5, model);
+  });
+});
+
+describe('GridComboEditor', () => {
+  const options = [
+    { value: 'pvc', label: 'PVC' },
+    { value: 'steel', label: 'Steel' },
+  ];
+  const mountEditor = (props: Record<string, unknown> = {}) =>
+    mount(GridComboEditor, {
+      props: { save: vi.fn(), close: vi.fn(), options, ...props },
+      global: welldotGlobal({ locale: 'pt' }),
+      attachTo: document.body,
+    });
+
+  it('opens the suggestions with the resolved hint', () => {
+    const wrapper = mountEditor({
+      hint: { en: 'Suggestions', pt: 'Sugestões' },
+    });
+    const hint = document.body.querySelector('.well-combo-hint');
+    expect(hint?.textContent?.trim()).toBe('Sugestões');
+    expect(wrapper.find('input').attributes('aria-describedby')).toBe(hint?.id);
+    expect(
+      [...document.body.querySelectorAll('[role="option"]')].map(o =>
+        o.textContent?.trim(),
+      ),
+    ).toEqual(['PVC', 'Steel']);
+    wrapper.unmount();
+  });
+
+  it('shows no hint when none is given', () => {
+    const wrapper = mountEditor();
+    expect(document.body.querySelector('.well-combo-hint')).toBeNull();
+    expect(
+      wrapper.find('input').attributes('aria-describedby'),
+    ).toBeUndefined();
+    wrapper.unmount();
   });
 });

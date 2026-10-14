@@ -232,6 +232,9 @@
           },
           "screen_slot": {
             "type": "number"
+          },
+          "slot_type": {
+            "type": "string"
           }
         },
         "required": [
@@ -1571,7 +1574,7 @@
                   },
                   "type": {
                     "type": "string",
-                    "const": "declared_volume"
+                    "const": "estimated_volume"
                   },
                   "corrects": {
                     "$ref": "#/properties/production/items/anyOf/0/anyOf/0/properties/corrects"

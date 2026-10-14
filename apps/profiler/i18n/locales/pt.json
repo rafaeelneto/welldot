@@ -226,6 +226,7 @@
   "editor": {
     "well": "Poço",
     "fieldInfo": "Mais informações",
+    "comboHint": "Sugestões — você também pode digitar um valor livre",
     "deleteRow": "Excluir linha",
     "showPendingTextures": "Mostrar texturas pendentes",
     "save": "Salvar",
@@ -259,7 +260,8 @@
         "diameter": "Diâmetro",
         "flow": "Vazão",
         "power": "Potência",
-        "volume": "Volume"
+        "volume": "Volume",
+        "inches": "pol."
       },
       "coordinates": {
         "title": "Coordenadas",
@@ -384,9 +386,15 @@
       "valuePlaceholder": "Valor",
       "syncedTooltip": "Valor sincronizado com o perfil",
       "deleteItem": "Remover",
-      "pageBreaks": {
-        "title": "Quebra de páginas",
-        "split": "Dividir perfil em páginas"
+      "format": {
+        "title": "Formato do perfil",
+        "compact": "Compacto",
+        "detailed": "Detalhado",
+        "split": "Dividir perfil em páginas",
+        "matchContent": "Acompanhar conteúdo",
+        "fitPage": "Limitar a uma página (A4)",
+        "compactHint": "Acompanhar conteúdo exige a divisão em páginas desligada",
+        "detailedHint": "Quebras ajustadas a contatos, com sobreposição e mini-mapa"
       },
       "metadataSection": {
         "title": "Seção de metadados",
@@ -397,9 +405,6 @@
       "visibilitySection": {
         "title": "Decidir o que compartilhar",
         "toggle": "Usar minha seleção de compartilhamento"
-      },
-      "scale": {
-        "title": "Escala"
       },
       "metadataFields": {
         "name": "Nome",
@@ -522,10 +527,13 @@
         "from": "De",
         "to": "Até",
         "diameter": "Diâm.",
-        "screenSlot": "Slot (mm)",
-        "type": "Tipo",
-        "typeInfo": "Material (ou tipo construtivo) do filtro por onde a água entra no poço, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
-        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo (ex.: aço inox espiralado, ponte/bridge slot) e ele será salvo como escrito.",
+        "screenSlot": "Abertura (mm)",
+        "type": "Material",
+        "typeInfo": "Material do filtro por onde a água entra no poço, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
+        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo e ele será salvo como escrito.",
+        "slotType": "Tipo",
+        "slotTypeInfo": "Tipo construtivo do filtro, ex.: espiralado (tipo Johnson), ranhurado, tipo ponte, veneziana, perfurado ou tipo Nold.",
+        "slotTypeFreeText": "Este campo é livre: se o tipo não estiver na lista, basta digitá-lo e ele será salvo como escrito.",
         "addRow": "Adicionar filtro"
       },
       "holeFill": {
@@ -809,7 +817,8 @@
       "screen": {
         "title": "Filtro",
         "tag": "SEÇÕES FILTRANTES",
-        "type": "Tipo",
+        "type": "Material",
+        "slotType": "Tipo",
         "diameter": "Diâm.",
         "slot": "Abertura",
         "from": "De",
@@ -965,7 +974,87 @@
       "retracted": "Retificado",
       "retractedInfo": "Um evento posterior corrige este. Ele permanece no arquivo, mas não conta mais.",
       "correction": "Correção",
-      "correctionInfo": "Este evento corrige um anterior."
+      "correctionInfo": "Este evento corrige um anterior.",
+      "charts": {
+        "title": "Gráficos",
+        "empty": "Sem leituras suficientes para gerar gráficos.",
+        "kinds": {
+          "hydrograph": "Nível × tempo",
+          "semilog": "Rebaixamento × log t",
+          "recovery": "Recuperação (Theis)",
+          "stepTest": "Teste escalonado"
+        },
+        "axes": {
+          "time": "Tempo desde o início (min)",
+          "elapsed": "Tempo desde o início do degrau (min)",
+          "level": "Nível da água (m)",
+          "drawdown": "Rebaixamento s (m)",
+          "residualDrawdown": "Rebaixamento residual s′ (m)",
+          "ratio": "t/t′",
+          "flowRate": "Vazão Q ({unit})",
+          "specificDrawdown": "s/Q (m por {unit})"
+        },
+        "legend": {
+          "step": "Degrau {n}",
+          "pumping": "Bombeamento",
+          "recovery": "Recuperação",
+          "staticLevel": "NE",
+          "pumpStop": "Parada da bomba",
+          "fit": "Ajuste s/Q = B + C·Q",
+          "fitValues": "B = {b} · C = {c}",
+          "drawdownVsRate": "s × Q"
+        },
+        "tooltip": {
+          "time": "t",
+          "elapsed": "Δt",
+          "level": "Nível",
+          "drawdown": "s",
+          "ratio": "t/t′",
+          "rate": "Q"
+        }
+      },
+      "view": {
+        "open": "Visualizar",
+        "title": "Evento hidrodinâmico",
+        "edit": "Editar",
+        "close": "Fechar",
+        "tabs": {
+          "overview": "Visão geral",
+          "readings": "Leituras"
+        },
+        "sections": {
+          "details": "Detalhes",
+          "notes": "Observações e documentos",
+          "links": "Vínculos",
+          "stepSummary": "Resumo dos degraus",
+          "step": "Degrau {n}",
+          "recovery": "Recuperação"
+        },
+        "columns": {
+          "step": "Degrau",
+          "rate": "Q ({unit})",
+          "duration": "Duração (min)",
+          "finalLevel": "Nível final (m)",
+          "drawdown": "s (m)",
+          "specificDrawdown": "s/Q (m por {unit})",
+          "specificCapacity": "Q/s ({unit})",
+          "elapsed": "Δt (min)",
+          "testTime": "t (min)",
+          "level": "Nível (m)",
+          "recoveryElapsed": "t′ (min)",
+          "ratio": "t/t′",
+          "residualDrawdown": "s′ (m)"
+        },
+        "clockInfo": "Δt recomeça a cada degrau; t corre desde o início do primeiro degrau.",
+        "noReadings": "Nenhuma leitura registrada.",
+        "links": {
+          "corrects": "Retifica",
+          "correctedBy": "Retificado por",
+          "historyLogs": "Entradas do histórico",
+          "missing": "Registro não encontrado: {id}",
+          "empty": "Nenhum vínculo com outros registros."
+        }
+      }
     },
     "attachments": {
       "documentType": "Tipo de documento",
@@ -1102,7 +1191,7 @@
         "noMeters": "Adicione um hidrômetro antes de registrar leituras.",
         "types": {
           "meter_reading": "Leitura de hidrômetro",
-          "declared_volume": "Volume declarado"
+          "estimated_volume": "Volume estimado"
         },
         "fields": {
           "type": "Tipo",
@@ -1117,16 +1206,14 @@
           "periodEnd": "Fim do período",
           "volume": "Volume",
           "method": "Método",
-          "methodInfo": "Volumes estimados só contam onde nenhuma leitura de hidrômetro cobre o período. Volumes declarados (ao órgão gestor) ficam apenas para comparação e nunca somam ao total.",
+          "methodInfo": "Como o volume foi estimado (vazão × tempo, consumo de energia…). É só descritivo: volumes estimados contam apenas onde nenhuma leitura de hidrômetro cobre o período.",
           "notes": "Observações"
         },
         "totals": {
           "total": "Total",
           "totalInfo": "Volumes medidos mais estimados. O hidrômetro tem precedência sobre estimativas.",
           "metered": "Medido",
-          "estimated": "Estimado",
-          "reported": "Declarado",
-          "reportedInfo": "Volumes declarados ao órgão gestor, apenas para comparação."
+          "estimated": "Estimado"
         },
         "unknownIntervals": "{n} intervalo entre leituras tem volume desconhecido (o totalizador diminuiu e o hidrômetro não tem capacidade informada). | {n} intervalos entre leituras têm volume desconhecido (o totalizador diminuiu e o hidrômetro não tem capacidade informada).",
         "unknownIntervalsLabel": "Intervalos desconhecidos",
@@ -1175,7 +1262,7 @@
           "suspended": "Suspensa",
           "revoked": "Revogada",
           "denied": "Indeferida",
-          "withdrawn": "Desistida",
+          "withdrawn": "Cancelada",
           "superseded": "Substituída",
           "not_yet_valid": "Ainda não vigente",
           "active": "Vigente",
@@ -1351,7 +1438,7 @@
         "duplicate_production_id": "Dois registros de produção têm o mesmo id.",
         "corrects_unresolved": "O registro corrigido não existe neste arquivo.",
         "corrects_cycle": "A cadeia de correções volta a si mesma.",
-        "declared_period_invalid": "O fim do período deve ser posterior ao início.",
+        "estimate_period_invalid": "O fim do período deve ser posterior ao início.",
         "estimated_overlaps_meter": "Este volume estimado se sobrepõe a leituras de hidrômetro; o hidrômetro prevalece.",
         "duplicate_regime_id": "Dois regimes têm o mesmo id.",
         "regime_duplicate_effective_from": "Outro regime começa no mesmo instante.",

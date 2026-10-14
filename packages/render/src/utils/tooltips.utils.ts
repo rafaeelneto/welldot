@@ -22,6 +22,7 @@ import {
   CEMENT_PAD_TYPES,
   CENTRALIZER_TYPES,
   CONSTRUCTION_MATERIALS,
+  SCREEN_SLOT_TYPES,
   getVocabLabel,
   powerFromCanonical,
 } from '@welldot/core';
@@ -130,7 +131,8 @@ export const populateTooltips = (
               <span class="${customClasses.tooltip.primaryInfo}">${labels.common.from} ${esc(formatLength(d.from, units.length, locale))} ${esc(getLengthUnit(units.length))} ${labels.common.to} ${esc(formatLength(d.to, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>
               <span class="${customClasses.tooltip.secondaryInfo}">
                 <strong>${labels.common.diameter}</strong> ${esc(formatDiameter(d.diameter, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}</span>
-              <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(material(d.type))}</span>
+              <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.wellScreen.material}</strong> ${esc(material(d.type))}</span>
+              ${d.slot_type ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.wellScreen.slotType}</strong> ${esc(getVocabLabel(SCREEN_SLOT_TYPES, d.slot_type, locale))}</span>` : ''}
               <span class="${customClasses.tooltip.secondaryInfo}">
                 <strong>${labels.wellScreen.slot}</strong> ${esc(formatNumber(d.screen_slot, { maximumFractionDigits: 2, locale }))} mm
               </span>

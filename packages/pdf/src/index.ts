@@ -3,12 +3,21 @@ export { buildDefaultPdfFilename, createWellPdf } from './createWellPdf';
 
 // Document assembly
 export {
+  COMPACT_COLUMNS_ID,
+  LEGEND_STRIP_ID,
   PDF_SECTION_BUILDERS,
+  buildCompactBlocks,
+  buildCompactSideContent,
   buildDocDefinition,
+  buildDocShell,
+  buildLeadContent,
+  startOnNextPage,
   toPdfContext,
 } from './buildDocDefinition';
 export {
+  PAGE_CHROME,
   PDF_SECTION_KEYS,
+  resolveBodyMargins,
   resolvePdfContext,
   resolvePdfPage,
   resolvePdfUnits,
@@ -16,26 +25,47 @@ export {
 
 // Profile SVG (browser only)
 export {
-  A4_SVG_HEIGHT,
+  FIT_EPSILON,
+  LEGEND_GAP,
+  MIN_FIRST_PANEL_HEIGHT,
   PDF_CONTENT_WIDTH,
   PDF_MARGINS,
   buildSvgProfiles,
   computeFirstPageAvailableHeight,
-  computePageHeights,
   computePageSvgHeight,
   computeProfileWidth,
   computeTotalSvgHeight,
+  planProfilePanels,
 } from './svg/buildSvgProfiles';
+export {
+  OVERLAP_HEIGHT,
+  SNAP_RATIO,
+  planDetailedPanels,
+} from './svg/planDetailedPanels';
+export {
+  COMPACT_COLUMN_GAP,
+  COMPACT_PROFILE_RATIO,
+  computeCompactColumnWidth,
+  computeCompactSideWidth,
+  getLithologyContacts,
+} from './svg/profileLayouts';
 
 // Runtime
 export { loadPdfMake } from './runtime/pdfmake';
 export { loadDefaultPdfFonts, registerPdfFonts } from './runtime/registerFonts';
 
 // Sections
+export { buildCaveSection } from './sections/caveTable';
+export { buildFractureSection } from './sections/fractureTable';
 export { buildHistoryLogSection } from './sections/historyLogTable';
 export { buildHydrodynamicEventsSection } from './sections/hydrodynamicEventsTable';
+export { buildLithologySection } from './sections/lithologyTable';
 export {
+  WIDE_FIELD_GRID_MIN_WIDTH,
+  buildFieldGrid,
+  buildLabelValueTable,
   buildMetadataTable,
+  fieldGridColumns,
   packLabelValueRows,
 } from './sections/metadataTable';
 export { buildMeterSection } from './sections/meterTable';
@@ -48,13 +78,39 @@ export { buildWaterSampleSection } from './sections/waterSampleTable';
 
 // Layout
 export { buildFooterContent } from './layout/footer';
+export {
+  PDF_GLYPH_FALLBACKS,
+  applyGlyphFallbacks,
+} from './layout/glyphFallbacks';
 export { buildHeaderContent } from './layout/header';
 export {
+  LEGEND_COLUMNS,
+  LEGEND_ROW_HEIGHT,
+  buildLegendStrip,
+  buildLegendTable,
+  computeLegendStripHeight,
+  packLegendRows,
+} from './layout/legend';
+export {
+  COMPACT_SPLIT_MIN_ROOM,
+  PROFILE_PROBE_ID,
+  SIDE_END_PROBE_ID,
+  measureCompactContentHeight,
+  measureCompactSideSplit,
+  measureLegendBreak,
+  measureProfileStart,
+} from './layout/measureProfileStart';
+export {
+  attachmentName,
   buildEntryDivider,
+  buildEntryHeader,
+  buildEntryListing,
   buildRule,
   headerCell,
   lightLinesLayout,
   rightCell,
+  valueCell,
+  withTableCaption,
   withTableTitle,
 } from './layout/tables';
 export { buildImageWatermark, buildTextWatermark } from './layout/watermark';
@@ -79,7 +135,20 @@ export type {
 export type { ResolvedPdfLabels } from './configs/labels.utils';
 export type { CreateWellPdfOptions, WellPdf } from './createWellPdf';
 export type { PdfFormatters } from './formatters';
-export type { BuildSvgProfilesResult } from './svg/buildSvgProfiles';
+export type { ProfileStartPosition } from './layout/measureProfileStart';
+export type { ListingEntry } from './layout/tables';
+export type { MetaField } from './sections/metadataTable';
+export type {
+  BuildSvgProfilesOptions,
+  BuildSvgProfilesResult,
+  PlanProfilePanelsOptions,
+  ProfilePanel,
+} from './svg/buildSvgProfiles';
+export type {
+  DetailedPanel,
+  PlanDetailedPanelsOptions,
+} from './svg/planDetailedPanels';
+export type { ContactSnap } from './svg/profileLayouts';
 export type {
   CoordinateFormat,
   PdfBranding,
@@ -96,7 +165,10 @@ export type {
   PdfPageContentFn,
   PdfPageOptions,
   PdfPageSizeName,
+  PdfProfileFit,
+  PdfProfileFormat,
   PdfProfileOptions,
+  PdfRenderedExtras,
   PdfSectionKey,
   PdfSectionsOptions,
   PdfTheme,
@@ -105,6 +177,8 @@ export type {
   PdfThemeFonts,
   PdfUnits,
   PdfWatermark,
+  RenderedLegendItem,
+  RenderedProfilePanel,
   RenderedSvg,
   ResolvedInfoItem,
   ResolvedPdfPage,
@@ -112,6 +186,8 @@ export type {
 export type {
   Content,
   ContentTable,
+  NodePosition,
+  PageBreakNodeInfo,
   PdfMakeStatic,
   TCreatedPdf,
   TDocumentDefinition,

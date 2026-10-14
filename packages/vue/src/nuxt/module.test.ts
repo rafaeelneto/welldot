@@ -71,6 +71,7 @@ describe('@welldot/vue/nuxt', () => {
       '@welldot/vue#WellLabeledField',
       '@welldot/vue#WellChip',
       '@welldot/vue#WellTagSelect',
+      '@welldot/vue#WellComboSelect',
       '@welldot/vue#WellInfoPopover',
       '@welldot/vue#WellInputNumber',
       '@welldot/vue#WellUnitInput',
@@ -118,7 +119,7 @@ describe('@welldot/vue/nuxt', () => {
 
   it('skips grid and location components when disabled', async () => {
     await welldotModule({ grid: false, location: false }, fakeNuxt());
-    expect(registeredComponents()).toHaveLength(8);
+    expect(registeredComponents()).toHaveLength(9);
     expect(
       registeredComponents().every(c => c.startsWith('@welldot/vue#')),
     ).toBe(true);

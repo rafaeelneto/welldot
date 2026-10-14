@@ -1,4 +1,4 @@
-import type { Attachment, HistoryLogEntry, Well } from '@welldot/core';
+import type { HistoryLogEntry, Well } from '@welldot/core';
 import {
   HISTORY_LOG_CATEGORIES,
   HISTORY_LOG_SEVERITIES,
@@ -7,7 +7,11 @@ import {
   getVocabLabel,
 } from '@welldot/core';
 import { format, parseISO } from 'date-fns';
-import { buildEntryDivider } from '../layout/tables';
+import {
+  attachmentName,
+  buildEntryHeader,
+  buildEntryListing,
+} from '../layout/tables';
 import type { PdfContext, PdfLabels } from '../types/options.types';
 import type { Content } from '../types/pdfmake.types';
 
@@ -26,45 +30,22 @@ function categoryDetail(
   return '';
 }
 
-function attachmentName(attachment: Attachment): string {
-  return (
-    attachment.filename ?? attachment.uri.split('/').pop() ?? attachment.uri
-  );
-}
-
-/** The category/severity/date header line — short and height-bounded, so it's safe to bind to the section title. */
+/** The category/severity/date header line. */
 function buildLogEntryHeader(entry: HistoryLogEntry, ctx: PdfContext): Content {
   const { labels, locale } = ctx;
   const detail = categoryDetail(entry, labels, locale);
-  return {
-    columns: [
-      {
-        text: [
-          {
-            text: getVocabLabel(HISTORY_LOG_CATEGORIES, entry.category, locale),
-            style: 'tableHeader',
-          },
-          {
-            text: detail ? ` · ${detail}` : '',
-            style: 'tableHeader',
-          },
-          {
-            text: entry.severity
-              ? `   ${getVocabLabel(HISTORY_LOG_SEVERITIES, entry.severity, locale)}`
-              : '',
-            style: 'metadataLabel',
-          },
-        ],
-        width: '*',
-      },
-      {
-        text: format(parseISO(entry.datetime), ctx.dateFormats.dateTime),
-        style: 'metadataLabel',
-        alignment: 'right',
-        width: 'auto',
-      },
-    ],
-  };
+  const category = getVocabLabel(
+    HISTORY_LOG_CATEGORIES,
+    entry.category,
+    locale,
+  );
+  return buildEntryHeader(
+    detail ? `${category} · ${detail}` : category,
+    entry.severity
+      ? getVocabLabel(HISTORY_LOG_SEVERITIES, entry.severity, locale)
+      : null,
+    format(parseISO(entry.datetime), ctx.dateFormats.dateTime),
+  );
 }
 
 /**
@@ -105,15 +86,6 @@ function buildLogEntryBody(
   return blocks;
 }
 
-function buildLogEntry(entry: HistoryLogEntry, ctx: PdfContext): Content {
-  return {
-    stack: [
-      buildLogEntryHeader(entry, ctx),
-      ...buildLogEntryBody(entry, ctx.labels),
-    ],
-  };
-}
-
 /**
  * Builds a chronological (most recent first) listing of `well.history_logs`
  * entries. Returns `null` when there are no entries.
@@ -136,23 +108,12 @@ export function buildHistoryLogSection(
   const sorted = [...logs].sort(
     (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
   );
-  const [first, ...rest] = sorted;
-
-  const items: Content[] = [
-    {
-      stack: [
-        { text: ' ' },
-        { text: ctx.labels.historyLog.logs.title, style: 'title' },
-        buildLogEntryHeader(first!, ctx),
-      ],
-      unbreakable: true,
-    },
-    ...buildLogEntryBody(first!, ctx.labels),
-  ];
-  rest.forEach(entry => {
-    items.push(buildEntryDivider(ctx));
-    items.push(buildLogEntry(entry, ctx));
-  });
-
-  return { stack: items };
+  return buildEntryListing(
+    ctx.labels.historyLog.logs.title,
+    sorted.map(entry => ({
+      header: buildLogEntryHeader(entry, ctx),
+      body: buildLogEntryBody(entry, ctx.labels),
+    })),
+    ctx,
+  );
 }

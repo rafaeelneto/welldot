@@ -47,7 +47,7 @@ function addWellCase() {
 }
 
 function deleteWellCase(index: number) {
-  profileStore.well.well_case.splice(index, 1);
+  profileStore.removeWellFeature('well_case', index);
 }
 
 function updateWellCase(index: number, prop: string, value: unknown) {
@@ -87,6 +87,7 @@ function reorderWellCase(from: number, to: number) {
       :labels="{
         showPendingTextures: t('editor.showPendingTextures'),
         columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
       }"
       @add="addWellCase"
       @delete="deleteWellCase"

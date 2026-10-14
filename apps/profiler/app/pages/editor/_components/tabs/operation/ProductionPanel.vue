@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type {
-  DeclaredVolume,
+  EstimatedVolume,
   MeterReading,
   Permit,
   ProductionEntry,
 } from '@welldot/core';
-import { DECLARED_METHODS, READING_SOURCES } from '@welldot/core';
+import { ESTIMATION_METHODS, READING_SOURCES } from '@welldot/core';
 import {
   getOperationWarnings,
   getProductionByPeriod,
@@ -37,7 +37,7 @@ const PRODUCTION_WARNING_CODES: readonly OperationWarningCode[] = [
   'duplicate_production_id',
   'corrects_unresolved',
   'corrects_cycle',
-  'declared_period_invalid',
+  'estimate_period_invalid',
   'estimated_overlaps_meter',
 ];
 
@@ -47,7 +47,7 @@ const PRODUCTION_WARNING_CODES: readonly OperationWarningCode[] = [
 function entryInstant(e: ProductionEntry): string {
   return e.type === 'meter_reading'
     ? (e as MeterReading).datetime
-    : (e as DeclaredVolume).period_end;
+    : (e as EstimatedVolume).period_end;
 }
 
 const retractedIds = computed(() =>
@@ -128,6 +128,9 @@ const periodOptions = computed(() => [
 const buckets = computed(() =>
   [...getProductionByPeriod(profileStore.well, period.value)].reverse(),
 );
+
+/** The estimated column only shows when some period has an estimate. */
+const hasEstimates = computed(() => buckets.value.some(b => b.estimated > 0));
 
 const today = todayCalendarDate();
 
@@ -213,12 +216,6 @@ const kpis = computed(() => [
     label: t('editor.operation.production.totals.estimated'),
     value: formatVolume(totals.value.estimated, 1),
   },
-  {
-    key: 'reported',
-    label: t('editor.operation.production.totals.reported'),
-    value: formatVolume(totals.value.reported, 1),
-    info: t('editor.operation.production.totals.reportedInfo'),
-  },
 ]);
 
 // ─── Dialog ───────────────────────────────────────────────────────────────────
@@ -281,10 +278,10 @@ function details(e: ProductionEntry): string {
       .filter(Boolean)
       .join(' · ');
   }
-  const d = e as DeclaredVolume;
+  const d = e as EstimatedVolume;
   return [
     `${formatDate(d.period_start, 'dd/MM/yyyy')} → ${formatDate(d.period_end, 'dd/MM/yyyy')}`,
-    vocabLabel(DECLARED_METHODS, d.method ?? 'estimated'),
+    d.method ? vocabLabel(ESTIMATION_METHODS, d.method) : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -293,11 +290,11 @@ function details(e: ProductionEntry): string {
 function value(e: ProductionEntry): string {
   return e.type === 'meter_reading'
     ? formatVolume((e as MeterReading).reading, 3)
-    : formatVolume((e as DeclaredVolume).volume, 1);
+    : formatVolume((e as EstimatedVolume).volume, 1);
 }
 
 function typeLabel(e: ProductionEntry): string {
-  return e.type === 'meter_reading' || e.type === 'declared_volume'
+  return e.type === 'meter_reading' || e.type === 'estimated_volume'
     ? t(`editor.operation.production.types.${e.type}`)
     : // Unknown (`x-…`) entry types are kept and shown raw.
       (e as { type: string }).type;
@@ -362,7 +359,7 @@ function actions(e: ProductionEntry): RecordAction[] {
 
     <template v-else>
       <!-- ── Totals ──────────────────────────────────────────────────────── -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div
           v-for="k in kpis"
           :key="k.key"
@@ -458,14 +455,14 @@ function actions(e: ProductionEntry): RecordAction[] {
                 <th class="text-right font-medium px-3 py-2">
                   {{ t('editor.operation.production.totals.metered') }}
                 </th>
-                <th class="text-right font-medium px-3 py-2">
+                <th
+                  v-if="hasEstimates"
+                  class="text-right font-medium px-3 py-2"
+                >
                   {{ t('editor.operation.production.totals.estimated') }}
                 </th>
                 <th class="text-right font-medium px-3 py-2">
                   {{ t('editor.operation.production.totals.total') }}
-                </th>
-                <th class="text-right font-medium px-3 py-2">
-                  {{ t('editor.operation.production.totals.reported') }}
                 </th>
                 <th v-if="bucketLimit" class="text-right font-medium px-3 py-2">
                   {{ t('editor.operation.production.ofLimit') }}
@@ -496,14 +493,11 @@ function actions(e: ProductionEntry): RecordAction[] {
                 <td class="text-right px-3 py-1.5">
                   {{ formatVolume(b.metered, 1) }}
                 </td>
-                <td class="text-right px-3 py-1.5">
+                <td v-if="hasEstimates" class="text-right px-3 py-1.5">
                   {{ formatVolume(b.estimated, 1) }}
                 </td>
                 <td class="text-right px-3 py-1.5 text-content-0">
                   {{ formatVolume(b.total, 1) }}
-                </td>
-                <td class="text-right px-3 py-1.5 text-content-300">
-                  {{ b.reported ? formatVolume(b.reported, 1) : '—' }}
                 </td>
                 <td
                   v-if="bucketLimit"

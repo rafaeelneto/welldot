@@ -99,6 +99,7 @@ export const WellScreenSchema = z.object({
   type: z.string(),
   diameter: z.number(),
   screen_slot: z.number(),
+  slot_type: z.string().optional(),
 });
 
 export const HoleFillSchema = z.object({
@@ -448,20 +449,20 @@ export const MeterReadingSchema = ProductionEntryBaseSchema.extend({
   source: z.string().optional(),
 });
 
-export const DeclaredVolumeSchema = ProductionEntryBaseSchema.extend({
-  type: z.literal('declared_volume'),
+export const EstimatedVolumeSchema = ProductionEntryBaseSchema.extend({
+  type: z.literal('estimated_volume'),
   period_start: rfc3339(),
   period_end: rfc3339(),
   volume: z.number().nonnegative(),
   method: z.string().optional(),
 });
 
-const PRODUCTION_TYPES = ['meter_reading', 'declared_volume'];
+const PRODUCTION_TYPES = ['meter_reading', 'estimated_volume'];
 
 // Unknown (`x-`) entry types fall back to the base schema with passthrough;
 // known types must satisfy their own schema.
 export const ProductionEntrySchema = z
-  .discriminatedUnion('type', [MeterReadingSchema, DeclaredVolumeSchema])
+  .discriminatedUnion('type', [MeterReadingSchema, EstimatedVolumeSchema])
   .or(
     ProductionEntryBaseSchema.passthrough().refine(
       e => !PRODUCTION_TYPES.includes(e.type),

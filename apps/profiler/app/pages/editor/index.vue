@@ -39,8 +39,9 @@ const profileStore = useProfileStore();
 // ─── Active tab ↔ URL hash ────────────────────────────────────────────────────
 // The active tab lives in the URL hash (`/editor#permits`) so a reload keeps
 // it; the default tab (summary) has no hash. The record open in a read-only
-// view is appended to its tab: the permit view (`/editor#permits/<id>`) and
-// the water sample view (`/editor#water-quality/<id>`).
+// view is appended to its tab: the permit view (`/editor#permits/<id>`), the
+// water sample view (`/editor#water-quality/<id>`) and the hydrodynamic event
+// view (`/editor#hydrodynamic/<id>`).
 // Opening or clearing a well goes back to the summary. The hash is written
 // with `history.replaceState` (no router navigation): a hash-only route change
 // would make Nuxt's scrollBehavior look for an element with that id.
@@ -48,11 +49,13 @@ const profileStore = useProfileStore();
 const activeTabKey = ref<EditorTabKey>(EDITOR_TAB.summary);
 const permitView = usePermitView();
 const waterSampleView = useWaterSampleView();
+const eventView = useHydrodynamicEventView();
 
 /** Tabs whose hash can carry the id of the record open in their view. */
 const recordViews = [
   { tab: EDITOR_TAB.permits, id: permitView.permitId },
   { tab: EDITOR_TAB.waterQuality, id: waterSampleView.sampleId },
+  { tab: EDITOR_TAB.hydrodynamicEvents, id: eventView.eventId },
 ] as const;
 
 function readHash(): { tab: EditorTabKey | null; recordId: string | null } {
@@ -107,7 +110,12 @@ watch(activeTabKey, tab => {
 });
 
 watch(
-  [activeTabKey, permitView.permitId, waterSampleView.sampleId],
+  [
+    activeTabKey,
+    permitView.permitId,
+    waterSampleView.sampleId,
+    eventView.eventId,
+  ],
   ([tab]) => {
     if (import.meta.client) writeHash(tab);
   },
@@ -118,6 +126,7 @@ watch(
   () => {
     permitView.close();
     waterSampleView.close();
+    eventView.close();
     activeTabKey.value = EDITOR_TAB.summary;
   },
 );

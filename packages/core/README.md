@@ -120,8 +120,8 @@ All types are exported as TypeScript type-only exports (zero runtime cost).
 | `Meter`                           | One installation of a totalizer (hidrômetro) in the well (v2.3)                                                                              |
 | `ProductionEntryBase`             | Common fields of every `production` ledger entry (v2.3)                                                                                      |
 | `MeterReading`                    | A totalizer register value in m³ (`type: 'meter_reading'`) (v2.3)                                                                            |
-| `DeclaredVolume`                  | A volume declared for a period, without a meter (`type: 'declared_volume'`) (v2.3)                                                           |
-| `ProductionEntry`                 | `MeterReading \| DeclaredVolume` — one entry of the `production` ledger (v2.3)                                                               |
+| `EstimatedVolume`                 | A volume estimated for a period, without a meter (`type: 'estimated_volume'`) (v2.3)                                                         |
+| `ProductionEntry`                 | `MeterReading \| EstimatedVolume` — one entry of the `production` ledger (v2.3)                                                              |
 | `OperatingRegime`                 | Declared flow rate, daily operating time and days per week from `effective_from` (v2.3)                                                      |
 | `WaterSample`                     | One water sample and its results; `water_samples` is a ledger corrected with `corrects` (v2.3)                                               |
 | `SamplingPoint`                   | Where the sample was taken: `type`, point `depth` or `from`/`to` interval, `device`, `pump_installation_id` (v2.3)                           |
@@ -199,7 +199,7 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 | `MeterSchema`                      | `Meter` (`max_reading` > 0)                                                                                                                                       |
 | `ProductionEntryBaseSchema`        | `ProductionEntryBase`                                                                                                                                             |
 | `MeterReadingSchema`               | `MeterReading`                                                                                                                                                    |
-| `DeclaredVolumeSchema`             | `DeclaredVolume`                                                                                                                                                  |
+| `EstimatedVolumeSchema`            | `EstimatedVolume`                                                                                                                                                 |
 | `ProductionEntrySchema`            | `ProductionEntry` (discriminated union + x- passthrough; a known type missing required fields is rejected)                                                        |
 | `OperatingRegimeSchema`            | `OperatingRegime` (`daily_operating_time` 0–24, integer `days_per_week` 1–7)                                                                                      |
 | `HistoryLogEntrySchema`            | `HistoryLogEntry`                                                                                                                                                 |
@@ -318,11 +318,12 @@ Many `.well` string fields are **open**: any value (or an `x-` extension) is val
 | `WELL_PURPOSES`                                                                | `well_purpose[]`                                                                                    |
 | `DRILLING_METHODS`                                                             | `bore_hole[].drilling_method`                                                                       |
 | `CONSTRUCTION_MATERIALS`                                                       | `well_case[].type`, `well_screen[].type`, `reduction[].type`, `pump_installations[].riser_material` |
+| `SCREEN_SLOT_TYPES`                                                            | `well_screen[].slot_type`                                                                           |
 | `CENTRALIZER_TYPES`                                                            | `centralizers[].type`                                                                               |
 | `CEMENT_PAD_TYPES`                                                             | `cement_pad.type`                                                                                   |
 | `PUMP_TYPES`, `POWER_SOURCES`                                                  | `pump_installations[].type`, `.power_source`                                                        |
 | `METER_TYPES`                                                                  | `meters[].type`                                                                                     |
-| `READING_SOURCES`, `DECLARED_METHODS`                                          | `production[].source`, `production[].method`                                                        |
+| `READING_SOURCES`, `ESTIMATION_METHODS`                                        | `production[].source`, `production[].method`                                                        |
 | `PERMIT_TYPES`, `WATER_USES`                                                   | `permits[].type`, `permits[].water_use[]`                                                           |
 | `CONDITION_CATEGORIES`                                                         | `permits[].conditions[].category`                                                                   |
 | `PERMIT_HISTORY_TYPES`                                                         | `permits[].history[].type`                                                                          |

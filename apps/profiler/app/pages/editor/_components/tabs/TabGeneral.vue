@@ -77,19 +77,25 @@ const primaryIndex = computed(
 );
 
 function addWellId() {
-  if (!profileStore.well.well_id) profileStore.well.well_id = [];
-  profileStore.well.well_id.push({ authority: '', id: '' });
+  profileStore.updateWell(draft => {
+    if (!draft.well_id) draft.well_id = [];
+    draft.well_id.push({ authority: '', id: '' });
+  });
 }
 
 function deleteWellId(index: number) {
-  profileStore.well.well_id?.splice(index, 1);
+  profileStore.updateWell(draft => {
+    draft.well_id?.splice(index, 1);
+  });
 }
 
 function setPrimary(index: number) {
   if (!profileStore.well.well_id) return;
   const isAlreadyPrimary = primaryIndex.value === index;
-  profileStore.well.well_id.forEach((entry, i) => {
-    entry.primary = !isAlreadyPrimary && i === index ? true : undefined;
+  profileStore.updateWell(draft => {
+    draft.well_id?.forEach((entry, i) => {
+      entry.primary = !isAlreadyPrimary && i === index ? true : undefined;
+    });
   });
 }
 
@@ -338,10 +344,10 @@ function removeWellPurpose(value: string) {
             @click="setPrimary(index)"
           />
           <div class="flex flex-1 flex-col gap-2 sm:flex-row">
-            <Select
+            <WellComboSelect
               v-model="entry.authority"
               :options="AUTHORITY_SUGGESTIONS"
-              editable
+              :hint="t('editor.comboHint')"
               :placeholder="t('editor.general.wellIds.authorityPlaceholder')"
               class="w-full sm:w-40 sm:shrink-0"
             />

@@ -25,13 +25,18 @@ import {
 } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
 import { createPdfFormatters, type PdfFormatters } from '../formatters';
-import { buildEntryDivider, headerCell } from '../layout/tables';
+import {
+  buildEntryHeader,
+  buildEntryListing,
+  headerCell,
+} from '../layout/tables';
 import type {
   PdfContext,
   PdfDateFormats,
   PdfLabels,
 } from '../types/options.types';
 import type { Content, ContentText, TableCell } from '../types/pdfmake.types';
+import { buildFieldGrid, type MetaField } from './metadataTable';
 
 /** RFC 3339 instant → display; `day` resolution drops the time of day. */
 function formatInstant(
@@ -66,7 +71,7 @@ function valueText(r: WaterQualityResult, labels: PdfLabels): string {
   return text;
 }
 
-/** Datetime, sample type, campaign, correction marker and parent reference. */
+/** Sample type, campaign, correction marker, parent reference and datetime. */
 function buildHeader(
   sample: WaterSample,
   well: Well,
@@ -89,71 +94,63 @@ function buildHeader(
       }`,
   ].filter((v): v is string => !!v);
 
-  return {
-    columns: [
-      {
-        text: [
-          {
-            text: fmt.vocab(SAMPLE_TYPES, sample.sample_type),
-            style: 'tableHeader',
-          },
-          ...(details.length
-            ? [{ text: `   ${details.join(' · ')}`, style: 'metadataLabel' }]
-            : []),
-        ],
-        width: '*',
-      },
-      {
-        text: formatInstant(sample.datetime, dateFormats),
-        style: 'metadataLabel',
-        alignment: 'right',
-        width: 'auto',
-      },
-    ],
-  };
+  return buildEntryHeader(
+    fmt.vocab(SAMPLE_TYPES, sample.sample_type),
+    details.join(' · '),
+    formatInstant(sample.datetime, dateFormats),
+  );
 }
 
-/** Sampling point type, device and depth (or interval) in the display unit. */
-function samplingPointLine(
+/** Sampling point (type, device, depth or interval) and laboratory fields. */
+function sampleFields(
   sample: WaterSample,
   well: Well,
   fmt: PdfFormatters,
-  labels: PdfLabels,
-): string | null {
+  ctx: PdfContext,
+): MetaField[] {
+  const fields = ctx.labels.waterQuality.fields;
   const point = sample.sampling_point;
   const depth = getSampleDepth(well, sample);
-  const parts = [
-    point?.type && fmt.vocab(SAMPLING_POINT_TYPES, point.type),
-    point?.device &&
-      `${labels.waterQuality.fields.device}: ${fmt.vocab(SAMPLING_DEVICES, point.device)}`,
-    depth?.kind === 'point' &&
-      `${labels.waterQuality.fields.depth}: ${fmt.formatLength(depth.depth)}`,
-    depth?.kind === 'interval' &&
-      `${labels.waterQuality.fields.interval}: ${fmt.formatLength(depth.from)} – ${fmt.formatLength(depth.to)}`,
-  ].filter((v): v is string => !!v);
-  return parts.length
-    ? `${labels.waterQuality.fields.samplingPoint}: ${parts.join(' · ')}`
-    : null;
-}
-
-/** Laboratory name, report number, receipt instant and temperature. */
-function laboratoryLine(
-  sample: WaterSample,
-  labels: PdfLabels,
-  dateFormats: Required<PdfDateFormats>,
-): string | null {
   const lab = sample.laboratory;
-  if (!lab) return null;
-  const parts = [
-    lab.name,
-    lab.report_number &&
-      `${labels.waterQuality.fields.reportNumber}: ${lab.report_number}`,
-    lab.received_at &&
-      `${labels.waterQuality.fields.receivedAt}: ${formatInstant(lab.received_at, dateFormats, lab.received_at_resolution)}`,
-    lab.received_temperature != null &&
-      `${labels.waterQuality.fields.receivedTemperature}: ${formatNumber(lab.received_temperature, { maximumFractionDigits: 1, suffix: '°C' })}`,
-  ].filter((v): v is string => !!v);
-  return `${labels.waterQuality.fields.laboratory}: ${parts.join(' · ')}`;
+
+  return [
+    point?.type && {
+      label: fields.samplingPoint,
+      value: fmt.vocab(SAMPLING_POINT_TYPES, point.type),
+    },
+    point?.device && {
+      label: fields.device,
+      value: fmt.vocab(SAMPLING_DEVICES, point.device),
+    },
+    depth?.kind === 'point' && {
+      label: fields.depth,
+      value: fmt.formatLength(depth.depth),
+    },
+    depth?.kind === 'interval' && {
+      label: fields.interval,
+      value: `${fmt.formatLength(depth.from)} – ${fmt.formatLength(depth.to)}`,
+    },
+    lab?.name && { label: fields.laboratory, value: lab.name },
+    lab?.report_number && {
+      label: fields.reportNumber,
+      value: lab.report_number,
+    },
+    lab?.received_at && {
+      label: fields.receivedAt,
+      value: formatInstant(
+        lab.received_at,
+        ctx.dateFormats,
+        lab.received_at_resolution,
+      ),
+    },
+    lab?.received_temperature != null && {
+      label: fields.receivedTemperature,
+      value: formatNumber(lab.received_temperature, {
+        maximumFractionDigits: 1,
+        suffix: '°C',
+      }),
+    },
+  ].filter((field): field is MetaField => !!field);
 }
 
 function flagsCell(r: WaterQualityResult, fmt: PdfFormatters): string {
@@ -170,9 +167,64 @@ function flagsCell(r: WaterQualityResult, fmt: PdfFormatters): string {
     .join(' · ');
 }
 
+/** One results-table column: header and the text of each result. */
+interface ResultColumn {
+  header: string;
+  alignRight?: boolean;
+  /** Dropped when no result in the sample has a value for it. */
+  optional?: boolean;
+  width: string;
+  value: (r: WaterQualityResult) => string;
+}
+
+function resultColumns(labels: PdfLabels, fmt: PdfFormatters): ResultColumn[] {
+  const words = labels.waterQuality.pdf;
+  return [
+    {
+      header: words.parameter,
+      width: '*',
+      value: r => getParameterLabel(r.parameter, fmt.locale),
+    },
+    {
+      header: words.value,
+      alignRight: true,
+      width: 'auto',
+      value: r => valueText(r, labels),
+    },
+    { header: words.unit, width: 'auto', value: r => parameterUnitSymbol(r) },
+    {
+      header: words.fraction,
+      optional: true,
+      width: 'auto',
+      value: r => (r.fraction ? fmt.vocab(RESULT_FRACTIONS, r.fraction) : ''),
+    },
+    {
+      header: words.measuredIn,
+      optional: true,
+      width: 'auto',
+      value: r =>
+        r.measured_in ? fmt.vocab(MEASUREMENT_LOCATIONS, r.measured_in) : '',
+    },
+    {
+      header: words.method,
+      optional: true,
+      width: 'auto',
+      value: r => r.method ?? '',
+    },
+    {
+      header: words.flagsValidation,
+      optional: true,
+      width: 'auto',
+      value: r => flagsCell(r, fmt),
+    },
+  ];
+}
+
 /**
- * Results table. Rows exceeding the limit set are bold and red; rejected
- * results (excluded from derivations) are struck through.
+ * Results table. Optional columns (fraction, measured in, method, flags)
+ * appear only when a result has a value for them. Rows exceeding the limit
+ * set are bold and red; rejected results (excluded from derivations) are
+ * struck through.
  */
 function buildResultsTable(
   sample: WaterSample,
@@ -184,51 +236,33 @@ function buildResultsTable(
   const exceeding = new Set(
     limitSet ? getExceedances(sample, limitSet).map(e => e.result_index) : [],
   );
+  const columns = resultColumns(labels, fmt).filter(
+    col => !col.optional || sample.results.some(r => col.value(r) !== ''),
+  );
 
   const body: TableCell[][] = [
-    [
-      headerCell(labels.waterQuality.pdf.parameter),
-      headerCell(labels.waterQuality.pdf.value, true),
-      headerCell(labels.waterQuality.pdf.unit),
-      headerCell(labels.waterQuality.pdf.fraction),
-      headerCell(labels.waterQuality.pdf.measuredIn),
-      headerCell(labels.waterQuality.pdf.method),
-      headerCell(
-        `${labels.waterQuality.pdf.flags} / ${labels.waterQuality.pdf.validation}`,
-      ),
-    ],
+    columns.map(col => headerCell(col.header, col.alignRight)),
   ];
-
   sample.results.forEach((r, index) => {
     const emphasis: Omit<ContentText, 'text'> = {
       fontSize: 8,
       ...(exceeding.has(index) ? { bold: true, color: exceedanceColor } : {}),
       ...(isResultUsable(r) ? {} : { decoration: 'lineThrough' }),
     };
-    const cell = (text: string, alignRight = false): ContentText => ({
-      text,
-      ...(alignRight ? { style: 'columnRight' } : {}),
-      ...emphasis,
-    });
-
-    body.push([
-      cell(getParameterLabel(r.parameter, fmt.locale)),
-      cell(valueText(r, labels), true),
-      cell(parameterUnitSymbol(r)),
-      cell(r.fraction ? fmt.vocab(RESULT_FRACTIONS, r.fraction) : ''),
-      cell(
-        r.measured_in ? fmt.vocab(MEASUREMENT_LOCATIONS, r.measured_in) : '',
-      ),
-      cell(r.method ?? ''),
-      cell(flagsCell(r, fmt)),
-    ]);
+    body.push(
+      columns.map(col => ({
+        text: col.value(r),
+        ...(col.alignRight ? { style: 'columnRight' } : {}),
+        ...emphasis,
+      })),
+    );
   });
 
   const blocks: Content[] = [
     {
       layout: 'lightHorizontalLines',
       table: {
-        widths: ['*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+        widths: columns.map(col => col.width),
         headerRows: 1,
         dontBreakRows: true,
         body,
@@ -254,18 +288,15 @@ function buildBody(
   ctx: PdfContext,
 ): Content[] {
   const { labels } = ctx;
-  const lines = [
-    samplingPointLine(sample, well, fmt, labels),
-    laboratoryLine(sample, labels, ctx.dateFormats),
-  ].filter((v): v is string => !!v);
-  const blocks: Content[] = lines.map(text => ({
-    text,
-    fontSize: 9,
-    margin: [0, 2, 0, 0],
-  }));
-  if (sample.notes) {
-    blocks.push({ text: sample.notes, fontSize: 9, margin: [0, 2, 0, 0] });
-  }
+  const blocks: Content[] = [];
+  const grid = buildFieldGrid(
+    sampleFields(sample, well, fmt, ctx),
+    ctx,
+    sample.notes
+      ? [{ label: labels.waterQuality.fields.notes, value: sample.notes }]
+      : [],
+  );
+  if (grid) blocks.push(grid);
   blocks.push(
     buildResultsTable(
       sample,
@@ -280,10 +311,10 @@ function buildBody(
 
 /**
  * Builds the `water_samples` section (.well v2.3): one card per effective
- * (non-retracted) sample, oldest first, with the sampling point, laboratory
- * and a results table. When `ctx.waterQualityLimitSet` resolves to a
- * known limit set, exceeding results are highlighted and the set is named
- * under each table. Returns `null` when there are no effective samples. The
+ * (non-retracted) sample, oldest first, with a label/value grid of the
+ * sampling point and laboratory and a results table. When
+ * `ctx.waterQualityLimitSet` resolves to a known limit set, exceeding
+ * results are highlighted and the set is named under each table. Returns `null` when there are no effective samples. The
  * title is bound to the first card's header inside an `unbreakable` block.
  */
 export function buildWaterSampleSection(
@@ -299,28 +330,13 @@ export function buildWaterSampleSection(
   const limitSet = ctx.waterQualityLimitSet
     ? getLimitSet(ctx.waterQualityLimitSet)
     : undefined;
-  const [first, ...rest] = samples;
 
-  const items: Content[] = [
-    {
-      stack: [
-        { text: ' ' },
-        { text: ctx.labels.waterQuality.pdf.title, style: 'title' },
-        buildHeader(first!, well, fmt, ctx),
-      ],
-      unbreakable: true,
-    },
-    ...buildBody(first!, well, fmt, limitSet, ctx),
-  ];
-  rest.forEach(sample => {
-    items.push(buildEntryDivider(ctx));
-    items.push({
-      stack: [
-        buildHeader(sample, well, fmt, ctx),
-        ...buildBody(sample, well, fmt, limitSet, ctx),
-      ],
-    });
-  });
-
-  return { stack: items };
+  return buildEntryListing(
+    ctx.labels.waterQuality.pdf.title,
+    samples.map(sample => ({
+      header: buildHeader(sample, well, fmt, ctx),
+      body: buildBody(sample, well, fmt, limitSet, ctx),
+    })),
+    ctx,
+  );
 }

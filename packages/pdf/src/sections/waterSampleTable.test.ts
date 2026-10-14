@@ -1,6 +1,12 @@
 import type { WaterSample } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
+import {
+  baseWell,
+  cellText,
+  collectFields,
+  lastSegmentLabels,
+  makeTestContext,
+} from '../test-utils';
 import { buildWaterSampleSection } from './waterSampleTable';
 
 const ctx = makeTestContext({}, lastSegmentLabels);
@@ -52,12 +58,12 @@ interface Node {
   [key: string]: unknown;
 }
 
-/** Collects every results table (7 columns) in the content tree. */
+/** Collects every results table (header starts with "parameter"). */
 function resultTables(node: unknown, out: Node[] = []): Node[] {
   if (Array.isArray(node)) node.forEach(n => resultTables(n, out));
   else if (node && typeof node === 'object') {
     const n = node as Node;
-    if (n.table?.widths?.length === 7) out.push(n);
+    if (n.table && cellText(n.table.body[0]?.[0]) === 'parameter') out.push(n);
     Object.values(n).forEach(v => resultTables(v, out));
   }
   return out;
@@ -81,6 +87,28 @@ describe('buildWaterSampleSection', () => {
     expect(tables).toHaveLength(2);
     expect(tables[0]!.table!.body).toHaveLength(1 + 1);
     expect(tables[1]!.table!.body).toHaveLength(1 + routine.results.length);
+    // The correction has no fraction, location, method or flags: only the
+    // parameter, value and unit columns are printed.
+    expect(tables[0]!.table!.body[0]!.map(cellText)).toEqual([
+      'parameter',
+      'value',
+      'unit',
+    ]);
+    expect(tables[1]!.table!.body[0]!.map(cellText)).toEqual([
+      'parameter',
+      'value',
+      'unit',
+      'measuredIn',
+      'method',
+      'flagsValidation',
+    ]);
+
+    const fields = collectFields(section);
+    expect(fields.samplingPoint).toHaveLength(1);
+    expect(fields.device).toHaveLength(1);
+    expect(fields.interval).toEqual(['40.00 m – 52.00 m']);
+    expect(fields.laboratory).toEqual(['LabX']);
+    expect(fields.reportNumber).toEqual(['R-123']);
 
     const serialized = JSON.stringify(section);
     expect(serialized).toContain('title');
@@ -169,7 +197,9 @@ describe('buildWaterSampleSection', () => {
     expect(serialized).not.toContain('#b91c1c');
     // Sample datetime and lab receipt follow the custom pattern.
     expect(serialized).toMatch(/"\d{4}-\d{2}-\d{2} \d{2}:\d{2}"/);
-    expect(serialized).toMatch(/receivedAt: \d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
+    expect(collectFields(section).receivedAt![0]).toMatch(
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/,
+    );
     expect(serialized).not.toMatch(/\d{2}\/\d{2}\/\d{4}/);
   });
 });

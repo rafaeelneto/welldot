@@ -60,7 +60,7 @@ function addHoleFill() {
 }
 
 function deleteHoleFill(index: number) {
-  profileStore.well.hole_fill.splice(index, 1);
+  profileStore.removeWellFeature('hole_fill', index);
 }
 
 function updateHoleFill(index: number, prop: string, value: unknown) {

@@ -41,6 +41,24 @@ export type ConstructionMaterial =
   (typeof CONSTRUCTION_MATERIALS)[number]['value'];
 
 /**
+ * Recommended `well_screen[].slot_type` values (since v2.3): the screen
+ * design, independent of its material (`well_screen[].type`).
+ */
+export const SCREEN_SLOT_TYPES = [
+  {
+    value: 'continuous_slot',
+    label: { en: 'Continuous slot', pt: 'Espiralado (tipo Johnson)' },
+  },
+  { value: 'slotted', label: { en: 'Slotted', pt: 'Ranhurado' } },
+  { value: 'bridge_slot', label: { en: 'Bridge slot', pt: 'Tipo ponte' } },
+  { value: 'louver', label: { en: 'Louver', pt: 'Veneziana' } },
+  { value: 'perforated', label: { en: 'Perforated', pt: 'Perfurado' } },
+  { value: 'nold', label: { en: 'Nold type', pt: 'Tipo Nold' } },
+] as const satisfies readonly VocabEntry[];
+
+export type ScreenSlotType = (typeof SCREEN_SLOT_TYPES)[number]['value'];
+
+/**
  * Recommended `centralizers[].type` values (since v2.1): the centralizer
  * design, plus the steel materials commonly used to name rigid ones.
  */

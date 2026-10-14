@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CONSTRUCTION_MATERIALS } from '@welldot/core';
+import { CONSTRUCTION_MATERIALS, SCREEN_SLOT_TYPES } from '@welldot/core';
 import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
@@ -7,6 +7,7 @@ const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 
 const screenTypeOptions = computed(() => vocabOptions(CONSTRUCTION_MATERIALS));
+const slotTypeOptions = computed(() => vocabOptions(SCREEN_SLOT_TYPES));
 
 const wellScreenColumns = computed<WellGridColumn[]>(() => [
   {
@@ -34,6 +35,15 @@ const wellScreenColumns = computed<WellGridColumn[]>(() => [
     size: 130,
   },
   {
+    prop: 'slot_type',
+    label: t('editor.construction.wellScreen.slotType'),
+    info: t('editor.construction.wellScreen.slotTypeInfo'),
+    infoHighlight: t('editor.construction.wellScreen.slotTypeFreeText'),
+    type: 'combo',
+    options: slotTypeOptions.value,
+    minSize: 200,
+  },
+  {
     prop: 'type',
     label: t('editor.construction.wellScreen.type'),
     info: t('editor.construction.wellScreen.typeInfo'),
@@ -56,7 +66,7 @@ function addWellScreen() {
 }
 
 function deleteWellScreen(index: number) {
-  profileStore.well.well_screen.splice(index, 1);
+  profileStore.removeWellFeature('well_screen', index);
 }
 
 function updateWellScreen(index: number, prop: string, value: unknown) {
@@ -97,6 +107,7 @@ function reorderWellScreen(from: number, to: number) {
       :labels="{
         showPendingTextures: t('editor.showPendingTextures'),
         columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
       }"
       @add="addWellScreen"
       @delete="deleteWellScreen"

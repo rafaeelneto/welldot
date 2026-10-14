@@ -52,6 +52,7 @@ vi.mock('~/utils/fgdcTextures', () => ({
 
 import {
   fractureDip,
+  getCementPadRect,
   getConflictAreas,
   getLithologicalFillList,
   getLithologyFill,
@@ -101,7 +102,12 @@ const makeLabels = (): TooltipLabels => ({
   surfaceCase: { title: 'TUBO DE BOCA' },
   holeFill: { title: 'ESP. ANULAR' },
   wellCase: { title: 'REVESTIMENTO' },
-  wellScreen: { title: 'FILTROS', slot: 'Ranhura:' },
+  wellScreen: {
+    title: 'FILTROS',
+    slot: 'Ranhura:',
+    material: 'Material:',
+    slotType: 'Tipo:',
+  },
   reduction: { title: 'REDUÇÃO' },
   centralizer: {
     title: 'CENTRALIZADOR',
@@ -152,6 +158,10 @@ const makeClasses = (): ComponentsClassNames => ({
   geologicGroup: '',
   lithology: { group: '', rect: '' },
   labels: { lithology: { group: '', depth: '', label: '', divider: '' } },
+  overview: { group: '', item: '', window: '' },
+  columnHeaders: { group: '', text: '', rule: '' },
+  markers: { group: '', lithology: '', fracture: '' },
+  overlap: { group: '', band: '', label: '' },
   fractures: { group: '', item: '', hitArea: '', line: '', polyline: '' },
   caves: { group: '', item: '', fill: '', contact: '' },
   constructionGroup: '',
@@ -218,6 +228,33 @@ describe('fractureDip', () => {
     expect(fractureDip(null)).toBe(0);
     expect(fractureDip(undefined)).toBe(0);
     expect(fractureDip(NaN)).toBe(0);
+  });
+});
+
+describe('getCementPadRect', () => {
+  const config = { widthRatio: 1.4, height: 8 };
+
+  it('sizes the pad from the column width and rests it on the surface', () => {
+    expect(getCementPadRect(100, 60, 0, config)).toEqual({
+      x: -40,
+      y: -8,
+      width: 140,
+      height: 8,
+    });
+  });
+
+  it('centers the pad on the construction column', () => {
+    const rect = getCementPadRect(100, 60, 0, config);
+    expect(rect.x + rect.width / 2).toBe(30);
+  });
+
+  it('follows the surface line', () => {
+    expect(getCementPadRect(100, 60, 25, config).y).toBe(17);
+  });
+
+  it('widens so each slab keeps 1.5 × its height beside a wide opening', () => {
+    // opening 130 + 2 × 12 = 154 > 140
+    expect(getCementPadRect(100, 60, 0, config, 130).width).toBe(154);
   });
 });
 

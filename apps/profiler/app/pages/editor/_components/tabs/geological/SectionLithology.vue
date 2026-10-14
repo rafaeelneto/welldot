@@ -71,7 +71,7 @@ function addLithology() {
 }
 
 function deleteLithology(index: number) {
-  profileStore.well.lithology.splice(index, 1);
+  profileStore.removeWellFeature('lithology', index);
 }
 
 function updateLithology(index: number, prop: string, value: unknown) {

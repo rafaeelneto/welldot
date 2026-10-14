@@ -1,6 +1,11 @@
-import type { AnnotationData, DrawContext } from '~/types/render.types';
+import type { Lithology } from '@welldot/core';
+import type {
+  AnnotationData,
+  DrawContext,
+  LithologyLabelItem,
+} from '~/types/render.types';
 import { formatLength, getLengthUnit } from '~/utils/format.utils';
-import { wrapText } from '~/utils/render.utils';
+import { getLithologyFill, wrapText } from '~/utils/render.utils';
 
 type AnnotationItem = {
   sortDepth: number;
@@ -9,6 +14,14 @@ type AnnotationItem = {
   originY: number;
   header: string;
   description: string;
+  /** Bold line under the header (`'units'`). */
+  unit?: string;
+  /** Italic line after the description (`'units'`). */
+  aquifer?: string;
+  /** Layer drawn as a swatch before the header (`'swatch'`). */
+  swatch?: Lithology;
+  /** Rule style above the annotation (`'rules'`). */
+  rule?: 'solid' | 'dashed';
 };
 
 function activeLabelsSet(
@@ -20,12 +33,12 @@ function activeLabelsSet(
 }
 
 function lithologySubSet(
-  cfg: boolean | ('depth' | 'description' | 'dividers')[] | undefined,
-): Set<string> {
-  if (cfg === false) return new Set<string>();
+  cfg: boolean | LithologyLabelItem[] | undefined,
+): Set<LithologyLabelItem> {
+  if (cfg === false) return new Set();
   if (!cfg || cfg === true)
     return new Set(['depth', 'description', 'dividers']);
-  return new Set(cfg as string[]);
+  return new Set(cfg);
 }
 
 /**
@@ -87,16 +100,29 @@ export function drawAnnotationLabels(
   const items: AnnotationItem[] = [];
 
   if (active.has('lithology')) {
+    const continuation = s.continuation;
     data.lithology
       .filter(d => d.from < ctx.depthTo)
       .forEach(d => {
+        const range = `${formatLength(d.from, ctx.units.length, ctx.locale)}–${formatLength(d.to, ctx.units.length, ctx.locale)}${getLengthUnit(ctx.units.length)}`;
+        const continues = continuation?.active && d.from < ctx.depthFrom;
         items.push({
           sortDepth: d.from,
           baseY: ctx.yScale(Math.max(d.from, ctx.depthFrom)),
           originX: ctx.geoXRight,
           originY: ctx.yScale(Math.max(d.from, ctx.depthFrom)),
-          header: `${formatLength(d.from, ctx.units.length, ctx.locale)}–${formatLength(d.to, ctx.units.length, ctx.locale)}${getLengthUnit(ctx.units.length)}`,
-          description: d.description || '',
+          header: continues ? `↑ ${continuation.prefix} · ${range}` : range,
+          description: continues ? '' : d.description || '',
+          ...(show.has('units')
+            ? {
+                unit: d.geologic_unit || undefined,
+                aquifer: continues ? undefined : d.aquifer_unit || undefined,
+              }
+            : {}),
+          ...(show.has('swatch') && !continues ? { swatch: d } : {}),
+          ...(show.has('rules')
+            ? { rule: continues ? 'dashed' : 'solid' }
+            : {}),
         });
       });
   }
@@ -116,6 +142,7 @@ export function drawAnnotationLabels(
           originY: ctx.yScale(d.depth),
           header: `${formatLength(d.depth, ctx.units.length, ctx.locale)}${getLengthUnit(ctx.units.length)} · ${typeLabel}`,
           description: d.description || '',
+          ...(show.has('rules') ? { rule: 'dashed' as const } : {}),
         });
       });
   }
@@ -144,15 +171,21 @@ export function drawAnnotationLabels(
   // ── Stacking pass ─────────────────────────────────────────────────────
   type LabelPos = { item: AnnotationItem; yLabel: number; estH: number };
   const labelPositions: LabelPos[] = [];
-  let currY = 0;
+  // Leave the top line to the overlap label of a repeated band.
+  let currY = ctx.repeatedTo != null ? s.stackingLineHeight + 2 : 0;
   const charsPerLine = Math.max(
     1,
     Math.floor(s.descriptionMaxWidth / (st.fontSize * 0.6)),
   );
 
   items.forEach(item => {
-    const descLines = Math.ceil((item.description.length || 1) / charsPerLine);
-    const estH = (1 + descLines) * s.stackingLineHeight + 4;
+    const descLines = show.has('units')
+      ? item.description
+        ? wrapText(item.description, charsPerLine).length
+        : 0
+      : Math.ceil((item.description.length || 1) / charsPerLine);
+    const extraLines = (item.unit ? 1 : 0) + (item.aquifer ? 1 : 0);
+    const estH = (1 + descLines + extraLines) * s.stackingLineHeight + 4;
     const yLabel = Math.max(item.baseY, currY + s.stackingGap);
     currY = yLabel + estH;
     labelPositions.push({ item, yLabel, estH });
@@ -181,6 +214,9 @@ export function drawAnnotationLabels(
   if (show.has('description')) {
     const lineH = s.stackingLineHeight;
     const bgFill = st.annotationBg ?? 'white';
+    const swatchFill = labelPositions.some(p => p.item.swatch)
+      ? getLithologyFill(data.lithology, ctx.svg, ctx.theme.lithologyTexture)
+      : null;
 
     labelPositions.forEach(({ item, yLabel, estH }) => {
       const labelG = ctx.groups.lithologyLabelsGroup
@@ -199,16 +235,66 @@ export function drawAnnotationLabels(
         .attr('fill-opacity', st.annotationBgOpacity ?? 0.85)
         .attr('stroke', st.annotationBorderColor ?? 'none');
 
+      if (item.rule) {
+        labelG
+          .append('line')
+          .attr('x1', 0)
+          .attr('x2', s.descriptionMaxWidth)
+          .attr('y1', 0)
+          .attr('y2', 0)
+          .attr('stroke', ctx.theme.labels.color)
+          .attr(
+            'stroke-width',
+            item.rule === 'solid' ? 0.8 : ctx.theme.labels.dividerStrokeWidth,
+          )
+          .attr(
+            'stroke-dasharray',
+            item.rule === 'solid'
+              ? null
+              : ctx.theme.labels.dividerStrokeDasharray,
+          );
+      }
+
+      let headerX = 0;
+      if (item.swatch && swatchFill) {
+        const size = lineH * 0.75;
+        labelG
+          .append('rect')
+          .attr('x', 0)
+          .attr('y', lineH * 0.85 - size + 1)
+          .attr('width', size)
+          .attr('height', size)
+          .attr('fill', swatchFill(item.swatch))
+          .attr('stroke', ctx.theme.lithology.stroke)
+          .attr('stroke-width', 0.5);
+        headerX = size + 3;
+      }
+
       labelG
         .append('text')
         .attr('class', 'wp-annotation-header')
         .attr('fill', ctx.theme.labels.color)
         .attr('font-weight', st.headerFontWeight ?? 600)
         .attr('font-family', ctx.theme.labels.headerFont)
-        .attr('x', 0)
+        .attr('x', headerX)
         .attr('y', lineH * 0.85)
         .attr('font-size', st.fontSize)
         .text(item.header);
+
+      let lineY = lineH * 0.85 + lineH;
+      if (item.unit) {
+        labelG
+          .append('text')
+          .attr('class', 'wp-annotation-unit')
+          .attr('fill', ctx.theme.labels.color)
+          .attr('font-weight', st.headerFontWeight ?? 600)
+          .attr('font-family', ctx.theme.labels.bodyFont ?? 'sans-serif')
+          .attr('x', 0)
+          .attr('y', lineY)
+          .attr('font-size', st.fontSize)
+          .text(item.unit);
+        lineY += lineH;
+      }
 
       if (item.description) {
         const lines = wrapText(item.description, charsPerLine);
@@ -219,7 +305,7 @@ export function drawAnnotationLabels(
           .attr('font-weight', st.bodyFontWeight ?? 400)
           .attr('font-family', ctx.theme.labels.bodyFont ?? 'sans-serif')
           .attr('x', 0)
-          .attr('y', lineH * 0.85 + lineH)
+          .attr('y', lineY)
           .attr('font-size', st.fontSize);
         lines.forEach((line, i) => {
           bodyEl
@@ -228,6 +314,20 @@ export function drawAnnotationLabels(
             .attr('dy', i === 0 ? 0 : lineH)
             .text(line);
         });
+        lineY += lines.length * lineH;
+      }
+
+      if (item.aquifer) {
+        labelG
+          .append('text')
+          .attr('class', 'wp-annotation-aquifer')
+          .attr('fill', ctx.theme.labels.bodyColor)
+          .attr('font-style', 'italic')
+          .attr('font-family', ctx.theme.labels.bodyFont ?? 'sans-serif')
+          .attr('x', 0)
+          .attr('y', lineY)
+          .attr('font-size', st.fontSize)
+          .text(item.aquifer);
       }
     });
   }

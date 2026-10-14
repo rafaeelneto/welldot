@@ -31,11 +31,9 @@ function wavyLine(
  * Swarm fractures are drawn as a set of parallel wavy lines (with a thicker
  * central line) connected by short bridge lines. Geometry for each fracture
  * is fully deterministic via a seeded PRNG keyed on the fracture depth.
- * Returns early if `data` is empty.
+ * An empty `data` removes the fractures already drawn.
  */
 export function drawFractures(ctx: DrawContext, data: Fracture[]): void {
-  if (!data.length) return;
-
   const {
     groups: { fracturesGroup },
     POCO_WIDTH,

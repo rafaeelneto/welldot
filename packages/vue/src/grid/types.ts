@@ -75,6 +75,11 @@ export interface WellDataGridLabels {
   showPendingTextures?: LanguageTextInput;
   /** Accessible label of the info trigger in column headers. */
   columnInfo?: LanguageTextInput;
+  /**
+   * Note atop the suggestions of `combo` columns, saying any typed value is
+   * accepted; hidden without it.
+   */
+  comboHint?: LanguageTextInput;
 }
 
 /**

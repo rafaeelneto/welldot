@@ -25,7 +25,12 @@ const isDark = useDark({
 });
 
 const lengthUnitOptions: LengthUnits[] = ['m', 'ft'];
-const diameterUnitOptions: DiameterUnits[] = ['mm', 'inches'];
+const diameterUnitOptions = computed(() =>
+  (['mm', 'inches'] as DiameterUnits[]).map(value => ({
+    value,
+    label: value === 'mm' ? 'mm' : t('editor.settings.units.inches'),
+  })),
+);
 const flowUnitOptions = (['m3/h', 'L/s', 'gpm'] as FlowUnits[]).map(value => ({
   value,
   label: resolveFlowUnitLabel(value),
@@ -89,6 +94,8 @@ const togglePt = {
           <SelectButton
             v-model="uiStore.diameterUnit"
             :options="diameterUnitOptions"
+            option-label="label"
+            option-value="value"
             :allow-empty="false"
           />
         </div>

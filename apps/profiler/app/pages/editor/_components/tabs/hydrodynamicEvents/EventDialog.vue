@@ -8,8 +8,10 @@ import {
   type Attachment,
   type HydrodynamicEvent,
 } from '@welldot/core';
+import { availablePumpingCharts } from '@welldot/utils';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import type { WellGridColumn } from '@welldot/vue/grid';
+import PumpingTestCharts from './charts/PumpingTestCharts.vue';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -54,6 +56,11 @@ function blankStep(): FormStep {
 
 const visible = ref(false);
 const editingId = ref<string | null>(null);
+/**
+ * Id of a new event, drawn once per `openAdd` so the payload (rebuilt on
+ * every form change for validation and the chart preview) keeps one id.
+ */
+const draftId = ref<string | null>(null);
 /** The event being edited, kept so fields the form does not cover survive. */
 const editingOriginal = ref<HydrodynamicEvent | null>(null);
 
@@ -176,6 +183,7 @@ function openAdd() {
   form.steps = [blankStep()];
   expandedSteps.value = form.steps.map(s => s.id);
   editingId.value = null;
+  draftId.value = crypto.randomUUID();
   editingOriginal.value = null;
   visible.value = true;
 }
@@ -289,7 +297,7 @@ function buildEventPayload(): Record<string, unknown> {
   );
   const common: Record<string, unknown> = {
     ...preserved,
-    id: editingId.value ?? crypto.randomUUID(),
+    id: editingId.value ?? draftId.value ?? crypto.randomUUID(),
     type: form.type,
     datetime: datetimeStr,
     ...(form.operator.trim() && { operator: form.operator.trim() }),
@@ -363,6 +371,13 @@ function buildEventPayload(): Record<string, unknown> {
 
   return event;
 }
+
+/** The form as an event, for the chart preview. */
+const previewEvent = computed(() => buildEventPayload() as HydrodynamicEvent);
+
+const showCharts = computed(
+  () => availablePumpingCharts(previewEvent.value).length > 0,
+);
 
 function saveEvent() {
   if (!isFormValid.value) return;
@@ -820,6 +835,16 @@ function reorderRecoveryReading(from: number, to: number) {
           @change="changeRecoveryReading"
           @reorder="reorderRecoveryReading"
         />
+      </div>
+
+      <!-- Charts preview -->
+      <div v-if="showCharts" class="flex flex-col gap-2">
+        <span
+          class="text-[10px] font-semibold tracking-widest uppercase text-content-400"
+        >
+          {{ t('editor.hydrodynamicEvents.charts.title') }}
+        </span>
+        <PumpingTestCharts :event="previewEvent" compact />
       </div>
 
       <!-- Notes -->

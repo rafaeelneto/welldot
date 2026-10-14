@@ -4,7 +4,7 @@ Vue 3 + PrimeVue base components, theme and composables for `.well` editors, plu
 
 ## Purpose
 
-The shared UI layer of `apps/profiler` and `welldot-manager`, published so both consume the same versioned components instead of drifting copies. Base components only: labeled field, chip, tag select, info popover, number/unit inputs, texture select/thumbnail, the data grid and the location picker. Domain editors (tabs, permit/sample/event/pump dialogs) and `RecordCard` stay in the apps.
+The shared UI layer of `apps/profiler` and `welldot-manager`, published so both consume the same versioned components instead of drifting copies. Base components only: labeled field, chip, tag select, combo select (editable Select with a suggestions hint), info popover, number/unit inputs, texture select/thumbnail, the data grid and the location picker. Domain editors (tabs, permit/sample/event/pump dialogs) and `RecordCard` stay in the apps.
 
 Framework-light: Vue + PrimeVue, no vue-i18n, no Pinia, no store shape. Every text prop is a `LanguageTextInput` (string or `LanguageText` from `@welldot/core`) resolved against the configured locale; an omitted label isn't rendered. App-wide settings (locale, display units, coordinate format, swappable parts) come from `createWelldot`, a Vue plugin that registers them with `app.provide`. Swappable parts are passed as components (`components` prop or `createWelldot({ components })`), never slots. Precedence: prop, then `createWelldot`, then the built-in default.
 
@@ -22,7 +22,7 @@ src/
     useWellUnits.ts           ← canonical SI ↔ display unit, per quantity
     useWellNumberFormat.ts    ← formatNumber + resolvedLocale (en → en-US, pt → pt-BR)
   components/
-    WellLabeledField.vue  WellChip.vue  WellTagSelect.vue  WellInfoPopover.vue
+    WellLabeledField.vue  WellChip.vue  WellTagSelect.vue  WellComboSelect.vue  WellInfoPopover.vue
     WellInputNumber.vue  WellUnitInput.vue  WellTextureSelect.vue  WellTextureThumbnail.vue
     parts/WellInfoTrigger.vue ← default `trigger` part
   grid/                       → `@welldot/vue/grid` (RevoGrid)

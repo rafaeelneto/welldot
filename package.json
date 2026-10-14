@@ -3,6 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "profiler": "pnpm --filter profiler",
+    "core": "pnpm --filter @welldot/core",
+    "utils": "pnpm --filter @welldot/utils",
+    "render": "pnpm --filter @welldot/render",
+    "pdf": "pnpm --filter @welldot/pdf",
+    "vue": "pnpm --filter @welldot/vue",
+    "lint-config": "pnpm --filter @welldot/lint",
     "dev": "turbo dev",
     "build": "turbo build",
     "test": "turbo test",

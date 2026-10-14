@@ -382,12 +382,12 @@ function save() {
                 :info="t('editor.operation.permit.fields.typeInfo')"
                 :info-label="t('editor.fieldInfo')"
               >
-                <Select
+                <WellComboSelect
                   v-model="form.type"
                   :options="typeOptions"
                   option-label="label"
                   option-value="value"
-                  editable
+                  :hint="t('editor.comboHint')"
                   class="w-full"
                 />
               </WellLabeledField>

@@ -135,8 +135,9 @@ canonical term just to have a canonical value.
 `reduction.type`, `well_screen.type` and `pump_installations[].riser_material`: `pvc`, `geomechanical_pvc`, `carbon_steel`, `galvanized_steel`, `stainless_steel`, `fiberglass`.
 Use a key only when the report's wording maps to it losslessly ("aço carbono" → `carbon_steel`,
 "PVC geomecânico" → `geomechanical_pvc`). When the report adds detail the key would drop (a standard,
-a wall class, "aço carbono SCH 40", a screen construction such as "espiralado"), transcribe the report's
-phrase verbatim instead. Never invent other enum values (`steel`, `hdpe`, `wire_wound`…).
+a wall class, "aço carbono SCH 40"), transcribe the report's phrase verbatim instead. Never invent other
+enum values (`steel`, `hdpe`, `wire_wound`…). A screen construction ("espiralado", "Johnson",
+"ranhurado"…) is not a material: it goes in `well_screen[].slot_type`.
 
 ### `reduction[]`
 
@@ -148,12 +149,19 @@ phrase verbatim instead. Never invent other enum values (`steel`, `hdpe`, `wire_
 
 ### `well_screen[]`
 
-| Field         | Type        | Required | Notes                                                                                                                         |
-| ------------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `from`, `to`  | number (m)  | yes      |                                                                                                                               |
-| `type`        | string      | yes      | **Tier 1 — construction materials**, same rule as `well_case.type` (a screen construction such as wire-wound stays verbatim). |
-| `diameter`    | number (mm) | yes      |                                                                                                                               |
-| `screen_slot` | number (mm) | yes      | v2 name — **not** `screen_slot_mm`. Value and unit unchanged from v1, only the field name changed.                            |
+| Field         | Type        | Required | Notes                                                                                                                      |
+| ------------- | ----------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `from`, `to`  | number (m)  | yes      |                                                                                                                            |
+| `type`        | string      | yes      | **Tier 1 — construction materials**, same rule as `well_case.type`. Material only — the screen design goes in `slot_type`. |
+| `diameter`    | number (mm) | yes      |                                                                                                                            |
+| `screen_slot` | number (mm) | yes      | v2 name — **not** `screen_slot_mm`. Value and unit unchanged from v1, only the field name changed.                         |
+| `slot_type`   | string      | no       | **Tier 1 — screen design (since v2.3).** See below.                                                                        |
+
+**Tier 1 field — `slot_type` (since v2.3).** Recommended values: `continuous_slot` (espiralado, tipo
+Johnson, wire-wound / wire-wrapped), `slotted` (ranhurado), `bridge_slot` (tipo ponte), `louver`
+(veneziana), `perforated` (perfurado), `nold` (filtro tipo Nold). Same lossless rule as the construction materials: use a key only
+when the report's wording maps to it exactly, otherwise transcribe the phrase. Omit the field when the
+report does not state the screen design — never infer it from the material.
 
 ### `surface_case[]`
 
@@ -751,9 +759,10 @@ are in Bq/L.
     {
       "from": 60,
       "to": 80,
-      "type": "wire-wound",
+      "type": "stainless_steel",
       "diameter": 150,
-      "screen_slot": 0.5
+      "screen_slot": 0.5,
+      "slot_type": "continuous_slot"
     }
   ],
   "surface_case": [{ "from": 0, "to": 3, "diameter": 300 }],

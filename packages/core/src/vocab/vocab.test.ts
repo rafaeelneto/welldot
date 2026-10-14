@@ -7,6 +7,7 @@ import {
   CENTRALIZER_TYPES,
   CONSTRUCTION_MATERIALS,
   DRILLING_METHODS,
+  SCREEN_SLOT_TYPES,
 } from './construction.vocab';
 import { WELL_PURPOSES, WELL_TYPES } from './general.vocab';
 import {
@@ -19,7 +20,7 @@ import {
   MEASUREMENT_METHODS,
 } from './hydrodynamic.vocab';
 import {
-  DECLARED_METHODS,
+  ESTIMATION_METHODS,
   MAINTENANCE_TYPES,
   METER_TYPES,
   POWER_SOURCES,
@@ -74,6 +75,12 @@ const VOCABULARIES: [
     '## Construction materials',
   ],
   [
+    'SCREEN_SLOT_TYPES',
+    SCREEN_SLOT_TYPES,
+    'format-reference.md',
+    '## `well_screen[].slot_type`',
+  ],
+  [
     'CENTRALIZER_TYPES',
     CENTRALIZER_TYPES,
     'format-reference.md',
@@ -113,7 +120,12 @@ const VOCABULARIES: [
   ],
   ['METER_TYPES', METER_TYPES, 'format-reference.md', '## `meters[].type`'],
   ['READING_SOURCES', READING_SOURCES, 'format-reference.md', '**`source`**'],
-  ['DECLARED_METHODS', DECLARED_METHODS, 'format-reference.md', '**`method`**'],
+  [
+    'ESTIMATION_METHODS',
+    ESTIMATION_METHODS,
+    'format-reference.md',
+    '**`method`**',
+  ],
   [
     'MEASUREMENT_METHODS',
     MEASUREMENT_METHODS,

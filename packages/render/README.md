@@ -35,12 +35,26 @@ Call `prepareSvg()` once after mounting the SVG element, then call `draw(profile
 ## What it renders
 
 - **Lithology column** — geological layers with FGDC standard texture patterns and custom fill colors
-- **Construction** — borehole, well casings, diameter reductions, well screens, hole fills (gravel pack / cement seal), centralizers (`.well` v2.1 — bow markers in the annulus at each derived position; size via `renderConfig.construction.centralizer.markerHalfHeight`, colors via `theme.centralizer`, tooltip key `centralizer`), and cement pad
-- **Current pump** (`.well` v2.3 `pump_installations`) — the installation without `removed_at` (via `getCurrentPump` from `@welldot/utils`), drawn as a riser pipe from the surface and a pump body ending at `intake_depth`. The riser uses `riser_diameter`, falling back to `riserWidthRatio` × casing diameter. Configure via `renderConfig.construction.pump` (`active`, `bodyHeight` px, `bodyWidthRatio`, `riserWidthRatio`), colors via `theme.pump` (`fill`, `stroke`, `strokeWidth`, `riserStroke`, `riserStrokeWidth`), tooltip key `pump` (rated power shown in `units.power`: `kW`, `cv` or `hp`), legend label `legend.labels.pump`. Earlier installations are not drawn
+- **Construction** — borehole, well casings, diameter reductions, well screens, hole fills (gravel pack / cement seal), centralizers (`.well` v2.1 — bow markers in the annulus at each derived position; size via `renderConfig.construction.centralizer.markerHalfHeight`, colors via `theme.centralizer`, tooltip key `centralizer`), and cement pad. Pipes and the borehole are drawn **open**: walls only, never closed at panel cuts (a `depthRange` that splits an item) or at joints between casing, screen and reduction. They close only where they physically end:
+  - **Casing shoe** — a filled triangle outside each wall at the bottom of the casing / screen string (`renderConfig.construction.casingShoe`: `active`, `size` px, kept within the annulus).
+  - **Screen ends** — a thin dashed line across the pipe at the top and base of every screen, marking the slotted section's limits (`renderConfig.construction.screenEnds.active`; style via `theme.wellScreen.endStrokeWidth` / `endDasharray`; none at panel cuts).
+  - **Borehole** — a bottom line at total depth and a shoulder where the diameter changes; the mouth stays open.
+  - **Hole fill** — the material fills only the annulus (the pipe is cut out of it), with a line at each interface with another material or the open hole.
+  - **Reduction** — two slanted walls.
+  - **Cement pad** — two slabs resting on the surface, one on each side of the outermost pipe (surface case, else casing or screen, else borehole), with a concrete texture (`renderConfig.textures.pad`) and break lines at the outer ends marking it as not to scale. Its size is fixed in px: `renderConfig.construction.cementPad.widthRatio` × the construction column width (widened to keep 1.5 × `height` px of slab beside the opening), `height` px tall. The profile's pad width and thickness only show in the tooltip.
+- **Current pump** (`.well` v2.3 `pump_installations`) — the installation without `removed_at` (via `getCurrentPump` from `@welldot/utils`), drawn as a riser pipe from the wellhead and a pump body ending at `intake_depth`. The riser rises to the top of a casing sticking up above the ground, else to the cement pad, and ends there on a break line (it goes on to the discharge line); on a later panel it runs from the panel top. The riser uses `riser_diameter`, falling back to `riserWidthRatio` × casing diameter; riser and body are shrunk when needed to fit inside the casing (the body at most 85 % of the pipe at the intake, the riser at most 70 % of the narrowest pipe above it and narrower than the body). Configure via `renderConfig.construction.pump` (`active`, `bodyHeight` px, `bodyWidthRatio`, `riserWidthRatio`), colors via `theme.pump` (`fill`, `stroke`, `strokeWidth`, `riserFill`, `riserStroke`, `riserStrokeWidth`; the riser is a filled bar so it never reads as a casing), tooltip key `pump` (rated power shown in `units.power`: `kW`, `cv` or `hp`), legend label `legend.labels.pump`. Earlier installations are not drawn
 - **Fractures** — individual and swarm fractures with dip angles and water-intake indicators
 - **Caves** — cavity zones with wavy geological contact lines
-- **Labels** — depth annotations, lithology descriptions, and geologic / aquifer unit strips
+- **Labels** — depth annotations, lithology descriptions, and geologic / aquifer unit strips. `renderConfig.labels.lithology` also takes `'units'` (bold geologic unit, italic aquifer unit), `'swatch'` (the layer's fill before its depth range) and `'rules'` (a rule above each annotation). With `labels.continuation.active`, a layer that starts above the panel reads `↑ {prefix} · from–to` and a construction label of an item that starts above it gets a leading `↑`
+- **Construction labels** — `renderConfig.constructionLabels.side`: `'left'` (default, each label next to its own casing wall) or `'right'` (one column starting `xOffset` px right of the construction, each label at its item's top)
 - **Legend** — standalone legend panel for fracture and cave symbols
+
+Opt-in layers, all off by default (mostly for paged/static output such as `@welldot/pdf`):
+
+- **Column titles** (`renderConfig.columnHeaders`) — depth, lithology, construction and (with description annotations) description titles in the top margin, over a rule kept `construction.cementPad.height` px above the drawing. Labels come from `applyRenderLocale` (`PROF.` / `LIT.` / `CONSTRUÇÃO` / `DESCRIÇÃO GEOLÓGICA`); style via `theme.columnHeaders`
+- **Mini-map** (`renderConfig.overview: { active, x, width, height }`) — the whole well's lithology (layer `color`s) as a thin column in the left margin, with a window outlining the panel's depth range; style via `theme.overview`
+- **Markers** (`renderConfig.markers: { lithology, fractures, radius }`) — a circled 1-based index on each lithology layer (repeated on every panel the layer crosses) and `F{n}` next to each fracture, numbered by position in the profile's arrays; style via `theme.markers`
+- **Overlap band** — a panel with `repeatedTo` (see `SvgInstance`) hatches `[depthRange[0], repeatedTo]` and labels it with `renderConfig.overlap.label` (`{range}` → `116–124 m`); style via `theme.overlap`
 
 Supports zoom, pan, interactive tooltips, multi-panel layout for long wells, and configurable highlights for interactive selection.
 
@@ -66,7 +80,7 @@ new WellRenderer(svgs: SvgInstance[], options?: {
 
 | Option         | Type                                | Description                                                                                                                                             |
 | -------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `svgs`         | `SvgInstance[]`                     | One or more SVG panel descriptors (`{ selector, height, width, margins }`)                                                                              |
+| `svgs`         | `SvgInstance[]`                     | One or more SVG panel descriptors (`{ selector, height, width, margins, depthRange?, repeatedTo? }`, see below)                                         |
 | `renderConfig` | `DeepPartial<RenderConfig>`         | Controls zoom, pan, animation, labels, tooltips, layout                                                                                                 |
 | `theme`        | `DeepPartial<WellTheme>`            | Visual style overrides (merged with `DEFAULT_WELL_THEME`)                                                                                               |
 | `units`        | `Units`                             | `{ length: 'm' \| 'ft'; diameter: 'mm' \| 'inches' }`                                                                                                   |
@@ -75,16 +89,38 @@ new WellRenderer(svgs: SvgInstance[], options?: {
 | `onError`      | `(err: Error) => void`              | Error callback                                                                                                                                          |
 | `onZoom`       | `(scale: number) => void`           | Called with the current zoom scale (`1` = initial/fit) on every wheel/drag zoom-pan tick, and on `zoomBy`/`resetZoom` calls                             |
 
+#### Panels
+
+By default `draw()` splits the depth `[top, deepest]` across the panels in proportion to their `height`, back to back. `top` is `0` (the surface), or the negative `from` of a casing, screen or surface case that sticks up above the ground: the stick-up is drawn to scale above the cement pad and the lithology still starts at 0 m. `getProfileTopDepth(profile)` returns it, for consumers that plan their own `depthRange`s (start the first one there). Give **every** panel a `depthRange: [from, to]` (m) to choose each window yourself — panels may then overlap, e.g. to repeat the bottom of the previous page. `repeatedTo` (m) marks the repeated band `[from, repeatedTo]`, which is hatched and labelled.
+
+```ts
+new WellRenderer([
+  { selector: '#p1', height: 600, width: 480, margins, depthRange: [0, 124] },
+  {
+    selector: '#p2',
+    height: 700,
+    width: 480,
+    margins,
+    depthRange: [116, 292],
+    repeatedTo: 124,
+  },
+]);
+```
+
 #### Methods
 
-| Method                                                                                                             | Description                                                                                                            |
-| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `prepareSvg(): Promise<void>`                                                                                      | Initialise SVG DOM structure and preload FGDC textures. Call once before the first `draw`.                             |
-| `draw(profile: RenderableWell, options?: { units?: Units; locale?: 'en' \| 'pt'; highlights?: Highlights }): void` | Render or re-render the full well profile.                                                                             |
-| `renderLegend(selector: string, profile: Well): void`                                                              | Render a standalone legend into a separate SVG.                                                                        |
-| `zoomBy(factor: number): void`                                                                                     | Multiply the current zoom scale by `factor` (e.g. `1.25` in, `1 / 1.25` out). No-op if `zoom`/`pan` are both disabled. |
-| `resetZoom(): void`                                                                                                | Reset zoom/pan back to `renderConfig.zoomLevel` (default `1` — the initial fit-to-container view).                     |
-| `getZoomScale(): number`                                                                                           | Current zoom scale of the first panel (`1` = initial/fit).                                                             |
+| Method                                                                                                             | Description                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `prepareSvg(): Promise<void>`                                                                                      | Initialise SVG DOM structure and preload FGDC textures. Call once before the first `draw`.                                |
+| `draw(profile: RenderableWell, options?: { units?: Units; locale?: 'en' \| 'pt'; highlights?: Highlights }): void` | Render or re-render the full well profile. Layers the profile no longer has are removed; an empty well clears the panels. |
+| `clear(): void`                                                                                                    | Remove everything drawn on every panel, keeping the `prepareSvg` structure (the next `draw` needs no new `prepareSvg`).   |
+| `renderLegend(selector: string, profile: Well): void`                                                              | Render a standalone legend into a separate SVG.                                                                           |
+| `getLegendItems(profile: Well): WellLegendItem[]`                                                                  | List the legend entries the profile needs, labeled from `renderConfig.legend.labels`.                                     |
+| `renderLegendSymbol(selector: string, item: WellLegendItem): void`                                                 | Render one entry's symbol into its own SVG, with the textures it uses defined inside (e.g. for a PDF table).              |
+| `renderLithologySwatch(selector: string, layer: Lithology, size = 10): void`                                       | Render one lithology layer's fill as a `size`×`size` square into its own SVG, texture defined inside. After `prepareSvg`. |
+| `zoomBy(factor: number): void`                                                                                     | Multiply the current zoom scale by `factor` (e.g. `1.25` in, `1 / 1.25` out). No-op if `zoom`/`pan` are both disabled.    |
+| `resetZoom(): void`                                                                                                | Reset zoom/pan back to `renderConfig.zoomLevel` (default `1` — the initial fit-to-container view).                        |
+| `getZoomScale(): number`                                                                                           | Current zoom scale of the first panel (`1` = initial/fit).                                                                |
 
 `RenderableWell` extends `Well` with an optional `key` field on each feature array element, enabling stable D3 data-join keys across re-renders. A plain `Well` object is directly assignable to `RenderableWell`. **`key` is runtime-only** — keep it in memory across edits for stable animation, but strip it before serializing to a `.well` file.
 
@@ -122,7 +158,27 @@ drawWellLegend(
 ): void
 ```
 
-Does nothing if the profile contains no fractures or caves.
+Sets the SVG to `0×0` if the profile needs no legend entry.
+
+### `getWellLegendItems` / `drawWellLegendSymbol`
+
+Build your own legend layout (a table, an HTML list…) instead of the fixed SVG panel.
+
+```ts
+getWellLegendItems(profile: Well, labels?: LegendRenderConfig['labels']): WellLegendItem[]
+
+drawWellLegendSymbol(
+  selector: string,
+  item:     WellLegendItem,
+  options?: {
+    theme?:      Partial<WellTheme>;
+    classNames?: ComponentsClassNames['legend'];
+    textures?:   TexturesConfig;
+  }
+): void
+```
+
+`getWellLegendItems` returns the entries in display order; each has a `key` (a `LegendRenderConfig['labels']` key such as `boreHole` or `fractureSwarm`) and its `label`. `drawWellLegendSymbol` draws one entry's symbol (24×12 px plus a 2 px margin, i.e. a `28×16` SVG) with every texture defined inside, so its `outerHTML` renders on its own.
 
 ---
 
@@ -166,7 +222,7 @@ const renderer = new WellRenderer(svgs, {
 });
 ```
 
-`applyRenderLocale(config, locale)` returns a copy of `config` with `constructionLabels.labels`, `legend.labels`, `tooltipLabels`, and `labels.typeLabels` resolved from the package's canonical `RENDER_LABELS` pack — every other field of `config` is unchanged. `RENDER_LABELS` (and the `RenderLocalizedText` — a core `LanguageText<'pt'>` or a plain string —/`RenderLabelPack`/`TooltipLabels` types describing its shape) are also exported directly for consumers who want to resolve labels themselves. Omitting `locale`/`applyRenderLocale` entirely preserves the package's historical Portuguese-only output.
+`applyRenderLocale(config, locale)` returns a copy of `config` with `constructionLabels.labels`, `legend.labels`, `tooltipLabels`, `labels.typeLabels`, `labels.continuation.prefix`, `columnHeaders.labels` and `overlap.label` resolved from the package's canonical `RENDER_LABELS` pack — every other field of `config` is unchanged. `RENDER_LABELS` (and the `RenderLocalizedText` — a core `LanguageText<'pt'>` or a plain string —/`RenderLabelPack`/`TooltipLabels` types describing its shape) are also exported directly for consumers who want to resolve labels themselves. Omitting `locale`/`applyRenderLocale` entirely preserves the package's historical Portuguese-only output.
 
 ---
 

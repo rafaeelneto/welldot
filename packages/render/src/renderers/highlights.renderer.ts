@@ -7,6 +7,8 @@ import type {
   Highlights,
   SvgSelection,
 } from '~/types/render.types';
+import { getPadDiameters } from '~/utils/construction.geometry';
+import { getCementPadRect } from '~/utils/render.utils';
 
 /**
  * Renders a single highlight overlay rectangle (and optional label) into the
@@ -136,29 +138,29 @@ export function drawHighlights(ctx: DrawContext, hl: Highlights): void {
 
   if (
     hl.cement_pad &&
-    ctx.depthFrom === 0 &&
+    ctx.depthFrom <= 0 &&
+    ctx.depthTo > 0 &&
     ctx.constructionData.cement_pad?.thickness
   ) {
-    const cp = ctx.constructionData.cement_pad;
-    const cpPadWidth =
-      (cp.width * constructionConfig.cementPad.widthMultiplier * 1000) / 2;
-    const cpX = (ctx.POCO_CENTER - xScaleConstr(cpPadWidth)) / 2;
-    const cpY =
-      ctx.yScale(0) -
-      ctx.yScale(
-        cp.thickness * constructionConfig.cementPad.thicknessMultiplier,
-      );
-    const cpW = xScaleConstr(cpPadWidth);
-    const cpH = ctx.yScale(
-      cp.thickness * constructionConfig.cementPad.thicknessMultiplier,
+    const { opening, outer } = getPadDiameters(
+      ctx.constructionData,
+      constructionConfig.surfaceCase.diameterPaddingRatio,
+    );
+    const pad = getCementPadRect(
+      ctx.POCO_WIDTH,
+      ctx.POCO_CENTER,
+      ctx.yScale(0),
+      constructionConfig.cementPad,
+      xScaleConstr(opening),
+      xScaleConstr(outer),
     );
     drawHighlightItem(
       ctx,
       ctx.groups.highlightsConstructionGroup as SvgSelection,
-      cpX,
-      cpY,
-      cpW,
-      cpH,
+      pad.x,
+      pad.y,
+      pad.width,
+      pad.height,
       hl.cement_pad.label,
     );
   }

@@ -3,6 +3,7 @@ import {
   CEMENT_PAD_TYPES,
   CENTRALIZER_TYPES,
   CONSTRUCTION_MATERIALS,
+  SCREEN_SLOT_TYPES,
 } from '@welldot/core';
 import {
   calculateHoleFillVolume,
@@ -259,7 +260,8 @@ function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
     createPdfFormatters(ctx);
   const body: TableCell[][] = [
     [
-      headerCell(labels.construction.wellScreen.type),
+      headerCell(labels.construction.wellScreen.material),
+      headerCell(labels.construction.wellScreen.slotType),
       headerCell(
         `${labels.construction.wellScreen.diameter} (${resolveDiameterUnitLabel(diameterUnit, ctx.locale)})`,
         true,
@@ -279,6 +281,7 @@ function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
   items.forEach((item, index) => {
     body.push([
       vocab(CONSTRUCTION_MATERIALS, item.type),
+      item.slot_type ? vocab(SCREEN_SLOT_TYPES, item.slot_type) : '—',
       rightCell(formatDiameter(item.diameter)),
       rightCell(formatDiameter(item.screen_slot)),
       rightCell(formatLength(item.from)),
@@ -294,8 +297,9 @@ function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
         {
           text: labels.document.total,
           style: 'sumRow',
-          colSpan: 4,
+          colSpan: 5,
         },
+        {},
         {},
         {},
         {},
@@ -311,7 +315,7 @@ function buildWellScreenSection(well: Well, ctx: PdfContext): Content | null {
   return withTableTitle(labels.construction.wellScreen.title, {
     layout: 'lightHorizontalLines',
     table: {
-      widths: ['*', 'auto', 'auto', 'auto', 'auto'],
+      widths: ['*', '*', 'auto', 'auto', 'auto', 'auto'],
       headerRows: 1,
       dontBreakRows: true,
       body,

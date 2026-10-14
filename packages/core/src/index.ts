@@ -10,7 +10,7 @@ export type {
   ConditionFulfillment,
   ConstantRateEvent,
   Constructive,
-  DeclaredVolume,
+  EstimatedVolume,
   Filtration,
   Fracture,
   Geologic,
@@ -86,7 +86,7 @@ export {
   CentralizerSchema,
   ConditionFulfillmentSchema,
   ConstantRateEventSchema,
-  DeclaredVolumeSchema,
+  EstimatedVolumeSchema,
   FiltrationSchema,
   FractureSchema,
   HistoryLogEntrySchema,
@@ -198,12 +198,14 @@ export {
   CENTRALIZER_TYPES,
   CONSTRUCTION_MATERIALS,
   DRILLING_METHODS,
+  SCREEN_SLOT_TYPES,
 } from './vocab/construction.vocab';
 export type {
   CementPadType,
   CentralizerType,
   ConstructionMaterial,
   DrillingMethod,
+  ScreenSlotType,
 } from './vocab/construction.vocab';
 export { WELL_PURPOSES, WELL_TYPES } from './vocab/general.vocab';
 export type { WellPurpose, WellType } from './vocab/general.vocab';
@@ -225,7 +227,7 @@ export type {
   MeasurementMethod,
 } from './vocab/hydrodynamic.vocab';
 export {
-  DECLARED_METHODS,
+  ESTIMATION_METHODS,
   MAINTENANCE_TYPES,
   METER_TYPES,
   POWER_SOURCES,
@@ -233,7 +235,7 @@ export {
   READING_SOURCES,
 } from './vocab/operation.vocab';
 export type {
-  DeclaredMethod,
+  EstimationMethod,
   MaintenanceType,
   MeterType,
   PowerSource,

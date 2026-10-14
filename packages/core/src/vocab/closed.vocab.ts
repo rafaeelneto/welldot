@@ -51,7 +51,7 @@ export const PERMIT_ADMINISTRATIVE_STATUSES =
     { value: 'suspended', label: { en: 'Suspended', pt: 'Suspensa' } },
     { value: 'revoked', label: { en: 'Revoked', pt: 'Revogada' } },
     { value: 'denied', label: { en: 'Denied', pt: 'Indeferida' } },
-    { value: 'withdrawn', label: { en: 'Withdrawn', pt: 'Desistida' } },
+    { value: 'withdrawn', label: { en: 'Withdrawn', pt: 'Cancelada' } },
   ]);
 
 /** `permits[].volume_limits[].period` (since v2.3). */
@@ -68,8 +68,8 @@ export const PRODUCTION_ENTRY_TYPES = closedVocab<ProductionEntry['type']>()([
     label: { en: 'Meter reading', pt: 'Leitura de hidrômetro' },
   },
   {
-    value: 'declared_volume',
-    label: { en: 'Declared volume', pt: 'Volume declarado' },
+    value: 'estimated_volume',
+    label: { en: 'Estimated volume', pt: 'Volume estimado' },
   },
 ]);
 

@@ -17,6 +17,13 @@ export interface PdfLabelTree {
 
 /** Default label pack. Leaves are `{ en, pt }`; resolve with `resolvePdfLabels`. */
 export const PDF_LABELS = {
+  caves: {
+    description: { en: 'Description', pt: 'Descrição' },
+    dry: { en: 'dry cave', pt: 'caverna seca' },
+    fromTo: { en: 'From–to', pt: 'De–até' },
+    title: { en: 'Caves', pt: 'Cavernas' },
+    wet: { en: 'wet cave', pt: 'caverna com água' },
+  },
   construction: {
     boreHole: {
       diameter: { en: 'Diam.', pt: 'Diâm.' },
@@ -62,7 +69,8 @@ export const PDF_LABELS = {
       from: { en: 'From', pt: 'De' },
       title: { en: 'Screen', pt: 'Filtro' },
       to: { en: 'To', pt: 'Até' },
-      type: { en: 'Type', pt: 'Tipo' },
+      material: { en: 'Material', pt: 'Material' },
+      slotType: { en: 'Type', pt: 'Tipo' },
     },
     wellhead: {
       cementPad: {
@@ -91,6 +99,14 @@ export const PDF_LABELS = {
     total: { en: 'Total', pt: 'Total' },
     volumeTotal: { en: 'Total volume', pt: 'Volume total' },
     finalInfoTitle: { en: 'Final information', pt: 'Informações finais' },
+    legendTitle: { en: 'Legend', pt: 'Legenda' },
+  },
+  fractures: {
+    depth: { en: 'Depth', pt: 'Prof.' },
+    description: { en: 'Description', pt: 'Descrição' },
+    fracture: { en: 'fracture', pt: 'fratura' },
+    fractureWater: { en: 'open fracture', pt: 'fratura aberta' },
+    title: { en: 'Fractures', pt: 'Fraturas' },
   },
   general: {
     constructionDate: { en: 'Construction Date', pt: 'Data de Construção' },
@@ -116,7 +132,10 @@ export const PDF_LABELS = {
   },
   hydrodynamicEvents: {
     fields: {
+      datetime: { en: 'Date / Time', pt: 'Data / Hora' },
+      notes: { en: 'Notes', pt: 'Observações' },
       operator: { en: 'Operator', pt: 'Operador' },
+      type: { en: 'Type', pt: 'Tipo' },
     },
     stats: {
       flowRate: { en: 'FLOW RATE Q', pt: 'VAZÃO Q' },
@@ -125,7 +144,14 @@ export const PDF_LABELS = {
     },
     title: { en: 'Hydrodynamic Events', pt: 'Eventos Hidrodinâmicos' },
   },
+  lithology: {
+    description: { en: 'Description', pt: 'Descrição' },
+    fromTo: { en: 'From–to', pt: 'De–até' },
+    title: { en: 'Lithology', pt: 'Litologia' },
+    unit: { en: 'Unit', pt: 'Unidade' },
+  },
   operation: {
+    attachments: { en: 'Attachments', pt: 'Anexos' },
     meter: {
       current: { en: 'Current', pt: 'Atual' },
       fields: {
@@ -165,7 +191,10 @@ export const PDF_LABELS = {
     },
     permit: {
       conditions: {
+        condition: { en: 'Condition', pt: 'Condicionante' },
+        number: { en: '#', pt: 'Nº' },
         responsible: { en: 'Responsible', pt: 'Responsável' },
+        status: { en: 'Status', pt: 'Situação' },
         title: { en: 'Conditions', pt: 'Condicionantes' },
         undated: { en: 'Undated', pt: 'Sem prazo' },
       },
@@ -251,12 +280,20 @@ export const PDF_LABELS = {
         notes: { en: 'Notes', pt: 'Observações' },
       },
       fulfill: {
+        by: { en: 'By', pt: 'Por' },
         deadline: { en: 'Deadline', pt: 'Prazo' },
+        description: { en: 'Description', pt: 'Descrição' },
+        fulfilledAt: { en: 'Fulfilled on', pt: 'Cumprida em' },
+        title: { en: 'Fulfillments', pt: 'Cumprimentos' },
       },
       history: {
+        date: { en: 'Date', pt: 'Data' },
+        description: { en: 'Description', pt: 'Descrição' },
         done: { en: 'Done', pt: 'Concluída' },
         dueDate: { en: 'Due', pt: 'Prazo' },
+        situation: { en: 'Status', pt: 'Situação' },
         title: { en: 'History', pt: 'Histórico' },
+        type: { en: 'Type', pt: 'Tipo' },
       },
       noExpiry: { en: 'no fixed expiry', pt: 'sem vencimento' },
       title: { en: 'Permits', pt: 'Outorgas' },
@@ -281,8 +318,8 @@ export const PDF_LABELS = {
         volume: { en: 'Volume', pt: 'Volume' },
         method: { en: 'Method', pt: 'Método' },
         methodInfo: {
-          en: 'Estimated volumes count only where no meter reading covers the period. Reported volumes (as declared to a regulator) are kept for comparison and never added to the total.',
-          pt: 'Volumes estimados só contam onde nenhuma leitura de hidrômetro cobre o período. Volumes declarados (ao órgão gestor) ficam apenas para comparação e nunca somam ao total.',
+          en: 'How the volume was estimated. Estimated volumes count only where no meter reading covers the period.',
+          pt: 'Como o volume foi estimado. Volumes estimados só contam onde nenhuma leitura de hidrômetro cobre o período.',
         },
         notes: { en: 'Notes', pt: 'Observações' },
       },
@@ -301,11 +338,6 @@ export const PDF_LABELS = {
         },
         metered: { en: 'Metered', pt: 'Medido' },
         estimated: { en: 'Estimated', pt: 'Estimado' },
-        reported: { en: 'Reported', pt: 'Declarado' },
-        reportedInfo: {
-          en: 'Volumes declared to a regulator, for comparison only.',
-          pt: 'Volumes declarados ao órgão gestor, apenas para comparação.',
-        },
       },
       unknownIntervalsLabel: {
         en: 'Unknown intervals',
@@ -380,6 +412,37 @@ export const PDF_LABELS = {
       },
       inForce: { en: 'Regime in force', pt: 'Regime vigente' },
       title: { en: 'Operating regime', pt: 'Regime de operação' },
+    },
+  },
+  profile: {
+    caption: {
+      continuesOnPage: {
+        en: 'continues on p. {page} ↓',
+        pt: 'continua na pág. {page} ↓',
+      },
+      continuesTo: {
+        en: 'continues ↓ to {depth}',
+        pt: 'continua ↓ até {depth}',
+      },
+      snappedContact: {
+        en: 'break set at the {depth} contact ({above} / {below})',
+        pt: 'quebra ajustada ao contato {depth} ({above} / {below})',
+      },
+    },
+    columns: {
+      construction: { en: 'CONSTRUCTION', pt: 'CONSTRUÇÃO' },
+      depth: { en: 'DEPTH', pt: 'PROF.' },
+      description: {
+        en: 'GEOLOGICAL DESCRIPTION',
+        pt: 'DESCRIÇÃO GEOLÓGICA',
+      },
+      lithology: { en: 'LITH.', pt: 'LIT.' },
+      well: { en: 'WELL', pt: 'POÇO' },
+    },
+    continuation: { en: 'continued', pt: 'continuação' },
+    overlapRepeated: {
+      en: '{range} repeated from previous page',
+      pt: '{range} repetido da pág. anterior',
     },
   },
   waterQuality: {
@@ -466,6 +529,10 @@ export const PDF_LABELS = {
       method: { en: 'Method', pt: 'Método' },
       flags: { en: 'Lab flags', pt: 'Flags do laboratório' },
       validation: { en: 'Validation', pt: 'Validação' },
+      flagsValidation: {
+        en: 'Flags / validation',
+        pt: 'Flags / validação',
+      },
       exceedances: { en: 'Exceedances', pt: 'Excedências' },
       limitSet: { en: 'Limit set', pt: 'Conjunto de limites' },
     },

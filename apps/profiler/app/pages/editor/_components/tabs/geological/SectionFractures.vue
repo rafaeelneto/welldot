@@ -51,7 +51,7 @@ function addFracture() {
 }
 
 function deleteFracture(index: number) {
-  profileStore.well.fractures.splice(index, 1);
+  profileStore.removeWellFeature('fractures', index);
 }
 
 function updateFracture(index: number, prop: string, value: unknown) {

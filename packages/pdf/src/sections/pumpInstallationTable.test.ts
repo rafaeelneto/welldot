@@ -1,6 +1,11 @@
 import type { PumpInstallation } from '@welldot/core';
 import { describe, expect, it } from 'vitest';
-import { baseWell, lastSegmentLabels, makeTestContext } from '../test-utils';
+import {
+  baseWell,
+  collectFields,
+  lastSegmentLabels,
+  makeTestContext,
+} from '../test-utils';
 import { buildPumpInstallationSection } from './pumpInstallationTable';
 
 const ctx = makeTestContext({}, lastSegmentLabels);
@@ -93,8 +98,9 @@ describe('buildPumpInstallationSection', () => {
     const serialized = JSON.stringify(
       buildPumpInstallationSection(baseWell({ pump_installations: list }), ctx),
     );
-    expect(serialized).toContain('installedBy: Perfurações Silva');
-    expect(serialized).toContain('removedBy: Hidro Serviços');
+    const fields = collectFields(JSON.parse(serialized));
+    expect(fields.installedBy).toEqual(['Perfurações Silva']);
+    expect(fields.removedBy).toEqual(['Hidro Serviços']);
     expect(serialized).not.toContain('Ignored Crew');
   });
 
@@ -117,5 +123,52 @@ describe('buildPumpInstallationSection', () => {
       ),
     );
     expect(serialized).toContain('2020-03-05 → 2024-07-08');
+  });
+
+  it('lays the fields out as a label/value grid, notes on their own row', () => {
+    const pumps: PumpInstallation[] = [
+      {
+        id: 'p',
+        installed_at: '2024-01-01T12:00:00-03:00',
+        type: 'submersible',
+        serial: 'SN-1',
+        riser_diameter: 75,
+        riser_material: 'galvanized_steel',
+        notes: 'Replaced after wear',
+      },
+    ];
+    const section = buildPumpInstallationSection(
+      baseWell({ pump_installations: pumps }),
+      ctx,
+    );
+    const fields = collectFields(section);
+    expect(fields.serial).toEqual(['SN-1']);
+    expect(fields.riserDiameter).toEqual(['75.0 mm']);
+    expect(fields.riserMaterial).toHaveLength(1);
+    expect(fields.notes).toEqual(['Replaced after wear']);
+
+    const grid = (section as { stack: unknown[] }).stack[1] as {
+      table: { widths: unknown[]; body: { colSpan?: number }[][] };
+    };
+    expect(grid.table.widths).toHaveLength(4);
+    // Notes span the whole last row.
+    expect(grid.table.body[grid.table.body.length - 1]![0]!.colSpan).toBe(4);
+  });
+
+  it('uses two grid columns in a narrow content width', () => {
+    const pumps: PumpInstallation[] = [
+      {
+        id: 'p',
+        installed_at: '2024-01-01T12:00:00-03:00',
+        type: 'jet',
+        serial: 'SN-1',
+      },
+    ];
+    const narrow = { ...ctx, page: { ...ctx.page, contentWidth: 300 } };
+    const section = buildPumpInstallationSection(
+      baseWell({ pump_installations: pumps }),
+      narrow,
+    ) as { stack: { table?: { widths: unknown[] } }[] };
+    expect(section.stack[1]!.table!.widths).toHaveLength(2);
   });
 });

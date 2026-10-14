@@ -213,12 +213,12 @@ function removeFulfillment(c: PermitCondition, id: string) {
         <WellLabeledField
           :label="t('editor.operation.permit.conditions.category')"
         >
-          <Select
+          <WellComboSelect
             :model-value="c.category ?? null"
             :options="categoryOptions"
             option-label="label"
             option-value="value"
-            editable
+            :hint="t('editor.comboHint')"
             show-clear
             class="w-full"
             @update:model-value="setCategory(c, $event)"
