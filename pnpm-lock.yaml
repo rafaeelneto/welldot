@@ -125,6 +125,9 @@ importers:
       '@welldot/vue':
         specifier: workspace:*
         version: link:../../packages/vue
+      d3:
+        specifier: ^7.9.0
+        version: 7.9.0
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -183,6 +186,9 @@ importers:
       '@revolist/revogrid':
         specifier: 4.21.9
         version: 4.21.9
+      '@types/d3':
+        specifier: ^7.4.3
+        version: 7.4.3
       '@types/leaflet':
         specifier: ^1.9.21
         version: 1.9.21
