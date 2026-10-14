@@ -26,6 +26,10 @@ The format is designed for three use cases: visualization of technical well prof
 
 See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.3) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
 
+### Example wells
+
+The package ships 14 complete, valid `.well` files in [`examples/`](./examples/README.md). They are built on real wells from the Brazilian SIAGAS registry, with illustrative names, permits, analyses and operating data. Together they cover crystalline, karst, sedimentary, deep, flowing, hand-dug and monitoring wells, plus incomplete and inconsistent records. Import them as `@welldot/core/examples/<file>`, or download them from `https://welldot.org/examples/<file>`.
+
 ## Installation
 
 ```bash

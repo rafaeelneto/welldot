@@ -8,6 +8,7 @@ import {
 import { isWellEmpty } from '@welldot/core';
 import { useDark } from '@vueuse/core';
 import ZoomControls from './ZoomControls.vue';
+import ExamplePicker from '../examples/ExamplePicker.vue';
 
 const { t, locale } = useI18n();
 const profileStore = useProfileStore();
@@ -197,13 +198,26 @@ onUnmounted(() => {
         </template>
       </ClientOnly>
 
+      <!-- Empty or cleared well: start from an example -->
       <div
         v-if="isEmpty"
-        class="absolute inset-0 flex items-center justify-center pointer-events-none"
+        class="absolute inset-0 overflow-y-auto flex justify-center px-6 py-8"
       >
-        <span class="font-mono text-xs text-content-400">{{
-          t('editor.canvas.empty')
-        }}</span>
+        <div class="w-full max-w-sm flex flex-col gap-4 my-auto">
+          <div class="flex flex-col gap-1">
+            <span class="font-mono text-xs text-content-400">{{
+              t('editor.canvas.empty')
+            }}</span>
+            <h3
+              class="m-0 font-serif text-xl font-medium tracking-tight text-content-0"
+            >
+              {{ t('editor.examples.title') }}
+            </h3>
+          </div>
+          <ClientOnly>
+            <ExamplePicker />
+          </ClientOnly>
+        </div>
       </div>
     </div>
 

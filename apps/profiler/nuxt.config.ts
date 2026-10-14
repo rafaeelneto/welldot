@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import type { PwaModuleOptions } from '@vite-pwa/nuxt';
+import { fileURLToPath } from 'node:url';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -199,6 +200,17 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'cloudflare-module',
+    // Example wells from @welldot/core, served as static files at /examples/*
+    // (index.json + *.well). The editor offers them when it is empty.
+    publicAssets: [
+      {
+        dir: fileURLToPath(
+          new URL('../../packages/core/examples', import.meta.url),
+        ),
+        baseURL: '/examples',
+        maxAge: 60 * 60 * 24,
+      },
+    ],
     experimental: { tasks: true },
     // Cron string must match wrangler.json's `triggers.crons` exactly.
     scheduledTasks: {

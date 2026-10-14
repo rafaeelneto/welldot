@@ -33,6 +33,10 @@ src/
                                construction, operation, permit, history, hydrodynamic, attachment, waterSample)
 ```
 
+## Example wells
+
+`examples/` holds the reference `.well` files (published, export `@welldot/core/examples/*`; the profiler serves them at `/examples` and offers them in the empty editor). Each is illustrative: built on a real SIAGAS well (physical base) with invented but consistent names, permits, analyses and operation, marked by the root `x-welldot-example: { illustrative: true, based_on }`. `index.json` lists them (`slug`, `file`, `title`/`summary` in `pt`/`en`, `tags`, `well_depth`, `well_type`, `place`). `src/examples.test.ts` validates every file against `WellSchema`, the round trip and the index — a schema change that breaks an example must fix the example in the same commit. See `examples/README.md` for the set and the SIAGAS mapping rules.
+
 ## Key domain concepts
 
 - **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata, the event/analysis/log blocks, and (since v2.3) root `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime` and `water_samples`.

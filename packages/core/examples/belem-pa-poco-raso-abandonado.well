@@ -1,0 +1,388 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=1500001090"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço raso nº 16 — Baixada (Belém/PA)",
+  "well_driller": "Perfurações Pentágono",
+  "construction_date": "1979-10-27",
+  "obs": "Poço raso de 12 m, perfurado por percussão a jato d'água, captando o aquífero livre dos sedimentos recentes. Alta vazão com pouco rebaixamento, mas vulnerável: abandonado em 1997 após contaminação por esgoto; boca aberta encontrada em 2024.",
+  "well_id": [
+    {
+      "authority": "Operadora",
+      "id": "16",
+      "primary": true
+    }
+  ],
+  "location": {
+    "lat": -1.41917,
+    "lng": -48.44083,
+    "elevation": 5,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31982"
+    }
+  },
+  "well_depth": 12,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 12,
+      "diameter": 203,
+      "drilling_method": "x-jetting"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.6,
+      "to": 6,
+      "type": "pvc",
+      "diameter": 168
+    }
+  ],
+  "reduction": [],
+  "well_screen": [
+    {
+      "from": 6,
+      "to": 12,
+      "type": "pvc",
+      "diameter": 168,
+      "screen_slot": 1,
+      "slot_type": "slotted"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 1,
+      "type": "seal",
+      "diameter": 203,
+      "description": "Argila compactada"
+    },
+    {
+      "from": 1,
+      "to": 12,
+      "type": "gravel_pack",
+      "diameter": 203,
+      "description": "Cascalho"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 1,
+      "description": "Solo amarelo-amarronzado",
+      "color": "#b98a4e",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Sedimentos recentes",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 1,
+      "to": 6,
+      "description": "Areia fina amarelo-avermelhada",
+      "color": "#d9925a",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Sedimentos recentes",
+      "aquifer_unit": "Aquífero livre raso"
+    },
+    {
+      "from": 6,
+      "to": 12,
+      "description": "Areia grossa amarelo-alaranjada",
+      "color": "#e0a050",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Sedimentos recentes",
+      "aquifer_unit": "Aquífero livre raso"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "1979-10-27T07:00:00-03:00",
+      "equipment": "Bomba centrífuga de superfície",
+      "static_level": 0.18,
+      "steps": [
+        {
+          "rate": 48,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 1.8
+            },
+            {
+              "elapsed": 2,
+              "depth": 1.87
+            },
+            {
+              "elapsed": 3,
+              "depth": 1.91
+            },
+            {
+              "elapsed": 5,
+              "depth": 1.96
+            },
+            {
+              "elapsed": 7,
+              "depth": 1.99
+            },
+            {
+              "elapsed": 10,
+              "depth": 2.02
+            },
+            {
+              "elapsed": 15,
+              "depth": 2.06
+            },
+            {
+              "elapsed": 20,
+              "depth": 2.09
+            },
+            {
+              "elapsed": 30,
+              "depth": 2.13
+            },
+            {
+              "elapsed": 45,
+              "depth": 2.17
+            },
+            {
+              "elapsed": 60,
+              "depth": 2.2
+            },
+            {
+              "elapsed": 90,
+              "depth": 2.23
+            },
+            {
+              "elapsed": 120,
+              "depth": 2.26
+            },
+            {
+              "elapsed": 180,
+              "depth": 2.3
+            },
+            {
+              "elapsed": 240,
+              "depth": 2.33
+            },
+            {
+              "elapsed": 360,
+              "depth": 2.37
+            },
+            {
+              "elapsed": 480,
+              "depth": 2.39
+            },
+            {
+              "elapsed": 600,
+              "depth": 2.42
+            },
+            {
+              "elapsed": 720,
+              "depth": 2.43
+            },
+            {
+              "elapsed": 900,
+              "depth": 2.46
+            },
+            {
+              "elapsed": 1080,
+              "depth": 2.47
+            },
+            {
+              "elapsed": 1260,
+              "depth": 2.49
+            },
+            {
+              "elapsed": 1440,
+              "depth": 2.5
+            }
+          ]
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 0.88
+          },
+          {
+            "elapsed": 2,
+            "depth": 0.81
+          },
+          {
+            "elapsed": 3,
+            "depth": 0.77
+          },
+          {
+            "elapsed": 5,
+            "depth": 0.72
+          },
+          {
+            "elapsed": 10,
+            "depth": 0.66
+          },
+          {
+            "elapsed": 15,
+            "depth": 0.62
+          },
+          {
+            "elapsed": 30,
+            "depth": 0.55
+          },
+          {
+            "elapsed": 60,
+            "depth": 0.49
+          },
+          {
+            "elapsed": 120,
+            "depth": 0.43
+          }
+        ]
+      }
+    }
+  ],
+  "aquifer_analysis": [
+    {
+      "id": "an-1979",
+      "datetime": "1979-10-30T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "x-specific_capacity",
+      "static_level": 0.18,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 2.5,
+      "flow_rate": 48,
+      "specific_capacity": 20.69
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-1979",
+      "installed_at": "1979-11-05T09:00:00-03:00",
+      "removed_at": "1997-12-19T09:00:00-03:00",
+      "type": "x-surface_centrifugal",
+      "power_source": "grid",
+      "rated_flow_rate": 45,
+      "rated_power": 7.5,
+      "intake_depth": 5,
+      "riser_diameter": 100,
+      "riser_material": "pvc",
+      "notes": "Bomba de superfície com tubo de sucção."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-1997",
+      "datetime": "1997-10-08T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 14.2,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 48,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ammonia_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 1.8,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "presence": true,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "presence": true,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1979-11-05T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço em operação."
+    },
+    {
+      "id": "log-02",
+      "datetime": "1997-10-15T09:00:00-03:00",
+      "category": "incident",
+      "severity": "critical",
+      "description": "Nitrato acima do limite e coliformes: urbanização sem esgoto ao redor do poço.",
+      "sample_ids": [
+        "am-1997"
+      ]
+    },
+    {
+      "id": "log-03",
+      "datetime": "1997-12-19T09:00:00-03:00",
+      "category": "status_change",
+      "status": "abandoned",
+      "description": "Poço desligado e bomba retirada; não foi tamponado."
+    },
+    {
+      "id": "log-04",
+      "datetime": "2024-08-06T10:00:00-03:00",
+      "category": "status_change",
+      "status": "abandoned",
+      "description": "Vistoria confirma o abandono: boca do poço aberta em terreno baldio. Recomendado tamponamento imediato."
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import SettingsModal from '~/components/SettingsModal.vue';
 import ExportPdfDialog from '~/components/ExportPdfDialog.vue';
 import AiImporterDialog from '~/components/AiImporterDialog.vue';
 import ToolsMenu, { type ToolItem } from './ToolsMenu.vue';
+import ExamplesDrawer from './examples/ExamplesDrawer.vue';
 
 const props = defineProps<{ mobileView: 'profile' | 'data' }>();
 const emit = defineEmits<{
@@ -130,6 +131,9 @@ const exportPdfVisible = ref(false);
 // ── AI importer dialog ───────────────────────────────────────────────
 const aiImporterVisible = ref(false);
 
+// ── Example wells drawer ────────────────────────────────────────────
+const examplesVisible = ref(false);
+
 // ── Tools menu ──────────────────────────────────────────────────────
 const toolsMenuVisible = ref(false);
 
@@ -151,6 +155,12 @@ const toolItems = computed<ToolItem[]>(() => [
     label: t('editor.open'),
     icon: 'ph:folder-open-duotone',
     onClick: openFile,
+  },
+  {
+    label: t('editor.examples.open'),
+    icon: 'ph:books-duotone',
+    alwaysInMenu: true,
+    onClick: () => (examplesVisible.value = true),
   },
   {
     label: t('editor.share'),
@@ -449,6 +459,9 @@ const viewOptions = computed(() => [
 
   <!-- ─── AI importer dialog ────────────────────────────────────────── -->
   <AiImporterDialog v-if="aiImporterVisible" v-model="aiImporterVisible" />
+
+  <!-- ─── Example wells drawer ──────────────────────────────────────── -->
+  <ExamplesDrawer v-if="examplesVisible" v-model="examplesVisible" />
 
   <!-- ─── Tools menu ────────────────────────────────────────────────── -->
   <ToolsMenu

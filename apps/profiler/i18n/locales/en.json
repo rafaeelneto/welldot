@@ -1962,6 +1962,20 @@
           "empty": "No links to other records."
         }
       }
+    },
+    "examples": {
+      "title": "Start from an example",
+      "open": "Open example",
+      "drawerTitle": "Example wells",
+      "loading": "Loading examples",
+      "loadError": "Could not load the examples. Check your connection and try again.",
+      "disclaimer": "Based on real wells from the SIAGAS registry (SGB). Names, permits, analyses and operating data are illustrative.",
+      "confirm": {
+        "header": "Open example",
+        "message": "You have unsaved changes. Opening an example will discard them.",
+        "accept": "Open anyway",
+        "reject": "Cancel"
+      }
     }
   },
   "tips": {

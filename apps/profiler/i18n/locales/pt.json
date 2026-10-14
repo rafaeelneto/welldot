@@ -1962,6 +1962,20 @@
           "empty": "Nenhum vínculo com outros registros."
         }
       }
+    },
+    "examples": {
+      "title": "Comece por um exemplo",
+      "open": "Abrir exemplo",
+      "drawerTitle": "Poços de exemplo",
+      "loading": "Carregando exemplos",
+      "loadError": "Não foi possível carregar os exemplos. Verifique a conexão e tente de novo.",
+      "disclaimer": "Baseados em poços reais do SIAGAS (SGB). Nomes, outorgas, análises e dados de operação são ilustrativos.",
+      "confirm": {
+        "header": "Abrir exemplo",
+        "message": "Há alterações não salvas. Abrir um exemplo irá descartá-las.",
+        "accept": "Abrir mesmo assim",
+        "reject": "Cancelar"
+      }
     }
   },
   "tips": {

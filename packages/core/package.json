@@ -44,13 +44,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./examples/*": "./examples/*"
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE",
-    "docs"
+    "docs",
+    "examples"
   ],
   "scripts": {
     "build": "tsup",

@@ -1,0 +1,1437 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3100020129"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço PT-01 — Sede (Coluna/MG)",
+  "well_driller": "Hidrovale Perfurações e Sondagens Ltda.",
+  "construction_date": "2008-05-08",
+  "obs": "Poço de abastecimento público em aquífero fissural (granitoides do Complexo Guanhães), sob espesso manto de alteração. O revestimento de 8\" desce até 65 m com três seções de filtro Nold no saprolito; abaixo, poço aberto em rocha. Entradas d'água no manto de alteração e em fratura a 85 m.",
+  "well_id": [
+    {
+      "authority": "SAAE Coluna",
+      "id": "PT-01",
+      "primary": true
+    },
+    {
+      "authority": "IGAM",
+      "id": "Cadastro 2009/012457"
+    },
+    {
+      "authority": "CNARH",
+      "id": "310012457"
+    }
+  ],
+  "location": {
+    "lat": -18.23472,
+    "lng": -42.83861,
+    "elevation": 655,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31983"
+    }
+  },
+  "well_depth": 204,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 63.6,
+      "diameter": 305,
+      "drilling_method": "rotary"
+    },
+    {
+      "from": 63.6,
+      "to": 65,
+      "diameter": 254,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 65,
+      "to": 90,
+      "diameter": 203,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 90,
+      "to": 204,
+      "diameter": 152,
+      "drilling_method": "air_hammer"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.7,
+      "to": 36.41,
+      "type": "galvanized_steel",
+      "diameter": 219
+    },
+    {
+      "from": 38.91,
+      "to": 44.97,
+      "type": "galvanized_steel",
+      "diameter": 219
+    },
+    {
+      "from": 47.17,
+      "to": 53.23,
+      "type": "galvanized_steel",
+      "diameter": 219
+    },
+    {
+      "from": 55.43,
+      "to": 65,
+      "type": "galvanized_steel",
+      "diameter": 219
+    }
+  ],
+  "reduction": [],
+  "well_screen": [
+    {
+      "from": 36.41,
+      "to": 38.91,
+      "type": "galvanized_steel",
+      "diameter": 219,
+      "screen_slot": 1,
+      "slot_type": "nold"
+    },
+    {
+      "from": 44.97,
+      "to": 47.17,
+      "type": "galvanized_steel",
+      "diameter": 219,
+      "screen_slot": 1,
+      "slot_type": "nold"
+    },
+    {
+      "from": 53.23,
+      "to": 55.43,
+      "type": "galvanized_steel",
+      "diameter": 219,
+      "screen_slot": 1,
+      "slot_type": "nold"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 11,
+      "type": "seal",
+      "diameter": 305,
+      "description": "Cimentação do espaço anular (calda de cimento)"
+    },
+    {
+      "from": 11,
+      "to": 23,
+      "type": "gravel_pack",
+      "diameter": 305,
+      "description": "Brita nº 1 (enchimento acima do pré-filtro)"
+    },
+    {
+      "from": 23,
+      "to": 63.6,
+      "type": "gravel_pack",
+      "diameter": 305,
+      "description": "Pré-filtro de seixo rolado 2–4 mm"
+    },
+    {
+      "from": 63.6,
+      "to": 65,
+      "type": "gravel_pack",
+      "diameter": 254,
+      "description": "Pré-filtro de seixo rolado 2–4 mm"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 10,
+      "description": "Solo areno-argiloso amarelado",
+      "color": "#d6a75c",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Cobertura detrítica",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 10,
+      "to": 66,
+      "description": "Solo arenoso (saprolito) amarelado a cinza, fragmentação fina",
+      "color": "#cdb88f",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Manto de alteração do Complexo Guanhães",
+      "aquifer_unit": "Aquífero intersticial (manto de alteração)"
+    },
+    {
+      "from": 66,
+      "to": 204,
+      "description": "Granitoide cinza-rosado, fragmentação média",
+      "color": "#b7a3a3",
+      "texture": {
+        "code": 718,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Complexo Guanhães",
+      "aquifer_unit": "Aquífero fissural"
+    }
+  ],
+  "fractures": [
+    {
+      "depth": 85,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fratura aberta — entrada d'água principal na rocha (~5 m³/h no air-lift)",
+      "swarm": false,
+      "azimuth": 110,
+      "dip": 25
+    },
+    {
+      "depth": 131.5,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fratura subhorizontal com pequena entrada d'água",
+      "swarm": false,
+      "azimuth": 95,
+      "dip": 10
+    },
+    {
+      "depth": 172,
+      "depth_precision": 1,
+      "water_intake": false,
+      "description": "Fratura fechada, preenchida por quartzo",
+      "swarm": false,
+      "azimuth": 40,
+      "dip": 65
+    }
+  ],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "airlift",
+      "datetime": "2008-05-08T15:00:00-03:00",
+      "operator": "Hidrovale Perfurações e Sondagens Ltda.",
+      "notes": "Desenvolvimento por air-lift ao final da perfuração.",
+      "steps": [
+        {
+          "rate": 16,
+          "rate_precision": 2,
+          "duration": 360
+        }
+      ]
+    },
+    {
+      "id": "evt-02",
+      "type": "constant_rate",
+      "datetime": "2008-05-11T07:00:00-03:00",
+      "operator": "Hidrovale Perfurações e Sondagens Ltda.",
+      "equipment": "Bomba submersa de teste 6\"; medidor de nível elétrico; vazão por tambor aferido",
+      "static_level": 2,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "steps": [
+        {
+          "rate": 14.76,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 29.91
+            },
+            {
+              "elapsed": 2,
+              "depth": 32.09
+            },
+            {
+              "elapsed": 3,
+              "depth": 33.36
+            },
+            {
+              "elapsed": 5,
+              "depth": 34.97
+            },
+            {
+              "elapsed": 7,
+              "depth": 36.02
+            },
+            {
+              "elapsed": 10,
+              "depth": 37.14
+            },
+            {
+              "elapsed": 15,
+              "depth": 38.42
+            },
+            {
+              "elapsed": 20,
+              "depth": 39.32
+            },
+            {
+              "elapsed": 30,
+              "depth": 40.59
+            },
+            {
+              "elapsed": 45,
+              "depth": 41.87
+            },
+            {
+              "elapsed": 60,
+              "depth": 42.77
+            },
+            {
+              "elapsed": 90,
+              "depth": 44.04
+            },
+            {
+              "elapsed": 120,
+              "depth": 44.95
+            },
+            {
+              "elapsed": 180,
+              "depth": 46.22
+            },
+            {
+              "elapsed": 240,
+              "depth": 47.12
+            },
+            {
+              "elapsed": 360,
+              "depth": 48.4
+            },
+            {
+              "elapsed": 480,
+              "depth": 49.3
+            },
+            {
+              "elapsed": 600,
+              "depth": 50
+            },
+            {
+              "elapsed": 720,
+              "depth": 50.57
+            },
+            {
+              "elapsed": 900,
+              "depth": 51.27
+            },
+            {
+              "elapsed": 1080,
+              "depth": 51.85
+            },
+            {
+              "elapsed": 1260,
+              "depth": 52.33
+            },
+            {
+              "elapsed": 1440,
+              "depth": 52.75,
+              "depth_precision": 0.01
+            }
+          ],
+          "rate_precision": 0.3
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 24.84
+          },
+          {
+            "elapsed": 2,
+            "depth": 22.67
+          },
+          {
+            "elapsed": 3,
+            "depth": 21.39
+          },
+          {
+            "elapsed": 5,
+            "depth": 19.79
+          },
+          {
+            "elapsed": 10,
+            "depth": 17.63
+          },
+          {
+            "elapsed": 15,
+            "depth": 16.37
+          },
+          {
+            "elapsed": 30,
+            "depth": 14.22
+          },
+          {
+            "elapsed": 60,
+            "depth": 12.11
+          },
+          {
+            "elapsed": 120,
+            "depth": 10.05
+          },
+          {
+            "elapsed": 240,
+            "depth": 8.11
+          },
+          {
+            "elapsed": 360,
+            "depth": 7.05
+          },
+          {
+            "elapsed": 480,
+            "depth": 6.35
+          },
+          {
+            "elapsed": 720,
+            "depth": 5.45
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-03",
+      "type": "spot_measurement",
+      "datetime": "2015-09-15T07:30:00-03:00",
+      "operator": "SAAE Coluna — Operação",
+      "static_level": 6.85,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Estiagem de 2014–2015; bomba desligada há 10 h."
+    },
+    {
+      "id": "evt-04",
+      "type": "spot_measurement",
+      "datetime": "2021-03-15T07:30:00-03:00",
+      "operator": "SAAE Coluna — Operação",
+      "static_level": 3.1,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Medido antes da troca da bomba."
+    },
+    {
+      "id": "evt-05",
+      "type": "spot_measurement",
+      "datetime": "2024-04-08T07:20:00-03:00",
+      "operator": "SAAE Coluna — Operação",
+      "static_level": 3.62,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Bomba desligada desde 19:00 do dia anterior."
+    },
+    {
+      "id": "evt-06",
+      "type": "spot_measurement",
+      "datetime": "2026-04-07T07:25:00-03:00",
+      "operator": "SAAE Coluna — Operação",
+      "static_level": 3.94,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Bomba desligada desde 19:00 do dia anterior."
+    }
+  ],
+  "centralizers": [
+    {
+      "from": 10,
+      "to": 60,
+      "spacing": 12,
+      "type": "rigid",
+      "diameter": 290
+    }
+  ],
+  "cement_pad": {
+    "type": "concrete",
+    "width": 1.5,
+    "thickness": 0.15,
+    "length": 1.5
+  },
+  "attachments": [
+    {
+      "id": "a1",
+      "uri": "https://files.example.org/wells/coluna-pt01/relatorio-perfuracao-2008.pdf",
+      "media_type": "application/pdf",
+      "document_type": "drilling_report",
+      "filename": "PT-01_relatorio_perfuracao.pdf"
+    },
+    {
+      "id": "a2",
+      "uri": "https://files.example.org/wells/coluna-pt01/perfil-construtivo.pdf",
+      "media_type": "application/pdf",
+      "document_type": "as_built_drawing"
+    }
+  ],
+  "aquifer_analysis": [
+    {
+      "id": "an-2008",
+      "datetime": "2008-05-20T10:00:00-03:00",
+      "analyst": "Hidrovale — Geólogo responsável",
+      "source_event_ids": [
+        "evt-02"
+      ],
+      "method": "cooper_jacob",
+      "static_level": 2,
+      "static_level_source_id": "evt-02",
+      "dynamic_level": 52.75,
+      "flow_rate": 14.76,
+      "specific_capacity": 0.291,
+      "transmissivity": 9,
+      "storativity": null,
+      "notes": "Meio fissural sob manto de alteração: transmissividade aparente. Rebaixamento elevado na primeira hora indica perdas de carga no poço."
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-2008",
+      "installed_at": "2008-06-02T09:00:00-03:00",
+      "removed_at": "2021-03-15T08:00:00-03:00",
+      "installed_by": "Hidrovale Perfurações e Sondagens Ltda.",
+      "removed_by": "SAAE Coluna — Manutenção",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Ebara",
+      "model": "BHS 412-10",
+      "intake_depth": 62,
+      "rated_flow_rate": 10,
+      "rated_head": 95,
+      "rated_power": 5.5,
+      "stages": 10,
+      "riser_diameter": 50,
+      "riser_material": "galvanized_steel",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 380,
+        "phases": 3,
+        "cable_section": 6,
+        "cable_length": 75
+      },
+      "notes": "Retirada por queda de rendimento e corrosão do edutor."
+    },
+    {
+      "id": "pump-2021",
+      "installed_at": "2021-03-15T10:00:00-03:00",
+      "installed_by": "SAAE Coluna — Manutenção",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Leão",
+      "model": "R6-12",
+      "intake_depth": 62,
+      "rated_flow_rate": 12,
+      "rated_head": 105,
+      "rated_power": 7.5,
+      "stages": 12,
+      "riser_diameter": 60,
+      "riser_material": "stainless_steel",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 380,
+        "phases": 3,
+        "cable_section": 10,
+        "cable_length": 78
+      },
+      "updated_at": "2021-03-15T16:00:00-03:00"
+    }
+  ],
+  "permits": [
+    {
+      "id": "outorga-2009",
+      "type": "abstraction_permit",
+      "authority": "IGAM",
+      "status": "granted",
+      "identifier": "Portaria IGAM nº 01487/2009",
+      "request_identifier": "Processo nº 08214/2008",
+      "issued_at": "2009-08-17",
+      "valid_until": "2014-08-17",
+      "renewal_requested_at": "2014-05-20",
+      "water_use": [
+        "human_supply"
+      ],
+      "flow_rate": 10,
+      "daily_operating_time": 20,
+      "volume_limits": [
+        {
+          "period": "daily",
+          "volume": 200
+        }
+      ],
+      "conditions": [
+        {
+          "id": "c1",
+          "description": "Instalar hidrômetro na saída do poço.",
+          "category": "equipment_installation",
+          "responsible": "SAAE Coluna",
+          "due_after": "P180D",
+          "fulfillments": [
+            {
+              "id": "f1",
+              "datetime": "2010-03-15T11:00:00-03:00",
+              "due_date": "2010-02-13",
+              "description": "Hidrômetro Woltmann DN50 instalado (com atraso).",
+              "author": "SAAE Coluna"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": "h1",
+          "date": "2008-09-03",
+          "type": "filing",
+          "description": "Requerimento de outorga com relatório de perfuração e teste de bombeamento."
+        },
+        {
+          "id": "h2",
+          "date": "2009-08-17",
+          "type": "decision",
+          "description": "Outorga deferida e publicada no Diário Oficial de Minas Gerais."
+        }
+      ]
+    },
+    {
+      "id": "outorga-2015",
+      "type": "abstraction_permit",
+      "authority": "IGAM",
+      "status": "granted",
+      "identifier": "Portaria IGAM nº 00923/2015",
+      "request_identifier": "Processo nº 05530/2014",
+      "issued_at": "2015-02-26",
+      "valid_from": "2015-03-01",
+      "valid_until": "2025-03-01",
+      "renewal_requested_at": "2024-11-20",
+      "water_use": [
+        "human_supply"
+      ],
+      "flow_rate": 12,
+      "daily_operating_time": 20,
+      "volume_limits": [
+        {
+          "period": "daily",
+          "volume": 240
+        },
+        {
+          "period": "annual",
+          "volume": 87600
+        }
+      ],
+      "conditions": [
+        {
+          "id": "c1",
+          "description": "Medir o nível estático anualmente e informar ao IGAM até 30 de abril.",
+          "category": "monitoring",
+          "responsible": "SAAE Coluna — Operação",
+          "first_due": "2016-04-30",
+          "recurrence": "P1Y",
+          "fulfillments": [
+            {
+              "id": "f-2024",
+              "datetime": "2024-04-10T10:00:00-03:00",
+              "due_date": "2024-04-30",
+              "description": "Nível estático de 08/04/2024 informado.",
+              "author": "SAAE Coluna",
+              "event_id": "evt-05"
+            }
+          ]
+        },
+        {
+          "id": "c2",
+          "description": "Enviar análise físico-química e bacteriológica anual.",
+          "category": "monitoring",
+          "responsible": "SAAE Coluna — Laboratório",
+          "first_due": "2016-03-01",
+          "recurrence": "P1Y",
+          "fulfillments": [
+            {
+              "id": "f-2025",
+              "datetime": "2025-02-20T10:00:00-03:00",
+              "due_date": "2025-03-01",
+              "description": "Laudo da coleta de 2024 encaminhado.",
+              "author": "SAAE Coluna",
+              "sample_id": "am-2024"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": "h1",
+          "date": "2014-05-20",
+          "type": "renewal",
+          "description": "Pedido de renovação com aumento da vazão para 12 m³/h."
+        },
+        {
+          "id": "h2",
+          "date": "2015-02-26",
+          "type": "decision",
+          "description": "Renovação deferida."
+        }
+      ],
+      "supersedes": "outorga-2009"
+    },
+    {
+      "id": "outorga-2025",
+      "type": "abstraction_permit",
+      "authority": "IGAM",
+      "status": "requested",
+      "request_identifier": "Processo SEI nº 2240.01.0031877/2024-52",
+      "water_use": [
+        "human_supply"
+      ],
+      "flow_rate": 12,
+      "daily_operating_time": 20,
+      "history": [
+        {
+          "id": "h1",
+          "date": "2024-11-20",
+          "type": "filing",
+          "description": "Pedido de renovação protocolado no SEI antes do vencimento; a outorga anterior segue válida até a decisão."
+        },
+        {
+          "id": "h2",
+          "date": "2025-06-12",
+          "type": "notification",
+          "description": "IGAM solicita teste de bombeamento atualizado.",
+          "done": false,
+          "due_date": "2026-12-31"
+        }
+      ],
+      "supersedes": "outorga-2015",
+      "notes": "Em análise."
+    }
+  ],
+  "meters": [
+    {
+      "id": "hid-1",
+      "installed_at": "2010-03-15T10:00:00-03:00",
+      "removed_at": "2021-03-15T10:00:00-03:00",
+      "type": "mechanical",
+      "manufacturer": "Elster",
+      "model": "Woltmann WPD DN50",
+      "serial": "EL10-33871",
+      "nominal_diameter": 50,
+      "max_reading": 999999
+    },
+    {
+      "id": "hid-2",
+      "installed_at": "2021-03-15T10:30:00-03:00",
+      "type": "electromagnetic",
+      "manufacturer": "Siemens",
+      "model": "SITRANS FM MAG 8000",
+      "serial": "SM21-55102",
+      "nominal_diameter": 50,
+      "notes": "Telemetria GSM com envio diário."
+    }
+  ],
+  "production": [
+    {
+      "id": "prd-001",
+      "type": "meter_reading",
+      "datetime": "2010-03-15T10:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 0,
+      "source": "manual",
+      "notes": "Leitura de instalação."
+    },
+    {
+      "id": "prd-002",
+      "type": "meter_reading",
+      "datetime": "2010-09-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 35017,
+      "source": "manual"
+    },
+    {
+      "id": "prd-003",
+      "type": "meter_reading",
+      "datetime": "2011-03-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 69572,
+      "source": "manual"
+    },
+    {
+      "id": "prd-004",
+      "type": "meter_reading",
+      "datetime": "2011-09-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 106073,
+      "source": "manual"
+    },
+    {
+      "id": "prd-005",
+      "type": "meter_reading",
+      "datetime": "2012-03-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 142998,
+      "source": "manual"
+    },
+    {
+      "id": "prd-006",
+      "type": "meter_reading",
+      "datetime": "2012-09-17T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 182286,
+      "source": "manual"
+    },
+    {
+      "id": "prd-007",
+      "type": "meter_reading",
+      "datetime": "2013-03-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 219204,
+      "source": "manual"
+    },
+    {
+      "id": "prd-008",
+      "type": "meter_reading",
+      "datetime": "2013-09-16T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 254581,
+      "source": "manual"
+    },
+    {
+      "id": "prd-009",
+      "type": "meter_reading",
+      "datetime": "2014-03-17T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 292988,
+      "source": "manual"
+    },
+    {
+      "id": "prd-010",
+      "type": "meter_reading",
+      "datetime": "2014-09-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 320759,
+      "source": "manual"
+    },
+    {
+      "id": "prd-011",
+      "type": "meter_reading",
+      "datetime": "2015-03-16T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 342425,
+      "source": "manual"
+    },
+    {
+      "id": "prd-012",
+      "type": "meter_reading",
+      "datetime": "2015-09-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 372524,
+      "source": "manual"
+    },
+    {
+      "id": "prd-013",
+      "type": "meter_reading",
+      "datetime": "2016-03-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 410925,
+      "source": "manual"
+    },
+    {
+      "id": "prd-014",
+      "type": "meter_reading",
+      "datetime": "2016-09-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 448162,
+      "source": "manual"
+    },
+    {
+      "id": "prd-015",
+      "type": "meter_reading",
+      "datetime": "2017-03-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 486277,
+      "source": "manual"
+    },
+    {
+      "id": "prd-016",
+      "type": "meter_reading",
+      "datetime": "2017-09-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 526039,
+      "source": "manual"
+    },
+    {
+      "id": "prd-017",
+      "type": "meter_reading",
+      "datetime": "2018-03-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 561986,
+      "source": "manual"
+    },
+    {
+      "id": "prd-018",
+      "type": "meter_reading",
+      "datetime": "2018-09-17T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 599919,
+      "source": "manual"
+    },
+    {
+      "id": "prd-019",
+      "type": "meter_reading",
+      "datetime": "2019-03-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 637025,
+      "source": "manual"
+    },
+    {
+      "id": "prd-020",
+      "type": "meter_reading",
+      "datetime": "2019-09-16T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 677047,
+      "source": "manual"
+    },
+    {
+      "id": "prd-021",
+      "type": "meter_reading",
+      "datetime": "2020-03-16T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 716299,
+      "source": "manual"
+    },
+    {
+      "id": "prd-022",
+      "type": "meter_reading",
+      "datetime": "2020-09-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 757090,
+      "source": "manual"
+    },
+    {
+      "id": "prd-023",
+      "type": "meter_reading",
+      "datetime": "2021-03-15T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 794537,
+      "source": "manual"
+    },
+    {
+      "id": "prd-024",
+      "type": "meter_reading",
+      "datetime": "2021-03-15T10:30:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 0,
+      "source": "telemetry",
+      "notes": "Leitura de instalação."
+    },
+    {
+      "id": "prd-025",
+      "type": "meter_reading",
+      "datetime": "2021-09-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 36858,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-026",
+      "type": "meter_reading",
+      "datetime": "2022-03-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 74818,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-027",
+      "type": "meter_reading",
+      "datetime": "2022-09-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 116749,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-028",
+      "type": "meter_reading",
+      "datetime": "2023-03-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 160350,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-029",
+      "type": "meter_reading",
+      "datetime": "2023-09-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 199450,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-030",
+      "type": "meter_reading",
+      "datetime": "2024-03-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 237214,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-031",
+      "type": "meter_reading",
+      "datetime": "2024-09-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 279912,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-032",
+      "type": "meter_reading",
+      "datetime": "2025-03-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 321550,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-033",
+      "type": "meter_reading",
+      "datetime": "2025-09-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 363313,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-034",
+      "type": "meter_reading",
+      "datetime": "2026-03-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 405579,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-035",
+      "type": "meter_reading",
+      "datetime": "2026-09-01T00:00:00-03:00",
+      "meter_id": "hid-2",
+      "reading": 443869,
+      "source": "telemetry"
+    }
+  ],
+  "operating_regime": [
+    {
+      "id": "reg-2008",
+      "effective_from": "2008-06-02T09:00:00-03:00",
+      "flow_rate": 10,
+      "daily_operating_time": 20,
+      "days_per_week": 7
+    },
+    {
+      "id": "reg-2021",
+      "effective_from": "2021-03-15T10:00:00-03:00",
+      "flow_rate": 12,
+      "daily_operating_time": 19,
+      "days_per_week": 7,
+      "notes": "Nova bomba, dentro da Portaria 00923/2015."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-2010",
+      "datetime": "2010-09-16T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "laboratory": {
+        "name": "Laboratório de controle do SAAE"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "apparent_color",
+            "vocabulary": "welldot"
+          },
+          "value": 2.5,
+          "measured_in": "lab",
+          "method": "SMEWW 2120 B"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.14,
+          "measured_in": "lab",
+          "method": "SMEWW 2130 B"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.6,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-H⁺ B"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 7.1,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-Cl⁻ B"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 31.7,
+          "measured_in": "lab",
+          "method": "SMEWW 2340 C"
+        },
+        {
+          "parameter": {
+            "code": "fluoride",
+            "vocabulary": "welldot"
+          },
+          "value": 0.091,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-F⁻ C"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.06,
+          "measured_in": "lab",
+          "method": "SMEWW 3111 B",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "manganese",
+            "vocabulary": "welldot"
+          },
+          "value": 0.051,
+          "measured_in": "lab",
+          "method": "SMEWW 3111 B",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 1.7,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-SO₄²⁻ E"
+        }
+      ]
+    },
+    {
+      "id": "am-2024",
+      "datetime": "2024-10-22T08:40:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Monitoramento anual 2024",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "collected_by": "SAAE Coluna — Laboratório",
+      "preservation": "Refrigeração a 4 °C; HNO₃ para metais; tiossulfato para microbiologia",
+      "chain_of_custody": "CC-2024-118",
+      "laboratory": {
+        "name": "Laboratório Vale do Rio Doce Análises",
+        "accreditation": "CRL 0877 (ISO/IEC 17025)",
+        "report_number": "LVR-24/3391",
+        "received_at": "2024-10-22T15:10:00-03:00",
+        "received_temperature": 4.8
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 24.6,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.2,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 168,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.4,
+          "measured_in": "lab",
+          "method": "SMEWW 2130 B"
+        },
+        {
+          "parameter": {
+            "code": "apparent_color",
+            "vocabulary": "welldot"
+          },
+          "value": 5,
+          "measured_in": "lab",
+          "method": "SMEWW 2120 B",
+          "qualifier": "<"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 112,
+          "measured_in": "lab",
+          "method": "SMEWW 2540 C"
+        },
+        {
+          "parameter": {
+            "code": "alkalinity_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 62,
+          "measured_in": "lab",
+          "method": "SMEWW 2320 B"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 48,
+          "measured_in": "lab",
+          "method": "SMEWW 2340 C"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 12.1,
+          "measured_in": "lab",
+          "method": "SMEWW 3120 B"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 4.3,
+          "measured_in": "lab",
+          "method": "SMEWW 3120 B"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 14.8,
+          "measured_in": "lab",
+          "method": "SMEWW 3120 B"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 2.6,
+          "measured_in": "lab",
+          "method": "SMEWW 3120 B"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 75.6,
+          "measured_in": "lab",
+          "method": "SMEWW 2320 B"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 11.4,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-Cl⁻ B"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 3.2,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-SO₄²⁻ E"
+        },
+        {
+          "parameter": {
+            "code": "fluoride",
+            "vocabulary": "welldot"
+          },
+          "value": 0.21,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-F⁻ C"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 0.62,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-NO₃⁻ E"
+        },
+        {
+          "parameter": {
+            "code": "nitrite_as_n",
+            "vocabulary": "welldot"
+          },
+          "qualifier": "not_detected",
+          "detection_limit": 0.005,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-NO₂⁻ B"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.09,
+          "measured_in": "lab",
+          "method": "US EPA 200.7",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "manganese",
+            "vocabulary": "welldot"
+          },
+          "value": 0.06,
+          "measured_in": "lab",
+          "method": "US EPA 200.7",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "2008-05-09T17:00:00-03:00",
+      "category": "event",
+      "description": "Conclusão da perfuração e completação do poço.",
+      "author": "Hidrovale Perfurações e Sondagens Ltda.",
+      "hydrodynamic_event_ids": [
+        "evt-01"
+      ]
+    },
+    {
+      "id": "log-02",
+      "datetime": "2008-06-02T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço entra em operação na rede da sede.",
+      "author": "SAAE Coluna"
+    },
+    {
+      "id": "log-03",
+      "datetime": "2015-09-15T08:00:00-03:00",
+      "category": "incident",
+      "severity": "high",
+      "description": "Estiagem de 2014–2015: nível estático 4,8 m abaixo do teste original; regime reduzido para 14 h/dia por seis meses.",
+      "author": "SAAE Coluna",
+      "hydrodynamic_event_ids": [
+        "evt-03"
+      ]
+    },
+    {
+      "id": "log-04",
+      "datetime": "2021-03-15T07:00:00-03:00",
+      "category": "status_change",
+      "status": "maintenance",
+      "description": "Poço parado para troca do conjunto motobomba.",
+      "author": "SAAE Coluna"
+    },
+    {
+      "id": "log-05",
+      "datetime": "2021-03-15T10:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "pump_service",
+      "pump_installation_id": "pump-2021",
+      "description": "Nova bomba Leão R6-12 a 62 m com edutor inox; substituição do hidrômetro mecânico por eletromagnético.",
+      "author": "SAAE Coluna — Manutenção",
+      "meter_id": "hid-2"
+    },
+    {
+      "id": "log-06",
+      "datetime": "2021-03-15T16:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço retorna à operação.",
+      "author": "SAAE Coluna"
+    },
+    {
+      "id": "log-07",
+      "datetime": "2024-10-22T08:40:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "water_sampling",
+      "sample_ids": [
+        "am-2024"
+      ],
+      "description": "Coleta anual de água para a condicionante da outorga.",
+      "author": "SAAE Coluna — Laboratório"
+    },
+    {
+      "id": "log-08",
+      "datetime": "2026-04-07T07:25:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "level_measurement",
+      "hydrodynamic_event_ids": [
+        "evt-06"
+      ],
+      "description": "Medição anual de nível estático.",
+      "author": "SAAE Coluna — Operação"
+    }
+  ]
+}

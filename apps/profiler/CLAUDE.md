@@ -74,7 +74,15 @@ app/                      ← srcDir
                              fields, `status_change` status (current well status
                              tag) and the `hydrodynamic_event_ids` / `sample_ids` links
                              of any category (`WellTagSelect`: chips above a Select); root `attachments`
-                             (general files) live in the General tab below Observations
+                             (general files) live in the General tab below Observations.
+                             Example wells (examples/: ExamplePicker, ExamplesDrawer) come
+                             from `@welldot/core/examples`, served by Nitro `publicAssets`
+                             at `/examples` (see nuxt.config.ts). `useWellExamples()` fetches
+                             `/examples/index.json` and loads a `.well` through
+                             `profileStore.loadWell` (asks first when there are unsaved
+                             changes). The picker fills the canvas while the well is empty,
+                             so it also appears after Clear; the menu's "Open example"
+                             opens the drawer
   layouts/
     landing.vue           ← layout for the landing page
   components/             ← app/domain components only; base components (WellLabeledField,

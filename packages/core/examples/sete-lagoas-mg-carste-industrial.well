@@ -1,0 +1,410 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3100003295"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço PI-02 — Unidade industrial (Sete Lagoas/MG)",
+  "well_driller": "Cárstica Poços Artesianos Ltda.",
+  "construction_date": "1989-09-12",
+  "obs": "Poço industrial em calcário da Formação Sete Lagoas (Grupo Bambuí), aquífero cárstico confinado sob argila. Revestido até 28,5 m; abaixo, poço aberto em calcário. Parado desde 1991 e tamponado em 2021 após inspeção com câmera.",
+  "well_id": [
+    {
+      "authority": "Empresa",
+      "id": "PI-02",
+      "primary": true
+    },
+    {
+      "authority": "IGAM",
+      "id": "Cadastro 1998/004410"
+    }
+  ],
+  "location": {
+    "lat": -19.46861,
+    "lng": -44.29556,
+    "elevation": 765,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31983"
+    }
+  },
+  "well_depth": 218,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 28.5,
+      "diameter": 305,
+      "drilling_method": "rotary"
+    },
+    {
+      "from": 28.5,
+      "to": 90,
+      "diameter": 203,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 90,
+      "to": 218,
+      "diameter": 152,
+      "drilling_method": "air_hammer"
+    }
+  ],
+  "well_case": [
+    {
+      "from": 0,
+      "to": 28.5,
+      "type": "carbon_steel",
+      "diameter": 219
+    }
+  ],
+  "reduction": [],
+  "well_screen": [],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 10,
+      "type": "seal",
+      "diameter": 305,
+      "description": "Cimentação do espaço anular"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 25,
+      "description": "Argila amarela",
+      "color": "#d9a441",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Cobertura argilosa",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 25,
+      "to": 28,
+      "description": "Rocha carbonática intemperizada e decomposta",
+      "color": "#b9a27c",
+      "texture": {
+        "code": 623,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Sete Lagoas (Grupo Bambuí)",
+      "aquifer_unit": "Aquífero cárstico Sete Lagoas"
+    },
+    {
+      "from": 28,
+      "to": 90,
+      "description": "Calcário cinza-azulado",
+      "color": "#7d8b99",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Sete Lagoas (Grupo Bambuí)",
+      "aquifer_unit": "Aquífero cárstico Sete Lagoas"
+    },
+    {
+      "from": 90,
+      "to": 200,
+      "description": "Calcário cinza-esbranquiçado",
+      "color": "#b9bec4",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Sete Lagoas (Grupo Bambuí)",
+      "aquifer_unit": "Aquífero cárstico Sete Lagoas"
+    },
+    {
+      "from": 200,
+      "to": 218,
+      "description": "Calcário cinza-azulado",
+      "color": "#7d8b99",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Sete Lagoas (Grupo Bambuí)",
+      "aquifer_unit": "Aquífero cárstico Sete Lagoas"
+    }
+  ],
+  "fractures": [
+    {
+      "depth": 142,
+      "depth_precision": 1,
+      "water_intake": true,
+      "description": "Fratura alargada por dissolução",
+      "swarm": false,
+      "azimuth": 160,
+      "dip": 80
+    }
+  ],
+  "caves": [
+    {
+      "from": 61,
+      "to": 63.5,
+      "water_intake": true,
+      "description": "Cavidade cárstica: queda livre da haste e perda total de circulação; entrada d'água principal."
+    }
+  ],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "1989-09-12T08:00:00-03:00",
+      "operator": "Cárstica Poços Artesianos Ltda.",
+      "static_level": 60,
+      "notes": "Ficha antiga: só o nível estático, o nível dinâmico final e a vazão foram registrados.",
+      "steps": [
+        {
+          "rate": 10,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1440,
+              "depth": 92
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-02",
+      "type": "spot_measurement",
+      "datetime": "2020-08-18T10:00:00-03:00",
+      "operator": "Consultoria Hidrogeológica Bambuí",
+      "static_level": 68.4,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Poço parado há décadas; rebaixamento regional do aquífero cárstico na área urbana."
+    }
+  ],
+  "cement_pad": {
+    "type": "concrete",
+    "width": 1,
+    "thickness": 0.15,
+    "length": 1
+  },
+  "aquifer_analysis": [
+    {
+      "id": "an-1989",
+      "datetime": "1989-09-14T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "x-specific_capacity",
+      "static_level": 60,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 92,
+      "flow_rate": 10,
+      "specific_capacity": 0.313,
+      "notes": "Só capacidade específica; sem leituras para análise de Jacob."
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-1989",
+      "installed_at": "1989-10-02T09:00:00-03:00",
+      "removed_at": "2019-11-05T09:00:00-03:00",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "KSB",
+      "model": "UPA 150C-11",
+      "intake_depth": 110,
+      "rated_flow_rate": 10,
+      "rated_power": 7.5,
+      "riser_diameter": 50,
+      "riser_material": "galvanized_steel",
+      "notes": "Abandonada no poço após a parada de 1991; retirada em 2019 para a inspeção."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-1989",
+      "datetime": "1989-09-12T16:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 357,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "apparent_color",
+            "vocabulary": "welldot"
+          },
+          "value": 7.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.7,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_suspended_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.59,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 68.88,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 11.6,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 2.28,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 8,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "alkalinity_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 216.8,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 218.6,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 255.6,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.14,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "nitrite_as_no2",
+            "vocabulary": "welldot"
+          },
+          "value": 0.016,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "qualifier": "not_detected",
+          "detection_limit": 0.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ammonia_as_nh3",
+            "vocabulary": "welldot"
+          },
+          "qualifier": "not_detected",
+          "detection_limit": 0.1,
+          "measured_in": "lab"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1989-10-02T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço entra em operação no abastecimento industrial."
+    },
+    {
+      "id": "log-02",
+      "datetime": "1991-06-10T08:00:00-03:00",
+      "category": "status_change",
+      "status": "inactive",
+      "description": "Poço parado: unidade passa a ser abastecida pela rede pública."
+    },
+    {
+      "id": "log-03",
+      "datetime": "2019-11-05T09:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "video_inspection",
+      "description": "Retirada da bomba e filmagem: revestimento corroído entre 18 e 24 m; cavidade a 61 m preservada.",
+      "author": "Consultoria Hidrogeológica Bambuí",
+      "severity": "high"
+    },
+    {
+      "id": "log-04",
+      "datetime": "2021-03-22T14:00:00-03:00",
+      "category": "status_change",
+      "status": "decommissioned",
+      "description": "Poço tamponado com calda de cimento do fundo à superfície, conforme orientação do órgão ambiental, para evitar contaminação do aquífero cárstico.",
+      "author": "Consultoria Hidrogeológica Bambuí"
+    }
+  ]
+}
