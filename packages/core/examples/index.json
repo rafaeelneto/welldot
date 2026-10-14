@@ -21,7 +21,8 @@
       ],
       "well_depth": 204,
       "well_type": "tubular",
-      "place": "Coluna/MG"
+      "place": "Coluna/MG",
+      "thumbnail": "thumbs/coluna-mg-cristalino-abastecimento.svg"
     },
     {
       "slug": "sete-lagoas-mg-carste-industrial",
@@ -34,14 +35,11 @@
         "pt": "Calcário Bambuí com cavidade, ficha de teste antiga, análise de 1989, tamponado em 2021.",
         "en": "Bambuí limestone with a cavity, old test record, 1989 analysis, plugged in 2021."
       },
-      "tags": [
-        "karst",
-        "industrial",
-        "decommissioned"
-      ],
+      "tags": ["karst", "industrial", "decommissioned"],
       "well_depth": 218,
       "well_type": "tubular",
-      "place": "Sete Lagoas/MG"
+      "place": "Sete Lagoas/MG",
+      "thumbnail": "thumbs/sete-lagoas-mg-carste-industrial.svg"
     },
     {
       "slug": "minas-novas-mg-cadastro-incompleto",
@@ -54,13 +52,11 @@
         "pt": "Xisto Macaúbas; só construção e litologia, sem teste nem análise.",
         "en": "Macaúbas schist; construction and lithology only, no test or analysis."
       },
-      "tags": [
-        "crystalline",
-        "incomplete"
-      ],
+      "tags": ["crystalline", "incomplete"],
       "well_depth": 210,
       "well_type": "tubular",
-      "place": "Minas Novas/MG"
+      "place": "Minas Novas/MG",
+      "thumbnail": "thumbs/minas-novas-mg-cadastro-incompleto.svg"
     },
     {
       "slug": "rinopolis-sp-estratigrafico-guarani",
@@ -73,16 +69,11 @@
         "pt": "Bauru, 1092 m de basalto e Guarani confinado; água termal alcalina, jorrante.",
         "en": "Bauru, 1092 m of basalt and confined Guarani; flowing, alkaline thermal water."
       },
-      "tags": [
-        "deep",
-        "guarani",
-        "flowing",
-        "thermal",
-        "decommissioned"
-      ],
+      "tags": ["deep", "guarani", "flowing", "thermal", "decommissioned"],
       "well_depth": 1561,
       "well_type": "tubular",
-      "place": "Rinópolis/SP"
+      "place": "Rinópolis/SP",
+      "thumbnail": "thumbs/rinopolis-sp-estratigrafico-guarani.svg"
     },
     {
       "slug": "estrela-doeste-sp-bauru-serra-geral",
@@ -104,7 +95,8 @@
       ],
       "well_depth": 201,
       "well_type": "tubular",
-      "place": "Estrela d'Oeste/SP"
+      "place": "Estrela d'Oeste/SP",
+      "thumbnail": "thumbs/estrela-doeste-sp-bauru-serra-geral.svg"
     },
     {
       "slug": "gastao-vidigal-sp-dados-inconsistentes",
@@ -117,13 +109,11 @@
         "pt": "Revestimento a partir de 0,7 m, cimentação duplicada e teste implausível.",
         "en": "Casing from 0.7 m, duplicated grout and an implausible test."
       },
-      "tags": [
-        "inconsistent",
-        "basalt"
-      ],
+      "tags": ["inconsistent", "basalt"],
       "well_depth": 207,
       "well_type": "tubular",
-      "place": "Gastão Vidigal/SP"
+      "place": "Gastão Vidigal/SP",
+      "thumbnail": "thumbs/gastao-vidigal-sp-dados-inconsistentes.svg"
     },
     {
       "slug": "belem-pa-pirabas-abastecimento",
@@ -146,7 +136,8 @@
       ],
       "well_depth": 265,
       "well_type": "tubular",
-      "place": "Belém/PA"
+      "place": "Belém/PA",
+      "thumbnail": "thumbs/belem-pa-pirabas-abastecimento.svg"
     },
     {
       "slug": "belem-pa-condominio-outorga",
@@ -159,15 +150,11 @@
         "pt": "Fluxo regulatório atual: CNARH, outorga com condicionantes, hidrômetro e leituras mensais.",
         "en": "Current regulatory flow: CNARH, permit with conditions, meter and monthly readings."
       },
-      "tags": [
-        "sedimentary",
-        "permits",
-        "production",
-        "regulatory"
-      ],
+      "tags": ["sedimentary", "permits", "production", "regulatory"],
       "well_depth": 60,
       "well_type": "tubular",
-      "place": "Belém/PA"
+      "place": "Belém/PA",
+      "thumbnail": "thumbs/belem-pa-condominio-outorga.svg"
     },
     {
       "slug": "belem-pa-qualidade-agua-acida",
@@ -180,14 +167,11 @@
         "pt": "PH < 5, valores abaixo do LD, duplicata, branco e contaminação bacteriológica.",
         "en": "PH < 5, values below DL, duplicate, blank and bacterial contamination."
       },
-      "tags": [
-        "sedimentary",
-        "water_quality",
-        "censored"
-      ],
+      "tags": ["sedimentary", "water_quality", "censored"],
       "well_depth": 60,
       "well_type": "tubular",
-      "place": "Icoaraci, Belém/PA"
+      "place": "Icoaraci, Belém/PA",
+      "thumbnail": "thumbs/belem-pa-qualidade-agua-acida.svg"
     },
     {
       "slug": "belem-pa-poco-colmatado",
@@ -200,15 +184,11 @@
         "pt": "Queda de capacidade específica, filmagem, limpeza sem sucesso e tamponamento.",
         "en": "Specific capacity loss, camera inspection, failed rehabilitation and plugging."
       },
-      "tags": [
-        "sedimentary",
-        "clogging",
-        "maintenance",
-        "decommissioned"
-      ],
+      "tags": ["sedimentary", "clogging", "maintenance", "decommissioned"],
       "well_depth": 102,
       "well_type": "tubular",
-      "place": "Belém/PA"
+      "place": "Belém/PA",
+      "thumbnail": "thumbs/belem-pa-poco-colmatado.svg"
     },
     {
       "slug": "belem-pa-poco-raso-abandonado",
@@ -221,14 +201,11 @@
         "pt": "12 m a jato d'água, 48 m³/h, contaminado por esgoto e abandonado sem tamponar.",
         "en": "12 m jetted well, 48 m³/h, contaminated by sewage and abandoned unplugged."
       },
-      "tags": [
-        "shallow",
-        "abandoned",
-        "contamination"
-      ],
+      "tags": ["shallow", "abandoned", "contamination"],
       "well_depth": 12,
       "well_type": "tubular",
-      "place": "Belém/PA"
+      "place": "Belém/PA",
+      "thumbnail": "thumbs/belem-pa-poco-raso-abandonado.svg"
     },
     {
       "slug": "santarem-pa-jorrante-alter-do-chao",
@@ -241,15 +218,11 @@
         "pt": "Carga acima do terreno, teste de 52 h e análise de Jacob (T = 0,003 m²/s).",
         "en": "Head above ground, 52 h test and Jacob analysis (T = 0.003 m²/s)."
       },
-      "tags": [
-        "sedimentary",
-        "flowing",
-        "pumping_test",
-        "aquifer_analysis"
-      ],
+      "tags": ["sedimentary", "flowing", "pumping_test", "aquifer_analysis"],
       "well_depth": 160,
       "well_type": "tubular",
-      "place": "Santarém/PA"
+      "place": "Santarém/PA",
+      "thumbnail": "thumbs/santarem-pa-jorrante-alter-do-chao.svg"
     },
     {
       "slug": "sao-gabriel-rs-cacimba",
@@ -262,14 +235,11 @@
         "pt": "Poço escavado de 10 m, enchente de 2024, coliformes e desinfecção.",
         "en": "10 m hand-dug well, 2024 flood, coliforms and disinfection."
       },
-      "tags": [
-        "hand_dug",
-        "rural",
-        "water_quality"
-      ],
+      "tags": ["hand_dug", "rural", "water_quality"],
       "well_depth": 10,
       "well_type": "hand_dug",
-      "place": "São Gabriel/RS"
+      "place": "São Gabriel/RS",
+      "thumbnail": "thumbs/sao-gabriel-rs-cacimba.svg"
     },
     {
       "slug": "belem-pa-monitoramento-posto",
@@ -282,14 +252,11 @@
         "pt": "Poço de 2\", amostragem de baixa vazão e queda de BTEX durante a remediação.",
         "en": "2\" well, low-flow sampling and BTEX decline during remediation."
       },
-      "tags": [
-        "monitoring",
-        "contamination",
-        "water_quality"
-      ],
+      "tags": ["monitoring", "contamination", "water_quality"],
       "well_depth": 12,
       "well_type": "tubular",
-      "place": "Belém/PA"
+      "place": "Belém/PA",
+      "thumbnail": "thumbs/belem-pa-monitoramento-posto.svg"
     }
   ]
 }

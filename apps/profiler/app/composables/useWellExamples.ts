@@ -10,6 +10,8 @@ export interface WellExample {
   well_depth: number;
   well_type: string;
   place: string;
+  /** SVG drawn by the renderer, relative to the examples folder. */
+  thumbnail: string;
 }
 
 interface WellExampleIndex {
@@ -47,6 +49,10 @@ export function useWellExamples() {
     } catch {
       failed.value = true;
     }
+  }
+
+  function thumbnailUrl(example: WellExample): string {
+    return `${EXAMPLES_BASE}/${example.thumbnail}`;
   }
 
   function exampleText(text: { pt: string; en: string }): string {
@@ -95,5 +101,6 @@ export function useWellExamples() {
     fetchExamples,
     openExample,
     exampleText,
+    thumbnailUrl,
   };
 }

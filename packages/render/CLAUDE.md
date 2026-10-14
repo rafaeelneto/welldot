@@ -50,6 +50,10 @@ src/
     fgdcTextures.json               ← FGDC pattern data used by textures.js
 ```
 
+## Scripts
+
+`scripts/generate-example-thumbnails.mjs` (`pnpm thumbnails:examples`, after `pnpm build` of core and render) draws `packages/core/examples/thumbs/<slug>.svg` for every entry of `packages/core/examples/index.json`, headless in jsdom (with stubs for the SVG geometry jsdom lacks). It waits for the d3 transitions to settle before reading the markup. Plain `.mjs` outside `tsconfig`, so `scripts/**` is in the ESLint ignores.
+
 ## Key API
 
 ```ts

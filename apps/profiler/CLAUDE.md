@@ -80,7 +80,8 @@ app/                      ← srcDir
                              at `/examples` (see nuxt.config.ts). `useWellExamples()` fetches
                              `/examples/index.json` and loads a `.well` through
                              `profileStore.loadWell` (asks first when there are unsaved
-                             changes). The picker fills the canvas while the well is empty,
+                             changes). Cards show the generated `examples/thumbs/<slug>.svg`
+                             (lazy `<img>`). The picker fills the canvas while the well is empty,
                              so it also appears after Clear; the menu's "Open example"
                              opens the drawer
   layouts/

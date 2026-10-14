@@ -41,7 +41,18 @@ The authorities are the real ones for each state (IGAM/MG, SP Águas/SP, SEMAS-P
 | `sao-gabriel-rs-cacimba.well`                 | São Gabriel/RS     | Hand-dug well (`hand_dug`, Ø 1.2 m, brick lining). Levels during the 2022–23 drought and after the 2024 flood, coliforms, disinfection, registration as insignificant use.                                                                                                                                                                                                                                                                       |
 | `belem-pa-monitoramento-posto.well`           | Belém/PA           | 2" monitoring well at a fuel station. Low-flow sampling with purge stabilization. BTEX by CAS code (`vocabulary: "cas"`) declining during remediation.                                                                                                                                                                                                                                                                                           |
 
-`index.json` lists the same set for applications: `slug`, `file`, `title` and `summary` in `pt`/`en`, `tags`, `well_depth`, `well_type` and `place`.
+`index.json` lists the same set for applications: `slug`, `file`, `title` and `summary` in `pt`/`en`, `tags`, `well_depth`, `well_type`, `place` and `thumbnail`.
+
+## Thumbnails
+
+`thumbs/<slug>.svg` is a 120 × 248 drawing of each well made by `@welldot/render`: lithology and construction, with no labels, legend or axis. The editor's example list shows it. The files are generated, not drawn by hand:
+
+```bash
+pnpm --filter @welldot/core build && pnpm --filter @welldot/render build
+pnpm --filter @welldot/render thumbnails:examples
+```
+
+The script ([`packages/render/scripts/generate-example-thumbnails.mjs`](../../render/scripts/generate-example-thumbnails.mjs)) draws each example in jsdom. It then merges duplicate texture patterns, drops text and classes, and renames ids so a rerun only changes what was really redrawn. Run it again after adding or changing an example, or when the renderer's drawing changes.
 
 ## Mapping rules used for the physical base
 
@@ -59,6 +70,7 @@ The authorities are the real ones for each state (IGAM/MG, SP Águas/SP, SEMAS-P
 ## Adding an example
 
 1. Add the `.well` file here. Name it `<place>-<state>-<scenario>.well` in lowercase ASCII.
-2. Add its entry to `index.json`.
-3. Run `pnpm test` in `packages/core`.
-4. Check that `getOperationWarnings`, `getPermitWarnings`, `getPumpInstallationWarnings` and `getWaterSampleWarnings` from `@welldot/utils` return no warnings. All current examples are warning-free, including the inconsistent one: its problems are ones these helpers don't detect yet.
+2. Add its entry to `index.json`, with `"thumbnail": "thumbs/<slug>.svg"`.
+3. Generate its thumbnail (see [Thumbnails](#thumbnails)).
+4. Run `pnpm test` in `packages/core`.
+5. Check that `getOperationWarnings`, `getPermitWarnings`, `getPumpInstallationWarnings` and `getWaterSampleWarnings` from `@welldot/utils` return no warnings. All current examples are warning-free, including the inconsistent one: its problems are ones these helpers don't detect yet.
