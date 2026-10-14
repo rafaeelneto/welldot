@@ -2,6 +2,7 @@
 import type { HydrodynamicEvent } from '@welldot/core';
 import EventCard from './hydrodynamicEvents/EventCard.vue';
 import EventDialog from './hydrodynamicEvents/EventDialog.vue';
+import EventViewDialog from './hydrodynamicEvents/EventViewDialog.vue';
 
 const { t, locale } = useI18n();
 const profileStore = useProfileStore();
@@ -56,6 +57,23 @@ function formatTransmissivityExp(val: number): string {
 
 function toggleTypeFilter(type: string) {
   activeTypeFilter.value = activeTypeFilter.value === type ? null : type;
+}
+
+// ─── Read-only view ───────────────────────────────────────────────────────────
+
+const eventView = useHydrodynamicEventView();
+const viewVisible = computed({
+  get: () =>
+    !!eventView.eventId.value &&
+    allEvents.value.some(e => e.id === eventView.eventId.value),
+  set: open => {
+    if (!open) eventView.close();
+  },
+});
+
+function editFromView(event: HydrodynamicEvent) {
+  eventView.close();
+  eventDialogRef.value?.openEdit(event);
 }
 </script>
 
@@ -266,6 +284,7 @@ function toggleTypeFilter(type: string) {
                 v-for="event in filteredEvents"
                 :key="event.id"
                 :event="event"
+                @view="eventView.open"
                 @edit="eventDialogRef?.openEdit($event)"
               />
             </div>
@@ -294,6 +313,13 @@ function toggleTypeFilter(type: string) {
   </div>
 
   <EventDialog ref="eventDialogRef" />
+
+  <EventViewDialog
+    v-if="viewVisible && eventView.eventId.value"
+    v-model:visible="viewVisible"
+    :event-id="eventView.eventId.value"
+    @edit="editFromView"
+  />
 </template>
 
 <style scoped>

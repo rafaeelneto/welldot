@@ -13,6 +13,7 @@ const { typeOptions } = useHydrodynamicEventTypes();
 const { latestEvent } = useAquiferState();
 const { formatFlow } = useUnitFormat();
 const navigate = inject(summaryNavigateKey, () => {});
+const eventView = useHydrodynamicEventView();
 const { alerts, dataIssues, dataIssuesCount } = useWellAlerts();
 
 const recentLogs = computed(() =>
@@ -29,6 +30,7 @@ const latestEventInfo = computed(() => {
   const type = typeOptions.value.find(o => o.value === e.type);
   const rate = stepRate(e);
   return {
+    id: e.id,
     label: type?.label ?? e.type,
     icon: type?.icon ?? 'ph:drop-duotone',
     date: formatDate(e.datetime, 'dd/MM/yyyy HH:mm'),
@@ -123,7 +125,7 @@ const latestEventInfo = computed(() => {
         v-if="latestEventInfo"
         type="button"
         class="flex items-center gap-2.5 rounded-lg border border-surface-200 bg-surface-50 px-3 py-2 text-left hover:bg-surface-100"
-        @click="navigate(EDITOR_TAB.hydrodynamicEvents)"
+        @click="eventView.open(latestEventInfo.id)"
       >
         <Icon
           :name="latestEventInfo.icon"

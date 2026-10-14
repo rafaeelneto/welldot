@@ -35,6 +35,15 @@ app/                      ← srcDir
                              the active one is kept in the URL hash (`/editor#permits`,
                              none for summary); `profileStore.wellSession` (bumped by
                              `loadWell`/`clear`) sends the editor back to the summary.
+                             Hydrodynamic = the `hydrodynamic_events` ledger
+                             (hydrodynamicEvents/: EventCard, EventDialog; EventViewDialog
+                             in tabs — overview (stats, charts, notes/files, links:
+                             corrections, history logs) and readings (step summary, step
+                             and recovery tables) — whose open event lives in
+                             `useHydrodynamicEventView()` and the hash `#hydrodynamic/<id>`,
+                             also opened from the Summary latest-event card; pumping-test
+                             charts in hydrodynamicEvents/charts/, shared by the view and
+                             the edit dialog's preview, series from @welldot/utils).
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)
@@ -166,6 +175,7 @@ Key rules:
 - Pair at the same index. Slight offset toward higher values for hierarchy is fine; a large gap (>400 steps) is a bug.
 - High `surface` values (`400+`) signal a deliberate inversion (dark hero, inverted sidebar) — rare. High `content` values (`800+`) are nearly always wrong.
 - Tailwind utilities (`bg-surface-*`, `text-content-*`, `bg-primary-*`, etc.) are bridged from PrimeVue CSS vars by `@welldot/vue/tailwind.css`, imported in `app/assets/styles/main.css`. Never use Tailwind grays, raw `bg-white`, or hardcoded hex — they break dark mode.
+- Chart series (data marks only, never text) use `--chart-series-1…8` from `main.css`: a categorical palette with its own validated steps per mode (`:root` / `.dark-mode`), assigned in fixed order (`stepColor()` in `hydrodynamicEvents/charts/types.ts`).
 
 ## PrimeVue components
 

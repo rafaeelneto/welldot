@@ -974,7 +974,87 @@
       "retracted": "Retificado",
       "retractedInfo": "Um evento posterior corrige este. Ele permanece no arquivo, mas não conta mais.",
       "correction": "Correção",
-      "correctionInfo": "Este evento corrige um anterior."
+      "correctionInfo": "Este evento corrige um anterior.",
+      "charts": {
+        "title": "Gráficos",
+        "empty": "Sem leituras suficientes para gerar gráficos.",
+        "kinds": {
+          "hydrograph": "Nível × tempo",
+          "semilog": "Rebaixamento × log t",
+          "recovery": "Recuperação (Theis)",
+          "stepTest": "Teste escalonado"
+        },
+        "axes": {
+          "time": "Tempo desde o início (min)",
+          "elapsed": "Tempo desde o início do degrau (min)",
+          "level": "Nível da água (m)",
+          "drawdown": "Rebaixamento s (m)",
+          "residualDrawdown": "Rebaixamento residual s′ (m)",
+          "ratio": "t/t′",
+          "flowRate": "Vazão Q ({unit})",
+          "specificDrawdown": "s/Q (m por {unit})"
+        },
+        "legend": {
+          "step": "Degrau {n}",
+          "pumping": "Bombeamento",
+          "recovery": "Recuperação",
+          "staticLevel": "NE",
+          "pumpStop": "Parada da bomba",
+          "fit": "Ajuste s/Q = B + C·Q",
+          "fitValues": "B = {b} · C = {c}",
+          "drawdownVsRate": "s × Q"
+        },
+        "tooltip": {
+          "time": "t",
+          "elapsed": "Δt",
+          "level": "Nível",
+          "drawdown": "s",
+          "ratio": "t/t′",
+          "rate": "Q"
+        }
+      },
+      "view": {
+        "open": "Visualizar",
+        "title": "Evento hidrodinâmico",
+        "edit": "Editar",
+        "close": "Fechar",
+        "tabs": {
+          "overview": "Visão geral",
+          "readings": "Leituras"
+        },
+        "sections": {
+          "details": "Detalhes",
+          "notes": "Observações e documentos",
+          "links": "Vínculos",
+          "stepSummary": "Resumo dos degraus",
+          "step": "Degrau {n}",
+          "recovery": "Recuperação"
+        },
+        "columns": {
+          "step": "Degrau",
+          "rate": "Q ({unit})",
+          "duration": "Duração (min)",
+          "finalLevel": "Nível final (m)",
+          "drawdown": "s (m)",
+          "specificDrawdown": "s/Q (m por {unit})",
+          "specificCapacity": "Q/s ({unit})",
+          "elapsed": "Δt (min)",
+          "testTime": "t (min)",
+          "level": "Nível (m)",
+          "recoveryElapsed": "t′ (min)",
+          "ratio": "t/t′",
+          "residualDrawdown": "s′ (m)"
+        },
+        "clockInfo": "Δt recomeça a cada degrau; t corre desde o início do primeiro degrau.",
+        "noReadings": "Nenhuma leitura registrada.",
+        "links": {
+          "corrects": "Retifica",
+          "correctedBy": "Retificado por",
+          "historyLogs": "Entradas do histórico",
+          "missing": "Registro não encontrado: {id}",
+          "empty": "Nenhum vínculo com outros registros."
+        }
+      }
     },
     "attachments": {
       "documentType": "Tipo de documento",

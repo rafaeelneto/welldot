@@ -141,6 +141,9 @@ Framework-free formatting shared by the profiler app and `@welldot/pdf`. Anythin
 | `lastReading(event)` / `allStepReadings(event)` / `stepRate(event, i?)` | Last step reading, every step reading, or a step's rate of a hydrodynamic event.                          |
 | `recoveryReadingsCount(event)`                                          | Number of recovery readings (`0` without a recovery block).                                               |
 | `stepHasReadings(readings)` / `derivedStepDuration(readings)`           | Whether a step has complete readings / its duration from the largest complete `elapsed`.                  |
+| `pumpingTimeline(event)`                                                | Every step and recovery reading on one test clock (step N+1 starts at step N's `duration`, else its last reading; recovery at pump stop), with drawdown from `static_level`. |
+| `semilogDrawdownSeries` / `theisRecoverySeries` / `stepTestSeries`      | Series of the drawdown vs log time, Theis recovery (t/t′) and step-test (s/Q vs Q) plots.                 |
+| `availablePumpingCharts(event)`                                         | Which of `hydrograph`, `semilog`, `recovery`, `stepTest` the event has enough data for.                   |
 | `permitLabel(permit, fallback?)` / `getActivePermit(well, today?)`      | `authority identifier` / the active permit with the latest start (production compliance).                 |
 | `formatMeterLabel(meter, { locale, untypedLabel, dateFormat? })`        | `Electromagnetic · S/N 123 · 01/02/2024`.                                                                 |
 | `parameterUnitSymbol(result)`                                           | Vocabulary unit, `mg/L` for unmapped CAS numbers, else the result's `unit`.                               |

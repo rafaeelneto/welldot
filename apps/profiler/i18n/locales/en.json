@@ -974,7 +974,87 @@
       "retracted": "Retracted",
       "retractedInfo": "A later event corrects this one. It stays in the file but no longer counts.",
       "correction": "Correction",
-      "correctionInfo": "This event corrects an earlier one."
+      "correctionInfo": "This event corrects an earlier one.",
+      "charts": {
+        "title": "Charts",
+        "empty": "Not enough readings to draw charts.",
+        "kinds": {
+          "hydrograph": "Level × time",
+          "semilog": "Drawdown × log t",
+          "recovery": "Recovery (Theis)",
+          "stepTest": "Step test"
+        },
+        "axes": {
+          "time": "Time since start (min)",
+          "elapsed": "Time since step start (min)",
+          "level": "Water level (m)",
+          "drawdown": "Drawdown s (m)",
+          "residualDrawdown": "Residual drawdown s′ (m)",
+          "ratio": "t/t′",
+          "flowRate": "Flow rate Q ({unit})",
+          "specificDrawdown": "s/Q (m per {unit})"
+        },
+        "legend": {
+          "step": "Step {n}",
+          "pumping": "Pumping",
+          "recovery": "Recovery",
+          "staticLevel": "SWL",
+          "pumpStop": "Pump stop",
+          "fit": "Fit s/Q = B + C·Q",
+          "fitValues": "B = {b} · C = {c}",
+          "drawdownVsRate": "s × Q"
+        },
+        "tooltip": {
+          "time": "t",
+          "elapsed": "Δt",
+          "level": "Level",
+          "drawdown": "s",
+          "ratio": "t/t′",
+          "rate": "Q"
+        }
+      },
+      "view": {
+        "open": "View",
+        "title": "Hydrodynamic event",
+        "edit": "Edit",
+        "close": "Close",
+        "tabs": {
+          "overview": "Overview",
+          "readings": "Readings"
+        },
+        "sections": {
+          "details": "Details",
+          "notes": "Notes and files",
+          "links": "Links",
+          "stepSummary": "Step summary",
+          "step": "Step {n}",
+          "recovery": "Recovery"
+        },
+        "columns": {
+          "step": "Step",
+          "rate": "Q ({unit})",
+          "duration": "Duration (min)",
+          "finalLevel": "Final level (m)",
+          "drawdown": "s (m)",
+          "specificDrawdown": "s/Q (m per {unit})",
+          "specificCapacity": "Q/s ({unit})",
+          "elapsed": "Δt (min)",
+          "testTime": "t (min)",
+          "level": "Level (m)",
+          "recoveryElapsed": "t′ (min)",
+          "ratio": "t/t′",
+          "residualDrawdown": "s′ (m)"
+        },
+        "clockInfo": "Δt restarts at each step; t runs from the start of the first step.",
+        "noReadings": "No readings recorded.",
+        "links": {
+          "corrects": "Corrects",
+          "correctedBy": "Corrected by",
+          "historyLogs": "History log entries",
+          "missing": "Record not found: {id}",
+          "empty": "No links to other records."
+        }
+      }
     },
     "attachments": {
       "documentType": "Document type",

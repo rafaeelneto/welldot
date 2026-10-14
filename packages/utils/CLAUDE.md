@@ -87,6 +87,7 @@ src/
 | `formatCoord` / `ddToDms` / `parseToDd` / `clampLat` / `clampLng`              | Coordinate display and parsing                                                                            |
 | `resolveDiameterUnitLabel` / `resolveFlowUnitLabel` / `resolveVolumeUnitLabel` | Unit display symbols                                                                                      |
 | `lastReading` / `allStepReadings` / `stepRate` / `derivedStepDuration`         | Hydrodynamic event reading helpers                                                                        |
+| `pumpingTimeline` / `availablePumpingCharts` / `*Series`                       | Pumping-test clock (steps back to back, then recovery) and plot series                                    |
 | `permitLabel` / `getActivePermit` / `formatMeterLabel`                         | Permit and meter display labels; active permit for compliance                                             |
 | `PERMIT_STATUSES` / `CONDITION_DEADLINE_STATUSES`                              | en/pt-labeled vocabularies of the derived statuses (use with core `getVocabLabel`)                        |
 | `parameterUnitSymbol` / `formatWaterQualityResult`                             | Result unit symbol / value text (translated words passed in as strings)                                   |
