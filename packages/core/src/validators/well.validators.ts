@@ -14,6 +14,30 @@ export const mergeWell = createDefu((obj, key, value) => {
   }
 });
 
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+// parseWell: Zod strips unknown members (`x-` fields) from nested objects.
+// This merger puts them back from the raw document. The schema never reorders
+// or drops array items, so items are merged by index; an array whose length
+// differs from the raw one is taken as parsed.
+const mergeParsed = createDefu((obj, key, value) => {
+  if (Array.isArray(value)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw = (obj as any)[key];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (obj as any)[key] =
+      Array.isArray(raw) && raw.length === value.length
+        ? value.map((item: unknown, i: number) =>
+            isPlainObject(item) && isPlainObject(raw[i])
+              ? mergeParsed(item, raw[i])
+              : item,
+          )
+        : value;
+    return true;
+  }
+});
+
 // ─── Datetime helper ──────────────────────────────────────────────────────────
 const RFC3339_WITH_OFFSET =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
@@ -779,7 +803,7 @@ export function parseWell(json: string): Well {
     }
     if (version === 1) {
       const normalized = normalizeV1Fields(raw);
-      return mergeWell(
+      return mergeParsed(
         WellSchema.parse(normalized) as Well,
         normalized,
       ) as Well;
@@ -792,5 +816,5 @@ export function parseWell(json: string): Well {
   }
 
   // version === 2 (explicit or normalized from absent)
-  return mergeWell(WellSchema.parse(raw) as Well, raw) as Well;
+  return mergeParsed(WellSchema.parse(raw) as Well, raw) as Well;
 }

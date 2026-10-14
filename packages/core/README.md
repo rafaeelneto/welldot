@@ -219,11 +219,11 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 
 #### `parseWell(json: string): Well`
 
-Parses a raw JSON string and validates it against `WellSchema`. Throws a `ZodError` on validation failure. Does not handle legacy formats — use `deserializeWell` for that.
+Parses a raw JSON string and validates it against `WellSchema`. Throws a `ZodError` on validation failure. Unknown members (`x-` fields and blocks) are kept at every level, including inside array items. Does not handle legacy formats — use `deserializeWell` for that.
 
 #### `serializeWell(well: Well): string`
 
-Serializes a `Well` object to a versioned `.well` JSON string (`"version": 2`). Emits `location` when set; does not emit deprecated flat `lat`/`lng`/`elevation`. Omits `undefined` optional fields.
+Serializes a `Well` object to a versioned `.well` JSON string (`"version": 2`). Emits `location` when set; does not emit deprecated flat `lat`/`lng`/`elevation` or other legacy v1 keys. Omits `undefined` optional fields. Root members the spec does not define (`x-` fields and blocks, foreign members) are written unchanged after the spec blocks, as the spec requires.
 
 #### `deserializeWell(jsonString: string): Well | null`
 
@@ -247,7 +247,7 @@ Deepest `to` across the constructive arrays (bore hole, casings, screens, reduct
 
 #### `redactWell(well: Well, visibility: WellVisibility): Well`
 
-Copy of `well` with hidden parts emptied (arrays become `[]`, optional fields are removed), so the result stays schema-valid. `visibility` keys are the 7 `SECTION_KEYS` and/or the fields of `VISIBILITY_TREE` (e.g. `meters`, `permits`, `location`); `false` hides, missing keys are visible, and a hidden section hides all its fields. `VISIBILITY_LEAF_KEYS` lists the finest toggles. References from visible records to hidden ones are left as-is.
+Copy of `well` with hidden parts emptied (arrays become `[]`, optional fields are removed), so the result stays schema-valid. `visibility` keys are the 7 `SECTION_KEYS` and/or the fields of `VISIBILITY_TREE` (e.g. `meters`, `permits`, `location`); `false` hides, missing keys are visible, and a hidden section hides all its fields. `VISIBILITY_LEAF_KEYS` lists the finest toggles. References from visible records to hidden ones are left as-is. Unknown root members (`x-` fields and blocks) are kept only when nothing is hidden; nested ones follow their record.
 
 ```typescript
 redactWell(well, { operation: false }); // whole section

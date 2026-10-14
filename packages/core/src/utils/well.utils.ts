@@ -10,7 +10,7 @@ import {
   Well,
   WellVisibility,
 } from '../types/well.types';
-import { mergeWell } from '../validators/well.validators';
+import { WellSchema, mergeWell } from '../validators/well.validators';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -20,6 +20,17 @@ type RawJSON = Record<string, unknown>;
 
 const WELL_FORMAT_VERSION = 2;
 const INCHES_TO_MM = 25.4;
+
+// Root members that a v1 or legacy file leaves on the object after it is
+// migrated. They are never written back.
+const LEGACY_ROOT_KEYS = new Set([
+  'lat',
+  'lng',
+  'elevation',
+  'bole_hole',
+  'constructive',
+  'geologic',
+]);
 
 /** Fixed display order for the 7 redactable sections of a well. */
 export const SECTION_KEYS: readonly SectionKey[] = [
@@ -331,11 +342,24 @@ function normalizeGeologic(raw: RawJSON): Geologic {
   };
 }
 
+// Root members the spec does not define: `x-` fields and blocks, and foreign
+// members written by other tools. Legacy v1 keys are left out.
+function unknownRootKeys(well: Well): string[] {
+  return Object.keys(well).filter(
+    key => !(key in WellSchema.shape) && !LEGACY_ROOT_KEYS.has(key),
+  );
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
  * Serializes a {@link Well} object into a versioned JSON string suitable for
  * storage or transmission.
+ *
+ * Root members the spec does not define (`x-` fields and blocks, foreign
+ * members) are written after the spec blocks, unchanged. Nested unknown
+ * members travel inside their objects. Legacy v1 keys (`lat`, `lng`,
+ * `elevation`, …) are never written.
  *
  * @param well - The well profile to serialize.
  * @returns A JSON string containing the versioned well payload.
@@ -393,6 +417,11 @@ export function serializeWell(well: Well): string {
     }),
   };
 
+  for (const key of unknownRootKeys(well)) {
+    const value = (well as unknown as RawJSON)[key];
+    if (value !== undefined) payload[key] = value;
+  }
+
   return JSON.stringify(payload);
 }
 
@@ -431,6 +460,10 @@ export function isWellEmpty(well: Well | null | undefined): boolean {
  * `well_depth` is dropped only when the whole `constructive` section is
  * hidden. Hiding a record type does not rewrite references to it held by
  * visible records (e.g. a production entry's `meter_id`).
+ *
+ * Root members the spec does not define (`x-` fields and blocks) can hold
+ * anything, so they are kept only when nothing is hidden. Unknown members
+ * nested in a record follow that record.
  *
  * @param well - The well profile to redact.
  * @param visibility - Section and/or field visibility. A {@link SectionVisibility} works as-is.
@@ -508,6 +541,12 @@ export function redactWell(
 
   // water quality
   if (hidden('water_quality')) delete redacted.water_samples;
+
+  // unknown root members
+  if (Object.values(v).some(shown => shown === false)) {
+    for (const key of unknownRootKeys(redacted))
+      delete (redacted as unknown as RawJSON)[key];
+  }
 
   return redacted;
 }
