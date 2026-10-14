@@ -1,11 +1,15 @@
 {
   "meta": {
     "title": "Editor de Perfil de Poço em Formato Aberto (.well)",
-    "description": "Antigo Well Profiler, agora editor gratuito de perfil de poço online: crie, visualize e exporte perfis construtivos e geológicos no formato aberto .well.",
+    "description": "Antigo Well Profiler, agora app gratuito para dados de poços no formato aberto .well — perfis construtivos e geológicos, testes de bombeamento, operação, outorgas e qualidade da água, exportados em relatórios PDF.",
     "featureList": [
       "Crie, visualize e exporte perfis geológicos e construtivos de poços",
+      "Testes de bombeamento com gráficos semilog, de recuperação de Theis e de teste escalonado",
+      "Operação, produção, outorgas e qualidade da água (.well v2.3)",
+      "Relatórios PDF personalizáveis",
       "Formato de arquivo .well aberto e versionado",
-      "Histórico de instalações de bomba e anexos gerais (.well v2.3)",
+      "Aceita registros de campo e legados incompletos — valor ausente significa desconhecido, nunca zero",
+      "Extensível com campos x-, blocos x- e profiles de instituições",
       "Gratuito e de código aberto"
     ]
   },
@@ -29,7 +33,7 @@
     }
   },
   "footer": {
-    "version": "welldot · v1.0.0",
+    "version": "welldot · v2.3",
     "spec": ".well spec v2.3",
     "license": "Aberto · Apache 2.0"
   },
@@ -38,7 +42,7 @@
     "headline1": "Perfis de poços, em",
     "headlineEm": "arquivo aberto",
     "headline2": ".",
-    "body": "Editor livre para criar, visualizar e exportar perfis geológicos e construtivos. Um JSON simples, versionado, legível por qualquer linguagem.",
+    "body": "Editor livre para todo o registro de um poço: perfis construtivos e geológicos, testes de bombeamento, operação, outorgas e qualidade da água, exportados em PDF. Um JSON simples, versionado, legível por qualquer linguagem.",
     "ctaPrimary": "Abrir editor de poços →",
     "ctaSecondary": "Ver especificação",
     "badgeSpec": "spec",
@@ -50,15 +54,15 @@
   "format": {
     "kicker": "I · O formato",
     "headline1": "Um JSON.",
-    "headlineEm": "Três",
-    "headline2": "propósitos.",
-    "intro": "Hoje, dados de poços vivem em PDFs que não se conversam entre si. O arquivo {well} é um formato simples e versionado para mudar isso — um único JSON que descreve o poço por inteiro, da construção e geologia aos testes de bombeamento, às bombas instaladas e ao histórico de manutenção, pensado como {standard}.",
+    "headlineEm": "Todo",
+    "headline2": "o poço.",
+    "intro": "Hoje, dados de poços vivem em PDFs que não se conversam entre si. O arquivo {well} é um formato simples e versionado para mudar isso — um único JSON que descreve o poço por inteiro, da construção e geologia aos testes de bombeamento, às bombas instaladas, hidrômetros e produção, outorgas, qualidade da água e histórico de manutenção, pensado como {standard}.",
     "standard": "padrão internacional",
     "props": [
       {
         "num": "§ 1.1",
-        "title": "Visualização",
-        "body": "Biblioteca livre em D3.js para renderizar e exportar perfis geológicos e construtivos em escala real."
+        "title": "Desenho",
+        "body": "Construção e geologia em escala real, desenhadas do mesmo jeito por qualquer ferramenta que leia o arquivo."
       },
       {
         "num": "§ 1.2",
@@ -78,12 +82,12 @@
       {
         "num": "§ 1.5",
         "title": "Testes de bombeamento",
-        "body": "Eventos hidrodinâmicos e parâmetros de aquífero derivados — transmissividade, armazenamento, capacidade específica — registrados como séries temporais estruturadas."
+        "body": "Leituras brutas dos testes e interpretações versionadas — transmissividade, armazenamento, capacidade específica — cada uma ligada aos testes de origem. Veja § III."
       },
       {
         "num": "§ 1.6",
         "title": "Operação e histórico",
-        "body": "Instalações de bomba com dados de placa, profundidade do crivo, edutor e parte elétrica, documentos tipados e um log datado de manutenções e incidentes que acompanha o poço ao longo de sua vida útil."
+        "body": "Bombas instaladas, hidrômetros, volumes produzidos e regime de operação, outorgas com suas condicionantes, amostras de qualidade da água e um log de manutenções e incidentes ao longo da vida útil do poço."
       }
     ]
   },
@@ -104,12 +108,39 @@
       },
       {
         "title": "Submissão pronta",
-        "body": "PDFs A4 em escala real, com cabeçalho, metadados e desenho multipágina."
+        "body": "Relatórios PDF com a sua marca, as seções que você escolher e o perfil em escala real em várias páginas, em português ou inglês."
+      }
+    ]
+  },
+  "tests": {
+    "kicker": "III · Testes e interpretação",
+    "headline1": "Da leitura de campo aos",
+    "headlineEm": "parâmetros do aquífero",
+    "headline2": ".",
+    "intro": "Cada medição de nível e cada teste de bombeamento é uma entrada de um {ledger} de acréscimo: medições pontuais, testes de vazão constante e escalonada, air-lift, recuperação etc. As leituras ficam como foram feitas, e rebaixamento, s/Q, Q/s e outros parâmetros são calculados automaticamente.",
+    "ledger": "registro",
+    "chartCaption": "Teste escalonado de exemplo, desenhado pelos gráficos do editor.",
+    "cards": [
+      {
+        "num": "§ 3.1",
+        "title": "O teste como foi feito",
+        "body": "Etapas com vazão e duração, leituras de nível no tempo e recuperação após a parada da bomba."
+      },
+      {
+        "num": "§ 3.2",
+        "title": "Interpretação versionada",
+        "body": "Cada análise registra método, analista, testes de origem e resultados — T, S, K, capacidade específica, vazão máxima recomendada. Várias podem coexistir."
+      },
+      {
+        "num": "§ 3.3",
+        "title": "Editor de análises",
+        "badge": "em breve",
+        "body": "O editor já lê as análises e mostra o estado atual do aquífero. Criar e editar análises no app está a caminho."
       }
     ]
   },
   "contexts": {
-    "kicker": "III · Um arquivo, muitos contextos",
+    "kicker": "IV · Um arquivo, muitos contextos",
     "headline1": "Padrão por dentro,",
     "headlineEm": "flexível",
     "headline2": "por fora.",
@@ -141,37 +172,105 @@
       }
     ]
   },
+  "incomplete": {
+    "kicker": "V · Incompletude graciosa",
+    "headline1": "Comece com",
+    "headlineEm": "o que você tem",
+    "headline2": ".",
+    "intro": "Dado de poço quase nunca está completo. Um relatório de 1987 só com a profundidade e a vazão do air-lift, um cadastro sem coordenadas, um perfil sem litologia, uma outorga ainda sem número: cada um já é um arquivo {well} válido. Quase todo campo é opcional, campos abertos aceitam qualquer texto e um campo ausente significa {unknown} — nunca {zero}. No campo e em arquivos antigos, saber o que falta também é informação.",
+    "unknown": "desconhecido",
+    "zero": "zero",
+    "valid": "✓ válido",
+    "stagesLabel": "Etapa do registro",
+    "stages": ["Relatório", "Visita", "Outorga"],
+    "sample": {
+      "obs": "Relatório de 1987. Sem perfil litológico.",
+      "inspection": "Sem bomba. Sem selo sanitário."
+    },
+    "rules": [
+      {
+        "num": "§ 5.1",
+        "title": "Quase tudo é opcional",
+        "body": "Nome, coordenadas, data de construção, perfurador, litologia, testes, outorgas: cada bloco e cada campo entra quando existir. Blocos construtivos podem ser listas vazias. Um evento precisa só de id, tipo e data; uma outorga, de tipo e órgão."
+      },
+      {
+        "num": "§ 5.2",
+        "title": "Valores sugeridos, texto livre",
+        "body": "Material do revestimento, método de perfuração, tipo de outorga, tipo de manutenção, uso do poço: o formato recomenda um vocabulário para interoperar, mas campos abertos aceitam qualquer valor. Valores fora dele levam o prefixo x- e são preservados e exibidos como foram escritos."
+      },
+      {
+        "num": "§ 5.3",
+        "title": "Ausente é desconhecido",
+        "body": "Sem regime, a vazão é desconhecida, não zero. Sem mudança de status, o status é desconhecido, não ativo. A produção antes da primeira leitura do hidrômetro é desconhecida."
+      },
+      {
+        "num": "§ 5.4",
+        "title": "A falta também é dado",
+        "body": "Dados faltantes e inconsistências viram avisos para revisão, nunca rejeição. O registro fica no arquivo com seu histórico, e o que não se sabe continua visível em vez de ser preenchido com valores inventados."
+      }
+    ]
+  },
+  "extensible": {
+    "kicker": "VI · Extensível por qualquer um",
+    "headline1": "Qualquer um pode",
+    "headlineEm": "estender",
+    "headline2": ".",
+    "intro": "Um perfurador, uma consultoria, uma companhia de saneamento, uma universidade ou um órgão gestor: {anyone} pode acrescentar o que o seu trabalho precisa, sem pedir licença e sem quebrar os arquivos dos outros. A spec obriga todo leitor a manter essas extensões ao abrir e ao salvar. E o que se mostra útil para muitos pode entrar no próprio formato.",
+    "anyone": "qualquer um",
+    "valid": "✓ válido",
+    "stagesLabel": "Nível de extensão",
+    "stages": ["Campo x-", "Profile", "Bloco x-"],
+    "levels": [
+      {
+        "num": "§ 6.1",
+        "title": "Campos e blocos próprios",
+        "body": "Qualquer objeto aceita campos com prefixo x-, e o arquivo aceita blocos inteiros novos: o número do cadastro estadual, o código interno da empresa, o monitoramento de gases de uma mina."
+      },
+      {
+        "num": "§ 6.2",
+        "title": "Profiles de instituições",
+        "body": "Um órgão, uma empresa ou uma rede de pesquisa publica um JSON Schema que exige campos extras, restringe vocabulários ou define suas extensões x-. O arquivo declara o perfil em profiles. Falhas viram avisos, e um profile fora do ar nunca bloqueia o arquivo."
+      },
+      {
+        "num": "§ 6.3",
+        "title": "Do x- ao padrão",
+        "body": "Um valor x- que se mostra útil em várias fontes pode ser promovido a canônico: x-slug_test vira slug_test, e as duas formas seguem válidas até a próxima versão maior. Mudanças no núcleo começam com uma issue aberta: o dado, a fonte real dele e por que nenhum campo o comporta."
+      }
+    ],
+    "ctaContribute": "Como contribuir",
+    "ctaPropose": "Propor uma mudança"
+  },
   "horizon": {
-    "kicker": "IV · No horizonte",
+    "kicker": "VII · No horizonte",
     "headline1": "O",
     "headlineEm": "futuro",
     "headline2": ".",
-    "intro": "A v2.3 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero, instalações de bomba, outorgas e suas condicionantes, anexos gerais e histórico operacional. A especificação evolui de forma aberta para abraçar o que ainda vem pela frente.",
+    "intro": "A v2.3 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero, instalações de bomba, hidrômetros, produção e regime de operação, outorgas e suas condicionantes, qualidade da água, anexos gerais e histórico operacional. A especificação evolui de forma aberta, e estas são as lacunas já mapeadas para as próximas versões.",
     "props": [
       {
-        "num": "§ 4.1",
+        "num": "§ 7.1",
         "title": ".las nativo",
-        "body": "Importação e armazenamento de perfis geofísicos LAS, lado a lado com o perfil litológico."
+        "body": "Importação e armazenamento de perfis geofísicos LAS (resistividade, raios gama, cáliper), lado a lado com o perfil litológico."
       },
       {
-        "num": "§ 4.2",
-        "title": "Qualidade da água",
-        "body": "Análises físico-químicas e bacteriológicas vinculadas à amostragem, profundidade e data."
+        "num": "§ 7.2",
+        "title": "Poços vinculados",
+        "body": "Referências entre arquivos: poços de observação para o coeficiente de armazenamento e uma outorga compartilhada por vários poços, em vez de repetida em cada um."
       },
       {
-        "num": "§ 4.3",
-        "title": "Produção e operação",
-        "body": "Hidrômetros, volumes produzidos comparados aos limites da outorga e regime de operação — os próximos blocos operacionais."
+        "num": "§ 7.3",
+        "title": "Texto multilíngue",
+        "body": "Descrições e observações marcadas com o idioma, para que o mesmo arquivo traga texto em português, inglês ou espanhol — strings simples continuam válidas."
       },
       {
-        "num": "§ 4.4",
-        "title": "Extensões da comunidade",
-        "body": "Namespaces para campos específicos de órgãos e regiões, sem quebrar o núcleo padronizado."
+        "num": "§ 7.4",
+        "title": "Avaliação da qualidade da água",
+        "body": "Julgamentos interpretados como classe da água, fácies hidroquímica e aptidão de uso, guardados junto às amostras de onde vêm."
       }
     ]
   },
   "tools": {
-    "kicker": "V · O ecossistema",
+    "kicker": "VIII · O ecossistema",
     "headline1": "Ferramentas livres",
     "headlineEm": "e abertas",
     "headline2": ", não só um app.",
@@ -180,18 +279,28 @@
     "cards": [
       {
         "title": "\\@welldot/core",
-        "body": "Tipos, validadores Zod e utilitários de serialização para o formato .well — a base sobre a qual tudo o mais é construído.",
+        "body": "Tipos, validadores Zod, JSON Schema e serialização do formato .well, mais seus vocabulários — materiais, tipos de outorga, parâmetros e limites de qualidade da água. A base sobre a qual tudo o mais é construído.",
         "path": "packages/core"
       },
       {
         "title": "\\@welldot/utils",
-        "body": "Utilitários de análise de perfil: cálculos de profundidade, volumes cilíndricos e estimativas de volume de pré-filtro.",
+        "body": "Análise de um arquivo .well: geometria e volumes, hidráulica de aquífero e séries de teste de bombeamento, produção por período e prazos de outorga, derivações de qualidade da água como balanço iônico, Piper e Stiff.",
         "path": "packages/utils"
       },
       {
         "title": "\\@welldot/render",
-        "body": "O renderizador SVG em D3 que desenha todo perfil deste site — incorporável em qualquer aplicação web.",
+        "body": "O renderizador SVG em D3 que desenha todo perfil deste site em escala real, com tema configurável — incorporável em qualquer aplicação web.",
         "path": "packages/render"
+      },
+      {
+        "title": "\\@welldot/pdf",
+        "body": "Relatórios PDF personalizáveis com pdfmake: marca, marca d'água, layout de página, tema, seções e sua ordem, textos em en/pt. Funciona sem nenhum framework de UI.",
+        "path": "packages/pdf"
+      },
+      {
+        "title": "\\@welldot/vue",
+        "body": "Componentes base em Vue 3 para editores .well, com o tema Welldot e um módulo Nuxt.",
+        "path": "packages/vue"
       },
       {
         "title": "App do profiler",

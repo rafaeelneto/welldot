@@ -50,7 +50,13 @@ const charts = {
       <SelectButton
         v-if="options.length > 1"
         v-model="selected"
-        class="self-start"
+        class="self-start max-w-full overflow-x-auto"
+        :pt="{
+          pcToggleButton: {
+            root: { class: 'shrink-0 sm:shrink' },
+            label: { class: 'whitespace-nowrap sm:whitespace-normal' },
+          },
+        }"
         :options="options"
         option-label="label"
         option-value="value"
