@@ -46,7 +46,10 @@ export function useProfileExport() {
       json,
       _defaultName(store.getExportableWell()),
     );
-    if (ok) store.markClean();
+    if (ok) {
+      store.markClean();
+      trackEvent('well_save', { method: 'save' });
+    }
   }
 
   /**
@@ -61,7 +64,10 @@ export function useProfileExport() {
       json,
       _defaultName(store.getExportableWell()),
     );
-    if (ok) store.markClean();
+    if (ok) {
+      store.markClean();
+      trackEvent('well_save', { method: 'save_as' });
+    }
   }
 
   /**
@@ -88,6 +94,7 @@ export function useProfileExport() {
     anchor.download = name;
     anchor.click();
     URL.revokeObjectURL(url);
+    trackEvent('well_save', { method: 'download' });
   }
 
   return { getRawJson, getShareableJson, save, saveAs, download };

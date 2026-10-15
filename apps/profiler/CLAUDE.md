@@ -14,6 +14,7 @@
 - **Fonts:** Space Grotesk, IBM Plex Serif, JetBrains Mono (via `@nuxt/fonts`)
 - **Icons:** Phosphor (`ph:`) via `@nuxt/icon` — **preferred**. Heroicons (`heroicons:`) remain as secondary usange when there is no phosphor good icon or is explicit said. Custom SVG icons in `app/assets/icons/` (prefix `welldot:`)
 - **Onboarding tips:** `driver.js` — startup tips that highlight a UI element (`app/composables/useStartupTips.ts`)
+- **Analytics:** first party, no cookies or identifiers. `trackEvent()` (`app/utils/analytics.ts`) beacons product events to `POST /api/events`, which stores them in Supabase `app_events` (see Server routes). In dev it only logs to `console.debug`. Events: `well_new`, `well_open` (`source`: file/drop/paste/siagas/example/share), `well_save` (`method`), `siagas_import` (`status`), `pdf_download`, `pdf_print`, `share_link`. A new event needs its name in `ANALYTICS_EVENTS` (`shared/utils/analytics.ts`) first; the route drops anything else. Never put well data or personal data in params
 - **Deploy:** Cloudflare Workers (Nitro `cloudflare-module` preset, static assets binding); preview via `wrangler dev`
 
 ## Directory layout
@@ -132,6 +133,9 @@ app/                      ← srcDir
   assets/
     styles/main.css       ← imports tailwindcss, tailwindcss-primeui, @welldot/vue/tailwind.css
     icons/                ← custom SVG icon set (welldot: prefix)
+shared/
+  utils/analytics.ts      ← `ANALYTICS_EVENTS` + param validation, auto-imported by both the
+                             app (`trackEvent`) and the server (`/api/events`)
 i18n/
   locales/en.json
   locales/pt.json
@@ -164,6 +168,7 @@ pnpm lint       # eslint
 
 - `server/api/` — Nitro API routes. Profile sharing (`share.post.ts`, `share/[id].get.ts`) hashes/stores well JSON in Supabase via `server/utils/supabase.ts` (service-role key, server-only — never exposed to the client). Shares are capped at `MAX_SHARE_BYTES` and expire after `SHARE_TTL_DAYS` (`server/utils/shareConfig.ts`); the GET route edge-caches successful lookups via the Workers Cache API.
 - `server/api/siagas/[code].get.ts` imports a well with `importSiagasWell` (`@welldot/utils/siagas`) — the SGB pages have no CORS, so the fetch runs here. Query `rimas` (`none`/`monthly`/`all`) and `media` (`0` to skip). Rate limited by the optional `SIAGAS_RATE_LIMITER` binding (`wrangler.json`) and edge-cached for a day per code + options; `SiagasError.kind` maps to 400/404/502/500, a timeout to 504.
+- `server/api/events.post.ts` stores one `trackEvent()` event in Supabase `app_events` (`server/db/app_events.sql`, with example queries): name, params, `cf-ipcountry` country and host. No IP, cookie or user id. Unknown names and params outside `ANALYTICS_LIMITS` get 400. Rate limited by the optional `EVENTS_RATE_LIMITER` binding (`wrangler.json`).
 - `server/tasks/` — Nitro scheduled tasks (`experimental.tasks` in `nuxt.config.ts`). `shares:cleanup` (`server/tasks/shares/cleanup.ts`) purges expired `well_shares` rows. Wiring a task requires **both**: a `nitro.scheduledTasks` entry in `nuxt.config.ts` mapping a cron string to the task name, **and** the identical cron string in `wrangler.json`'s `triggers.crons` — Cloudflare only invokes `scheduled()` for crons declared there, and Nitro only runs a task if its cron matches an entry in `scheduledTasks`.
 - `getRuntimeEnv`/`getSupabaseClient` (`server/utils/env.ts`, `supabase.ts`) accept a structural `RuntimeEnvSource`, not `H3Event`, specifically so scheduled tasks (which get a Nitro `TaskEvent`, not an `H3Event`) can reuse them.
 

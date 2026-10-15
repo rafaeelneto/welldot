@@ -44,6 +44,7 @@ export function useNewWellDialog() {
   function _startBlank() {
     persistence.clearHandle();
     store.clear();
+    trackEvent('well_new');
     close();
   }
 
