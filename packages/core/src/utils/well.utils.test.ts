@@ -5,6 +5,7 @@ import {
   checkIfProfileIsEmpty,
   convertProfileFromJSON,
   deserializeWell,
+  hasWellData,
   isWellEmpty,
   profileToWell,
   redactWell,
@@ -155,6 +156,33 @@ function fullWell(): Well {
     caves: [makeCave()],
   };
 }
+
+// ─── hasWellData ─────────────────────────────────────────────────────────────
+
+describe('hasWellData', () => {
+  it('returns false for null, undefined and a blank well', () => {
+    expect(hasWellData(null)).toBe(false);
+    expect(hasWellData(undefined)).toBe(false);
+    expect(hasWellData(emptyWell())).toBe(false);
+    expect(hasWellData({ ...emptyWell(), name: '  ' })).toBe(false);
+  });
+
+  it('returns true for a well with a profile', () => {
+    expect(hasWellData({ ...emptyWell(), lithology: [makeLithology()] })).toBe(
+      true,
+    );
+  });
+
+  it('returns true for a registry record without a profile', () => {
+    const record: Well = {
+      ...emptyWell(),
+      well_id: [{ authority: 'SIAGAS', id: '2600029321', primary: true }],
+      location: { lat: -6.7, lng: -36.6 },
+    };
+    expect(isWellEmpty(record)).toBe(true);
+    expect(hasWellData(record)).toBe(true);
+  });
+});
 
 // ─── isWellEmpty ─────────────────────────────────────────────────────────────
 
@@ -2796,5 +2824,121 @@ describe('calculatedWellDepth', () => {
         caves: [],
       }),
     ).toBe(0);
+  });
+});
+
+// ─── Unknown members (x- fields and blocks) ──────────────────────────────────
+
+describe('unknown members', () => {
+  const withExtensions = () =>
+    minWell({
+      'x-siagas': { registro: 'SP-001' },
+      'x-gas_monitoring': [{ datetime: '2025-05-12T09:00:00-03:00', ch4: 12 }],
+      foreign_member: true,
+      location: { lat: -1.45, lng: -48.5, 'x-source': 'gps' },
+      hydrodynamic_events: [
+        {
+          id: 'evt-1',
+          type: 'constant_rate',
+          datetime: '2024-09-03T08:00:00-03:00',
+          'x-crew': 'A',
+          steps: [
+            { rate: 12, readings: [{ elapsed: 10, depth: 20, 'x-q': 1 }] },
+          ],
+        },
+      ],
+    });
+
+  function expectExtensionsKept(json: Record<string, unknown>) {
+    expect(json['x-siagas']).toEqual({ registro: 'SP-001' });
+    expect(json['x-gas_monitoring']).toEqual([
+      { datetime: '2025-05-12T09:00:00-03:00', ch4: 12 },
+    ]);
+    expect(json.foreign_member).toBe(true);
+    expect((json.location as Record<string, unknown>)['x-source']).toBe('gps');
+    const event = (json.hydrodynamic_events as Record<string, unknown>[])[0]!;
+    expect(event['x-crew']).toBe('A');
+    const step = (event.steps as Record<string, unknown>[])[0]!;
+    expect((step.readings as Record<string, unknown>[])[0]!['x-q']).toBe(1);
+  }
+
+  it('survive deserializeWell → serializeWell', () => {
+    const out = serializeWell(deserializeWell(withExtensions())!);
+    expectExtensionsKept(JSON.parse(out));
+  });
+
+  it('survive parseWell → serializeWell, nested ones included', () => {
+    const out = serializeWell(parseWell(withExtensions()));
+    expectExtensionsKept(JSON.parse(out));
+  });
+
+  it('are written after the spec blocks', () => {
+    const keys = Object.keys(
+      JSON.parse(serializeWell(deserializeWell(withExtensions())!)),
+    );
+    expect(keys.indexOf('x-siagas')).toBeGreaterThan(keys.indexOf('caves'));
+  });
+
+  it('never write back legacy v1 root keys', () => {
+    const v1 = JSON.stringify({
+      version: 1,
+      lat: -1.45,
+      lng: -48.5,
+      elevation: 12,
+      bole_hole: [{ from: 0, to: 10, diameter: 200 }],
+      well_case: [],
+      reduction: [],
+      well_screen: [],
+      surface_case: [],
+      hole_fill: [],
+      lithology: [],
+      fractures: [],
+      caves: [],
+      'x-kept': 1,
+    });
+    for (const well of [deserializeWell(v1)!, parseWell(v1)]) {
+      const json = JSON.parse(serializeWell(well));
+      for (const key of ['lat', 'lng', 'elevation', 'bole_hole'])
+        expect(json).not.toHaveProperty(key);
+      expect(json['x-kept']).toBe(1);
+    }
+  });
+
+  it('do not resurrect legacy nested keys on parseWell', () => {
+    const v1 = minWell({
+      version: 1,
+      lithology: [
+        {
+          from: 0,
+          to: 10,
+          description: 'sand',
+          color: 'red',
+          fgdc_texture: 607,
+          geologic_unit: '',
+          aquifer_unit: '',
+        },
+      ],
+    });
+    const lithology = parseWell(v1).lithology[0] as Record<string, unknown>;
+    expect(lithology).not.toHaveProperty('fgdc_texture');
+    expect(lithology.texture).toEqual({ code: 607, vocabulary: 'fgdc' });
+  });
+
+  it('redactWell keeps root extensions only when nothing is hidden', () => {
+    const well = deserializeWell(withExtensions())!;
+    const visible = redactWell(well, {}) as unknown as Record<string, unknown>;
+    expect(visible['x-siagas']).toEqual({ registro: 'SP-001' });
+
+    const shared = redactWell(well, { obs: false }) as unknown as Record<
+      string,
+      unknown
+    >;
+    expect(shared).not.toHaveProperty('x-siagas');
+    expect(shared).not.toHaveProperty('x-gas_monitoring');
+    expect(shared).not.toHaveProperty('foreign_member');
+    // nested extensions follow their (visible) record
+    expect(
+      (shared.hydrodynamic_events as Record<string, unknown>[])[0]!['x-crew'],
+    ).toBe('A');
   });
 });

@@ -1,0 +1,961 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=1500013505"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço do Condomínio Edifício Ipê (Belém/PA)",
+  "well_driller": "Aquapoços Belém Ltda.",
+  "construction_date": "2023-04-18",
+  "obs": "Poço de condomínio residencial regularizado no fluxo atual: cadastro no CNARH, outorga na SEMAS-PA com condicionantes de hidrômetro e análise semestral.",
+  "well_id": [
+    {
+      "authority": "CNARH",
+      "id": "1402659",
+      "primary": true
+    },
+    {
+      "authority": "SEMAS-PA",
+      "id": "Outorga 3512/2024"
+    }
+  ],
+  "location": {
+    "lat": -1.36667,
+    "lng": -48.47917,
+    "elevation": 12,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0001,
+      "lng_precision": 0.0001,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31982"
+    }
+  },
+  "well_depth": 60,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 60,
+      "diameter": 254,
+      "drilling_method": "rotary"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.4,
+      "to": 48,
+      "type": "geomechanical_pvc",
+      "diameter": 170
+    },
+    {
+      "from": 56,
+      "to": 60,
+      "type": "geomechanical_pvc",
+      "diameter": 170
+    }
+  ],
+  "reduction": [],
+  "well_screen": [
+    {
+      "from": 48,
+      "to": 56,
+      "type": "geomechanical_pvc",
+      "diameter": 170,
+      "screen_slot": 0.75,
+      "slot_type": "slotted"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 6,
+      "type": "seal",
+      "diameter": 254,
+      "description": "Selo sanitário de calda de cimento"
+    },
+    {
+      "from": 6,
+      "to": 60,
+      "type": "gravel_pack",
+      "diameter": 254,
+      "description": "Pré-filtro de areia quartzosa 1–2 mm"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 3,
+      "description": "Aterro e solo areno-argiloso amarelo",
+      "color": "#c9a24a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Aterro",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 3,
+      "to": 22,
+      "description": "Argila arenosa amarelo-avermelhada com concreções lateríticas",
+      "color": "#c26a3a",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 22,
+      "to": 41,
+      "description": "Argila cinza com lentes de areia fina",
+      "color": "#8d8d88",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 41,
+      "to": 58,
+      "description": "Areia média a grossa cinza-esbranquiçada",
+      "color": "#d9d5c8",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    },
+    {
+      "from": 58,
+      "to": 60,
+      "description": "Argila cinza",
+      "color": "#8d8d88",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "2024-04-18T07:00:00-03:00",
+      "operator": "Aquapoços Belém Ltda.",
+      "equipment": "Bomba submersa 4\"; medidor elétrico de nível",
+      "static_level": 29,
+      "measurement_method": "electric_probe",
+      "steps": [
+        {
+          "rate": 11,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 37.78
+            },
+            {
+              "elapsed": 2,
+              "depth": 38.62
+            },
+            {
+              "elapsed": 3,
+              "depth": 39.11
+            },
+            {
+              "elapsed": 5,
+              "depth": 39.72
+            },
+            {
+              "elapsed": 7,
+              "depth": 40.13
+            },
+            {
+              "elapsed": 10,
+              "depth": 40.56
+            },
+            {
+              "elapsed": 15,
+              "depth": 41.05
+            },
+            {
+              "elapsed": 20,
+              "depth": 41.4
+            },
+            {
+              "elapsed": 30,
+              "depth": 41.89
+            },
+            {
+              "elapsed": 45,
+              "depth": 42.38
+            },
+            {
+              "elapsed": 60,
+              "depth": 42.72
+            },
+            {
+              "elapsed": 90,
+              "depth": 43.21
+            },
+            {
+              "elapsed": 120,
+              "depth": 43.56
+            },
+            {
+              "elapsed": 180,
+              "depth": 44.05
+            },
+            {
+              "elapsed": 240,
+              "depth": 44.4
+            },
+            {
+              "elapsed": 360,
+              "depth": 44.89
+            },
+            {
+              "elapsed": 480,
+              "depth": 45.23
+            },
+            {
+              "elapsed": 600,
+              "depth": 45.5
+            },
+            {
+              "elapsed": 720,
+              "depth": 45.72
+            },
+            {
+              "elapsed": 900,
+              "depth": 45.99
+            },
+            {
+              "elapsed": 1080,
+              "depth": 46.21
+            },
+            {
+              "elapsed": 1260,
+              "depth": 46.4
+            },
+            {
+              "elapsed": 1440,
+              "depth": 46.56
+            }
+          ]
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 37.78
+          },
+          {
+            "elapsed": 2,
+            "depth": 36.94
+          },
+          {
+            "elapsed": 3,
+            "depth": 36.46
+          },
+          {
+            "elapsed": 5,
+            "depth": 35.84
+          },
+          {
+            "elapsed": 10,
+            "depth": 35.01
+          },
+          {
+            "elapsed": 15,
+            "depth": 34.52
+          },
+          {
+            "elapsed": 30,
+            "depth": 33.7
+          },
+          {
+            "elapsed": 60,
+            "depth": 32.89
+          },
+          {
+            "elapsed": 120,
+            "depth": 32.1
+          },
+          {
+            "elapsed": 240,
+            "depth": 31.35
+          },
+          {
+            "elapsed": 360,
+            "depth": 30.94
+          }
+        ]
+      },
+      "notes": "Teste contínuo de 24 h exigido para a outorga. Nível estático profundo pelo bombeamento intenso de poços vizinhos."
+    }
+  ],
+  "cement_pad": {
+    "type": "concrete",
+    "width": 1,
+    "thickness": 0.15,
+    "length": 1
+  },
+  "aquifer_analysis": [
+    {
+      "id": "an-2024",
+      "datetime": "2024-04-25T10:00:00-03:00",
+      "analyst": "Aquapoços — Geóloga responsável",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "cooper_jacob",
+      "static_level": 29,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 46.56,
+      "flow_rate": 11,
+      "specific_capacity": 0.626,
+      "transmissivity": 17.4
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-2024",
+      "installed_at": "2024-05-06T08:00:00-03:00",
+      "installed_by": "Aquapoços Belém Ltda.",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Ebara",
+      "model": "BHS 511-14",
+      "intake_depth": 46,
+      "rated_flow_rate": 8,
+      "rated_head": 90,
+      "rated_power": 4,
+      "stages": 14,
+      "riser_diameter": 50,
+      "riser_material": "pvc",
+      "check_valve": true
+    }
+  ],
+  "permits": [
+    {
+      "id": "outorga-2024",
+      "type": "abstraction_permit",
+      "authority": "SEMAS-PA",
+      "status": "granted",
+      "identifier": "Outorga SEMAS nº 3512/2024",
+      "request_identifier": "Processo nº 2023/0000032140",
+      "issued_at": "2024-05-02",
+      "valid_until": "2034-05-02",
+      "water_use": [
+        "human_supply"
+      ],
+      "flow_rate": 8,
+      "daily_operating_time": 18,
+      "volume_limits": [
+        {
+          "period": "monthly",
+          "volume": 4320
+        }
+      ],
+      "conditions": [
+        {
+          "id": "c1",
+          "description": "Instalar hidrômetro na saída do poço antes de iniciar a captação.",
+          "category": "equipment_installation",
+          "responsible": "Síndico",
+          "fulfillments": [
+            {
+              "id": "f1",
+              "datetime": "2024-05-06T10:00:00-03:00",
+              "description": "Hidrômetro DN40 instalado.",
+              "author": "Administração do condomínio"
+            }
+          ]
+        },
+        {
+          "id": "c2",
+          "description": "Apresentar análise físico-química e bacteriológica semestral.",
+          "category": "monitoring",
+          "responsible": "Síndico",
+          "first_due": "2024-11-02",
+          "recurrence": "P6M",
+          "fulfillments": [
+            {
+              "id": "f-2024-11",
+              "datetime": "2024-10-28T10:00:00-03:00",
+              "due_date": "2024-11-02",
+              "description": "Laudo semestral protocolado.",
+              "author": "Administração do condomínio",
+              "sample_id": "am-2024-10"
+            },
+            {
+              "id": "f-2025-05",
+              "datetime": "2025-05-20T10:00:00-03:00",
+              "due_date": "2025-05-02",
+              "description": "Laudo semestral protocolado com atraso.",
+              "author": "Administração do condomínio",
+              "sample_id": "am-2025-04"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": "h1",
+          "date": "2023-04-25",
+          "type": "filing",
+          "description": "Cadastro no CNARH e requerimento de outorga com a coleta de abril/2023."
+        },
+        {
+          "id": "h2",
+          "date": "2023-11-14",
+          "type": "notification",
+          "description": "SEMAS solicita teste de bombeamento de 24 h.",
+          "done": true
+        },
+        {
+          "id": "h3",
+          "date": "2024-05-02",
+          "type": "decision",
+          "description": "Outorga deferida."
+        }
+      ]
+    }
+  ],
+  "meters": [
+    {
+      "id": "hid-1",
+      "installed_at": "2024-05-06T10:00:00-03:00",
+      "type": "mechanical",
+      "manufacturer": "Saga",
+      "model": "Woltmann DN40",
+      "serial": "SG24-118733",
+      "nominal_diameter": 40,
+      "max_reading": 99999
+    }
+  ],
+  "production": [
+    {
+      "id": "prd-001",
+      "type": "meter_reading",
+      "datetime": "2024-05-06T10:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 0,
+      "source": "manual",
+      "notes": "Leitura de instalação."
+    },
+    {
+      "id": "prd-002",
+      "type": "meter_reading",
+      "datetime": "2024-06-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 4184,
+      "source": "manual"
+    },
+    {
+      "id": "prd-003",
+      "type": "meter_reading",
+      "datetime": "2024-07-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 8506,
+      "source": "manual"
+    },
+    {
+      "id": "prd-004",
+      "type": "meter_reading",
+      "datetime": "2024-08-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 12900,
+      "source": "manual"
+    },
+    {
+      "id": "prd-005",
+      "type": "meter_reading",
+      "datetime": "2024-09-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 16707,
+      "source": "manual"
+    },
+    {
+      "id": "prd-006",
+      "type": "meter_reading",
+      "datetime": "2024-10-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 20690,
+      "source": "manual"
+    },
+    {
+      "id": "prd-007",
+      "type": "meter_reading",
+      "datetime": "2024-11-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 24746,
+      "source": "manual"
+    },
+    {
+      "id": "prd-008",
+      "type": "meter_reading",
+      "datetime": "2024-12-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 28452,
+      "source": "manual"
+    },
+    {
+      "id": "prd-009",
+      "type": "meter_reading",
+      "datetime": "2025-01-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 32998,
+      "source": "manual"
+    },
+    {
+      "id": "prd-010",
+      "type": "meter_reading",
+      "datetime": "2025-02-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 37445,
+      "source": "manual"
+    },
+    {
+      "id": "prd-011",
+      "type": "meter_reading",
+      "datetime": "2025-03-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 41349,
+      "source": "manual"
+    },
+    {
+      "id": "prd-012",
+      "type": "meter_reading",
+      "datetime": "2025-04-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 45384,
+      "source": "manual"
+    },
+    {
+      "id": "prd-013",
+      "type": "meter_reading",
+      "datetime": "2025-05-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 49620,
+      "source": "manual"
+    },
+    {
+      "id": "prd-014",
+      "type": "meter_reading",
+      "datetime": "2025-06-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 53866,
+      "source": "manual"
+    },
+    {
+      "id": "prd-015",
+      "type": "meter_reading",
+      "datetime": "2025-07-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 57853,
+      "source": "manual"
+    },
+    {
+      "id": "prd-016",
+      "type": "meter_reading",
+      "datetime": "2025-08-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 62221,
+      "source": "manual"
+    },
+    {
+      "id": "prd-017",
+      "type": "meter_reading",
+      "datetime": "2025-09-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 66027,
+      "source": "manual"
+    },
+    {
+      "id": "prd-018",
+      "type": "meter_reading",
+      "datetime": "2025-10-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 70250,
+      "source": "manual"
+    },
+    {
+      "id": "prd-019",
+      "type": "meter_reading",
+      "datetime": "2025-11-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 74653,
+      "source": "manual"
+    },
+    {
+      "id": "prd-020",
+      "type": "meter_reading",
+      "datetime": "2025-12-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 78982,
+      "source": "manual"
+    },
+    {
+      "id": "prd-021",
+      "type": "meter_reading",
+      "datetime": "2026-01-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 82986,
+      "source": "manual"
+    },
+    {
+      "id": "prd-022",
+      "type": "meter_reading",
+      "datetime": "2026-02-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 87489,
+      "source": "manual"
+    },
+    {
+      "id": "prd-023",
+      "type": "meter_reading",
+      "datetime": "2026-03-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 91521,
+      "source": "manual"
+    },
+    {
+      "id": "prd-024",
+      "type": "meter_reading",
+      "datetime": "2026-04-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 95934,
+      "source": "manual"
+    },
+    {
+      "id": "prd-025",
+      "type": "meter_reading",
+      "datetime": "2026-05-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 100230,
+      "source": "manual"
+    },
+    {
+      "id": "prd-026",
+      "type": "meter_reading",
+      "datetime": "2026-06-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 104798,
+      "source": "manual"
+    },
+    {
+      "id": "prd-027",
+      "type": "meter_reading",
+      "datetime": "2026-07-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 108974,
+      "source": "manual"
+    },
+    {
+      "id": "prd-028",
+      "type": "meter_reading",
+      "datetime": "2026-08-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 113272,
+      "source": "manual"
+    },
+    {
+      "id": "prd-029",
+      "type": "meter_reading",
+      "datetime": "2026-09-05T09:00:00-03:00",
+      "meter_id": "hid-1",
+      "reading": 117068,
+      "source": "manual"
+    }
+  ],
+  "operating_regime": [
+    {
+      "id": "reg-2024",
+      "effective_from": "2024-05-06T10:00:00-03:00",
+      "flow_rate": 8,
+      "daily_operating_time": 17,
+      "days_per_week": 7
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-2023",
+      "datetime": "2023-04-25T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "wellhead_tap"
+      },
+      "laboratory": {
+        "name": "Laboratório Amazônia Análises",
+        "report_number": "LAA-23/1402"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 28.4,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 6.04,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 312.7,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 30.02,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 39.01,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.02,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "value": 3.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 39,
+          "measured_in": "lab"
+        }
+      ]
+    },
+    {
+      "id": "am-2024-10",
+      "datetime": "2024-10-15T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "laboratory": {
+        "name": "Laboratório Amazônia Análises",
+        "report_number": "LAA-24/1077"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 5.9,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 318,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 0.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 31.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.05,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    },
+    {
+      "id": "am-2025-04",
+      "datetime": "2025-04-29T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "laboratory": {
+        "name": "Laboratório Amazônia Análises",
+        "report_number": "LAA-25/0477"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 5.8,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 331,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 0.7,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 31.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.05,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "2023-04-18T17:00:00-03:00",
+      "category": "event",
+      "description": "Perfuração concluída.",
+      "author": "Aquapoços Belém Ltda."
+    },
+    {
+      "id": "log-02",
+      "datetime": "2024-05-06T10:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Início da captação após a outorga."
+    }
+  ]
+}

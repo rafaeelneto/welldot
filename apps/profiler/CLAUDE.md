@@ -74,7 +74,28 @@ app/                      ← srcDir
                              fields, `status_change` status (current well status
                              tag) and the `hydrodynamic_event_ids` / `sample_ids` links
                              of any category (`WellTagSelect`: chips above a Select); root `attachments`
-                             (general files) live in the General tab below Observations
+                             (general files) live in the General tab below Observations.
+                             New well dialog (new-well/: NewWellDialog, ExamplesPanel,
+                             PasteJsonPanel, SiagasPanel) is the single place to start a well: blank
+                             (`profileStore.clear`, replaces the old Clear), examples
+                             filtered by the index `categories`, open .well (button, ⌘O or
+                             drop on the dialog), paste JSON (also any paste in the dialog)
+                             and SIAGAS (SiagasPanel: code or link → `/api/siagas/[code]`,
+                             summary, warnings, JSON, copy/download/open; pasting a SIAGAS
+                             code or link anywhere in the dialog opens it). `useNewWellDialog()` holds its state and
+                             opens it once per session when the editor starts empty (not
+                             with `?share=`); the header "New" button, the canvas empty
+                             state and the menu's "Open example" open it, and any
+                             `wellSession` bump closes it. `useOpenWellFile()` is the
+                             shared open/drop/paste flow (asks before discarding changes;
+                             resolves true/false/null = loaded/failed/cancelled, the reason
+                             in `profileStore.errors.root`). Examples come from
+                             `@welldot/core/examples`, served by Nitro `publicAssets` at
+                             `/examples` (see nuxt.config.ts). `useWellExamples()` fetches
+                             `/examples/index.json` and loads a `.well` through
+                             `profileStore.loadWell` (asks first when there are unsaved
+                             changes). Cards show the generated `examples/thumbs/<slug>.svg`
+                             (lazy `<img>`)
   layouts/
     landing.vue           ← layout for the landing page
   components/             ← app/domain components only; base components (WellLabeledField,
@@ -142,6 +163,7 @@ pnpm lint       # eslint
 ## Server routes & scheduled tasks
 
 - `server/api/` — Nitro API routes. Profile sharing (`share.post.ts`, `share/[id].get.ts`) hashes/stores well JSON in Supabase via `server/utils/supabase.ts` (service-role key, server-only — never exposed to the client). Shares are capped at `MAX_SHARE_BYTES` and expire after `SHARE_TTL_DAYS` (`server/utils/shareConfig.ts`); the GET route edge-caches successful lookups via the Workers Cache API.
+- `server/api/siagas/[code].get.ts` imports a well with `importSiagasWell` (`@welldot/utils/siagas`) — the SGB pages have no CORS, so the fetch runs here. Query `rimas` (`none`/`monthly`/`all`) and `media` (`0` to skip). Rate limited by the optional `SIAGAS_RATE_LIMITER` binding (`wrangler.json`) and edge-cached for a day per code + options; `SiagasError.kind` maps to 400/404/502/500, a timeout to 504.
 - `server/tasks/` — Nitro scheduled tasks (`experimental.tasks` in `nuxt.config.ts`). `shares:cleanup` (`server/tasks/shares/cleanup.ts`) purges expired `well_shares` rows. Wiring a task requires **both**: a `nitro.scheduledTasks` entry in `nuxt.config.ts` mapping a cron string to the task name, **and** the identical cron string in `wrangler.json`'s `triggers.crons` — Cloudflare only invokes `scheduled()` for crons declared there, and Nitro only runs a task if its cron matches an entry in `scheduledTasks`.
 - `getRuntimeEnv`/`getSupabaseClient` (`server/utils/env.ts`, `supabase.ts`) accept a structural `RuntimeEnvSource`, not `H3Event`, specifically so scheduled tasks (which get a Nitro `TaskEvent`, not an `H3Event`) can reuse them.
 

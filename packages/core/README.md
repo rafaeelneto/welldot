@@ -26,6 +26,10 @@ The format is designed for three use cases: visualization of technical well prof
 
 See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.3) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
 
+### Example wells
+
+The package ships 14 complete, valid `.well` files in [`examples/`](./examples/README.md). They are built on real wells from the Brazilian SIAGAS registry, with illustrative names, permits, analyses and operating data. Together they cover crystalline, karst, sedimentary, deep, flowing, hand-dug and monitoring wells, plus incomplete and inconsistent records. Import them as `@welldot/core/examples/<file>`, or download them from `https://welldot.org/examples/<file>`.
+
 ## Installation
 
 ```bash
@@ -50,6 +54,7 @@ import {
   parseWell,
   serializeWell,
   deserializeWell,
+  hasWellData,
   isWellEmpty,
 } from '@welldot/core';
 
@@ -65,8 +70,9 @@ const jsonString = serializeWell(well);
 // Deserialize — handles versioned format and legacy formats
 const restored = deserializeWell(jsonString);
 
-// Check if a well contains any data
+// Check if a well has a profile to draw, or holds any data at all
 const empty = isWellEmpty(well);
+const hasData = hasWellData(well);
 ```
 
 ## API Reference
@@ -219,11 +225,11 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 
 #### `parseWell(json: string): Well`
 
-Parses a raw JSON string and validates it against `WellSchema`. Throws a `ZodError` on validation failure. Does not handle legacy formats — use `deserializeWell` for that.
+Parses a raw JSON string and validates it against `WellSchema`. Throws a `ZodError` on validation failure. Unknown members (`x-` fields and blocks) are kept at every level, including inside array items. Does not handle legacy formats — use `deserializeWell` for that.
 
 #### `serializeWell(well: Well): string`
 
-Serializes a `Well` object to a versioned `.well` JSON string (`"version": 2`). Emits `location` when set; does not emit deprecated flat `lat`/`lng`/`elevation`. Omits `undefined` optional fields.
+Serializes a `Well` object to a versioned `.well` JSON string (`"version": 2`). Emits `location` when set; does not emit deprecated flat `lat`/`lng`/`elevation` or other legacy v1 keys. Omits `undefined` optional fields. Root members the spec does not define (`x-` fields and blocks, foreign members) are written unchanged after the spec blocks, as the spec requires.
 
 #### `deserializeWell(jsonString: string): Well | null`
 
@@ -241,13 +247,17 @@ Returns `null` if the parsed data is empty. Throws on unrecognized version numbe
 
 Returns `true` when all constructive and geologic arrays are empty. Accepts `null` and `undefined` (both treated as empty).
 
+#### `hasWellData(well: Well | null | undefined): boolean`
+
+Returns `true` when the well holds any data: a profile, or any other filled root member (identification, location, events, samples, permits, `x-` members, …). A registry record without construction or geology has data although `isWellEmpty` says it has nothing to draw. Blank strings, zeros and objects holding only those do not count.
+
 #### `calculatedWellDepth(well: Well): number`
 
 Deepest `to` across the constructive arrays (bore hole, casings, screens, reductions, hole fill), ignoring geology. `0` without constructive data. Used as the fallback for a missing `well_depth`.
 
 #### `redactWell(well: Well, visibility: WellVisibility): Well`
 
-Copy of `well` with hidden parts emptied (arrays become `[]`, optional fields are removed), so the result stays schema-valid. `visibility` keys are the 7 `SECTION_KEYS` and/or the fields of `VISIBILITY_TREE` (e.g. `meters`, `permits`, `location`); `false` hides, missing keys are visible, and a hidden section hides all its fields. `VISIBILITY_LEAF_KEYS` lists the finest toggles. References from visible records to hidden ones are left as-is.
+Copy of `well` with hidden parts emptied (arrays become `[]`, optional fields are removed), so the result stays schema-valid. `visibility` keys are the 7 `SECTION_KEYS` and/or the fields of `VISIBILITY_TREE` (e.g. `meters`, `permits`, `location`); `false` hides, missing keys are visible, and a hidden section hides all its fields. `VISIBILITY_LEAF_KEYS` lists the finest toggles. References from visible records to hidden ones are left as-is. Unknown root members (`x-` fields and blocks) are kept only when nothing is hidden; nested ones follow their record.
 
 ```typescript
 redactWell(well, { operation: false }); // whole section

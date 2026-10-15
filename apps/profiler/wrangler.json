@@ -18,6 +18,11 @@
       "name": "SHARE_RATE_LIMITER",
       "namespace_id": "1001",
       "simple": { "limit": 10, "period": 60 }
+    },
+    {
+      "name": "SIAGAS_RATE_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 20, "period": 60 }
     }
   ],
   "env": {
@@ -28,6 +33,11 @@
           "name": "SHARE_RATE_LIMITER",
           "namespace_id": "1001",
           "simple": { "limit": 10, "period": 60 }
+        },
+        {
+          "name": "SIAGAS_RATE_LIMITER",
+          "namespace_id": "1002",
+          "simple": { "limit": 20, "period": 60 }
         }
       ]
     }

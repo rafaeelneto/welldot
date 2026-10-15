@@ -30,7 +30,13 @@ const viewport = useViewport();
 useSharedProfileLoader();
 
 const { showStartupTip } = useStartupTips();
-onMounted(() => showStartupTip());
+const newWell = useNewWellDialog();
+onMounted(() => {
+  // An empty editor starts with the "New well" dialog; a tip would sit
+  // under it, so it waits for the next load.
+  newWell.openIfEmpty();
+  if (!newWell.visible.value) showStartupTip();
+});
 
 const isMobile = computed(() => viewport.isLessThan('lg'));
 const mobileView = ref<'profile' | 'data'>('data');

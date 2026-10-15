@@ -1,0 +1,861 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=2900000278"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço PT-03 — Povoado de Lagoa Bonita (Irecê/BA)",
+  "well_driller": "Chapada Perfurações Ltda.",
+  "construction_date": "1980-08-04",
+  "obs": "Poço de abastecimento do povoado no platô cárstico de Irecê, em calcário do Grupo Bambuí. Só os 4,3 m de cima são revestidos; abaixo, poço aberto, com cavernas a partir de 30 m. A vazão específica é altíssima (85 m³/h/m), mas a água é muito dura e o nitrato sobe desde os anos 1980: o carste recebe sem filtro a água das fossas e das lavouras irrigadas do entorno.",
+  "well_id": [
+    {
+      "authority": "Prefeitura",
+      "id": "PT-03",
+      "primary": true
+    },
+    {
+      "authority": "INEMA",
+      "id": "Cadastro 2011/017745"
+    }
+  ],
+  "location": {
+    "lat": -11.30861,
+    "lng": -41.88639,
+    "elevation": 765,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31984"
+    }
+  },
+  "well_depth": 60,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 4.3,
+      "diameter": 251,
+      "drilling_method": "percussion"
+    },
+    {
+      "from": 4.3,
+      "to": 60,
+      "diameter": 152,
+      "drilling_method": "percussion"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.7,
+      "to": 4.3,
+      "type": "galvanized_steel",
+      "diameter": 168
+    }
+  ],
+  "reduction": [],
+  "well_screen": [],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 1,
+      "type": "seal",
+      "diameter": 251,
+      "description": "Cimentação do espaço anular"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 1,
+      "description": "Solo amarronzado, calcífero",
+      "color": "#9c7a55",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Eluvião",
+      "aquifer_unit": "Zona não saturada"
+    },
+    {
+      "from": 1,
+      "to": 3,
+      "description": "Calcário esbranquiçado, alterado",
+      "color": "#d6d2c4",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Bambuí",
+      "aquifer_unit": "Aquífero cárstico Bambuí"
+    },
+    {
+      "from": 3,
+      "to": 5,
+      "description": "Calcário cinza, fragmentação muito fina",
+      "color": "#a3a7a8",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Bambuí",
+      "aquifer_unit": "Aquífero cárstico Bambuí"
+    },
+    {
+      "from": 5,
+      "to": 27,
+      "description": "Calcário cinza, fragmentação fina a média",
+      "color": "#8f979b",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Bambuí",
+      "aquifer_unit": "Aquífero cárstico Bambuí"
+    },
+    {
+      "from": 27,
+      "to": 30,
+      "description": "Calcário cinza, fragmentação média a grossa",
+      "color": "#848c91",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Bambuí",
+      "aquifer_unit": "Aquífero cárstico Bambuí"
+    },
+    {
+      "from": 30,
+      "to": 60,
+      "description": "Calcário cinza-escuro carstificado, com cavernas",
+      "color": "#6b7378",
+      "texture": {
+        "code": 627,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Bambuí",
+      "aquifer_unit": "Aquífero cárstico Bambuí"
+    }
+  ],
+  "fractures": [
+    {
+      "depth": 28,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fratura alargada por dissolução, primeira entrada d’água",
+      "swarm": false,
+      "azimuth": 20,
+      "dip": 85
+    }
+  ],
+  "caves": [
+    {
+      "from": 30,
+      "to": 33.5,
+      "water_intake": true,
+      "description": "Caverna: queda livre da ferramenta e perda total de circulação; entrada d’água principal."
+    },
+    {
+      "from": 41,
+      "to": 42.5,
+      "water_intake": true,
+      "description": "Conduto cárstico parcialmente preenchido por argila."
+    },
+    {
+      "from": 52,
+      "to": 53,
+      "water_intake": false,
+      "description": "Cavidade seca, preenchida por argila vermelha."
+    }
+  ],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "1980-09-15T07:00:00-03:00",
+      "operator": "Chapada Perfurações Ltda.",
+      "static_level": 18.75,
+      "notes": "Ficha antiga: só o nível estático, o nível dinâmico final e a vazão. Rebaixamento de 30 cm em 24 h.",
+      "steps": [
+        {
+          "rate": 25.52,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1440,
+              "depth": 19.05
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-02",
+      "type": "spot_measurement",
+      "datetime": "2012-11-20T08:00:00-03:00",
+      "operator": "Prefeitura — Serviço de Água",
+      "static_level": 31.4,
+      "static_level_precision": 0.05,
+      "measurement_method": "electric_probe",
+      "notes": "Seca de 2012 e bombeamento de centenas de poços de irrigação no platô: nível abaixo da caverna principal."
+    },
+    {
+      "id": "evt-03",
+      "type": "spot_measurement",
+      "datetime": "2023-04-12T08:00:00-03:00",
+      "operator": "Prefeitura — Serviço de Água",
+      "static_level": 22.9,
+      "static_level_precision": 0.05,
+      "measurement_method": "electric_probe"
+    }
+  ],
+  "cement_pad": {
+    "type": "concrete",
+    "width": 1,
+    "thickness": 0.15,
+    "length": 1
+  },
+  "aquifer_analysis": [
+    {
+      "id": "an-1980",
+      "datetime": "1980-09-16T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "x-specific_capacity",
+      "static_level": 18.75,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 19.05,
+      "flow_rate": 25.52,
+      "specific_capacity": 85.07,
+      "notes": "Rebaixamento pequeno demais para Jacob: o poço capta um conduto cárstico."
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-1981",
+      "installed_at": "1981-02-02T09:00:00-03:00",
+      "removed_at": "2012-12-03T09:00:00-03:00",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "KSB",
+      "model": "UPA 100-8/6",
+      "intake_depth": 27,
+      "rated_flow_rate": 20,
+      "rated_power": 5.5,
+      "riser_diameter": 50,
+      "riser_material": "galvanized_steel",
+      "notes": "Ficou acima do nível da água na seca de 2012."
+    },
+    {
+      "id": "pump-2012",
+      "installed_at": "2012-12-03T14:00:00-03:00",
+      "installed_by": "Prefeitura — Serviço de Água",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Leão",
+      "model": "R6-08",
+      "intake_depth": 45,
+      "rated_flow_rate": 20,
+      "rated_head": 70,
+      "rated_power": 5.5,
+      "stages": 8,
+      "riser_diameter": 60,
+      "riser_material": "stainless_steel",
+      "check_valve": true,
+      "notes": "Rebaixada para 45 m, abaixo da caverna principal."
+    }
+  ],
+  "operating_regime": [
+    {
+      "id": "reg-1981",
+      "effective_from": "1981-02-02T09:00:00-03:00",
+      "flow_rate": 20,
+      "daily_operating_time": 10,
+      "days_per_week": 7
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-1980",
+      "datetime": "1980-09-17T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "collected_by": "Chapada Perfurações Ltda.",
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 1820,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.25,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.7,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 168,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 31,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 100,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 240,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 396,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 95,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "value": 9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 547,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 1150,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "fluoride",
+            "vocabulary": "welldot"
+          },
+          "value": 0.49,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.13,
+          "measured_in": "lab",
+          "fraction": "total"
+        }
+      ]
+    },
+    {
+      "id": "am-2005",
+      "datetime": "2005-08-23T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge",
+        "pump_installation_id": "pump-1981"
+      },
+      "collected_by": "Vigilância Sanitária Municipal",
+      "laboratory": {
+        "name": "Laboratório Regional de Saúde Pública de Irecê",
+        "report_number": "LR-05/0871"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 1950,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.2,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 176,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 33,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 104,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 252,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 397,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 98,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "value": 31,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 575,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 1240,
+          "measured_in": "lab"
+        }
+      ]
+    },
+    {
+      "id": "am-2013",
+      "datetime": "2013-01-15T09:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Após a seca de 2012",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge",
+        "pump_installation_id": "pump-2012"
+      },
+      "collected_by": "Vigilância Sanitária Municipal",
+      "laboratory": {
+        "name": "Laboratório Regional de Saúde Pública de Irecê",
+        "report_number": "LR-13/0094"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 2240,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 3.8,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 194,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 37,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 118,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 6,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 286,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 428,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 104,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "value": 47,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 637,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 1420,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": true,
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    },
+    {
+      "id": "am-2023",
+      "datetime": "2023-04-12T09:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge",
+        "pump_installation_id": "pump-2012"
+      },
+      "collected_by": "Vigilância Sanitária Municipal",
+      "laboratory": {
+        "name": "Laboratório Regional de Saúde Pública de Irecê",
+        "report_number": "LR-23/1530"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 2080,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.2,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 183,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 35,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 109,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 6,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 262,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 388,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 99,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "value": 68,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 601,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 1330,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1981-02-02T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço entra em operação no abastecimento do povoado.",
+      "hydrodynamic_event_ids": [
+        "evt-01"
+      ],
+      "sample_ids": [
+        "am-1980"
+      ]
+    },
+    {
+      "id": "log-02",
+      "datetime": "2012-12-03T14:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "pump_service",
+      "pump_installation_id": "pump-2012",
+      "description": "Bomba antiga ficou acima do nível na seca; nova bomba instalada a 45 m.",
+      "author": "Prefeitura — Serviço de Água",
+      "hydrodynamic_event_ids": [
+        "evt-02"
+      ]
+    },
+    {
+      "id": "log-03",
+      "datetime": "2013-01-15T09:00:00-03:00",
+      "category": "incident",
+      "severity": "high",
+      "description": "Primeiras chuvas após a seca: turbidez e coliformes totais na água, recarga rápida pelas dolinas. Cloração reforçada no reservatório.",
+      "sample_ids": [
+        "am-2013"
+      ]
+    },
+    {
+      "id": "log-04",
+      "datetime": "2023-05-02T10:00:00-03:00",
+      "category": "inspection",
+      "severity": "high",
+      "description": "Nitrato acima do valor máximo permitido (68 mg/L NO₃). A água do poço passa a ser misturada no reservatório com a da adutora antes da distribuição.",
+      "sample_ids": [
+        "am-2023"
+      ]
+    }
+  ]
+}

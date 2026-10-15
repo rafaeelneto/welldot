@@ -1,0 +1,496 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=1500001046"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço BC-1 — Emissora de rádio (Belém/PA)",
+  "well_driller": "Hidrosolo Norte Ltda.",
+  "construction_date": "1989-08-20",
+  "obs": "Perda progressiva de vazão por colmatação do filtro (incrustação ferruginosa e finos). Tentativa de recuperação em 1997 sem sucesso; poço tamponado em 2005.",
+  "well_id": [
+    {
+      "authority": "Proprietário",
+      "id": "BC-1",
+      "primary": true
+    }
+  ],
+  "location": {
+    "lat": -1.45778,
+    "lng": -48.47639,
+    "elevation": 9,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31982"
+    }
+  },
+  "well_depth": 102,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 102,
+      "diameter": 254,
+      "drilling_method": "rotary"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.6,
+      "to": 62,
+      "type": "carbon_steel",
+      "diameter": 168
+    },
+    {
+      "from": 76,
+      "to": 102,
+      "type": "carbon_steel",
+      "diameter": 168
+    }
+  ],
+  "reduction": [],
+  "well_screen": [
+    {
+      "from": 62,
+      "to": 76,
+      "type": "carbon_steel",
+      "diameter": 168,
+      "screen_slot": 0.5,
+      "slot_type": "slotted"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 4,
+      "type": "seal",
+      "diameter": 254,
+      "description": "Cimentação"
+    },
+    {
+      "from": 4,
+      "to": 102,
+      "type": "gravel_pack",
+      "diameter": 254,
+      "description": "Cascalho"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 2,
+      "description": "Solo amarelo",
+      "color": "#d9b45a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Sedimentos Pós-Barreiras",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 2,
+      "to": 18,
+      "description": "Argila arenosa amarelo-amarronzada",
+      "color": "#b98a4e",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Sedimentos Pós-Barreiras",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 18,
+      "to": 24,
+      "description": "Areia fina amarelo-avermelhada",
+      "color": "#d9925a",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Sedimentos Pós-Barreiras",
+      "aquifer_unit": "Aquífero livre raso"
+    },
+    {
+      "from": 24,
+      "to": 51,
+      "description": "Argila areno-siltosa amarelo-alaranjada",
+      "color": "#d98b3a",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 51,
+      "to": 60,
+      "description": "Areia argilosa cinza",
+      "color": "#a9a59a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    },
+    {
+      "from": 60,
+      "to": 78,
+      "description": "Areia média branco-avermelhada",
+      "color": "#e8cfc0",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    },
+    {
+      "from": 78,
+      "to": 102,
+      "description": "Argila arenosa cinza-amarronzada",
+      "color": "#8f8172",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "1989-08-24T07:00:00-03:00",
+      "operator": "Hidrosolo Norte Ltda.",
+      "static_level": 6.2,
+      "steps": [
+        {
+          "rate": 9,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 14.34
+            },
+            {
+              "elapsed": 2,
+              "depth": 14.97
+            },
+            {
+              "elapsed": 3,
+              "depth": 15.35
+            },
+            {
+              "elapsed": 5,
+              "depth": 15.81
+            },
+            {
+              "elapsed": 7,
+              "depth": 16.12
+            },
+            {
+              "elapsed": 10,
+              "depth": 16.45
+            },
+            {
+              "elapsed": 15,
+              "depth": 16.82
+            },
+            {
+              "elapsed": 20,
+              "depth": 17.08
+            },
+            {
+              "elapsed": 30,
+              "depth": 17.45
+            },
+            {
+              "elapsed": 45,
+              "depth": 17.83
+            },
+            {
+              "elapsed": 60,
+              "depth": 18.09
+            },
+            {
+              "elapsed": 90,
+              "depth": 18.46
+            },
+            {
+              "elapsed": 120,
+              "depth": 18.72
+            },
+            {
+              "elapsed": 180,
+              "depth": 19.1
+            },
+            {
+              "elapsed": 240,
+              "depth": 19.36
+            },
+            {
+              "elapsed": 360,
+              "depth": 19.73
+            },
+            {
+              "elapsed": 480,
+              "depth": 19.99
+            },
+            {
+              "elapsed": 600,
+              "depth": 20.2
+            },
+            {
+              "elapsed": 720,
+              "depth": 20.37
+            },
+            {
+              "elapsed": 900,
+              "depth": 20.57
+            },
+            {
+              "elapsed": 1080,
+              "depth": 20.74
+            },
+            {
+              "elapsed": 1260,
+              "depth": 20.88
+            },
+            {
+              "elapsed": 1440,
+              "depth": 21
+            }
+          ]
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 12.86
+          },
+          {
+            "elapsed": 2,
+            "depth": 12.23
+          },
+          {
+            "elapsed": 3,
+            "depth": 11.86
+          },
+          {
+            "elapsed": 5,
+            "depth": 11.39
+          },
+          {
+            "elapsed": 10,
+            "depth": 10.76
+          },
+          {
+            "elapsed": 15,
+            "depth": 10.39
+          },
+          {
+            "elapsed": 30,
+            "depth": 9.76
+          },
+          {
+            "elapsed": 60,
+            "depth": 9.15
+          },
+          {
+            "elapsed": 120,
+            "depth": 8.55
+          },
+          {
+            "elapsed": 240,
+            "depth": 7.98
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-02",
+      "type": "spot_measurement",
+      "datetime": "1994-10-05T09:00:00-03:00",
+      "static_level": 6.9,
+      "measurement_method": "electric_probe",
+      "steps": [
+        {
+          "rate": 6,
+          "duration": 120,
+          "readings": [
+            {
+              "elapsed": 120,
+              "depth": 27.4
+            }
+          ]
+        }
+      ],
+      "notes": "Nível dinâmico com a bomba de produção."
+    },
+    {
+      "id": "evt-03",
+      "type": "spot_measurement",
+      "datetime": "1996-11-12T09:00:00-03:00",
+      "static_level": 7.1,
+      "measurement_method": "electric_probe",
+      "steps": [
+        {
+          "rate": 3,
+          "duration": 120,
+          "readings": [
+            {
+              "elapsed": 120,
+              "depth": 33.8
+            }
+          ]
+        }
+      ],
+      "notes": "Vazão caiu para 3 m³/h."
+    },
+    {
+      "id": "evt-04",
+      "type": "airlift",
+      "datetime": "1997-04-15T08:00:00-03:00",
+      "operator": "Hidrosolo Norte Ltda.",
+      "notes": "Limpeza com ácido sulfâmico e air-lift.",
+      "steps": [
+        {
+          "rate": 4,
+          "duration": 480
+        }
+      ]
+    },
+    {
+      "id": "evt-05",
+      "type": "constant_rate",
+      "datetime": "1997-04-18T07:00:00-03:00",
+      "static_level": 7,
+      "notes": "Teste após a limpeza: capacidade específica não recuperou.",
+      "steps": [
+        {
+          "rate": 3.5,
+          "duration": 240,
+          "readings": [
+            {
+              "elapsed": 240,
+              "depth": 32.6
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "aquifer_analysis": [
+    {
+      "id": "an-1989",
+      "datetime": "1989-08-30T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "cooper_jacob",
+      "static_level": 6.2,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 21,
+      "flow_rate": 9,
+      "specific_capacity": 0.608,
+      "transmissivity": 18.7
+    },
+    {
+      "id": "an-1997",
+      "datetime": "1997-04-20T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-05"
+      ],
+      "method": "x-specific_capacity",
+      "static_level": 7,
+      "static_level_source_id": "evt-05",
+      "dynamic_level": 32.6,
+      "flow_rate": 3.5,
+      "specific_capacity": 0.137,
+      "notes": "Queda de 77 % da capacidade específica desde 1989."
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-1989",
+      "installed_at": "1989-09-05T09:00:00-03:00",
+      "removed_at": "2005-06-01T09:00:00-03:00",
+      "type": "submersible",
+      "power_source": "grid",
+      "intake_depth": 45,
+      "rated_flow_rate": 8,
+      "rated_power": 3,
+      "riser_diameter": 40,
+      "riser_material": "galvanized_steel"
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1989-09-05T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço em operação."
+    },
+    {
+      "id": "log-02",
+      "datetime": "1996-11-12T09:00:00-03:00",
+      "category": "incident",
+      "severity": "high",
+      "description": "Vazão reduzida a um terço da original.",
+      "hydrodynamic_event_ids": [
+        "evt-02",
+        "evt-03"
+      ]
+    },
+    {
+      "id": "log-03",
+      "datetime": "1997-04-10T09:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "video_inspection",
+      "description": "Filmagem: filtro coberto por incrustação ferruginosa e finos; colmatação."
+    },
+    {
+      "id": "log-04",
+      "datetime": "1997-04-15T08:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "redevelopment",
+      "description": "Tratamento ácido e air-lift; recuperação insuficiente.",
+      "hydrodynamic_event_ids": [
+        "evt-04",
+        "evt-05"
+      ]
+    },
+    {
+      "id": "log-05",
+      "datetime": "1997-05-28T08:00:00-03:00",
+      "category": "status_change",
+      "status": "inactive",
+      "description": "Poço colmatado, fora de uso."
+    },
+    {
+      "id": "log-06",
+      "datetime": "2005-06-01T09:00:00-03:00",
+      "category": "status_change",
+      "status": "decommissioned",
+      "description": "Bomba retirada e poço tamponado com calda de cimento."
+    }
+  ]
+}

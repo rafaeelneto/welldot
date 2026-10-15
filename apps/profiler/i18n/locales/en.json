@@ -1,11 +1,15 @@
 {
   "meta": {
     "title": "Well Profiler App for the Open .well Format",
-    "description": "Welldot (formerly Well Profiler) is a free well profiler app for well profiles — visualize, edit, and export in the open, versioned .well format.",
+    "description": "Welldot (formerly Well Profiler) is a free app for water well data in the open, versioned .well format — construction and geological profiles, pumping tests, operation, permits and water quality, exported as PDF reports.",
     "featureList": [
-      "Create, visualize, and export geological and construction well profiles",
+      "Create, visualize and export geological and construction well profiles",
+      "Pumping tests with semi-log, Theis recovery and step-test charts",
+      "Operation, production, permits and water quality (.well v2.3)",
+      "Customizable PDF reports",
       "Open, versioned .well JSON file format",
-      "Pump installation history and general attachments (.well v2.3)",
+      "Accepts incomplete field and legacy records — a missing value means unknown, never zero",
+      "Extensible with x- fields, x- blocks and institutional profiles",
       "Free and open source"
     ]
   },
@@ -29,7 +33,7 @@
     }
   },
   "footer": {
-    "version": "welldot · v1.0.0",
+    "version": "welldot · v2.3",
     "spec": ".well spec v2.3",
     "license": "Open · Apache 2.0"
   },
@@ -38,7 +42,7 @@
     "headline1": "Well profiles, in",
     "headlineEm": "open format",
     "headline2": ".",
-    "body": "Free editor to create, visualize, and export geological and construction profiles. A simple JSON, versioned, readable by any language.",
+    "body": "Free editor for the whole record of a well: construction and geological profiles, pumping tests, operation, permits and water quality, exported as PDF. A simple, versioned JSON, readable by any language.",
     "ctaPrimary": "Open well editor →",
     "ctaSecondary": "View specification",
     "badgeSpec": "spec",
@@ -50,15 +54,15 @@
   "format": {
     "kicker": "I · The format",
     "headline1": "One JSON.",
-    "headlineEm": "Three",
-    "headline2": "purposes.",
-    "intro": "Today, well data lives in PDFs that don't talk to each other. The {well} file is a simple, versioned format to change that — a single JSON that fully describes a well, from construction and geology to pump tests, installed pumps and maintenance history, designed as an {standard}.",
+    "headlineEm": "The whole",
+    "headline2": "well.",
+    "intro": "Today, well data lives in PDFs that don't talk to each other. The {well} file is a simple, versioned format to change that — a single JSON that fully describes a well, from construction and geology to pump tests, installed pumps, meters and production, permits, water quality and maintenance history, designed as an {standard}.",
     "standard": "international standard",
     "props": [
       {
         "num": "§ 1.1",
-        "title": "Visualization",
-        "body": "Free D3.js library to render and export geological and construction profiles at real scale."
+        "title": "Drawing",
+        "body": "Construction and geology at real scale, drawn the same way by any tool that reads the file."
       },
       {
         "num": "§ 1.2",
@@ -78,12 +82,12 @@
       {
         "num": "§ 1.5",
         "title": "Pump tests",
-        "body": "Hydrodynamic events and derived aquifer parameters — transmissivity, storativity, specific capacity — recorded as structured time series."
+        "body": "Raw test readings plus versioned interpretations — transmissivity, storativity, specific capacity — each tied to the tests it came from. See § III."
       },
       {
         "num": "§ 1.6",
         "title": "Operation & history",
-        "body": "Pump installations with nameplate, intake depth, riser and electrical data, typed documents, and a dated log of maintenance and incidents that follows the well through its working life."
+        "body": "Installed pumps, meters, produced volumes and operating regime, water-use permits with their conditions, water-quality samples, and a log of maintenance and incidents across the well's working life."
       }
     ]
   },
@@ -104,12 +108,39 @@
       },
       {
         "title": "Submission-ready",
-        "body": "A4 PDFs at real scale, with header, metadata, and multi-page drawing."
+        "body": "PDF reports with your branding, the sections you choose and the profile at real scale across pages, in English or Portuguese."
+      }
+    ]
+  },
+  "tests": {
+    "kicker": "III · Pumping tests & interpretation",
+    "headline1": "From field readings to",
+    "headlineEm": "aquifer parameters",
+    "headline2": ".",
+    "intro": "Every level measurement and pumping test is an entry in an append-only {ledger}: spot measurements, constant-rate and step-drawdown tests, air-lift, recovery and more. Readings are stored as taken, and drawdown, s/Q, Q/s and other parameters are calculated automatically.",
+    "ledger": "ledger",
+    "chartCaption": "Sample step-drawdown test, drawn by the editor's charts.",
+    "cards": [
+      {
+        "num": "§ 3.1",
+        "title": "Tests as recorded",
+        "body": "Steps with rate and duration, level readings over time and recovery after the pump stops."
+      },
+      {
+        "num": "§ 3.2",
+        "title": "Versioned interpretation",
+        "body": "Each analysis records its method, analyst, source tests and results — T, S, K, specific capacity, recommended maximum flow. Several can coexist."
+      },
+      {
+        "num": "§ 3.3",
+        "title": "Analysis editor",
+        "badge": "coming soon",
+        "body": "The editor already reads analyses and shows the current aquifer state. Creating and editing them in the app is on the way."
       }
     ]
   },
   "contexts": {
-    "kicker": "III · One file, many contexts",
+    "kicker": "IV · One file, many contexts",
     "headline1": "Standard inside,",
     "headlineEm": "flexible",
     "headline2": "outside.",
@@ -141,37 +172,105 @@
       }
     ]
   },
+  "incomplete": {
+    "kicker": "V · Graceful incompleteness",
+    "headline1": "Start with",
+    "headlineEm": "what you have",
+    "headline2": ".",
+    "intro": "Well data is rarely complete. A 1987 report with only the depth and an air-lift yield, a registry without coordinates, a log with no lithology, a permit still without a number: each is already a valid {well} file. Almost every field is optional, open fields take any text, and a missing field means {unknown} — never {zero}. In the field and in old archives, knowing what is missing is information too.",
+    "unknown": "unknown",
+    "zero": "zero",
+    "valid": "✓ valid",
+    "stagesLabel": "Record stage",
+    "stages": ["Report", "Visit", "Permit"],
+    "sample": {
+      "obs": "1987 report. No lithological log.",
+      "inspection": "No pump. No sanitary seal."
+    },
+    "rules": [
+      {
+        "num": "§ 5.1",
+        "title": "Almost everything is optional",
+        "body": "Name, coordinates, construction date, driller, lithology, tests, permits: each block and each field goes in when it exists. Construction blocks can be empty lists. An event needs only an id, a type and a date; a permit, a type and an authority."
+      },
+      {
+        "num": "§ 5.2",
+        "title": "Suggested values, free text",
+        "body": "Casing material, drilling method, permit type, maintenance type, well use: the format recommends a vocabulary for interoperability, but open fields accept any value. Values outside it take the x- prefix and are kept and shown as written."
+      },
+      {
+        "num": "§ 5.3",
+        "title": "Absent is unknown",
+        "body": "No regime means unknown flow, not zero. No status change means unknown status, not active. Production before the first meter reading is unknown."
+      },
+      {
+        "num": "§ 5.4",
+        "title": "Gaps are data too",
+        "body": "Missing details and inconsistencies become warnings for review, never a rejection. The record stays in the file with its history, and what is not known stays visible instead of being filled with made-up values."
+      }
+    ]
+  },
+  "extensible": {
+    "kicker": "VI · Extensible by anyone",
+    "headline1": "Anyone can",
+    "headlineEm": "extend it",
+    "headline2": ".",
+    "intro": "A driller, a consultancy, a water utility, a university or a regulator: {anyone} can add what their work needs, without asking permission and without breaking anyone else's files. The spec requires every reader to keep these extensions on load and save. And what proves useful to many can become part of the format itself.",
+    "anyone": "anyone",
+    "valid": "✓ valid",
+    "stagesLabel": "Extension level",
+    "stages": ["x- field", "Profile", "x- block"],
+    "levels": [
+      {
+        "num": "§ 6.1",
+        "title": "Your own fields and blocks",
+        "body": "Any object takes fields with the x- prefix, and the file takes whole new top-level blocks: a state registry number, a company's internal code, gas monitoring at a mine."
+      },
+      {
+        "num": "§ 6.2",
+        "title": "Profiles for institutions",
+        "body": "An agency, a company or a research network publishes a JSON Schema that requires extra fields, narrows vocabularies or sets its own x- extensions. Files declare it under profiles. Failures are warnings, and an unreachable profile never blocks a file."
+      },
+      {
+        "num": "§ 6.3",
+        "title": "From x- to the standard",
+        "body": "An x- value that proves useful across many sources can be promoted to canonical: x-slug_test becomes slug_test, and both forms stay valid until the next major version. Changes to the core start as an open issue with the data, its real-world source and why no field can carry it."
+      }
+    ],
+    "ctaContribute": "How to contribute",
+    "ctaPropose": "Propose a change"
+  },
   "horizon": {
-    "kicker": "IV · On the horizon",
+    "kicker": "VII · On the horizon",
     "headline1": "The",
     "headlineEm": "future",
     "headline2": ".",
-    "intro": "v2.3 covers geological, construction, and hydrodynamic profiles — pump tests, aquifer analysis, pump installations, water-use permits and their conditions, general attachments, and operational history. The specification evolves openly to embrace what's still ahead.",
+    "intro": "v2.3 covers geological, construction and hydrodynamic profiles — pump tests, aquifer analysis, pump installations, meters, production and operating regime, water-use permits and their conditions, water quality, general attachments and operational history. The specification evolves openly, and these are the gaps already mapped for the next versions.",
     "props": [
       {
-        "num": "§ 4.1",
+        "num": "§ 7.1",
         "title": "Native .las",
-        "body": "Import and storage of LAS geophysical profiles, side by side with the lithological profile."
+        "body": "Import and storage of LAS geophysical logs (resistivity, gamma ray, caliper), side by side with the lithological profile."
       },
       {
-        "num": "§ 4.2",
-        "title": "Water quality",
-        "body": "Physical-chemical and bacteriological analyses linked to sampling, depth, and date."
+        "num": "§ 7.2",
+        "title": "Linked wells",
+        "body": "References between files: observation wells for storativity, and one permit shared by several wells instead of repeated in each."
       },
       {
-        "num": "§ 4.3",
-        "title": "Production & operation",
-        "body": "Meters, produced volumes checked against permit limits, and operating regime — the next operational blocks."
+        "num": "§ 7.3",
+        "title": "Multilingual text",
+        "body": "Descriptions and notes tagged with their language, so the same file can carry Portuguese, English or Spanish text — plain strings stay valid."
       },
       {
-        "num": "§ 4.4",
-        "title": "Community extensions",
-        "body": "Namespaces for fields specific to agencies and regions, without breaking the standardized core."
+        "num": "§ 7.4",
+        "title": "Water quality assessment",
+        "body": "Interpreted judgments such as water class, hydrochemical facies and fitness for use, stored next to the samples they come from."
       }
     ]
   },
   "tools": {
-    "kicker": "V · The ecosystem",
+    "kicker": "VIII · The ecosystem",
     "headline1": "Free, open",
     "headlineEm": "tools",
     "headline2": ", not just an app.",
@@ -180,18 +279,28 @@
     "cards": [
       {
         "title": "\\@welldot/core",
-        "body": "Types, Zod validators, and serialization utilities for the .well format — the foundation everything else builds on.",
+        "body": "Types, Zod validators, JSON Schema and serialization for the .well format, plus its vocabularies — materials, permit types, water-quality parameters and limit sets. The foundation everything else builds on.",
         "path": "packages/core"
       },
       {
         "title": "\\@welldot/utils",
-        "body": "Profile analysis utilities: depth calculations, cylindrical volumes, and gravel pack volume estimates.",
+        "body": "Analysis of a .well file: geometry and volumes, aquifer hydraulics and pumping-test series, production by period and permit deadlines, water-quality derivations such as ion balance, Piper and Stiff.",
         "path": "packages/utils"
       },
       {
         "title": "\\@welldot/render",
-        "body": "The D3-based SVG renderer that draws every profile on this site — embeddable in any web app.",
+        "body": "The D3-based SVG renderer that draws every profile on this site at real scale, with a configurable theme — embeddable in any web app.",
         "path": "packages/render"
+      },
+      {
+        "title": "\\@welldot/pdf",
+        "body": "Customizable PDF reports on pdfmake: branding, watermark, page layout, theme, section toggles and order, en/pt labels. Works without any UI framework.",
+        "path": "packages/pdf"
+      },
+      {
+        "title": "\\@welldot/vue",
+        "body": "Vue 3 base components for .well editors, with the Welldot theme and a Nuxt module.",
+        "path": "packages/vue"
       },
       {
         "title": "Profiler app",
@@ -295,7 +404,6 @@
       "unsaved": "Unsaved",
       "layers": "Layers"
     },
-    "clearWell": "Clear well",
     "confirmOpen": {
       "header": "Open file",
       "message": "You have unsaved changes. Opening a new file will discard them.",
@@ -447,7 +555,9 @@
     },
     "canvas": {
       "empty": "No well data yet",
-      "reload": "Reload visualization"
+      "reload": "Reload visualization",
+      "startTitle": "Start a well",
+      "newWell": "New well"
     },
     "construction": {
       "tag": "Construction · Well",
@@ -1852,6 +1962,111 @@
           "missing": "Record not found: {id}",
           "empty": "No links to other records."
         }
+      }
+    },
+    "examples": {
+      "open": "Open example",
+      "loading": "Loading examples",
+      "loadError": "Could not load the examples. Check your connection and try again.",
+      "disclaimer": "Based on real wells from the SIAGAS registry (SGB). Names, permits, analyses and operating data are illustrative.",
+      "confirm": {
+        "header": "Open example",
+        "message": "You have unsaved changes. Opening an example will discard them.",
+        "accept": "Open anyway",
+        "reject": "Cancel"
+      }
+    },
+    "newWell": {
+      "button": "New well",
+      "kicker": "New well",
+      "title": "Where do you want to start?",
+      "close": "Close",
+      "back": "Back",
+      "note": "Your current well is kept until you pick an option.",
+      "dropHint": "Drop the .well file to open it",
+      "loadError": "This file could not be read as a .well profile.",
+      "groups": {
+        "start": "Start",
+        "import": "Import"
+      },
+      "blank": {
+        "title": "Blank",
+        "subtitle": "Empty profile, from scratch"
+      },
+      "examples": {
+        "title": "Examples",
+        "subtitle": "No ready-made wells | 1 ready-made well | {count} ready-made wells",
+        "subtitleLoading": "Ready-made wells to explore",
+        "kicker": "Examples",
+        "heading": "Start from a real well",
+        "all": "All",
+        "open": "Open"
+      },
+      "open": {
+        "title": "Open .well file",
+        "subtitle": "From your computer, or drop it here",
+        "subtitleMobile": "From your device"
+      },
+      "paste": {
+        "title": "Paste JSON",
+        "subtitle": "Contents of a .well",
+        "placeholder": "Paste the contents of a .well file here",
+        "waiting": "Waiting for content",
+        "valid": "Valid well",
+        "unnamed": "unnamed",
+        "empty": "The JSON is valid but describes no layer or well element.",
+        "invalidJson": "Invalid JSON: {detail}",
+        "invalidWell": "Not a valid .well: {detail}",
+        "sample": "Paste example",
+        "open": "Open well"
+      },
+      "siagas": {
+        "subtitle": "By the well code",
+        "intro": "Imports the SIAGAS record of the Geological Survey of Brazil (SGB) and, for monitoring wells, the RIMAS level series and photos. Nothing is invented: what SIAGAS does not have stays out, and what needed a decision is listed below.",
+        "codeLabel": "Well code or link",
+        "codePlaceholder": "e.g. 3100020782 or a siagasweb/rimasweb link",
+        "invalidCode": "Type the 10-digit SIAGAS code or paste its link.",
+        "rimasLabel": "RIMAS level series",
+        "rimas": {
+          "none": "None",
+          "monthly": "Monthly",
+          "all": "Full"
+        },
+        "rimasHint": "Monthly keeps the last reading of each month.",
+        "media": "RIMAS photos and documents",
+        "import": "Import",
+        "stats": {
+          "depth": "Depth",
+          "layers": "Layers",
+          "casings": "Casings",
+          "screens": "Screens",
+          "events": "Levels and tests",
+          "samples": "Water analyses",
+          "attachments": "Attachments"
+        },
+        "warnings": "Notes from the import ({count})",
+        "noWarnings": "No notes: every value was carried over.",
+        "json": ".well JSON",
+        "copy": "Copy JSON",
+        "copied": "Copied",
+        "download": "Download .well",
+        "open": "Open in editor",
+        "source": "See on SIAGAS",
+        "errors": {
+          "invalid": "This is not a valid SIAGAS code.",
+          "notFound": "SIAGAS has no well with this code.",
+          "upstream": "The SGB server could not be reached. Try again in a moment.",
+          "timeout": "SIAGAS took too long to answer. Try again in a moment.",
+          "rateLimit": "Too many imports in a short time. Wait a minute and try again.",
+          "generic": "The import failed."
+        }
+      },
+      "confirmBlank": {
+        "header": "Start blank",
+        "message": "The current well will be replaced by an empty profile.",
+        "messageUnsaved": "There are unsaved changes. Starting blank will discard them.",
+        "accept": "Start blank",
+        "reject": "Cancel"
       }
     }
   },

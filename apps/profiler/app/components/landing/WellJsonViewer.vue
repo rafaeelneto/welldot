@@ -2,6 +2,10 @@
 const props = defineProps<{
   json: string;
   depth?: number;
+  /** Badge text; overrides the `depth` badge. */
+  badge?: string;
+  /** Title-bar label; by default derived from the well `name`. */
+  filename?: string;
   theme?: 'light' | 'dark';
 }>();
 
@@ -10,6 +14,7 @@ const resolvedTheme = computed(() => props.theme ?? 'dark');
 const contentRef = ref<HTMLElement>();
 
 const filename = computed(() => {
+  if (props.filename) return props.filename;
   try {
     const name: string = JSON.parse(props.json)?.name ?? 'well';
     return `${name
@@ -74,7 +79,8 @@ watch(
         <span class="dot" style="background: #28c840" />
       </div>
       <span class="fname">{{ filename }}</span>
-      <span v-if="depth" class="badge">{{ depth }} m</span>
+      <span v-if="badge" class="badge">{{ badge }}</span>
+      <span v-else-if="depth" class="badge">{{ depth }} m</span>
     </div>
     <!-- eslint-disable-next-line vue/no-v-html -->
     <pre ref="contentRef" class="content" v-html="highlighted" />

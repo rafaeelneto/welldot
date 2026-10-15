@@ -252,7 +252,6 @@ The v2.3 revision (shipped in `@welldot/core` v0.4.0) adds the operational block
 ### Ecosystem
 
 - **`.LAS` file import** — support for the industry-standard Log ASCII Standard format used in oil, gas, and water-well logging
-- **SIAGAS import** — pull well records from the Brazilian Geological Survey's groundwater database
 - **Locale-aware dates** — dates still render ISO-style; numbers and units are already localized and switchable
 
 ---

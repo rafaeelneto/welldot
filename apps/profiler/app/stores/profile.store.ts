@@ -1,5 +1,5 @@
 import type { Well } from '@welldot/core';
-import { WellSchema, deserializeWell, isWellEmpty } from '@welldot/core';
+import { WellSchema, deserializeWell, hasWellData } from '@welldot/core';
 import type { RenderableWell } from '@welldot/render';
 import {
   calculateHoleFillVolume,
@@ -236,7 +236,7 @@ export const useProfileStore = defineStore(
     function loadWell(json: string): boolean {
       try {
         const parsed = deserializeWell(json);
-        if (!parsed || isWellEmpty(parsed)) {
+        if (!parsed || !hasWellData(parsed)) {
           errors.value = { root: 'Well data is empty or could not be read' };
           return false;
         }
@@ -502,7 +502,7 @@ export const useProfileStore = defineStore(
       storage: piniaPluginPersistedstate.localStorage(),
       afterHydrate(ctx) {
         const w = ctx.store._well as Well | null;
-        if (w && !isWellEmpty(w)) {
+        if (w && hasWellData(w)) {
           ctx.store.isDirty = true;
         }
       },

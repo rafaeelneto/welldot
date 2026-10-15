@@ -54,6 +54,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
+    "thumbnails:examples": "node scripts/generate-example-thumbnails.mjs",
     "prepublishOnly": "pnpm run build && pnpm run test"
   },
   "dependencies": {

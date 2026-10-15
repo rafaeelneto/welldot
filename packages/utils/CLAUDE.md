@@ -27,6 +27,15 @@ src/
   units.utils.ts        ← diameter/flow/volume unit display labels
   hydrodynamic.utils.ts ← hydrodynamic event reading helpers (lastReading, stepRate, …)
   display.utils.test.ts ← tests for the display helpers in permit/operation/waterQuality utils
+  siagas/               ← `@welldot/utils/siagas` subpath (own tsup entry, own export): SIAGAS/RIMAS importer
+    html.ts             ← tolerant table reader (no DOM dependency; pages are malformed 2000s HTML)
+    parse.ts            ← parseSiagasPage → SiagasRecord (values as written; zeros not interpreted)
+    rimas.ts            ← parseRimasPage (inline `d1` level series + photos/documents), monthlyRimasReadings
+    convert.ts          ← siagasToWell: record → Well + SiagasWarning[] (per-field zero rules, x-siagas)
+    vocab.ts            ← SIAGAS value → .well vocabulary/FGDC/parameter tables
+    warnings.ts         ← warning catalog with en/pt messages
+    import.ts           ← importSiagasWell (fetch + parse + convert + WellSchema/round-trip check)
+    test-utils.ts       ← builders of SIAGAS/RIMAS pages for the tests (reproduce the real markup quirks)
 ```
 
 ## Key exports
@@ -119,7 +128,7 @@ Update `README.md` whenever a function is added to or removed from `src/index.ts
 
 ## Constraints
 
-- Pure functions only — no state, no side effects.
+- Pure functions only — no state, no side effects. The one exception is `importSiagasWell` in the `siagas` subpath, which fetches the SGB pages; keep network code there, behind an injectable `fetch`.
 - Do not add rendering, DOM, or framework dependencies.
 - Every exported function must have a corresponding Vitest test.
 - Values this package derives (permit status, deadline status, …) ship en/pt labels here as `VocabEntry` lists; words a helper needs from the caller are plain-string parameters. Never take an i18n key or a translate function.

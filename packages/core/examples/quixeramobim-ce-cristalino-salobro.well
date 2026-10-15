@@ -1,0 +1,989 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=2300021772"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço PS-02 — Comunidade Paus Branco (Quixeramobim/CE)",
+  "well_driller": "Sertão Perfurações e Hidrogeologia Ltda.",
+  "construction_date": "2008-11-13",
+  "obs": "Poço comunitário no embasamento cristalino do Sertão Central, em biotita-xisto com veios quartzo-feldspáticos. Revestido até 18,7 m; abaixo, poço aberto com sete entradas d’água entre 32 e 58 m. A água é salobra (cloretos de cálcio e magnésio, STD ≈ 3,5 g/L), típica do cristalino do semiárido: desde 2013 passa por um dessalinizador de osmose reversa; o concentrado vai para um tanque de criação de tilápia e dessedentação animal.",
+  "well_id": [
+    {
+      "authority": "Associação Comunitária",
+      "id": "PS-02",
+      "primary": true
+    },
+    {
+      "authority": "SRH-CE",
+      "id": "Cadastro 2009/0731"
+    }
+  ],
+  "location": {
+    "lat": -5.43222,
+    "lng": -39.46444,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "original_crs": "EPSG:31984"
+    }
+  },
+  "well_depth": 60,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 18.7,
+      "diameter": 229,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 18.7,
+      "to": 60,
+      "diameter": 152,
+      "drilling_method": "air_hammer"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.65,
+      "to": 18.7,
+      "type": "geomechanical_pvc",
+      "diameter": 168
+    }
+  ],
+  "reduction": [],
+  "well_screen": [],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 2,
+      "type": "seal",
+      "diameter": 229,
+      "description": "Selo sanitário de calda de cimento no topo do anular"
+    },
+    {
+      "from": 2,
+      "to": 18.5,
+      "type": "gravel_pack",
+      "diameter": 229,
+      "description": "Pré-filtro de seixo no anular do revestimento"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 4,
+      "description": "Solo arenoso cinza",
+      "color": "#c8bfa8",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Coberturas sedimentares indiferenciadas",
+      "aquifer_unit": "Zona não saturada"
+    },
+    {
+      "from": 4,
+      "to": 18,
+      "description": "Rocha cristalina alterada com quartzo, biotita e feldspato (saprolito)",
+      "color": "#b59a7a",
+      "texture": {
+        "code": 707,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Embasamento cristalino (Complexo Ceará)",
+      "aquifer_unit": "Manto de alteração"
+    },
+    {
+      "from": 18,
+      "to": 32,
+      "description": "Biotita-xisto com quartzo e feldspato",
+      "color": "#6f7466",
+      "texture": {
+        "code": 705,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Embasamento cristalino (Complexo Ceará)",
+      "aquifer_unit": "Aquífero fissural"
+    },
+    {
+      "from": 32,
+      "to": 40,
+      "description": "Rocha quartzo-feldspática branca (veio pegmatítico)",
+      "color": "#d8d2c6",
+      "texture": {
+        "code": 718,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Embasamento cristalino (Complexo Ceará)",
+      "aquifer_unit": "Aquífero fissural"
+    },
+    {
+      "from": 40,
+      "to": 60,
+      "description": "Biotita-xisto com quartzo e feldspato",
+      "color": "#6f7466",
+      "texture": {
+        "code": 705,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Embasamento cristalino (Complexo Ceará)",
+      "aquifer_unit": "Aquífero fissural"
+    }
+  ],
+  "fractures": [
+    {
+      "depth": 32,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Contato xisto/veio quartzo-feldspático fraturado",
+      "swarm": false,
+      "azimuth": 70,
+      "dip": 35
+    },
+    {
+      "depth": 37,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fratura no veio, pequena entrada d’água",
+      "swarm": false,
+      "azimuth": 65,
+      "dip": 40
+    },
+    {
+      "depth": 40,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Contato veio/xisto, principal entrada d’água no air-lift",
+      "swarm": false,
+      "azimuth": 70,
+      "dip": 30
+    },
+    {
+      "depth": 48,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fratura na xistosidade",
+      "swarm": false,
+      "azimuth": 80,
+      "dip": 55
+    },
+    {
+      "depth": 53,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fraturas na xistosidade",
+      "swarm": true,
+      "azimuth": 80,
+      "dip": 55
+    },
+    {
+      "depth": 55,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fratura na xistosidade",
+      "swarm": false,
+      "azimuth": 85,
+      "dip": 60
+    },
+    {
+      "depth": 58,
+      "depth_precision": 0.5,
+      "water_intake": true,
+      "description": "Fratura subvertical com pouca água",
+      "swarm": false,
+      "azimuth": 150,
+      "dip": 80
+    }
+  ],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "airlift",
+      "datetime": "2008-11-13T15:00:00-03:00",
+      "operator": "Sertão Perfurações e Hidrogeologia Ltda.",
+      "notes": "Limpeza e desenvolvimento por air-lift ao final da perfuração.",
+      "steps": [
+        {
+          "rate": 14,
+          "rate_precision": 2,
+          "duration": 180
+        }
+      ]
+    },
+    {
+      "id": "evt-02",
+      "type": "constant_rate",
+      "datetime": "2008-11-22T07:00:00-03:00",
+      "operator": "Sertão Perfurações e Hidrogeologia Ltda.",
+      "equipment": "Bomba submersa de teste 4\"; medidor elétrico de nível; vazão por tambor aferido",
+      "static_level": 4.3,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "steps": [
+        {
+          "rate": 12.3,
+          "rate_precision": 0.3,
+          "duration": 540,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 9.82
+            },
+            {
+              "elapsed": 2,
+              "depth": 11.09
+            },
+            {
+              "elapsed": 3,
+              "depth": 11.83
+            },
+            {
+              "elapsed": 4,
+              "depth": 12.35
+            },
+            {
+              "elapsed": 5,
+              "depth": 12.76
+            },
+            {
+              "elapsed": 6,
+              "depth": 13.09
+            },
+            {
+              "elapsed": 8,
+              "depth": 13.62
+            },
+            {
+              "elapsed": 10,
+              "depth": 14.02
+            },
+            {
+              "elapsed": 12,
+              "depth": 14.36
+            },
+            {
+              "elapsed": 15,
+              "depth": 14.76
+            },
+            {
+              "elapsed": 20,
+              "depth": 15.29
+            },
+            {
+              "elapsed": 25,
+              "depth": 15.7
+            },
+            {
+              "elapsed": 30,
+              "depth": 16.03
+            },
+            {
+              "elapsed": 40,
+              "depth": 16.55
+            },
+            {
+              "elapsed": 50,
+              "depth": 16.96
+            },
+            {
+              "elapsed": 60,
+              "depth": 17.29
+            },
+            {
+              "elapsed": 75,
+              "depth": 17.7
+            },
+            {
+              "elapsed": 90,
+              "depth": 18.03
+            },
+            {
+              "elapsed": 120,
+              "depth": 18.56
+            },
+            {
+              "elapsed": 150,
+              "depth": 18.96
+            },
+            {
+              "elapsed": 180,
+              "depth": 19.3
+            },
+            {
+              "elapsed": 240,
+              "depth": 19.82
+            },
+            {
+              "elapsed": 300,
+              "depth": 20.23
+            },
+            {
+              "elapsed": 360,
+              "depth": 20.56
+            },
+            {
+              "elapsed": 420,
+              "depth": 20.84
+            },
+            {
+              "elapsed": 480,
+              "depth": 21.09
+            },
+            {
+              "elapsed": 540,
+              "depth": 21.3
+            }
+          ]
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 15.78
+          },
+          {
+            "elapsed": 2,
+            "depth": 14.52
+          },
+          {
+            "elapsed": 3,
+            "depth": 13.78
+          },
+          {
+            "elapsed": 4,
+            "depth": 13.26
+          },
+          {
+            "elapsed": 5,
+            "depth": 12.86
+          },
+          {
+            "elapsed": 6,
+            "depth": 12.53
+          },
+          {
+            "elapsed": 8,
+            "depth": 12.01
+          },
+          {
+            "elapsed": 10,
+            "depth": 11.61
+          },
+          {
+            "elapsed": 12,
+            "depth": 11.28
+          },
+          {
+            "elapsed": 15,
+            "depth": 10.89
+          },
+          {
+            "elapsed": 20,
+            "depth": 10.38
+          },
+          {
+            "elapsed": 25,
+            "depth": 9.99
+          },
+          {
+            "elapsed": 30,
+            "depth": 9.67
+          },
+          {
+            "elapsed": 40,
+            "depth": 9.18
+          },
+          {
+            "elapsed": 50,
+            "depth": 8.8
+          },
+          {
+            "elapsed": 60,
+            "depth": 8.5
+          },
+          {
+            "elapsed": 75,
+            "depth": 8.14
+          },
+          {
+            "elapsed": 90,
+            "depth": 7.85
+          },
+          {
+            "elapsed": 120,
+            "depth": 7.41
+          },
+          {
+            "elapsed": 150,
+            "depth": 7.08
+          },
+          {
+            "elapsed": 180,
+            "depth": 6.83
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-03",
+      "type": "spot_measurement",
+      "datetime": "2016-11-08T08:00:00-03:00",
+      "operator": "Associação Comunitária de Paus Branco",
+      "static_level": 9.85,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Quinto ano da seca de 2012–2017; poço parado havia 12 h."
+    },
+    {
+      "id": "evt-04",
+      "type": "spot_measurement",
+      "datetime": "2024-05-14T08:00:00-03:00",
+      "operator": "Associação Comunitária de Paus Branco",
+      "static_level": 5.1,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Após a quadra chuvosa de 2024."
+    }
+  ],
+  "cement_pad": {
+    "type": "concrete",
+    "width": 1,
+    "thickness": 0.15,
+    "length": 1
+  },
+  "aquifer_analysis": [
+    {
+      "id": "an-2008",
+      "datetime": "2008-11-24T10:00:00-03:00",
+      "analyst": "Sertão Perfurações — Geólogo responsável",
+      "source_event_ids": [
+        "evt-02"
+      ],
+      "method": "cooper_jacob",
+      "static_level": 4.3,
+      "static_level_source_id": "evt-02",
+      "dynamic_level": 21.3,
+      "flow_rate": 12.3,
+      "specific_capacity": 0.724,
+      "transmissivity": 0.000149,
+      "storativity": null,
+      "notes": "Transmissividade aparente do meio fissural. A vazão de exploração recomendada é de 6 m³/h, metade da vazão de teste, por causa do rebaixamento e da salinidade."
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-2009",
+      "installed_at": "2009-02-10T09:00:00-03:00",
+      "installed_by": "Sertão Perfurações e Hidrogeologia Ltda.",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Ebara",
+      "model": "BHS 511-07",
+      "intake_depth": 36,
+      "rated_flow_rate": 6,
+      "rated_head": 60,
+      "rated_power": 2.2,
+      "stages": 7,
+      "riser_diameter": 32,
+      "riser_material": "pvc",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 220,
+        "phases": 1,
+        "cable_section": 4,
+        "cable_length": 45
+      }
+    }
+  ],
+  "operating_regime": [
+    {
+      "id": "reg-2009",
+      "effective_from": "2009-02-10T09:00:00-03:00",
+      "flow_rate": 6,
+      "daily_operating_time": 6,
+      "days_per_week": 7,
+      "notes": "Enchimento da caixa d’água comunitária."
+    },
+    {
+      "id": "reg-2013",
+      "effective_from": "2013-07-01T08:00:00-03:00",
+      "flow_rate": 6,
+      "daily_operating_time": 10,
+      "days_per_week": 7,
+      "notes": "Alimentação do dessalinizador (≈ 2,4 m³/h de permeado, recuperação de 40%)."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-2009",
+      "datetime": "2009-01-07T09:30:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "collected_by": "Sertão Perfurações e Hidrogeologia Ltda.",
+      "laboratory": {
+        "name": "Laboratório de Análise de Água do Sertão Central",
+        "report_number": "0022/09"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 4685,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "apparent_color",
+            "vocabulary": "welldot"
+          },
+          "value": 5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 0.13,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.51,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 457.7,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 268.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 50,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 1.9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 1405.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 416.2,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 31.3,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "alkalinity_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 341.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 2248.7,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 3515.9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "silica_as_sio2",
+            "vocabulary": "welldot"
+          },
+          "value": 37,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.05,
+          "measured_in": "lab",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "value": 5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrite_as_no2",
+            "vocabulary": "welldot"
+          },
+          "value": 0.009,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ammonia_as_nh3",
+            "vocabulary": "welldot"
+          },
+          "value": 0.111,
+          "measured_in": "lab"
+        }
+      ]
+    },
+    {
+      "id": "am-2016",
+      "datetime": "2016-11-08T10:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Seca 2012–2017",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge",
+        "pump_installation_id": "pump-2009"
+      },
+      "collected_by": "Operador do sistema de dessalinização",
+      "laboratory": {
+        "name": "Laboratório de Análise de Água do Sertão Central",
+        "report_number": "LA-16/1187"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 5310,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 521,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 301,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 58,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 2.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 1590,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 432,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 36,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 2540,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 3960,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "value": 7.2,
+          "measured_in": "lab"
+        }
+      ]
+    },
+    {
+      "id": "am-2024",
+      "datetime": "2024-05-14T10:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge",
+        "pump_installation_id": "pump-2009"
+      },
+      "collected_by": "Operador do sistema de dessalinização",
+      "laboratory": {
+        "name": "Laboratório de Análise de Água do Sertão Central",
+        "report_number": "LA-24/0652"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 4410,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.6,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 430,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 252,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 47,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 1.8,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 1322,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 398,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 29,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 2110,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 3310,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_no3",
+            "vocabulary": "welldot"
+          },
+          "value": 6.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "2008-11-22T17:00:00-03:00",
+      "category": "event",
+      "description": "Perfuração concluída e teste de vazão de 9 h; água salobra já no air-lift.",
+      "author": "Sertão Perfurações e Hidrogeologia Ltda.",
+      "hydrodynamic_event_ids": [
+        "evt-01",
+        "evt-02"
+      ]
+    },
+    {
+      "id": "log-02",
+      "datetime": "2009-02-10T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço equipado; água usada para limpeza, banho e dessedentação animal. Para beber, a comunidade segue com a cisterna.",
+      "author": "Associação Comunitária de Paus Branco",
+      "sample_ids": [
+        "am-2009"
+      ]
+    },
+    {
+      "id": "log-03",
+      "datetime": "2013-07-01T08:00:00-03:00",
+      "category": "event",
+      "description": "Dessalinizador de osmose reversa instalado ao lado do poço. Permeado para consumo humano; concentrado para tanque de piscicultura e bebedouro dos animais.",
+      "author": "Associação Comunitária de Paus Branco"
+    },
+    {
+      "id": "log-04",
+      "datetime": "2016-11-08T08:00:00-03:00",
+      "category": "inspection",
+      "severity": "medium",
+      "description": "Seca prolongada: nível estático 5,5 m abaixo do original e salinidade 13% maior. Membranas do dessalinizador lavadas com mais frequência.",
+      "hydrodynamic_event_ids": [
+        "evt-03"
+      ],
+      "sample_ids": [
+        "am-2016"
+      ]
+    },
+    {
+      "id": "log-05",
+      "datetime": "2024-05-14T11:00:00-03:00",
+      "category": "inspection",
+      "description": "Nível e salinidade de volta à faixa original após a quadra chuvosa.",
+      "hydrodynamic_event_ids": [
+        "evt-04"
+      ],
+      "sample_ids": [
+        "am-2024"
+      ]
+    }
+  ]
+}
