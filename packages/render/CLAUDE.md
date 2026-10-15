@@ -27,21 +27,32 @@ src/
     fractures.renderer.ts
     caves.renderer.ts
     centralizers.renderer.ts        ← .well v2.1 centralizer markers (redrawn on zoom)
+    pump.renderer.ts                ← .well v2.3 current pump + riser (paths only, redrawn on zoom)
     highlights.renderer.ts
     legend.renderer.ts
     unit-labels.renderer.ts
-    annotation-labels.renderer.ts
+    annotation-labels.renderer.ts   ← descriptions (units/swatch/rules), continuation labels
+    column-headers.renderer.ts      ← opt-in column titles in the top margin
+    overview.renderer.ts            ← opt-in mini-map + window of the panel's depths
+    markers.renderer.ts             ← opt-in ① layer / F1 fracture markers
+    overlap.renderer.ts             ← hatched band a panel repeats (SvgInstance.repeatedTo)
   utils/
     d3.utils.ts
     format.utils.ts
     geometry.utils.ts
     key.utils.ts
     render.utils.ts                 ← filterByDepth, populateTooltips, preloadFgdcTextures
+    layout.utils.ts                 ← pure panel windows, header positions, marker/overview geometry
+    construction.geometry.ts        ← pure construction shapes: open pipe walls, casing shoe, borehole outline, annulus fill, cement pad
     render.styles.ts                ← buildSvgStyleBlock (inlined CSS)
     tooltips.utils.ts
   data/
     fgdcTextures.json               ← FGDC pattern data used by textures.js
 ```
+
+## Scripts
+
+`scripts/generate-example-thumbnails.mjs` (`pnpm thumbnails:examples`, after `pnpm build` of core and render) draws `packages/core/examples/thumbs/<slug>.svg` for every entry of `packages/core/examples/index.json`, headless in jsdom (with stubs for the SVG geometry jsdom lacks). It waits for the d3 transitions to settle before reading the markup. Plain `.mjs` outside `tsconfig`, so `scripts/**` is in the ESLint ignores.
 
 ## Key API
 
@@ -89,4 +100,5 @@ What to update: the Quick Start example if it no longer compiles, the options/co
 - `textures.js` and `d3-tip` are runtime deps; do not remove them.
 - `sanitize-html` is used before injecting any user-supplied strings into SVG.
 - All sub-renderers receive a `DrawContext` (scales, groups, config) — do not pass the raw `Well` to them directly.
+- Construction items are drawn open (walls only) and closed only where they physically end; see `construction.geometry.ts`. Their geometry is set by `layoutConstruction()`, which both `drawConstructive()` and the zoom handler call — keep new construction shapes there, not in the zoom handler.
 - Only `.well` v2 (`version: 2`) is supported. v1 files must be normalized via `deserializeWell()` from `@welldot/core` before rendering.

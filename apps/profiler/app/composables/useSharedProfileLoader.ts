@@ -1,5 +1,5 @@
 import type { Well } from '@welldot/core';
-import { isWellEmpty } from '@welldot/core';
+import { hasWellData } from '@welldot/core';
 import { watch } from 'vue';
 
 /**
@@ -34,7 +34,7 @@ export function useSharedProfileLoader() {
       try {
         const { well } = await $fetch<{ well: Well }>(`/api/share/${id}`);
 
-        if (profileStore.isDirty && !isWellEmpty(profileStore.well)) {
+        if (profileStore.isDirty && hasWellData(profileStore.well)) {
           confirm.require({
             icon: 'ph:warning-duotone',
             header: t('editor.confirmLoadShared.header'),

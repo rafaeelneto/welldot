@@ -1,0 +1,119 @@
+import type { HistoryLogEntry, Well } from '@welldot/core';
+import {
+  HISTORY_LOG_CATEGORIES,
+  HISTORY_LOG_SEVERITIES,
+  MAINTENANCE_TYPES,
+  WELL_STATUSES,
+  getVocabLabel,
+} from '@welldot/core';
+import { format, parseISO } from 'date-fns';
+import {
+  attachmentName,
+  buildEntryHeader,
+  buildEntryListing,
+} from '../layout/tables';
+import type { PdfContext, PdfLabels } from '../types/options.types';
+import type { Content } from '../types/pdfmake.types';
+
+/** `maintenance_type` or `status_change` status, when present (.well v2.3). */
+function categoryDetail(
+  entry: HistoryLogEntry,
+  labels: PdfLabels,
+  locale: string,
+): string {
+  if (entry.category === 'maintenance' && entry.maintenance_type) {
+    return getVocabLabel(MAINTENANCE_TYPES, entry.maintenance_type, locale);
+  }
+  if (entry.category === 'status_change' && entry.status) {
+    return getVocabLabel(WELL_STATUSES, entry.status, locale);
+  }
+  return '';
+}
+
+/** The category/severity/date header line. */
+function buildLogEntryHeader(entry: HistoryLogEntry, ctx: PdfContext): Content {
+  const { labels, locale } = ctx;
+  const detail = categoryDetail(entry, labels, locale);
+  const category = getVocabLabel(
+    HISTORY_LOG_CATEGORIES,
+    entry.category,
+    locale,
+  );
+  return buildEntryHeader(
+    detail ? `${category} · ${detail}` : category,
+    entry.severity
+      ? getVocabLabel(HISTORY_LOG_SEVERITIES, entry.severity, locale)
+      : null,
+    format(parseISO(entry.datetime), ctx.dateFormats.dateTime),
+  );
+}
+
+/**
+ * The (possibly multi-paragraph) description, an indented bullet list of
+ * attachment filenames, and an author line — as separate flowing blocks
+ * rather than fixed-height table cells, so long free-text descriptions
+ * paginate naturally instead of forcing a whole rigid row onto the next
+ * page and leaving the previous page half-blank. Unbounded in height, so
+ * never bind this to the section title/header via `unbreakable`.
+ */
+function buildLogEntryBody(
+  entry: HistoryLogEntry,
+  labels: PdfLabels,
+): Content[] {
+  const blocks: Content[] = [
+    { text: entry.description, margin: [0, 4, 0, 0], fontSize: 10 },
+  ];
+
+  const attachments = entry.attachments ?? [];
+  if (attachments.length > 0) {
+    blocks.push({
+      stack: attachments.map(attachment => ({
+        text: `•  ${attachmentName(attachment)}`,
+        style: 'metadataLabel',
+      })),
+      margin: [10, 4, 0, 0],
+    });
+  }
+
+  if (entry.author) {
+    blocks.push({
+      text: `${labels.historyLog.logs.by} ${entry.author}`,
+      style: 'metadataLabel',
+      margin: [0, 4, 0, 0],
+    });
+  }
+
+  return blocks;
+}
+
+/**
+ * Builds a chronological (most recent first) listing of `well.history_logs`
+ * entries. Returns `null` when there are no entries.
+ *
+ * The title is bound to the first entry's header line only (not its full
+ * body) inside an `unbreakable` block, so the heading can never render
+ * alone at a page bottom — pdfmake pushes the whole [title, header] pair to
+ * the next page together if it doesn't fit. The first entry's body (and
+ * every subsequent entry) stays ordinary breakable content, since
+ * `unbreakable` content taller than one page is silently dropped by
+ * pdfmake rather than paginated.
+ */
+export function buildHistoryLogSection(
+  well: Well,
+  ctx: PdfContext,
+): Content | null {
+  const logs = well.history_logs;
+  if (!logs?.length) return null;
+
+  const sorted = [...logs].sort(
+    (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+  );
+  return buildEntryListing(
+    ctx.labels.historyLog.logs.title,
+    sorted.map(entry => ({
+      header: buildLogEntryHeader(entry, ctx),
+      body: buildLogEntryBody(entry, ctx.labels),
+    })),
+    ctx,
+  );
+}

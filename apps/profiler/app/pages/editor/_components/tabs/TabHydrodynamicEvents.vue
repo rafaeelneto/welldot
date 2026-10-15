@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { HydrodynamicEvent } from '@welldot/core';
-import AppChip from '~/components/AppChip.vue';
 import EventCard from './hydrodynamicEvents/EventCard.vue';
 import EventDialog from './hydrodynamicEvents/EventDialog.vue';
+import EventViewDialog from './hydrodynamicEvents/EventViewDialog.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const profileStore = useProfileStore();
+const { toFlow, flowUnit, toSpecificCapacity, specificCapacityUnit } =
+  useUnitFormat();
 const { typeOptions } = useHydrodynamicEventTypes();
 const eventDialogRef =
   useTemplateRef<InstanceType<typeof EventDialog>>('eventDialogRef');
@@ -33,42 +35,7 @@ const filteredEvents = computed<HydrodynamicEvent[]>(() => {
 
 // ─── Current State ────────────────────────────────────────────────────────────
 
-const currentState = computed(() => {
-  const events = allEvents.value;
-  const analyses = [...(profileStore.well.aquifer_analysis ?? [])].sort(
-    (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
-  );
-
-  const neEvent = events.find(
-    e =>
-      'static_level' in e &&
-      (e as Record<string, unknown>).static_level != null,
-  );
-  const ne = neEvent
-    ? {
-        value: (neEvent as Record<string, unknown>).static_level as number,
-        datetime: neEvent.datetime,
-      }
-    : null;
-
-  const scAnalysis = analyses.find(a => a.specific_capacity != null);
-  const specificCapacity = scAnalysis
-    ? { value: scAnalysis.specific_capacity!, method: scAnalysis.method }
-    : null;
-
-  const txAnalysis = analyses.find(a => a.transmissivity != null);
-  const transmissivity = txAnalysis
-    ? { value: txAnalysis.transmissivity!, method: txAnalysis.method }
-    : null;
-
-  const ndAnalysis = analyses.find(a => a.dynamic_level != null);
-  const dynamicLevel = ndAnalysis ? { value: ndAnalysis.dynamic_level! } : null;
-
-  const qAnalysis = analyses.find(a => a.flow_rate != null);
-  const flowRate = qAnalysis ? { value: qAnalysis.flow_rate! } : null;
-
-  return { ne, specificCapacity, transmissivity, dynamicLevel, flowRate };
-});
+const { state: currentState } = useAquiferState();
 
 const analysesCount = computed(
   () => profileStore.well.aquifer_analysis?.length ?? 0,
@@ -77,32 +44,36 @@ const analysesCount = computed(
 // ─── Display helpers ──────────────────────────────────────────────────────────
 
 function methodLabel(method?: string): string {
-  if (!method) return '';
-  const names: Record<string, string> = {
-    cooper_jacob: 'Cooper-Jacob',
-    theis: 'Theis',
-    neuman: 'Neuman',
-    hantush: 'Hantush',
-    birsoy_summers: 'Birsoy-Summers',
-    eden_hazel: 'Eden-Hazel',
-    visual_inspection: 'Visual',
-  };
-  return names[method] ?? method;
+  return aquiferMethodLabel(method, locale.value);
 }
 
 function formatTransmissivityMantissa(val: number): string {
-  if (val === 0) return '0';
-  const exp = Math.floor(Math.log10(Math.abs(val)));
-  return (val / Math.pow(10, exp)).toFixed(1);
+  return scientificParts(val).mantissa;
 }
 
 function formatTransmissivityExp(val: number): string {
-  if (val === 0) return '';
-  return String(Math.floor(Math.log10(Math.abs(val))));
+  return scientificParts(val).exp;
 }
 
 function toggleTypeFilter(type: string) {
   activeTypeFilter.value = activeTypeFilter.value === type ? null : type;
+}
+
+// ─── Read-only view ───────────────────────────────────────────────────────────
+
+const eventView = useHydrodynamicEventView();
+const viewVisible = computed({
+  get: () =>
+    !!eventView.eventId.value &&
+    allEvents.value.some(e => e.id === eventView.eventId.value),
+  set: open => {
+    if (!open) eventView.close();
+  },
+});
+
+function editFromView(event: HydrodynamicEvent) {
+  eventView.close();
+  eventDialogRef.value?.openEdit(event);
 }
 </script>
 
@@ -148,8 +119,11 @@ function toggleTypeFilter(type: string) {
           }}</span>
           <template v-if="currentState.specificCapacity">
             <div class="stat-value">
-              {{ currentState.specificCapacity.value.toFixed(1)
-              }}<span class="stat-unit">m²/h</span>
+              {{
+                toSpecificCapacity(currentState.specificCapacity.value).toFixed(
+                  1,
+                )
+              }}<span class="stat-unit">{{ specificCapacityUnit }}</span>
             </div>
             <span v-if="currentState.specificCapacity.method" class="stat-sub">
               {{ methodLabel(currentState.specificCapacity.method) }}
@@ -198,8 +172,11 @@ function toggleTypeFilter(type: string) {
             t('editor.hydrodynamicEvents.currentState.flowRate')
           }}</span>
           <div class="stat-value">
-            {{ currentState.flowRate.value.toFixed(0)
-            }}<span class="stat-unit">m³/h</span>
+            {{
+              toFlow(currentState.flowRate.value).toFixed(
+                flowUnit === 'm³/h' ? 0 : 1,
+              )
+            }}<span class="stat-unit">{{ flowUnit }}</span>
           </div>
         </div>
       </div>
@@ -218,7 +195,7 @@ function toggleTypeFilter(type: string) {
 
     <!-- ── Sub-tabs ─────────────────────────────────────────────────────────── -->
     <Tabs v-model:value="activeSubTab">
-      <TabList>
+      <TabList class="pl-6">
         <Tab value="measurements">
           <span class="flex items-center gap-1.5">
             {{ t('editor.hydrodynamicEvents.tabs.measurements') }}
@@ -255,7 +232,7 @@ function toggleTypeFilter(type: string) {
             <!-- toolbar -->
             <div class="flex items-start justify-between gap-3 flex-wrap">
               <div class="flex flex-wrap gap-1.5">
-                <AppChip
+                <WellChip
                   v-for="opt in typeOptions"
                   :key="opt.value"
                   :label="opt.label"
@@ -307,6 +284,7 @@ function toggleTypeFilter(type: string) {
                 v-for="event in filteredEvents"
                 :key="event.id"
                 :event="event"
+                @view="eventView.open"
                 @edit="eventDialogRef?.openEdit($event)"
               />
             </div>
@@ -335,6 +313,13 @@ function toggleTypeFilter(type: string) {
   </div>
 
   <EventDialog ref="eventDialogRef" />
+
+  <EventViewDialog
+    v-if="viewVisible && eventView.eventId.value"
+    v-model:visible="viewVisible"
+    :event-id="eventView.eventId.value"
+    @edit="editFromView"
+  />
 </template>
 
 <style scoped>

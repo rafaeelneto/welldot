@@ -49,6 +49,37 @@ function normalizeItems(node: unknown): void {
 
 normalizeItems(schema);
 
+/**
+ * `zod-to-json-schema` also emits draft-04 boolean bounds for `.positive()`
+ * and friends (`minimum: 0, exclusiveMinimum: true`). Under 2020-12 the
+ * exclusive bound is itself the number, and a boolean makes the schema
+ * invalid. Rewrite both directions in place.
+ */
+function normalizeExclusiveBounds(node: unknown): void {
+  if (Array.isArray(node)) {
+    node.forEach(normalizeExclusiveBounds);
+    return;
+  }
+  if (node === null || typeof node !== 'object') return;
+
+  const obj = node as Record<string, unknown>;
+  for (const [bound, exclusive] of [
+    ['minimum', 'exclusiveMinimum'],
+    ['maximum', 'exclusiveMaximum'],
+  ] as const) {
+    if (typeof obj[exclusive] !== 'boolean') continue;
+    if (obj[exclusive] && typeof obj[bound] === 'number') {
+      obj[exclusive] = obj[bound];
+      delete obj[bound];
+    } else {
+      delete obj[exclusive];
+    }
+  }
+  Object.values(obj).forEach(normalizeExclusiveBounds);
+}
+
+normalizeExclusiveBounds(schema);
+
 // `zodToJsonSchema` does not emit `$schema`/`$id` for an anonymous root schema,
 // so attach them here. Key order matters only for readability of the diff.
 const document = {

@@ -1,0 +1,79 @@
+name: publish — @welldot/pdf
+
+on:
+  push:
+    branches:
+      - preview
+    paths:
+      - 'packages/pdf/**'
+      - 'packages/render/**'
+      - 'packages/core/**'
+      - 'packages/utils/**'
+      - 'pnpm-lock.yaml'
+    tags:
+      - '@welldot/pdf@*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (build and pack without publishing)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set pre-release version (preview branch)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          DATE=$(date +%Y%m%d)
+          CURRENT_VERSION=$(node -p "require('./packages/pdf/package.json').version")
+          NEW_VERSION="${CURRENT_VERSION}-next.${DATE}.${SHORT_SHA}"
+          cd packages/pdf && npm version "$NEW_VERSION" --no-git-tag-version
+
+      - name: Build @welldot/pdf (and its dependencies)
+        run: pnpm turbo build --filter=@welldot/pdf
+
+      - name: Test @welldot/pdf
+        run: pnpm turbo test --filter=@welldot/pdf
+
+      - name: Publish stable to npm (tag)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: pnpm publish --filter=@welldot/pdf --no-git-checks --access public
+
+      - name: Publish next to npm (preview branch)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        run: pnpm publish --filter=@welldot/pdf --no-git-checks --access public --tag next
+
+      - name: Dry run (pack only)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true'
+        run: pnpm --filter=@welldot/pdf exec npm pack --dry-run
+
+      - name: Print npm debug log on failure
+        if: failure()
+        run: cat /home/runner/.npm/_logs/*.log 2>/dev/null || echo "No npm logs found"

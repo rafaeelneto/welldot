@@ -1,0 +1,1751 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=1500002050"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço PP-02 — Sistema Providência (Belém/PA)",
+  "well_driller": "Geoperfuração Amazônia Ltda.",
+  "construction_date": "1995-05-30",
+  "obs": "Poço profundo de abastecimento urbano no Aquífero Pirabas confinado, sob a sequência areno-argilosa do Grupo Barreiras. Revestimento de 14\" até 69,5 m (câmara de bombeamento), redução para 8\" e três seções de filtro espiralado inox entre 202 e 253 m. Pré-filtro de areia quartzosa 1–3 mm.",
+  "well_id": [
+    {
+      "authority": "Águas do Guamá",
+      "id": "PP-02",
+      "primary": true
+    },
+    {
+      "authority": "SEMAS-PA",
+      "id": "Cadastro CEH 2003/00871"
+    },
+    {
+      "authority": "CNARH",
+      "id": "150008711"
+    }
+  ],
+  "location": {
+    "lat": -1.4025,
+    "lng": -48.48083,
+    "elevation": 14,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31982"
+    }
+  },
+  "well_depth": 265,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 20,
+      "diameter": 914,
+      "drilling_method": "rotary"
+    },
+    {
+      "from": 20,
+      "to": 75,
+      "diameter": 610,
+      "drilling_method": "rotary"
+    },
+    {
+      "from": 75,
+      "to": 265,
+      "diameter": 445,
+      "drilling_method": "rotary"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.5,
+      "to": 69.5,
+      "type": "carbon_steel",
+      "diameter": 356
+    },
+    {
+      "from": 70,
+      "to": 202,
+      "type": "carbon_steel",
+      "diameter": 219
+    },
+    {
+      "from": 208.66,
+      "to": 214.63,
+      "type": "carbon_steel",
+      "diameter": 219
+    },
+    {
+      "from": 240.73,
+      "to": 243.5,
+      "type": "carbon_steel",
+      "diameter": 219
+    },
+    {
+      "from": 253.2,
+      "to": 258.97,
+      "type": "carbon_steel",
+      "diameter": 219
+    }
+  ],
+  "reduction": [
+    {
+      "from": 69.5,
+      "to": 70,
+      "diam_from": 356,
+      "diam_to": 219,
+      "type": "carbon_steel"
+    }
+  ],
+  "well_screen": [
+    {
+      "from": 202,
+      "to": 208.66,
+      "type": "stainless_steel",
+      "diameter": 219,
+      "screen_slot": 0.75,
+      "slot_type": "continuous_slot"
+    },
+    {
+      "from": 214.63,
+      "to": 240.73,
+      "type": "stainless_steel",
+      "diameter": 219,
+      "screen_slot": 0.75,
+      "slot_type": "continuous_slot"
+    },
+    {
+      "from": 243.5,
+      "to": 253.2,
+      "type": "stainless_steel",
+      "diameter": 219,
+      "screen_slot": 0.75,
+      "slot_type": "continuous_slot"
+    }
+  ],
+  "surface_case": [
+    {
+      "from": 0,
+      "to": 20,
+      "diameter": 762
+    }
+  ],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 20,
+      "type": "seal",
+      "diameter": 914,
+      "description": "Cimentação do tubo de boca de 30\""
+    },
+    {
+      "from": 20,
+      "to": 75,
+      "type": "seal",
+      "diameter": 610,
+      "description": "Calda de cimento-bentonita isolando o Barreiras"
+    },
+    {
+      "from": 75,
+      "to": 190,
+      "type": "seal",
+      "diameter": 445,
+      "description": "Argila bentonítica"
+    },
+    {
+      "from": 190,
+      "to": 258.97,
+      "type": "gravel_pack",
+      "diameter": 445,
+      "description": "Areia quartzosa selecionada 1,00–3,00 mm"
+    },
+    {
+      "from": 258.97,
+      "to": 265,
+      "type": "seal",
+      "diameter": 445,
+      "description": "Tampão de fundo em calda de cimento"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 4,
+      "description": "Argila síltico-arenosa amarela",
+      "color": "#d9b45a",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 4,
+      "to": 8,
+      "description": "Areia grossa creme",
+      "color": "#e8d7a8",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    },
+    {
+      "from": 8,
+      "to": 13,
+      "description": "Areia média a grossa avermelhada",
+      "color": "#c8643c",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    },
+    {
+      "from": 13,
+      "to": 33,
+      "description": "Argila arenosa variegada",
+      "color": "#c9867a",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 33,
+      "to": 43,
+      "description": "Areia fina argilosa cinza",
+      "color": "#a9a59a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    },
+    {
+      "from": 43,
+      "to": 59,
+      "description": "Argila cinza",
+      "color": "#8d8d88",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 59,
+      "to": 67,
+      "description": "Areia fina argilosa cinza",
+      "color": "#a9a59a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    },
+    {
+      "from": 67,
+      "to": 77,
+      "description": "Argila cinza-escura",
+      "color": "#5f5f5c",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 77,
+      "to": 85,
+      "description": "Areia média a grossa cinza",
+      "color": "#b3b0a6",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    },
+    {
+      "from": 85,
+      "to": 99,
+      "description": "Argila cinza-escura",
+      "color": "#5f5f5c",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 99,
+      "to": 120,
+      "description": "Areia fina argilosa cinza-escura",
+      "color": "#7f7c74",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquífero Pirabas"
+    },
+    {
+      "from": 120,
+      "to": 127,
+      "description": "Areia fina cinza",
+      "color": "#b3b0a6",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquífero Pirabas"
+    },
+    {
+      "from": 127,
+      "to": 135,
+      "description": "Argila cinza",
+      "color": "#8d8d88",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 135,
+      "to": 140,
+      "description": "Areia argilosa fina cinza",
+      "color": "#a9a59a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquífero Pirabas"
+    },
+    {
+      "from": 140,
+      "to": 155,
+      "description": "Argila cinza",
+      "color": "#8d8d88",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 155,
+      "to": 167,
+      "description": "Argila arenosa cinza",
+      "color": "#9c9a92",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 167,
+      "to": 176,
+      "description": "Areia média a grossa cinza",
+      "color": "#b3b0a6",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquífero Pirabas"
+    },
+    {
+      "from": 176,
+      "to": 187,
+      "description": "Argila arenosa cinza-esverdeada",
+      "color": "#8a9a86",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 187,
+      "to": 201,
+      "description": "Areia muito fina a fina cinza-esverdeada, argilosa",
+      "color": "#9aa696",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquífero Pirabas"
+    },
+    {
+      "from": 201,
+      "to": 209,
+      "description": "Areia média cinza",
+      "color": "#b3b0a6",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquífero Pirabas"
+    },
+    {
+      "from": 209,
+      "to": 214,
+      "description": "Argila arenosa cinza-esverdeada",
+      "color": "#8a9a86",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 214,
+      "to": 240,
+      "description": "Areia fina a média cinza",
+      "color": "#bab6aa",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquífero Pirabas"
+    },
+    {
+      "from": 240,
+      "to": 243,
+      "description": "Argila arenosa cinza-esverdeada",
+      "color": "#8a9a86",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 243,
+      "to": 259,
+      "description": "Areia média a grossa acinzentada com seixos de quartzo",
+      "color": "#a8a69e",
+      "texture": {
+        "code": 601,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquífero Pirabas"
+    },
+    {
+      "from": 259,
+      "to": 265,
+      "description": "Argila cinza-clara com níveis avermelhados",
+      "color": "#b5aaa2",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirabas",
+      "aquifer_unit": "Aquitarde"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "step_drawdown",
+      "datetime": "1995-06-01T07:00:00-03:00",
+      "operator": "Geoperfuração Amazônia Ltda.",
+      "equipment": "Bomba submersa de teste 8\"; medidor eletromagnético",
+      "static_level": 10.3,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "steps": [
+        {
+          "rate": 60,
+          "duration": 120,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 12.92
+            },
+            {
+              "elapsed": 2,
+              "depth": 13.15
+            },
+            {
+              "elapsed": 3,
+              "depth": 13.28
+            },
+            {
+              "elapsed": 5,
+              "depth": 13.46
+            },
+            {
+              "elapsed": 7,
+              "depth": 13.57
+            },
+            {
+              "elapsed": 10,
+              "depth": 13.69
+            },
+            {
+              "elapsed": 15,
+              "depth": 13.82
+            },
+            {
+              "elapsed": 20,
+              "depth": 13.92
+            },
+            {
+              "elapsed": 30,
+              "depth": 14.06
+            },
+            {
+              "elapsed": 45,
+              "depth": 14.19
+            },
+            {
+              "elapsed": 60,
+              "depth": 14.29
+            },
+            {
+              "elapsed": 90,
+              "depth": 14.42
+            },
+            {
+              "elapsed": 120,
+              "depth": 14.52
+            }
+          ]
+        },
+        {
+          "rate": 90,
+          "duration": 120,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 16.06
+            },
+            {
+              "elapsed": 2,
+              "depth": 16.2
+            },
+            {
+              "elapsed": 3,
+              "depth": 16.28
+            },
+            {
+              "elapsed": 5,
+              "depth": 16.38
+            },
+            {
+              "elapsed": 7,
+              "depth": 16.45
+            },
+            {
+              "elapsed": 10,
+              "depth": 16.52
+            },
+            {
+              "elapsed": 15,
+              "depth": 16.6
+            },
+            {
+              "elapsed": 20,
+              "depth": 16.65
+            },
+            {
+              "elapsed": 30,
+              "depth": 16.73
+            },
+            {
+              "elapsed": 45,
+              "depth": 16.81
+            },
+            {
+              "elapsed": 60,
+              "depth": 16.87
+            },
+            {
+              "elapsed": 90,
+              "depth": 16.95
+            },
+            {
+              "elapsed": 120,
+              "depth": 17.01
+            }
+          ]
+        },
+        {
+          "rate": 120,
+          "duration": 120,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 18.7
+            },
+            {
+              "elapsed": 2,
+              "depth": 18.85
+            },
+            {
+              "elapsed": 3,
+              "depth": 18.94
+            },
+            {
+              "elapsed": 5,
+              "depth": 19.05
+            },
+            {
+              "elapsed": 7,
+              "depth": 19.12
+            },
+            {
+              "elapsed": 10,
+              "depth": 19.2
+            },
+            {
+              "elapsed": 15,
+              "depth": 19.29
+            },
+            {
+              "elapsed": 20,
+              "depth": 19.35
+            },
+            {
+              "elapsed": 30,
+              "depth": 19.44
+            },
+            {
+              "elapsed": 45,
+              "depth": 19.53
+            },
+            {
+              "elapsed": 60,
+              "depth": 19.59
+            },
+            {
+              "elapsed": 90,
+              "depth": 19.68
+            },
+            {
+              "elapsed": 120,
+              "depth": 19.74
+            }
+          ]
+        },
+        {
+          "rate": 140,
+          "duration": 120,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 20.96
+            },
+            {
+              "elapsed": 2,
+              "depth": 21.07
+            },
+            {
+              "elapsed": 3,
+              "depth": 21.13
+            },
+            {
+              "elapsed": 5,
+              "depth": 21.21
+            },
+            {
+              "elapsed": 7,
+              "depth": 21.26
+            },
+            {
+              "elapsed": 10,
+              "depth": 21.32
+            },
+            {
+              "elapsed": 15,
+              "depth": 21.38
+            },
+            {
+              "elapsed": 20,
+              "depth": 21.43
+            },
+            {
+              "elapsed": 30,
+              "depth": 21.49
+            },
+            {
+              "elapsed": 45,
+              "depth": 21.55
+            },
+            {
+              "elapsed": 60,
+              "depth": 21.6
+            },
+            {
+              "elapsed": 90,
+              "depth": 21.66
+            },
+            {
+              "elapsed": 120,
+              "depth": 21.7
+            }
+          ]
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 16.46
+          },
+          {
+            "elapsed": 2,
+            "depth": 15.77
+          },
+          {
+            "elapsed": 3,
+            "depth": 15.37
+          },
+          {
+            "elapsed": 5,
+            "depth": 14.86
+          },
+          {
+            "elapsed": 10,
+            "depth": 14.18
+          },
+          {
+            "elapsed": 15,
+            "depth": 13.79
+          },
+          {
+            "elapsed": 30,
+            "depth": 13.13
+          },
+          {
+            "elapsed": 60,
+            "depth": 12.49
+          },
+          {
+            "elapsed": 120,
+            "depth": 11.91
+          },
+          {
+            "elapsed": 240,
+            "depth": 11.4
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-02",
+      "type": "constant_rate",
+      "datetime": "1995-06-03T07:00:00-03:00",
+      "operator": "Geoperfuração Amazônia Ltda.",
+      "equipment": "Bomba submersa de teste 8\"; transdutor de pressão",
+      "static_level": 10.3,
+      "static_level_precision": 0.01,
+      "measurement_method": "pressure_transducer",
+      "steps": [
+        {
+          "rate": 120,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 17.85
+            },
+            {
+              "elapsed": 2,
+              "depth": 18.03
+            },
+            {
+              "elapsed": 3,
+              "depth": 18.14
+            },
+            {
+              "elapsed": 5,
+              "depth": 18.27
+            },
+            {
+              "elapsed": 7,
+              "depth": 18.36
+            },
+            {
+              "elapsed": 10,
+              "depth": 18.45
+            },
+            {
+              "elapsed": 15,
+              "depth": 18.56
+            },
+            {
+              "elapsed": 20,
+              "depth": 18.63
+            },
+            {
+              "elapsed": 30,
+              "depth": 18.73
+            },
+            {
+              "elapsed": 45,
+              "depth": 18.84
+            },
+            {
+              "elapsed": 60,
+              "depth": 18.91
+            },
+            {
+              "elapsed": 90,
+              "depth": 19.02
+            },
+            {
+              "elapsed": 120,
+              "depth": 19.09
+            },
+            {
+              "elapsed": 180,
+              "depth": 19.2
+            },
+            {
+              "elapsed": 240,
+              "depth": 19.27
+            },
+            {
+              "elapsed": 360,
+              "depth": 19.38
+            },
+            {
+              "elapsed": 480,
+              "depth": 19.45
+            },
+            {
+              "elapsed": 600,
+              "depth": 19.51
+            },
+            {
+              "elapsed": 720,
+              "depth": 19.56
+            },
+            {
+              "elapsed": 900,
+              "depth": 19.62
+            },
+            {
+              "elapsed": 1080,
+              "depth": 19.67
+            },
+            {
+              "elapsed": 1260,
+              "depth": 19.71
+            },
+            {
+              "elapsed": 1440,
+              "depth": 19.74,
+              "depth_precision": 0.01
+            }
+          ],
+          "rate_precision": 2
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 12.19
+          },
+          {
+            "elapsed": 2,
+            "depth": 12.01
+          },
+          {
+            "elapsed": 3,
+            "depth": 11.9
+          },
+          {
+            "elapsed": 5,
+            "depth": 11.77
+          },
+          {
+            "elapsed": 10,
+            "depth": 11.59
+          },
+          {
+            "elapsed": 15,
+            "depth": 11.49
+          },
+          {
+            "elapsed": 30,
+            "depth": 11.31
+          },
+          {
+            "elapsed": 60,
+            "depth": 11.14
+          },
+          {
+            "elapsed": 120,
+            "depth": 10.97
+          },
+          {
+            "elapsed": 240,
+            "depth": 10.81
+          },
+          {
+            "elapsed": 360,
+            "depth": 10.72
+          },
+          {
+            "elapsed": 480,
+            "depth": 10.66
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-03",
+      "type": "spot_measurement",
+      "datetime": "2012-03-20T06:00:00-03:00",
+      "static_level": 14.8,
+      "measurement_method": "electric_probe",
+      "operator": "Águas do Guamá — Operação",
+      "notes": "Antes da limpeza."
+    },
+    {
+      "id": "evt-04",
+      "type": "airlift",
+      "datetime": "2012-03-21T08:00:00-03:00",
+      "operator": "Geoperfuração Amazônia Ltda.",
+      "notes": "Redesenvolvimento com ar comprimido e pistoneamento.",
+      "steps": [
+        {
+          "rate": 90,
+          "duration": 720
+        }
+      ]
+    },
+    {
+      "id": "evt-05",
+      "type": "constant_rate",
+      "datetime": "2012-03-24T07:00:00-03:00",
+      "operator": "Geoperfuração Amazônia Ltda.",
+      "static_level": 14.6,
+      "measurement_method": "electric_probe",
+      "notes": "Teste de controle após a limpeza (6 h).",
+      "steps": [
+        {
+          "rate": 110,
+          "duration": 360,
+          "readings": [
+            {
+              "elapsed": 360,
+              "depth": 24.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-06",
+      "type": "spot_measurement",
+      "datetime": "2025-11-10T06:00:00-03:00",
+      "static_level": 18.95,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "operator": "Águas do Guamá — Operação"
+    }
+  ],
+  "centralizers": [
+    {
+      "from": 80,
+      "to": 250,
+      "spacing": 12,
+      "type": "spring_bow",
+      "diameter": 420
+    }
+  ],
+  "cement_pad": {
+    "type": "reinforced_concrete",
+    "width": 3,
+    "thickness": 0.25,
+    "length": 3
+  },
+  "attachments": [
+    {
+      "id": "a1",
+      "uri": "https://files.example.org/wells/belem-pp02/relatorio-final-1995.pdf",
+      "media_type": "application/pdf",
+      "document_type": "drilling_report"
+    },
+    {
+      "id": "a2",
+      "uri": "https://files.example.org/wells/belem-pp02/perfil-geofisico-1995.pdf",
+      "media_type": "application/pdf",
+      "document_type": "x-geophysical_log",
+      "description": "Raios gama e resistividade"
+    }
+  ],
+  "aquifer_analysis": [
+    {
+      "id": "an-1995",
+      "datetime": "1995-06-15T10:00:00-03:00",
+      "analyst": "Geoperfuração Amazônia — Hidrogeólogo",
+      "source_event_ids": [
+        "evt-01",
+        "evt-02"
+      ],
+      "method": "cooper_jacob",
+      "static_level": 10.3,
+      "static_level_source_id": "evt-02",
+      "dynamic_level": 19.74,
+      "flow_rate": 120,
+      "max_flow_rate": 140,
+      "max_flow_rate_basis": "step_drawdown",
+      "specific_capacity": 12.712,
+      "transmissivity": 881.7,
+      "storativity": null,
+      "jacob_b": 0.062,
+      "jacob_c": 0.000139,
+      "well_efficiency_pct": 79,
+      "notes": "Aquífero confinado; armazenamento não determinado (sem poço de observação)."
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-1999",
+      "installed_at": "1999-10-01T09:00:00-03:00",
+      "removed_at": "2018-07-09T08:00:00-03:00",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "KSB",
+      "model": "UPA 200-22/8",
+      "intake_depth": 60,
+      "rated_flow_rate": 110,
+      "rated_head": 70,
+      "rated_power": 37,
+      "stages": 8,
+      "riser_diameter": 150,
+      "riser_material": "carbon_steel",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 440,
+        "phases": 3,
+        "cable_section": 35,
+        "cable_length": 80
+      }
+    },
+    {
+      "id": "pump-2018",
+      "installed_at": "2018-07-09T14:00:00-03:00",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Grundfos",
+      "model": "SP 125-4",
+      "intake_depth": 60,
+      "rated_flow_rate": 110,
+      "rated_head": 72,
+      "rated_power": 37,
+      "stages": 4,
+      "riser_diameter": 150,
+      "riser_material": "stainless_steel",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 440,
+        "phases": 3,
+        "cable_section": 35,
+        "cable_length": 82
+      }
+    }
+  ],
+  "permits": [
+    {
+      "id": "outorga-2019",
+      "type": "abstraction_permit",
+      "authority": "SEMAS-PA",
+      "status": "granted",
+      "identifier": "Outorga SEMAS nº 2871/2019",
+      "request_identifier": "Processo nº 2018/0000041177",
+      "issued_at": "2019-01-22",
+      "valid_until": "2029-01-22",
+      "water_use": [
+        "human_supply"
+      ],
+      "flow_rate": 110,
+      "daily_operating_time": 20,
+      "volume_limits": [
+        {
+          "period": "monthly",
+          "volume": 66000
+        }
+      ],
+      "conditions": [
+        {
+          "id": "c1",
+          "description": "Instalar macromedidor com registro contínuo.",
+          "category": "equipment_installation",
+          "responsible": "Águas do Guamá",
+          "due_after": "P30D",
+          "fulfillments": [
+            {
+              "id": "f1",
+              "datetime": "2019-02-01T10:00:00-03:00",
+              "due_date": "2019-02-21",
+              "description": "Macromedidor eletromagnético instalado com telemetria.",
+              "author": "Águas do Guamá"
+            }
+          ]
+        },
+        {
+          "id": "c2",
+          "description": "Informar volumes mensais e nível estático trimestral.",
+          "category": "reporting",
+          "responsible": "Águas do Guamá — Recursos Hídricos",
+          "first_due": "2019-05-15",
+          "recurrence": "P3M"
+        }
+      ],
+      "history": [
+        {
+          "id": "h1",
+          "date": "2018-11-05",
+          "type": "filing",
+          "description": "Regularização do poço (operava sem outorga desde 1999)."
+        },
+        {
+          "id": "h2",
+          "date": "2019-01-22",
+          "type": "decision",
+          "description": "Outorga emitida."
+        }
+      ]
+    }
+  ],
+  "meters": [
+    {
+      "id": "mac-1",
+      "installed_at": "2019-02-01T00:00:00-03:00",
+      "type": "electromagnetic",
+      "manufacturer": "Endress+Hauser",
+      "model": "Promag W 400",
+      "serial": "EH19-0042117",
+      "nominal_diameter": 150,
+      "notes": "Telemetria; leitura trimestral consolidada."
+    }
+  ],
+  "production": [
+    {
+      "id": "prd-001",
+      "type": "meter_reading",
+      "datetime": "2019-02-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 0,
+      "source": "telemetry",
+      "notes": "Leitura de instalação."
+    },
+    {
+      "id": "prd-002",
+      "type": "meter_reading",
+      "datetime": "2019-05-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 189795,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-003",
+      "type": "meter_reading",
+      "datetime": "2019-08-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 386338,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-004",
+      "type": "meter_reading",
+      "datetime": "2019-11-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 578994,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-005",
+      "type": "meter_reading",
+      "datetime": "2020-02-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 774002,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-006",
+      "type": "meter_reading",
+      "datetime": "2020-05-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 966961,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-007",
+      "type": "meter_reading",
+      "datetime": "2020-08-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 1174065,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-008",
+      "type": "meter_reading",
+      "datetime": "2020-11-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 1380649,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-009",
+      "type": "meter_reading",
+      "datetime": "2021-02-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 1574789,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-010",
+      "type": "meter_reading",
+      "datetime": "2021-05-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 1764827,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-011",
+      "type": "meter_reading",
+      "datetime": "2021-08-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 1969186,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-012",
+      "type": "meter_reading",
+      "datetime": "2021-11-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 2159601,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-013",
+      "type": "meter_reading",
+      "datetime": "2022-02-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 2353608,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-014",
+      "type": "meter_reading",
+      "datetime": "2022-05-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 2547559,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-015",
+      "type": "meter_reading",
+      "datetime": "2022-08-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 2741563,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-016",
+      "type": "meter_reading",
+      "datetime": "2022-11-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 2929796,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-017",
+      "type": "meter_reading",
+      "datetime": "2023-02-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 3137472,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-018",
+      "type": "meter_reading",
+      "datetime": "2023-05-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 3322081,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-019",
+      "type": "meter_reading",
+      "datetime": "2023-08-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 3521171,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-020",
+      "type": "meter_reading",
+      "datetime": "2023-11-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 3726645,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-021",
+      "type": "meter_reading",
+      "datetime": "2024-02-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 3913800,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-022",
+      "type": "meter_reading",
+      "datetime": "2024-05-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 4107037,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-023",
+      "type": "meter_reading",
+      "datetime": "2024-08-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 4298452,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-024",
+      "type": "meter_reading",
+      "datetime": "2024-11-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 4497431,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-025",
+      "type": "meter_reading",
+      "datetime": "2025-02-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 4694417,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-026",
+      "type": "meter_reading",
+      "datetime": "2025-05-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 4876532,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-027",
+      "type": "meter_reading",
+      "datetime": "2025-08-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 5078339,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-028",
+      "type": "meter_reading",
+      "datetime": "2025-11-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 5283367,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-029",
+      "type": "meter_reading",
+      "datetime": "2026-02-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 5490622,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-030",
+      "type": "meter_reading",
+      "datetime": "2026-05-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 5685390,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-031",
+      "type": "meter_reading",
+      "datetime": "2026-08-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 5885305,
+      "source": "telemetry"
+    },
+    {
+      "id": "prd-032",
+      "type": "meter_reading",
+      "datetime": "2026-11-01T00:00:00-03:00",
+      "meter_id": "mac-1",
+      "reading": 6075593,
+      "source": "telemetry"
+    }
+  ],
+  "operating_regime": [
+    {
+      "id": "reg-1999",
+      "effective_from": "1999-10-01T09:00:00-03:00",
+      "flow_rate": 110,
+      "daily_operating_time": 22,
+      "days_per_week": 7
+    },
+    {
+      "id": "reg-2019",
+      "effective_from": "2019-01-22T00:00:00-03:00",
+      "flow_rate": 110,
+      "daily_operating_time": 20,
+      "days_per_week": 7,
+      "notes": "Ajustado à outorga."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-2025",
+      "datetime": "2025-11-10T08:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Portaria GM/MS 888 — semestral 2025-2",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "static_level_event_id": "evt-06",
+      "collected_by": "Águas do Guamá — Laboratório Central",
+      "laboratory": {
+        "name": "Laboratório Central Águas do Guamá",
+        "accreditation": "CRL 1021 (ISO/IEC 17025)",
+        "report_number": "LCAG-25/7714",
+        "received_at": "2025-11-10T13:30:00-03:00",
+        "received_temperature": 5.2
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 29.1,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 7.3,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 352,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "free_chlorine",
+            "vocabulary": "welldot"
+          },
+          "value": 0.05,
+          "measured_in": "field",
+          "qualifier": "<",
+          "notes": "Antes da cloração."
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 1.6,
+          "measured_in": "lab",
+          "method": "SMEWW 2130 B"
+        },
+        {
+          "parameter": {
+            "code": "apparent_color",
+            "vocabulary": "welldot"
+          },
+          "value": 8,
+          "measured_in": "lab",
+          "method": "SMEWW 2120 B"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 214,
+          "measured_in": "lab",
+          "method": "SMEWW 2540 C"
+        },
+        {
+          "parameter": {
+            "code": "alkalinity_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 148,
+          "measured_in": "lab",
+          "method": "SMEWW 2320 B"
+        },
+        {
+          "parameter": {
+            "code": "hardness_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 136,
+          "measured_in": "lab",
+          "method": "SMEWW 2340 C"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 44.5,
+          "measured_in": "lab",
+          "method": "SMEWW 3120 B"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 6.1,
+          "measured_in": "lab",
+          "method": "SMEWW 3120 B"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 18.2,
+          "measured_in": "lab",
+          "method": "SMEWW 3120 B"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 4.4,
+          "measured_in": "lab",
+          "method": "SMEWW 3120 B"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 180,
+          "measured_in": "lab",
+          "method": "SMEWW 2320 B"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 21.5,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-Cl⁻ B"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 6.8,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-SO₄²⁻ E"
+        },
+        {
+          "parameter": {
+            "code": "fluoride",
+            "vocabulary": "welldot"
+          },
+          "value": 0.32,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-F⁻ C"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 0.11,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-NO₃⁻ E"
+        },
+        {
+          "parameter": {
+            "code": "nitrite_as_n",
+            "vocabulary": "welldot"
+          },
+          "qualifier": "not_detected",
+          "detection_limit": 0.005,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "ammonia_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 0.21,
+          "measured_in": "lab",
+          "method": "SMEWW 4500-NH₃ F"
+        },
+        {
+          "parameter": {
+            "code": "iron",
+            "vocabulary": "welldot"
+          },
+          "value": 0.42,
+          "measured_in": "lab",
+          "method": "US EPA 200.7",
+          "fraction": "total",
+          "notes": "Acima de 0,3 mg/L: sistema de aeração e filtração na saída."
+        },
+        {
+          "parameter": {
+            "code": "manganese",
+            "vocabulary": "welldot"
+          },
+          "value": 0.04,
+          "measured_in": "lab",
+          "method": "US EPA 200.7",
+          "fraction": "total"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1995-06-05T17:00:00-03:00",
+      "category": "event",
+      "description": "Conclusão da perfuração, completação e testes.",
+      "hydrodynamic_event_ids": [
+        "evt-01",
+        "evt-02"
+      ]
+    },
+    {
+      "id": "log-02",
+      "datetime": "1999-10-01T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço equipado e ligado ao reservatório do conjunto."
+    },
+    {
+      "id": "log-03",
+      "datetime": "2012-03-20T06:00:00-03:00",
+      "category": "status_change",
+      "status": "maintenance",
+      "description": "Parada para limpeza: queda de 20 % na vazão."
+    },
+    {
+      "id": "log-04",
+      "datetime": "2012-03-21T08:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "redevelopment",
+      "description": "Redesenvolvimento com air-lift e pistoneamento; teste de controle de 6 h.",
+      "hydrodynamic_event_ids": [
+        "evt-04",
+        "evt-05"
+      ]
+    },
+    {
+      "id": "log-05",
+      "datetime": "2012-03-25T08:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço retorna à operação."
+    },
+    {
+      "id": "log-06",
+      "datetime": "2018-07-09T14:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "pump_service",
+      "pump_installation_id": "pump-2018",
+      "description": "Substituição da bomba (rotor desgastado por areia fina)."
+    },
+    {
+      "id": "log-07",
+      "datetime": "2023-09-12T09:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "video_inspection",
+      "description": "Perfilagem ótica: filtros íntegros, leve incrustação ferruginosa entre 215 e 225 m."
+    },
+    {
+      "id": "log-08",
+      "datetime": "2025-11-10T08:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "water_sampling",
+      "sample_ids": [
+        "am-2025"
+      ],
+      "hydrodynamic_event_ids": [
+        "evt-06"
+      ],
+      "description": "Coleta semestral e medição de nível."
+    }
+  ]
+}

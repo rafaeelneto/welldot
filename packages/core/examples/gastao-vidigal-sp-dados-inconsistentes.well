@@ -1,0 +1,222 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3500001375"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço P-05 — Confluência dos córregos (Gastão Vidigal/SP)",
+  "well_driller": "Perfurações Passarela Ltda.",
+  "construction_date": "1980-11-07",
+  "obs": "Registro antigo com inconsistências mantidas de propósito: revestimento começando a 0,7 m (provável altura da boca digitada como profundidade), cimentação lançada duas vezes, e teste com rebaixamento de só 0,2 m para 15 m³/h (capacidade específica de 75 m³/h/m, implausível para o Bauru).",
+  "well_id": [
+    {
+      "authority": "SAE",
+      "id": "P-05",
+      "primary": true
+    }
+  ],
+  "location": {
+    "lat": -20.80861,
+    "lng": -50.18028,
+    "elevation": 380,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31982"
+    }
+  },
+  "well_depth": 207,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 13.36,
+      "diameter": 508,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 13.36,
+      "to": 28,
+      "diameter": 381,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 28,
+      "to": 32,
+      "diameter": 279,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 32,
+      "to": 120,
+      "diameter": 203,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 120,
+      "to": 207,
+      "diameter": 152,
+      "drilling_method": "air_hammer"
+    }
+  ],
+  "well_case": [
+    {
+      "from": 0.7,
+      "to": 20,
+      "type": "carbon_steel",
+      "diameter": 219
+    },
+    {
+      "from": 26,
+      "to": 32,
+      "type": "x-unspecified",
+      "diameter": 219
+    }
+  ],
+  "reduction": [],
+  "well_screen": [
+    {
+      "from": 20,
+      "to": 26,
+      "type": "carbon_steel",
+      "diameter": 219,
+      "screen_slot": 1,
+      "slot_type": "nold"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 13.36,
+      "type": "seal",
+      "diameter": 508,
+      "description": "Cimentação"
+    },
+    {
+      "from": 0,
+      "to": 13,
+      "type": "seal",
+      "diameter": 508,
+      "description": "Cimentação (lançamento duplicado na ficha original)"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 8,
+      "description": "Areia fina a grossa, subarredondada, cinza-clara, síltica, friável",
+      "color": "#cfc3a6",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Cobertura",
+      "aquifer_unit": "Sistema Aquífero Bauru"
+    },
+    {
+      "from": 8,
+      "to": 23,
+      "description": "Arenito fino a médio cinza-amarelado, síltico-argiloso, localmente carbonático",
+      "color": "#d4bd8a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Bauru",
+      "aquifer_unit": "Sistema Aquífero Bauru"
+    },
+    {
+      "from": 23,
+      "to": 28,
+      "description": "Arenito cinza-esbranquiçado com seixos de argila, silte, basalto e calcita",
+      "color": "#c8c2b4",
+      "texture": {
+        "code": 601,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Bauru",
+      "aquifer_unit": "Sistema Aquífero Bauru"
+    },
+    {
+      "from": 28,
+      "to": 207,
+      "description": "Basalto cinza médio, duro, compacto, com olivina e quartzo, pouca calcita",
+      "color": "#5a5a60",
+      "texture": {
+        "code": 717,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Serra Geral",
+      "aquifer_unit": "Aquífero Serra Geral"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "1980-11-17T07:00:00-03:00",
+      "equipment": "Bomba submersa",
+      "static_level": 35.6,
+      "notes": "Valores da ficha original: ND 35,8 m para 15 m³/h.",
+      "steps": [
+        {
+          "rate": 15,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1440,
+              "depth": 35.8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-02",
+      "type": "spot_measurement",
+      "datetime": "1999-05-04T08:00:00-03:00",
+      "static_level": 13.2,
+      "measurement_method": "electric_probe",
+      "notes": "Nível muito mais raso que o de 1980: um dos dois valores está errado."
+    }
+  ],
+  "aquifer_analysis": [
+    {
+      "id": "an-1980",
+      "datetime": "1980-11-20T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "x-specific_capacity",
+      "static_level": 35.6,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 35.8,
+      "flow_rate": 15,
+      "specific_capacity": 75,
+      "notes": "Valor suspeito (rebaixamento de 0,2 m). Não usar para dimensionamento."
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "2026-03-02T10:00:00-03:00",
+      "category": "inspection",
+      "severity": "medium",
+      "description": "Revisão do cadastro: revestimento a partir de 0,7 m, cimentação duplicada e teste de 1980 incoerente. Recomenda-se novo teste de bombeamento.",
+      "hydrodynamic_event_ids": [
+        "evt-01",
+        "evt-02"
+      ]
+    }
+  ]
+}

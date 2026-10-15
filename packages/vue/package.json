@@ -1,0 +1,138 @@
+{
+  "name": "@welldot/vue",
+  "version": "0.1.0",
+  "description": "Vue 3 + PrimeVue base components, theme and composables for .well water well editors",
+  "license": "Apache-2.0",
+  "keywords": [
+    "vue",
+    "primevue",
+    "components",
+    "geology",
+    "well",
+    "lithology",
+    "well-profiler"
+  ],
+  "author": {
+    "name": "Rafael Neto",
+    "email": "rafaelneto.g@gmail.com"
+  },
+  "homepage": "https://github.com/rafaeelneto/welldot#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafaeelneto/welldot.git",
+    "directory": "packages/vue"
+  },
+  "bugs": {
+    "url": "https://github.com/rafaeelneto/welldot/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./grid": {
+      "types": "./dist/grid/index.d.ts",
+      "import": "./dist/grid/index.js"
+    },
+    "./location": {
+      "types": "./dist/location/index.d.ts",
+      "import": "./dist/location/index.js"
+    },
+    "./theme": {
+      "types": "./dist/theme/index.d.ts",
+      "import": "./dist/theme/index.js"
+    },
+    "./nuxt": {
+      "types": "./dist/nuxt/module.d.ts",
+      "import": "./dist/nuxt/module.js"
+    },
+    "./tailwind.css": "./dist/tailwind.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm run build && pnpm run test"
+  },
+  "dependencies": {
+    "defu": "^6.1.4"
+  },
+  "peerDependencies": {
+    "@nuxt/kit": "^3.15.0 || ^4.0.0",
+    "@nuxt/schema": "^3.15.0 || ^4.0.0",
+    "@primeuix/themes": "^2.0.0",
+    "@revolist/revogrid": "^4.21.0",
+    "@revolist/vue3-datagrid": "^4.21.0",
+    "@welldot/core": "workspace:^",
+    "@welldot/render": "workspace:^",
+    "@welldot/utils": "workspace:^",
+    "leaflet": "^1.9.0",
+    "primevue": "^4.5.0",
+    "vue": "^3.5.0",
+    "vue-color": "^3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@nuxt/kit": {
+      "optional": true
+    },
+    "@nuxt/schema": {
+      "optional": true
+    },
+    "@revolist/revogrid": {
+      "optional": true
+    },
+    "@revolist/vue3-datagrid": {
+      "optional": true
+    },
+    "leaflet": {
+      "optional": true
+    },
+    "vue-color": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "^1.2.2",
+    "@nuxt/kit": "4.4.4",
+    "@nuxt/schema": "4.4.4",
+    "@primeuix/themes": "2.0.3",
+    "@revolist/revogrid": "4.21.9",
+    "@revolist/vue3-datagrid": "^4.21.9",
+    "@types/leaflet": "^1.9.21",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/language-core": "^3.3.12",
+    "@vue/test-utils": "^2.4.6",
+    "@welldot/core": "workspace:*",
+    "@welldot/lint": "workspace:*",
+    "@welldot/render": "workspace:*",
+    "@welldot/utils": "workspace:*",
+    "jsdom": "^23.2.0",
+    "leaflet": "^1.9.4",
+    "primevue": "4.5.5",
+    "typescript": "^5.3.3",
+    "unplugin-icons": "^24.0.0",
+    "vite": "^8.0.9",
+    "vite-plugin-dts": "^5.1.2",
+    "vitest": "^4.1.5",
+    "vue": "3.5.34",
+    "vue-color": "^3.3.3",
+    "vue-eslint-parser": "^10.4.0"
+  }
+}

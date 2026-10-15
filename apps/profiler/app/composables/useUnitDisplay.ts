@@ -1,32 +1,15 @@
-import {
-  feetToMeters,
-  inchesToMm,
-  metersToFeet,
-  mmToInches,
-} from '@welldot/core';
+import { useWellUnits, type DisplayUnitType } from '@welldot/vue';
 
-export function useUnitDisplay(unitType: 'length' | 'diameter') {
-  const uiStore = useUiStore();
+export type { DisplayUnitType } from '@welldot/vue';
 
-  const unit = computed(() =>
-    unitType === 'length' ? uiStore.lengthUnit : uiStore.diameterUnit,
-  );
-
-  function toDisplay(canonical: number): number {
-    if (unitType === 'length') {
-      return uiStore.lengthUnit === 'ft' ? metersToFeet(canonical) : canonical;
-    }
-    return uiStore.diameterUnit === 'inches'
-      ? mmToInches(canonical)
-      : canonical;
-  }
-
-  function toCanonical(display: number): number {
-    if (unitType === 'length') {
-      return uiStore.lengthUnit === 'ft' ? feetToMeters(display) : display;
-    }
-    return uiStore.diameterUnit === 'inches' ? inchesToMm(display) : display;
-  }
-
-  return { unit, toDisplay, toCanonical };
+/**
+ * Canonical ↔ display conversion for one quantity, following the unit the
+ * user picked in Settings. `.well` files always store SI (m, mm, m³/h, kW, m³);
+ * this only changes what the UI shows and accepts.
+ *
+ * Thin wrapper over `@welldot/vue`'s `useWellUnits`; the display units reach
+ * it from the UI store through `plugins/03.welldot.ts`.
+ */
+export function useUnitDisplay(unitType: DisplayUnitType) {
+  return useWellUnits(unitType);
 }

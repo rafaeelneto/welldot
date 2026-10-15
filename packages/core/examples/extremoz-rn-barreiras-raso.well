@@ -1,0 +1,623 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=2600055664"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço P-07 — Captação Lagoa de Extremoz (Extremoz/RN)",
+  "well_driller": "Potiguar Sondagens Ltda.",
+  "construction_date": "1978-04-01",
+  "obs": "Poço raso (26 m) no Sistema Aquífero Dunas-Barreiras, à beira da Lagoa de Extremoz. Revestimento Nold de 8\" com dois filtros de aço inox espiralado e pré-filtro em todo o anular. Era jorrante quando foi perfurado; hoje o nível fica 3 m abaixo do terreno. Alta vazão com menos de 1 m de rebaixamento, mas aquífero livre e vulnerável: o nitrato das fossas da área urbana que cresceu em volta passou do limite em 2020.",
+  "well_id": [
+    {
+      "authority": "SAAE",
+      "id": "P-07",
+      "primary": true
+    },
+    {
+      "authority": "IGARN",
+      "id": "Cadastro 2004/0331"
+    }
+  ],
+  "location": {
+    "lat": -5.70833,
+    "lng": -35.325,
+    "elevation": 9,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31985"
+    }
+  },
+  "well_depth": 26,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 26,
+      "diameter": 311,
+      "drilling_method": "rotary"
+    }
+  ],
+  "well_case": [
+    {
+      "from": 0,
+      "to": 8,
+      "type": "carbon_steel",
+      "diameter": 219
+    },
+    {
+      "from": 11,
+      "to": 17,
+      "type": "carbon_steel",
+      "diameter": 219
+    }
+  ],
+  "reduction": [],
+  "well_screen": [
+    {
+      "from": 8,
+      "to": 11,
+      "type": "stainless_steel",
+      "diameter": 219,
+      "screen_slot": 0.75,
+      "slot_type": "continuous_slot"
+    },
+    {
+      "from": 17,
+      "to": 26,
+      "type": "stainless_steel",
+      "diameter": 219,
+      "screen_slot": 0.75,
+      "slot_type": "continuous_slot"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 5,
+      "type": "seal",
+      "diameter": 311,
+      "description": "Cimentação do espaço anular"
+    },
+    {
+      "from": 5,
+      "to": 26,
+      "type": "gravel_pack",
+      "diameter": 311,
+      "description": "Pré-filtro de areia grossa selecionada"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 1.5,
+      "description": "Solo areno-argiloso escuro",
+      "color": "#6e5a45",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Cobertura",
+      "aquifer_unit": "Zona não saturada"
+    },
+    {
+      "from": 1.5,
+      "to": 6,
+      "description": "Arenito médio a grosso, pouco argiloso, creme-amarelado",
+      "color": "#e2cf9a",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Dunas-Barreiras"
+    },
+    {
+      "from": 6,
+      "to": 8.5,
+      "description": "Arenito muito fino a médio, argiloso, creme",
+      "color": "#d9c7a0",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Dunas-Barreiras"
+    },
+    {
+      "from": 8.5,
+      "to": 12.5,
+      "description": "Arenito grosso, claro",
+      "color": "#ece3c8",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Dunas-Barreiras"
+    },
+    {
+      "from": 12.5,
+      "to": 14.5,
+      "description": "Argilito compacto, marrom",
+      "color": "#8a5a3c",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde local"
+    },
+    {
+      "from": 14.5,
+      "to": 20.5,
+      "description": "Arenito fino, pouco argiloso, amarelado",
+      "color": "#dcc27a",
+      "texture": {
+        "code": 608,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Dunas-Barreiras"
+    },
+    {
+      "from": 20.5,
+      "to": 26,
+      "description": "Arenito médio a grosso, compacto, esbranquiçado",
+      "color": "#efe9da",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Dunas-Barreiras"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "constant_rate",
+      "datetime": "1978-04-01T07:00:00-03:00",
+      "operator": "Potiguar Sondagens Ltda.",
+      "static_level": -0.01,
+      "notes": "Poço jorrante no teste (carga 1 cm acima do terreno). Ficha antiga: só o nível dinâmico final e a vazão.",
+      "steps": [
+        {
+          "rate": 36,
+          "duration": 1440,
+          "readings": [
+            {
+              "elapsed": 1440,
+              "depth": 0.8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-02",
+      "type": "spot_measurement",
+      "datetime": "2006-09-12T07:00:00-03:00",
+      "operator": "SAAE — Operação",
+      "static_level": 1.65,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe"
+    },
+    {
+      "id": "evt-03",
+      "type": "spot_measurement",
+      "datetime": "2025-04-08T07:00:00-03:00",
+      "operator": "SAAE — Operação",
+      "static_level": 3.05,
+      "static_level_precision": 0.01,
+      "measurement_method": "electric_probe",
+      "notes": "Rebaixamento de 3 m em 47 anos, com dezenas de poços novos no entorno."
+    }
+  ],
+  "cement_pad": {
+    "type": "concrete",
+    "width": 1,
+    "thickness": 0.15,
+    "length": 1
+  },
+  "aquifer_analysis": [
+    {
+      "id": "an-1978",
+      "datetime": "1978-04-03T10:00:00-03:00",
+      "source_event_ids": [
+        "evt-01"
+      ],
+      "method": "x-specific_capacity",
+      "static_level": -0.01,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 0.8,
+      "flow_rate": 36,
+      "specific_capacity": 44.44
+    }
+  ],
+  "pump_installations": [
+    {
+      "id": "pump-2009",
+      "installed_at": "2009-06-16T09:00:00-03:00",
+      "installed_by": "SAAE — Manutenção",
+      "type": "submersible",
+      "power_source": "grid",
+      "manufacturer": "Ebara",
+      "model": "BHS 815-3",
+      "intake_depth": 7,
+      "rated_flow_rate": 30,
+      "rated_head": 35,
+      "rated_power": 5.5,
+      "stages": 3,
+      "riser_diameter": 75,
+      "riser_material": "galvanized_steel",
+      "check_valve": true,
+      "electrical": {
+        "voltage": 380,
+        "phases": 3,
+        "cable_section": 6,
+        "cable_length": 20
+      },
+      "notes": "Sucção acima do primeiro filtro."
+    }
+  ],
+  "operating_regime": [
+    {
+      "id": "reg-2009",
+      "effective_from": "2009-06-16T09:00:00-03:00",
+      "flow_rate": 30,
+      "daily_operating_time": 16,
+      "days_per_week": 7
+    },
+    {
+      "id": "reg-2021",
+      "effective_from": "2021-02-01T00:00:00-03:00",
+      "flow_rate": 30,
+      "daily_operating_time": 10,
+      "days_per_week": 7,
+      "notes": "Menos horas de bombeamento: a água do poço é diluída com a de um poço profundo antes da distribuição."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-1998",
+      "datetime": "1998-03-17T08:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "collected_by": "SAAE — Controle de Qualidade",
+      "laboratory": {
+        "name": "Laboratório de Saneamento do RN",
+        "report_number": "LS-98/0331"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 5.4,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 168,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 31,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 2.1,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    },
+    {
+      "id": "am-2006",
+      "datetime": "2006-09-12T08:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "collected_by": "SAAE — Controle de Qualidade",
+      "laboratory": {
+        "name": "Laboratório de Saneamento do RN",
+        "report_number": "LS-06/1127"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 5.4,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 214,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 44,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 5.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    },
+    {
+      "id": "am-2014",
+      "datetime": "2014-05-20T08:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "collected_by": "SAAE — Controle de Qualidade",
+      "laboratory": {
+        "name": "Laboratório de Saneamento do RN",
+        "report_number": "LS-14/0802"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 5.4,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 268,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 58,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 8.9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    },
+    {
+      "id": "am-2020",
+      "datetime": "2020-10-06T08:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "collected_by": "SAAE — Controle de Qualidade",
+      "laboratory": {
+        "name": "Laboratório de Saneamento do RN",
+        "report_number": "LS-20/1546"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 5.4,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 301,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 66,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 11.2,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    },
+    {
+      "id": "am-2025",
+      "datetime": "2025-04-08T08:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge"
+      },
+      "collected_by": "SAAE — Controle de Qualidade",
+      "laboratory": {
+        "name": "Laboratório de Saneamento do RN",
+        "report_number": "LS-25/0477"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 5.4,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 322,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 71,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 12.6,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "measured_in": "lab",
+          "presence": false,
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1978-04-03T09:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço entra em operação, inicialmente por surgência e bomba de superfície.",
+      "hydrodynamic_event_ids": [
+        "evt-01"
+      ]
+    },
+    {
+      "id": "log-02",
+      "datetime": "2009-06-16T09:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "pump_service",
+      "pump_installation_id": "pump-2009",
+      "description": "Bomba de superfície substituída por bomba submersa: o poço deixou de jorrar.",
+      "author": "SAAE — Manutenção"
+    },
+    {
+      "id": "log-03",
+      "datetime": "2020-10-20T09:00:00-03:00",
+      "category": "incident",
+      "severity": "high",
+      "description": "Nitrato acima de 10 mg/L N (valor máximo permitido). Diluição com água de poço profundo a partir de fevereiro de 2021.",
+      "sample_ids": [
+        "am-2020"
+      ]
+    },
+    {
+      "id": "log-04",
+      "datetime": "2025-04-08T11:00:00-03:00",
+      "category": "inspection",
+      "severity": "high",
+      "description": "Nitrato segue subindo (12,6 mg/L N). Recomendada a substituição do poço por captação no Barreiras profundo, isolada por cimentação.",
+      "hydrodynamic_event_ids": [
+        "evt-03"
+      ],
+      "sample_ids": [
+        "am-2025"
+      ]
+    }
+  ]
+}

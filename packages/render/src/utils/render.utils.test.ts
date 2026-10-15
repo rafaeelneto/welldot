@@ -51,6 +51,8 @@ vi.mock('~/utils/fgdcTextures', () => ({
 }));
 
 import {
+  fractureDip,
+  getCementPadRect,
   getConflictAreas,
   getLithologicalFillList,
   getLithologyFill,
@@ -100,12 +102,30 @@ const makeLabels = (): TooltipLabels => ({
   surfaceCase: { title: 'TUBO DE BOCA' },
   holeFill: { title: 'ESP. ANULAR' },
   wellCase: { title: 'REVESTIMENTO' },
-  wellScreen: { title: 'FILTROS', slot: 'Ranhura:' },
+  wellScreen: {
+    title: 'FILTROS',
+    slot: 'Ranhura:',
+    material: 'Material:',
+    slotType: 'Tipo:',
+  },
   reduction: { title: 'REDUÇÃO' },
   centralizer: {
     title: 'CENTRALIZADOR',
     depth: 'Profundidade:',
     spacing: 'Espaçamento:',
+  },
+  pump: {
+    title: 'BOMBA',
+    intakeDepth: 'Profundidade do crivo:',
+    model: 'Modelo:',
+    power: 'Potência:',
+    riser: 'Edutor:',
+    type_submersible: 'Bomba submersa',
+    type_vertical_turbine: 'Bomba de eixo vertical',
+    type_jet: 'Bomba injetora',
+    type_progressive_cavity: 'Bomba helicoidal',
+    type_hand_pump: 'Bomba manual',
+    type_compressor_airlift: 'Compressor (air-lift)',
   },
   conflict: { title: 'CONFLITO' },
   fracture: {
@@ -138,6 +158,10 @@ const makeClasses = (): ComponentsClassNames => ({
   geologicGroup: '',
   lithology: { group: '', rect: '' },
   labels: { lithology: { group: '', depth: '', label: '', divider: '' } },
+  overview: { group: '', item: '', window: '' },
+  columnHeaders: { group: '', text: '', rule: '' },
+  markers: { group: '', lithology: '', fracture: '' },
+  overlap: { group: '', band: '', label: '' },
   fractures: { group: '', item: '', hitArea: '', line: '', polyline: '' },
   caves: { group: '', item: '', fill: '', contact: '' },
   constructionGroup: '',
@@ -150,6 +174,7 @@ const makeClasses = (): ComponentsClassNames => ({
   wellScreen: { group: '', rect: '' },
   reduction: { group: '', item: '' },
   centralizer: { group: '', item: '' },
+  pump: { group: '', item: '' },
   conflict: { group: '', rect: '' },
   unitLabels: { group: '', geoRect: '', aqRect: '', text: '' },
   legend: {
@@ -192,6 +217,46 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------------------
+
+describe('fractureDip', () => {
+  it('passes a numeric dip through', () => {
+    expect(fractureDip(35)).toBe(35);
+    expect(fractureDip(0)).toBe(0);
+  });
+
+  it('treats null, undefined and NaN as 0', () => {
+    expect(fractureDip(null)).toBe(0);
+    expect(fractureDip(undefined)).toBe(0);
+    expect(fractureDip(NaN)).toBe(0);
+  });
+});
+
+describe('getCementPadRect', () => {
+  const config = { widthRatio: 1.4, height: 8 };
+
+  it('sizes the pad from the column width and rests it on the surface', () => {
+    expect(getCementPadRect(100, 60, 0, config)).toEqual({
+      x: -40,
+      y: -8,
+      width: 140,
+      height: 8,
+    });
+  });
+
+  it('centers the pad on the construction column', () => {
+    const rect = getCementPadRect(100, 60, 0, config);
+    expect(rect.x + rect.width / 2).toBe(30);
+  });
+
+  it('follows the surface line', () => {
+    expect(getCementPadRect(100, 60, 25, config).y).toBe(17);
+  });
+
+  it('widens so each slab keeps 1.5 × its height beside a wide opening', () => {
+    // opening 130 + 2 × 12 = 154 > 140
+    expect(getCementPadRect(100, 60, 0, config, 130).width).toBe(154);
+  });
+});
 
 describe('makeSeededPrng', () => {
   it('returns a function', () => {
@@ -672,9 +737,10 @@ describe('populateTooltips', () => {
     'fracture',
     'cementPad',
     'cave',
+    'pump',
   ];
 
-  it('tooltipConfig=undefined → all 10 keys present as real tips (no show/hide)', () => {
+  it('tooltipConfig=undefined → all 11 keys present as real tips (no show/hide)', () => {
     const tooltips = populateTooltips(
       makeSvg(),
       makeClasses(),
@@ -689,7 +755,7 @@ describe('populateTooltips', () => {
     });
   });
 
-  it('tooltipConfig=false → all 10 are noop objects with show/hide', () => {
+  it('tooltipConfig=false → all 11 are noop objects with show/hide', () => {
     const tooltips = populateTooltips(
       makeSvg(),
       makeClasses(),
@@ -872,7 +938,7 @@ describe('populateTooltips', () => {
       expect(html).toContain('CENTRALIZADOR');
       expect(html).toContain('18');
       expect(html).toContain('Espaçamento:');
-      expect(html).toContain('spring_bow');
+      expect(html).toContain('Mola (spring bow)');
     });
 
     it('centralizer tooltip omits the interval line for a single centralizer', () => {

@@ -3,16 +3,10 @@ import * as d3 from 'd3';
 import type { Centralizer, Constructive } from '@welldot/core';
 import { getCentralizerDepths, getProfileDiamValues } from '@welldot/utils';
 import type { DrawContext } from '~/types/render.types';
+import { diameterAt, type Interval } from '~/utils/construction.geometry';
 
 /** A single centralizer position, carrying its source entry for tooltips. */
 export type CentralizerMarker = Centralizer & { depth: number };
-
-type Interval = { from: number; to: number; diameter: number };
-
-/** Diameter of the first interval covering `depth`, or `undefined`. */
-function diameterAt(items: Interval[], depth: number): number | undefined {
-  return items.find(i => depth >= i.from && depth <= i.to)?.diameter;
-}
 
 /**
  * Renders centralizers as bow-shaped markers on both sides of the casing or

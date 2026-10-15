@@ -1,6 +1,15 @@
 <script setup lang="ts">
-import type { Attachment, HistoryLogEntry } from '@welldot/core';
-import AttachmentDialog from './AttachmentDialog.vue';
+import type { Attachment, HistoryLogEntry, WellStatus } from '@welldot/core';
+import { MAINTENANCE_TYPES } from '@welldot/core';
+import { formatISO } from 'date-fns';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import {
+  WELL_STATUS_VALUES,
+  meterLabel,
+  pumpInstallationLabel,
+  resolveWellStatusLabel,
+} from '~/utils/operationVocab';
+import { sampleLabel } from '~/utils/waterQualityVocab';
 
 /** The entry being edited. `null` means "adding a new one". */
 const model = defineModel<HistoryLogEntry | null>({ default: null });
@@ -8,14 +17,54 @@ const visible = defineModel<boolean>('visible', { default: false });
 
 const emit = defineEmits<{ save: [entry: HistoryLogEntry] }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { vocabOptions } = useVocab();
 const { categoryOptions, severityOptions } = useHistoryLogCategories();
-const {
-  attachmentIcon,
-  attachmentLabel,
-  copiedAttachmentId,
-  copyAttachmentPath,
-} = useAttachmentDisplay();
+const { eventTypeLabel } = useHydrodynamicEventTypes();
+const profileStore = useProfileStore();
+
+// ─── Category-specific options (.well v2.3) ──────────────────────────────────
+
+const maintenanceTypeOptions = computed(() => vocabOptions(MAINTENANCE_TYPES));
+const statusOptions = computed(() =>
+  WELL_STATUS_VALUES.map(value => ({
+    value,
+    label: resolveWellStatusLabel(value, t),
+  })),
+);
+const pumpOptions = computed(() =>
+  (profileStore.well.pump_installations ?? []).map(p => ({
+    value: p.id,
+    label: pumpInstallationLabel(p, locale.value),
+  })),
+);
+const meterOptions = computed(() =>
+  (profileStore.well.meters ?? []).map(m => ({
+    value: m.id,
+    label: meterLabel(m, t, locale.value),
+  })),
+);
+const eventOptions = computed(() =>
+  [...(profileStore.well.hydrodynamic_events ?? [])]
+    .sort(
+      (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+    )
+    .map(e => ({
+      value: e.id,
+      label: `${eventTypeLabel(e.type)} · ${formatDate(e.datetime, 'dd/MM/yyyy')}`,
+    })),
+);
+
+const sampleOptions = computed(() =>
+  [...(profileStore.well.water_samples ?? [])]
+    .sort(
+      (a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+    )
+    .map(s => ({
+      value: s.id,
+      label: `${sampleLabel(s, locale.value)} (${s.id})`,
+    })),
+);
 
 /** Local copy — edits never reach the bound value until Save. */
 const form = reactive({
@@ -25,15 +74,33 @@ const form = reactive({
   author: '',
   severity: '' as string,
   attachments: [] as Attachment[],
+  // Data links, any category
+  hydrodynamicEventIds: [] as string[],
+  sampleIds: [] as string[],
+  // `maintenance`
+  maintenanceType: null as string | null,
+  pumpInstallationId: null as string | null,
+  meterId: null as string | null,
+  // `status_change`
+  status: null as WellStatus | null,
 });
 
 const isFormValid = computed(
-  () => !!form.category && !!form.datetime && !!form.description.trim(),
+  () =>
+    !!form.category &&
+    !!form.datetime &&
+    !!form.description.trim() &&
+    (form.category !== 'status_change' || !!form.status),
 );
 
-watch(visible, open => {
-  if (open) seedForm(model.value);
-});
+// `immediate` so the dialog seeds when mounted already open (behind `v-if`).
+watch(
+  visible,
+  open => {
+    if (open) seedForm(model.value);
+  },
+  { immediate: true },
+);
 
 function seedForm(entry: HistoryLogEntry | null) {
   form.category = entry?.category ?? 'event';
@@ -42,31 +109,12 @@ function seedForm(entry: HistoryLogEntry | null) {
   form.author = entry?.author ?? '';
   form.severity = entry?.severity ?? '';
   form.attachments = (entry?.attachments ?? []).map(a => ({ ...a }));
-}
-
-// ─── Draft attachments — local until the entry is saved ───────────────────────
-
-const attachmentDraft = ref<Attachment | null>(null);
-const attachmentDialogVisible = ref(false);
-
-function addAttachment() {
-  attachmentDraft.value = null;
-  attachmentDialogVisible.value = true;
-}
-
-function editAttachment(attachment: Attachment) {
-  attachmentDraft.value = attachment;
-  attachmentDialogVisible.value = true;
-}
-
-function upsertDraftAttachment(attachment: Attachment) {
-  const idx = form.attachments.findIndex(a => a.id === attachment.id);
-  if (idx === -1) form.attachments.push(attachment);
-  else form.attachments[idx] = attachment;
-}
-
-function removeDraftAttachment(attachmentId: string) {
-  form.attachments = form.attachments.filter(a => a.id !== attachmentId);
+  form.hydrodynamicEventIds = [...(entry?.hydrodynamic_event_ids ?? [])];
+  form.sampleIds = [...(entry?.sample_ids ?? [])];
+  form.maintenanceType = entry?.maintenance_type ?? null;
+  form.pumpInstallationId = entry?.pump_installation_id ?? null;
+  form.meterId = entry?.meter_id ?? null;
+  form.status = entry?.status ?? null;
 }
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
@@ -83,15 +131,38 @@ function saveEntry() {
     ...model.value,
     id: model.value?.id ?? crypto.randomUUID(),
     category: form.category,
-    datetime: form.datetime!.toISOString(),
+    // Keep the local offset written by the user.
+    datetime: formatISO(form.datetime!),
     description: form.description.trim(),
     author: form.author.trim() || undefined,
     severity: form.severity || undefined,
     attachments: form.attachments.length
       ? form.attachments.map(a => ({ ...a }))
       : undefined,
+    hydrodynamic_event_ids: form.hydrodynamicEventIds.length
+      ? [...form.hydrodynamicEventIds]
+      : undefined,
+    sample_ids: form.sampleIds.length ? [...form.sampleIds] : undefined,
     updated_at: new Date().toISOString(),
   };
+  if (next.category === 'maintenance') {
+    next.maintenance_type = form.maintenanceType?.trim() || undefined;
+    next.pump_installation_id = form.pumpInstallationId || undefined;
+    next.meter_id = form.meterId || undefined;
+  }
+  if (next.category === 'status_change') {
+    next.status = form.status ?? undefined;
+  }
+  // Category-specific fields MUST be absent on entries of other categories.
+  if (next.category !== 'maintenance') {
+    delete next.maintenance_type;
+    delete next.pump_installation_id;
+    delete next.meter_id;
+  }
+  if (next.category !== 'status_change') delete next.status;
+  for (const key of Object.keys(next) as (keyof HistoryLogEntry)[]) {
+    if (next[key] === undefined) delete next[key];
+  }
 
   model.value = next;
   emit('save', next);
@@ -111,7 +182,7 @@ function saveEntry() {
     :style="{ width: '100vw', maxWidth: '36rem' }"
   >
     <div class="flex flex-col gap-4 pt-2">
-      <LabeledField :label="t('editor.historyLog.logs.fields.category')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.category')">
         <div class="flex flex-wrap gap-2">
           <label
             v-for="opt in categoryOptions"
@@ -130,9 +201,103 @@ function saveEntry() {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.datetime')">
+      <!-- ── maintenance: structured fields (optional — legacy logs lack them) -->
+      <div
+        v-if="form.category === 'maintenance'"
+        class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      >
+        <WellLabeledField
+          :label="t('editor.historyLog.logs.fields.maintenanceType')"
+          class="sm:col-span-2"
+        >
+          <WellComboSelect
+            v-model="form.maintenanceType"
+            :options="maintenanceTypeOptions"
+            option-label="label"
+            option-value="value"
+            :hint="t('editor.comboHint')"
+            show-clear
+            class="w-full"
+          />
+        </WellLabeledField>
+        <WellLabeledField
+          v-if="pumpOptions.length"
+          :label="t('editor.historyLog.logs.fields.pumpInstallation')"
+        >
+          <Select
+            v-model="form.pumpInstallationId"
+            :options="pumpOptions"
+            option-label="label"
+            option-value="value"
+            show-clear
+            class="w-full"
+          />
+        </WellLabeledField>
+        <WellLabeledField
+          v-if="meterOptions.length"
+          :label="t('editor.historyLog.logs.fields.meter')"
+        >
+          <Select
+            v-model="form.meterId"
+            :options="meterOptions"
+            option-label="label"
+            option-value="value"
+            show-clear
+            class="w-full"
+          />
+        </WellLabeledField>
+      </div>
+
+      <!-- ── data links (any category, .well v2.3) ─────────────────────── -->
+      <WellLabeledField
+        v-if="eventOptions.length || form.hydrodynamicEventIds.length"
+        :label="t('editor.historyLog.logs.fields.events')"
+        :info="t('editor.historyLog.logs.fields.eventsInfo')"
+        :info-label="t('editor.fieldInfo')"
+      >
+        <WellTagSelect
+          v-model="form.hydrodynamicEventIds"
+          :options="eventOptions"
+          :placeholder="t('editor.historyLog.logs.fields.addEvent')"
+          :remove-label="t('editor.historyLog.logs.fields.removeLink')"
+          filter
+        />
+      </WellLabeledField>
+      <WellLabeledField
+        v-if="sampleOptions.length || form.sampleIds.length"
+        :label="t('editor.historyLog.logs.fields.samples')"
+        :info="t('editor.historyLog.logs.fields.samplesInfo')"
+        :info-label="t('editor.fieldInfo')"
+      >
+        <WellTagSelect
+          v-model="form.sampleIds"
+          :options="sampleOptions"
+          :placeholder="t('editor.historyLog.logs.fields.addSample')"
+          :remove-label="t('editor.historyLog.logs.fields.removeLink')"
+          filter
+        />
+      </WellLabeledField>
+
+      <!-- ── status_change: required status (closed vocabulary) ─────────── -->
+      <WellLabeledField
+        v-if="form.category === 'status_change'"
+        :label="t('editor.historyLog.logs.fields.status')"
+        :info="t('editor.historyLog.logs.fields.statusInfo')"
+        :info-label="t('editor.fieldInfo')"
+      >
+        <Select
+          v-model="form.status"
+          :options="statusOptions"
+          option-label="label"
+          option-value="value"
+          :invalid="!form.status"
+          class="w-full"
+        />
+      </WellLabeledField>
+
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.datetime')">
         <DatePicker
           v-model="form.datetime"
           show-time
@@ -142,101 +307,26 @@ function saveEntry() {
           class="w-full"
           :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.description')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.description')">
         <Textarea
           v-model="form.description"
           :rows="5"
           class="w-full font-mono text-sm"
         />
-      </LabeledField>
+      </WellLabeledField>
 
-      <LabeledField :label="t('editor.historyLog.logs.fields.author')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.author')">
         <InputText v-model="form.author" class="w-full" />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- ── Attachments ────────────────────────────────────────────────── -->
-      <LabeledField :label="t('editor.historyLog.logs.fields.attachments')">
-        <div class="flex flex-col gap-2">
-          <div
-            v-for="att in form.attachments"
-            :key="att.id"
-            class="attachment-row"
-          >
-            <Icon
-              :name="attachmentIcon(att.media_type)"
-              class="size-5 text-content-300 shrink-0"
-            />
-            <div class="flex flex-col min-w-0 flex-1">
-              <span class="text-xs text-content-100 truncate">
-                {{ attachmentLabel(att) }}
-              </span>
-              <span
-                class="attachment-row__uri font-mono text-content-400 truncate"
-              >
-                {{ att.uri }}
-              </span>
-            </div>
-            <div class="flex items-center gap-1 shrink-0">
-              <button
-                class="thumb-action"
-                type="button"
-                :aria-label="t('editor.historyLog.logs.copyPath')"
-                :title="
-                  copiedAttachmentId === att.id
-                    ? t('editor.historyLog.logs.copied')
-                    : t('editor.historyLog.logs.copyPath')
-                "
-                @click="copyAttachmentPath(att)"
-              >
-                <Icon
-                  :name="
-                    copiedAttachmentId === att.id
-                      ? 'ph:check-bold'
-                      : 'ph:copy-duotone'
-                  "
-                  class="size-3.5"
-                />
-              </button>
-              <button
-                class="thumb-action"
-                type="button"
-                :aria-label="t('editor.historyLog.logs.editAttachment')"
-                @click="editAttachment(att)"
-              >
-                <Icon name="ph:pencil-simple-duotone" class="size-3.5" />
-              </button>
-              <button
-                class="thumb-action thumb-action--danger"
-                type="button"
-                :aria-label="t('editor.historyLog.logs.deleteAttachment')"
-                @click="removeDraftAttachment(att.id)"
-              >
-                <Icon name="ph:trash-duotone" class="size-3.5" />
-              </button>
-            </div>
-          </div>
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+        <AttachmentField v-model="form.attachments" context="history" />
+      </WellLabeledField>
 
-          <p
-            v-if="!form.attachments.length"
-            class="text-xs text-content-400 m-0"
-          >
-            {{ t('editor.historyLog.logs.noAttachments') }}
-          </p>
-
-          <button
-            class="add-attachment-btn"
-            type="button"
-            @click="addAttachment"
-          >
-            <Icon name="ph:plus" class="size-3" />
-            {{ t('editor.historyLog.logs.addAttachment') }}
-          </button>
-        </div>
-      </LabeledField>
-
-      <LabeledField :label="t('editor.historyLog.logs.fields.severity')">
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.severity')">
         <div class="flex flex-wrap gap-2">
           <label
             v-for="opt in severityOptions"
@@ -254,7 +344,7 @@ function saveEntry() {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </LabeledField>
+      </WellLabeledField>
     </div>
 
     <template #footer>
@@ -271,12 +361,6 @@ function saveEntry() {
       />
     </template>
   </Dialog>
-
-  <AttachmentDialog
-    v-model="attachmentDraft"
-    v-model:visible="attachmentDialogVisible"
-    @save="upsertDraftAttachment"
-  />
 </template>
 
 <style scoped>
@@ -311,72 +395,5 @@ function saveEntry() {
   background: var(--color-primary-50);
   color: var(--color-primary-600);
   border-color: var(--color-primary-300);
-}
-
-.attachment-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  padding: 5px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--color-surface-200);
-  background: var(--color-surface-50);
-}
-
-.attachment-row__uri {
-  font-size: 10px;
-}
-
-.add-attachment-btn {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px dashed var(--color-surface-300);
-  background: transparent;
-  color: var(--color-content-400);
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-.add-attachment-btn:hover {
-  background: var(--color-surface-50);
-  color: var(--color-content-200);
-  border-color: var(--color-surface-400);
-}
-
-.thumb-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 2px;
-  border-radius: 4px;
-  color: var(--color-content-400);
-  cursor: pointer;
-  transition:
-    color 100ms ease,
-    background 100ms ease;
-}
-
-.thumb-action:hover {
-  background: var(--color-surface-100);
-  color: var(--color-content-100);
-}
-
-.thumb-action--danger:hover {
-  background: color-mix(in srgb, var(--color-error-500) 10%, transparent);
-  color: var(--color-error-500);
 }
 </style>

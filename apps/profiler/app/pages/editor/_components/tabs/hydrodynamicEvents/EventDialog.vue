@@ -5,12 +5,17 @@ import {
   RecoveryOnlyEventSchema,
   SpotMeasurementEventSchema,
   StepDrawdownEventSchema,
+  type Attachment,
   type HydrodynamicEvent,
 } from '@welldot/core';
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import { availablePumpingCharts } from '@welldot/utils';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import type { WellGridColumn } from '@welldot/vue/grid';
+import PumpingTestCharts from './charts/PumpingTestCharts.vue';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
+const { flowUnit } = useUnitFormat();
 const { typeOptions, measurementMethodOptions } = useHydrodynamicEventTypes();
 
 // ─── Form types ───────────────────────────────────────────────────────────────
@@ -51,6 +56,34 @@ function blankStep(): FormStep {
 
 const visible = ref(false);
 const editingId = ref<string | null>(null);
+/**
+ * Id of a new event, drawn once per `openAdd` so the payload (rebuilt on
+ * every form change for validation and the chart preview) keeps one id.
+ */
+const draftId = ref<string | null>(null);
+/** The event being edited, kept so fields the form does not cover survive. */
+const editingOriginal = ref<HydrodynamicEvent | null>(null);
+
+/**
+ * Members the form owns and rebuilds on save. Everything else on the edited
+ * event (`sequence`, `corrects`, `x-` members, …) is carried over untouched.
+ */
+const FORM_MANAGED_KEYS = new Set([
+  'id',
+  'type',
+  'datetime',
+  'operator',
+  'equipment',
+  'notes',
+  'static_level',
+  'static_level_precision',
+  'measurement_method',
+  'steps',
+  'recovery',
+  'pumping_rate',
+  'pumping_duration',
+  'attachments',
+]);
 const expandedSteps = ref<string[]>([]);
 
 const form = reactive<{
@@ -68,6 +101,7 @@ const form = reactive<{
   stepsDepthPrecision: number | null;
   hasRecovery: boolean;
   recoveryReadings: FormReading[];
+  attachments: Attachment[];
 }>({
   type: 'spot_measurement',
   datetime: null,
@@ -83,6 +117,7 @@ const form = reactive<{
   stepsDepthPrecision: null,
   hasRecovery: false,
   recoveryReadings: [],
+  attachments: [],
 });
 
 const showStaticLevel = computed(() =>
@@ -140,6 +175,7 @@ function resetForm() {
   form.stepsDepthPrecision = null;
   form.hasRecovery = false;
   form.recoveryReadings = [];
+  form.attachments = [];
 }
 
 function openAdd() {
@@ -147,12 +183,16 @@ function openAdd() {
   form.steps = [blankStep()];
   expandedSteps.value = form.steps.map(s => s.id);
   editingId.value = null;
+  draftId.value = crypto.randomUUID();
+  editingOriginal.value = null;
   visible.value = true;
 }
 
 function openEdit(event: HydrodynamicEvent) {
   resetForm();
   editingId.value = event.id;
+  editingOriginal.value = event;
+  form.attachments = (event.attachments ?? []).map(a => ({ ...a }));
   form.type = event.type;
   form.datetime = new Date(event.datetime);
   form.operator = event.operator ?? '';
@@ -250,13 +290,22 @@ function buildRecovery() {
 
 function buildEventPayload(): Record<string, unknown> {
   const datetimeStr = form.datetime ? form.datetime.toISOString() : '';
+  const preserved = Object.fromEntries(
+    Object.entries(editingOriginal.value ?? {}).filter(
+      ([key]) => !FORM_MANAGED_KEYS.has(key),
+    ),
+  );
   const common: Record<string, unknown> = {
-    id: editingId.value ?? crypto.randomUUID(),
+    ...preserved,
+    id: editingId.value ?? draftId.value ?? crypto.randomUUID(),
     type: form.type,
     datetime: datetimeStr,
     ...(form.operator.trim() && { operator: form.operator.trim() }),
     ...(form.equipment.trim() && { equipment: form.equipment.trim() }),
     ...(form.notes.trim() && { notes: form.notes.trim() }),
+    ...(form.attachments.length > 0 && {
+      attachments: form.attachments.map(a => ({ ...a })),
+    }),
   };
 
   const steps = buildSteps();
@@ -322,6 +371,13 @@ function buildEventPayload(): Record<string, unknown> {
 
   return event;
 }
+
+/** The form as an event, for the chart preview. */
+const previewEvent = computed(() => buildEventPayload() as HydrodynamicEvent);
+
+const showCharts = computed(
+  () => availablePumpingCharts(previewEvent.value).length > 0,
+);
 
 function saveEvent() {
   if (!isFormValid.value) return;
@@ -459,7 +515,7 @@ function reorderRecoveryReading(from: number, to: number) {
   >
     <div class="flex flex-col gap-5 pt-2">
       <!-- Event type selector -->
-      <LabeledField :label="t('editor.hydrodynamicEvents.fields.type')">
+      <WellLabeledField :label="t('editor.hydrodynamicEvents.fields.type')">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <label
             v-for="opt in typeOptions"
@@ -478,10 +534,10 @@ function reorderRecoveryReading(from: number, to: number) {
             <span>{{ opt.label }}</span>
           </label>
         </div>
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- Date / time -->
-      <LabeledField :label="t('editor.hydrodynamicEvents.fields.datetime')">
+      <WellLabeledField :label="t('editor.hydrodynamicEvents.fields.datetime')">
         <DatePicker
           v-model="form.datetime"
           show-time
@@ -491,28 +547,34 @@ function reorderRecoveryReading(from: number, to: number) {
           class="w-full"
           :pt="{ pcInput: { root: { class: 'font-mono text-sm w-full' } } }"
         />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- Operator / Equipment -->
       <div class="grid grid-cols-2 gap-3">
-        <LabeledField :label="t('editor.hydrodynamicEvents.fields.operator')">
+        <WellLabeledField
+          :label="t('editor.hydrodynamicEvents.fields.operator')"
+        >
           <InputText v-model="form.operator" class="w-full" />
-        </LabeledField>
-        <LabeledField :label="t('editor.hydrodynamicEvents.fields.equipment')">
+        </WellLabeledField>
+        <WellLabeledField
+          :label="t('editor.hydrodynamicEvents.fields.equipment')"
+        >
           <InputText v-model="form.equipment" class="w-full" />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- Static level (spot / constant_rate / step_drawdown) -->
       <div v-if="showStaticLevel" class="grid grid-cols-2 gap-3">
-        <LabeledField :label="t('editor.hydrodynamicEvents.fields.staticLevel')">
+        <WellLabeledField
+          :label="t('editor.hydrodynamicEvents.fields.staticLevel')"
+        >
           <InputNumber
             v-model="form.staticLevel"
             :max-fraction-digits="3"
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.hydrodynamicEvents.fields.staticLevelPrecision')"
         >
           <InputNumber
@@ -520,11 +582,11 @@ function reorderRecoveryReading(from: number, to: number) {
             :max-fraction-digits="3"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- Measurement method (spot_measurement) -->
-      <LabeledField
+      <WellLabeledField
         v-if="showMeasurementMethod"
         :label="t('editor.hydrodynamicEvents.fields.measurementMethod')"
       >
@@ -536,18 +598,26 @@ function reorderRecoveryReading(from: number, to: number) {
           show-clear
           class="w-full"
         />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- Recovery only: estimated preceding params -->
       <div v-if="showRecoveryOnly" class="grid grid-cols-2 gap-3">
-        <LabeledField :label="t('editor.hydrodynamicEvents.fields.pumpingRate')">
-          <InputNumber
+        <WellLabeledField
+          :label="
+            t('editor.hydrodynamicEvents.fields.pumpingRate', {
+              unit: flowUnit,
+            })
+          "
+        >
+          <WellUnitInput
             v-model="form.pumpingRate"
+            unit-type="flow"
+            :min="0"
             :max-fraction-digits="2"
             class="w-full"
           />
-        </LabeledField>
-        <LabeledField
+        </WellLabeledField>
+        <WellLabeledField
           :label="t('editor.hydrodynamicEvents.fields.pumpingDuration')"
         >
           <InputNumber
@@ -555,7 +625,7 @@ function reorderRecoveryReading(from: number, to: number) {
             :max-fraction-digits="1"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- Pumping steps -->
@@ -567,7 +637,7 @@ function reorderRecoveryReading(from: number, to: number) {
             {{ t('editor.hydrodynamicEvents.fields.steps') }}
           </span>
           <div class="flex items-center gap-3">
-            <LabeledField
+            <WellLabeledField
               :label="t('editor.hydrodynamicEvents.fields.stepsDepthPrecision')"
               class="mb-0 flex-row items-center"
             >
@@ -577,7 +647,7 @@ function reorderRecoveryReading(from: number, to: number) {
                 :max-fraction-digits="3"
                 class="precision-input"
               />
-            </LabeledField>
+            </WellLabeledField>
             <Button
               outlined
               size="small"
@@ -630,11 +700,15 @@ function reorderRecoveryReading(from: number, to: number) {
                     @mousedown.stop
                   >
                     <span class="text-xs text-content-400 whitespace-nowrap">{{
-                      t('editor.hydrodynamicEvents.fields.rate')
+                      t('editor.hydrodynamicEvents.fields.rate', {
+                        unit: flowUnit,
+                      })
                     }}</span>
-                    <InputNumber
+                    <WellUnitInput
                       v-model="step.rate"
-                      placeholder="m³/h"
+                      unit-type="flow"
+                      :min="0"
+                      :placeholder="flowUnit"
                       :max-fraction-digits="2"
                       fluid
                       class="w-22"
@@ -694,6 +768,11 @@ function reorderRecoveryReading(from: number, to: number) {
                 :rows="step.readings.map(r => ({ ...r }))"
                 :columns="stepReadingColumns"
                 :add-label="t('editor.hydrodynamicEvents.addReading')"
+                :delete-label="t('editor.deleteRow')"
+                :labels="{
+                  showPendingTextures: t('editor.showPendingTextures'),
+                  columnInfo: t('editor.fieldInfo'),
+                }"
                 @add="addStepReading(si)"
                 @delete="ri => deleteStepReading(si, ri)"
                 @change="
@@ -722,6 +801,11 @@ function reorderRecoveryReading(from: number, to: number) {
             :rows="form.recoveryReadings.map(r => ({ ...r }))"
             :columns="recoveryReadingColumns"
             :add-label="t('editor.hydrodynamicEvents.addReading')"
+            :delete-label="t('editor.deleteRow')"
+            :labels="{
+              showPendingTextures: t('editor.showPendingTextures'),
+              columnInfo: t('editor.fieldInfo'),
+            }"
             @add="addRecoveryReading"
             @delete="deleteRecoveryReading"
             @change="changeRecoveryReading"
@@ -741,6 +825,11 @@ function reorderRecoveryReading(from: number, to: number) {
           :rows="form.recoveryReadings.map(r => ({ ...r }))"
           :columns="recoveryReadingColumns"
           :add-label="t('editor.hydrodynamicEvents.addReading')"
+          :delete-label="t('editor.deleteRow')"
+          :labels="{
+            showPendingTextures: t('editor.showPendingTextures'),
+            columnInfo: t('editor.fieldInfo'),
+          }"
           @add="addRecoveryReading"
           @delete="deleteRecoveryReading"
           @change="changeRecoveryReading"
@@ -748,14 +837,29 @@ function reorderRecoveryReading(from: number, to: number) {
         />
       </div>
 
+      <!-- Charts preview -->
+      <div v-if="showCharts" class="flex flex-col gap-2">
+        <span
+          class="text-[10px] font-semibold tracking-widest uppercase text-content-400"
+        >
+          {{ t('editor.hydrodynamicEvents.charts.title') }}
+        </span>
+        <PumpingTestCharts :event="previewEvent" compact />
+      </div>
+
       <!-- Notes -->
-      <LabeledField :label="t('editor.hydrodynamicEvents.fields.notes')">
+      <WellLabeledField :label="t('editor.hydrodynamicEvents.fields.notes')">
         <Textarea
           v-model="form.notes"
           :rows="3"
           class="w-full font-mono text-sm"
         />
-      </LabeledField>
+      </WellLabeledField>
+
+      <!-- Attachments -->
+      <WellLabeledField :label="t('editor.historyLog.logs.fields.attachments')">
+        <AttachmentField v-model="form.attachments" context="event" />
+      </WellLabeledField>
     </div>
 
     <template #footer>
@@ -797,7 +901,7 @@ function reorderRecoveryReading(from: number, to: number) {
 /* ── Step accordion panels ────────────────────────────────────────────────── */
 /* PrimeVue's Aura defaults render inside a layered cssLayer, so this unlayered
    scoped CSS always wins regardless of selector specificity — safe to fully
-   override the panel/content look here without touching customTheme.ts. */
+   override the panel/content look here without touching the WelldotPreset. */
 
 .step-panel {
   border: 1px solid var(--color-surface-200);

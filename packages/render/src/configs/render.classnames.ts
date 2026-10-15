@@ -59,6 +59,10 @@ export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     group: 'centralizer',
     item: 'centralizer-marker',
   },
+  pump: {
+    group: 'pump',
+    item: 'pump-item',
+  },
   reduction: {
     group: 'reduction',
     item: 'reduction-poly',
@@ -89,6 +93,26 @@ export const DEFAULT_COMPONENTS_CLASS_NAMES: ComponentsClassNames = {
     fracturePoly: 'fracture-poly',
     caveFill: 'cave-fill',
     constructionRect: 'construction-rect',
+  },
+  overview: {
+    group: 'wp-overview',
+    item: 'wp-overview-item',
+    window: 'wp-overview-window',
+  },
+  columnHeaders: {
+    group: 'wp-column-headers',
+    text: 'wp-column-header',
+    rule: 'wp-column-headers-rule',
+  },
+  markers: {
+    group: 'wp-markers',
+    lithology: 'wp-marker-lithology',
+    fracture: 'wp-marker-fracture',
+  },
+  overlap: {
+    group: 'wp-overlap',
+    band: 'wp-overlap-band',
+    label: 'wp-overlap-label',
   },
   highlights: {
     geologicGroup: 'wp-highlights-geologic',

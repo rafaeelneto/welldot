@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import type { WellGridColumn } from '~/components/DataGrid/types';
-import { materialOptions } from '~/utils/materialOptions';
+import { CONSTRUCTION_MATERIALS, SCREEN_SLOT_TYPES } from '@welldot/core';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 
-const screenTypeOptions = computed(() => materialOptions(t));
+const screenTypeOptions = computed(() => vocabOptions(CONSTRUCTION_MATERIALS));
+const slotTypeOptions = computed(() => vocabOptions(SCREEN_SLOT_TYPES));
 
 const wellScreenColumns = computed<WellGridColumn[]>(() => [
   {
@@ -33,6 +35,15 @@ const wellScreenColumns = computed<WellGridColumn[]>(() => [
     size: 130,
   },
   {
+    prop: 'slot_type',
+    label: t('editor.construction.wellScreen.slotType'),
+    info: t('editor.construction.wellScreen.slotTypeInfo'),
+    infoHighlight: t('editor.construction.wellScreen.slotTypeFreeText'),
+    type: 'combo',
+    options: slotTypeOptions.value,
+    minSize: 200,
+  },
+  {
     prop: 'type',
     label: t('editor.construction.wellScreen.type'),
     info: t('editor.construction.wellScreen.typeInfo'),
@@ -55,7 +66,7 @@ function addWellScreen() {
 }
 
 function deleteWellScreen(index: number) {
-  profileStore.well.well_screen.splice(index, 1);
+  profileStore.removeWellFeature('well_screen', index);
 }
 
 function updateWellScreen(index: number, prop: string, value: unknown) {
@@ -92,6 +103,12 @@ function reorderWellScreen(from: number, to: number) {
       :rows="[...profileStore.well.well_screen]"
       :columns="wellScreenColumns"
       :add-label="t('editor.construction.wellScreen.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
+      }"
       @add="addWellScreen"
       @delete="deleteWellScreen"
       @change="updateWellScreen"

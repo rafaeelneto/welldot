@@ -2,6 +2,10 @@
 const props = defineProps<{
   json: string;
   depth?: number;
+  /** Badge text; overrides the `depth` badge. */
+  badge?: string;
+  /** Title-bar label; by default derived from the well `name`. */
+  filename?: string;
   theme?: 'light' | 'dark';
 }>();
 
@@ -10,6 +14,7 @@ const resolvedTheme = computed(() => props.theme ?? 'dark');
 const contentRef = ref<HTMLElement>();
 
 const filename = computed(() => {
+  if (props.filename) return props.filename;
   try {
     const name: string = JSON.parse(props.json)?.name ?? 'well';
     return `${name
@@ -74,7 +79,8 @@ watch(
         <span class="dot" style="background: #28c840" />
       </div>
       <span class="fname">{{ filename }}</span>
-      <span v-if="depth" class="badge">{{ depth }} m</span>
+      <span v-if="badge" class="badge">{{ badge }}</span>
+      <span v-else-if="depth" class="badge">{{ depth }} m</span>
     </div>
     <!-- eslint-disable-next-line vue/no-v-html -->
     <pre ref="contentRef" class="content" v-html="highlighted" />
@@ -83,7 +89,7 @@ watch(
 
 <style scoped>
 /*
- * Tokens reference the design-system palette from customTheme.ts:
+ * Tokens reference the design-system palette from WelldotPreset (@welldot/vue):
  *   surface light: 0=#fff  50=#f7f8fa  100=#eef0f3  200=#d8dde3
  *   surface dark:  0=#0d1218  50=#131922  100=#1a2230  200=#2a3344
  *   content-400 = #7888a0 (both modes)   primary-500 = #5d86d2

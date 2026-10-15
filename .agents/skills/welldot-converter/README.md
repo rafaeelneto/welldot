@@ -69,7 +69,8 @@ These rules are non-negotiable and apply even if you have not read the knowledge
    material, brand, or qualifier.
 3. well_case[].type, well_screen[].type and reduction[].type are FREE TEXT, not enums.
    Transcribe what the report says. Do not map them onto steel/pvc/wire_wound/bridge_slot or
-   any other vocabulary.
+   any other vocabulary. The screen design (espiralado, ranhurado…) goes in
+   well_screen[].slot_type, never in well_screen[].type.
 4. hole_fill[].type is a real enum: exactly "gravel_pack" or "seal". The material detail goes
    in hole_fill[].description.
 5. lithology[].texture is REQUIRED on every entry and is an object, not a string:

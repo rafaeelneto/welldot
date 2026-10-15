@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -60,7 +60,7 @@ function addHoleFill() {
 }
 
 function deleteHoleFill(index: number) {
-  profileStore.well.hole_fill.splice(index, 1);
+  profileStore.removeWellFeature('hole_fill', index);
 }
 
 function updateHoleFill(index: number, prop: string, value: unknown) {
@@ -90,6 +90,11 @@ function reorderHoleFill(from: number, to: number) {
       :rows="[...profileStore.well.hole_fill]"
       :columns="holeFillColumns"
       :add-label="t('editor.construction.holeFill.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addHoleFill"
       @delete="deleteHoleFill"
       @change="updateHoleFill"

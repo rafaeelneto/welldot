@@ -1,0 +1,244 @@
+import type {
+  EstimatedVolume,
+  MeterReading,
+  ProductionEntry,
+  Well,
+} from '@welldot/core';
+import {
+  ESTIMATION_METHODS,
+  PRODUCTION_ENTRY_TYPES,
+  READING_SOURCES,
+} from '@welldot/core';
+import {
+  formatDate,
+  formatMeterLabel,
+  getActivePermit,
+  getProductionByPeriod,
+  getProductionTotal,
+  getRetractedProductionIds,
+  todayCalendarDate,
+} from '@welldot/utils';
+import { createPdfFormatters, type PdfFormatters } from '../formatters';
+import {
+  headerCell,
+  rightCell,
+  valueCell,
+  withTableTitle,
+} from '../layout/tables';
+import type { PdfContext, PdfLabels } from '../types/options.types';
+import type { Content, TableCell } from '../types/pdfmake.types';
+import { packLabelValueRows } from './metadataTable';
+
+/**
+ * The instant an entry is listed at. Unknown (`x-…`) types use their own
+ * `datetime` when they carry one; entries without a date give `undefined`.
+ */
+function entryInstant(e: ProductionEntry): string | undefined {
+  if (e.type === 'meter_reading') return (e as MeterReading).datetime;
+  if (e.type === 'estimated_volume') return (e as EstimatedVolume).period_end;
+  const datetime = (e as { datetime?: unknown }).datetime;
+  return typeof datetime === 'string' ? datetime : undefined;
+}
+
+/** Sort key: entries without a valid instant go last (the ledger is newest first). */
+function instantTime(e: ProductionEntry): number {
+  const time = new Date(entryInstant(e) ?? NaN).getTime();
+  return isNaN(time) ? -Infinity : time;
+}
+
+function percent(value: number, limit: number | undefined): string {
+  if (limit == null || limit <= 0) return '—';
+  return `${Math.round((value / limit) * 100)}%`;
+}
+
+/** Total / metered / estimated, plus unknown intervals. */
+function buildTotals(
+  well: Well,
+  fmt: PdfFormatters,
+  labels: PdfLabels,
+): Content {
+  const totals = getProductionTotal(well);
+  const totalLabels = labels.operation.production.totals;
+  const items = [
+    { label: totalLabels.total, value: fmt.formatVolume(totals.total, 1) },
+    { label: totalLabels.metered, value: fmt.formatVolume(totals.metered, 1) },
+    {
+      label: totalLabels.estimated,
+      value: fmt.formatVolume(totals.estimated, 1),
+    },
+  ];
+  if (totals.unknown_intervals) {
+    items.push({
+      label: labels.operation.production.unknownIntervalsLabel,
+      value: String(totals.unknown_intervals),
+    });
+  }
+  return {
+    layout: 'noBorders',
+    table: { widths: ['*', '*', '*', '*'], body: packLabelValueRows(items, 4) },
+  };
+}
+
+/** Production per year, with the share of the active permit's annual limit. */
+function buildAnnualTable(
+  well: Well,
+  fmt: PdfFormatters,
+  labels: PdfLabels,
+): Content | null {
+  const buckets = [...getProductionByPeriod(well, 'year')].reverse();
+  if (!buckets.length) return null;
+  const limit = getActivePermit(well, todayCalendarDate())?.volume_limits?.find(
+    v => v.period === 'annual',
+  )?.volume;
+  const totalLabels = labels.operation.production.totals;
+  // The estimated column only shows when some year has an estimate.
+  const hasEstimates = buckets.some(b => b.estimated > 0);
+
+  const header: TableCell[] = [
+    headerCell(labels.operation.production.periods.year),
+    headerCell(totalLabels.metered, true),
+  ];
+  if (hasEstimates) header.push(headerCell(totalLabels.estimated, true));
+  header.push(headerCell(totalLabels.total, true));
+  if (limit) header.push(headerCell(labels.operation.production.ofLimit, true));
+
+  const body: TableCell[][] = [header];
+  buckets.forEach(b => {
+    const row: TableCell[] = [
+      b.period,
+      valueCell(fmt.formatVolume(b.metered, 1)),
+    ];
+    if (hasEstimates) row.push(valueCell(fmt.formatVolume(b.estimated, 1)));
+    row.push(valueCell(fmt.formatVolume(b.total, 1)));
+    if (limit) row.push(rightCell(percent(b.total, limit)));
+    body.push(row);
+  });
+
+  return withTableTitle(labels.operation.production.annual, {
+    layout: 'lightHorizontalLines',
+    table: {
+      widths: ['*', ...header.slice(1).map(() => 'auto')],
+      headerRows: 1,
+      dontBreakRows: true,
+      body,
+    },
+  });
+}
+
+/** The ledger, newest first. Retracted entries are kept but struck through. */
+function buildLedgerTable(
+  well: Well,
+  fmt: PdfFormatters,
+  ctx: PdfContext,
+): Content {
+  const { labels, locale, dateFormats } = ctx;
+  const retracted = getRetractedProductionIds(well);
+  const entries = [...(well.production ?? [])].sort(
+    (a, b) =>
+      instantTime(b) - instantTime(a) || (b.sequence ?? 0) - (a.sequence ?? 0),
+  );
+  const fields = labels.operation.production.fields;
+
+  const body: TableCell[][] = [
+    [
+      headerCell(fields.datetime),
+      headerCell(labels.operation.production.fields.type),
+      headerCell(labels.operation.production.fields.details),
+      headerCell(labels.operation.production.fields.value, true),
+    ],
+  ];
+
+  entries.forEach(e => {
+    const isRetracted = retracted.has(e.id);
+    let details: string;
+    let value: string;
+    if (e.type === 'meter_reading') {
+      const r = e as MeterReading;
+      const meter = well.meters?.find(m => m.id === r.meter_id);
+      details = [
+        meter
+          ? formatMeterLabel(meter, {
+              locale,
+              untypedLabel: labels.operation.meter.untyped,
+              dateFormat: dateFormats.date,
+            })
+          : r.meter_id,
+        r.source ? fmt.vocab(READING_SOURCES, r.source) : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      value = fmt.formatVolume(r.reading, 3);
+    } else if (e.type === 'estimated_volume') {
+      const d = e as EstimatedVolume;
+      details = [
+        `${formatDate(d.period_start, dateFormats.date) || '—'} → ${formatDate(d.period_end, dateFormats.date) || '—'}`,
+        d.method ? fmt.vocab(ESTIMATION_METHODS, d.method) : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      value = fmt.formatVolume(d.volume, 1);
+    } else {
+      details = '';
+      value = '—';
+    }
+    const marks = [
+      isRetracted ? labels.operation.production.retracted : null,
+      e.corrects ? labels.operation.production.correction : null,
+    ].filter(Boolean);
+    const typeLabel = fmt.vocab(PRODUCTION_ENTRY_TYPES, e.type);
+    const decoration = isRetracted ? { decoration: 'lineThrough' } : {};
+
+    body.push([
+      formatDate(entryInstant(e), dateFormats.dateTime) || '—',
+      marks.length ? `${typeLabel} (${marks.join(', ')})` : typeLabel,
+      { text: [details, e.notes].filter(Boolean).join('\n') },
+      {
+        text: value,
+        style: 'columnRight',
+        noWrap: true,
+        ...decoration,
+      } as TableCell,
+    ]);
+  });
+
+  return withTableTitle(labels.operation.production.ledger, {
+    layout: 'lightHorizontalLines',
+    table: {
+      widths: ['auto', 'auto', '*', 'auto'],
+      headerRows: 1,
+      dontBreakRows: true,
+      body,
+    },
+  });
+}
+
+/**
+ * Builds the `production` section (.well v2.3): derived totals, the annual
+ * table (with the active permit's annual limit share) and the ledger.
+ * Returns `null` when the ledger is empty.
+ */
+export function buildProductionSection(
+  well: Well,
+  ctx: PdfContext,
+): Content | null {
+  if (!well.production?.length) return null;
+  const { labels } = ctx;
+  const fmt = createPdfFormatters(ctx);
+
+  const annual = buildAnnualTable(well, fmt, labels);
+  return {
+    stack: [
+      {
+        stack: [
+          { text: ' ' },
+          { text: labels.operation.production.title, style: 'title' },
+          buildTotals(well, fmt, labels),
+        ],
+        unbreakable: true,
+      },
+      ...(annual ? [{ text: ' ' }, annual] : []),
+      { text: ' ' },
+      buildLedgerTable(well, fmt, ctx),
+    ],
+  };
+}

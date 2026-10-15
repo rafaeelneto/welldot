@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 
 import type { WellCase, WellScreen } from '@welldot/core';
+import { CONSTRUCTION_MATERIALS, getVocabLabel } from '@welldot/core';
 import { getProfileDiamValues } from '@welldot/utils';
 import type { DrawContext } from '~/types/render.types';
 import { formatDiameter, getDiameterUnit } from '~/utils/format.utils';
@@ -24,6 +25,8 @@ export function drawConstructionLabels(
   const fmtD = (mm: number) =>
     formatDiameter(mm, ctx.units.diameter, ctx.locale);
   const dUnit = getDiameterUnit(ctx.units.diameter, ctx.locale);
+  const material = (value: string) =>
+    getVocabLabel(CONSTRUCTION_MATERIALS, value, ctx.locale);
 
   const maxXValues = getProfileDiamValues(ctx.constructionData);
   const xScale = d3
@@ -33,14 +36,17 @@ export function drawConstructionLabels(
 
   const occupied: { top: number; bot: number }[] = [];
 
-  const placeLabel = (d: WellCase | WellScreen, text: string) => {
+  const onRight = clc.side === 'right';
+  const continuation = ctx.renderConfig.labels.continuation;
+
+  const placeLabel = (d: WellCase | WellScreen, label: string) => {
     const clampedFrom = Math.max(d.from, ctx.depthFrom);
     const clampedTo = Math.min(d.to, ctx.depthTo);
     if (clampedFrom >= clampedTo) return;
 
+    const text =
+      continuation?.active && d.from < ctx.depthFrom ? `↑ ${label}` : label;
     const midY = ctx.yScale((clampedFrom + clampedTo) / 2);
-    const leftEdgeX = (ctx.POCO_CENTER - xScale(d.diameter)) / 2;
-    const labelRightX = leftEdgeX - clc.xOffset;
     const charW = clct.fontSize * 0.52;
     const lineH = clct.fontSize * 1.35;
     const vertPad = 6;
@@ -59,8 +65,15 @@ export function drawConstructionLabels(
       boxW = text.length * charW + 8;
     }
 
+    // `left`: the box ends xOffset px left of the item's own wall.
+    // `right`: every box starts xOffset px right of the construction column.
+    const labelRightX = onRight
+      ? (ctx.POCO_CENTER + ctx.POCO_WIDTH) / 2 + clc.xOffset + boxW
+      : (ctx.POCO_CENTER - xScale(d.diameter)) / 2 - clc.xOffset;
+
     const labelH = lines.length * lineH + vertPad;
-    let labelY = midY - labelH / 2;
+    // Right-side labels hang from the item's top, like a column of notes.
+    let labelY = onRight ? ctx.yScale(clampedFrom) + 1 : midY - labelH / 2;
 
     for (const pos of occupied) {
       if (labelY < pos.bot && labelY + labelH > pos.top) labelY = pos.bot + 2;
@@ -80,18 +93,18 @@ export function drawConstructionLabels(
 
     const textEl = ctx.groups.constructionLabelsGroup
       .append('text')
-      .attr('x', labelRightX - 4)
+      .attr('x', onRight ? labelRightX - boxW + 4 : labelRightX - 4)
       .attr('y', labelY + lineH * 0.85)
       .attr('font-size', clct.fontSize)
       .attr('font-family', clct.fontFamily ?? 'sans-serif')
       .attr('font-weight', clct.fontWeight ?? 400)
-      .attr('text-anchor', 'end')
+      .attr('text-anchor', onRight ? 'start' : 'end')
       .attr('fill', clct.labelColor ?? '#303030');
 
     lines.forEach((line, i) => {
       textEl
         .append('tspan')
-        .attr('x', labelRightX - 4)
+        .attr('x', onRight ? labelRightX - boxW + 4 : labelRightX - 4)
         .attr('dy', i === 0 ? 0 : lineH)
         .text(line);
     });
@@ -109,7 +122,7 @@ export function drawConstructionLabels(
     .forEach(d =>
       placeLabel(
         d,
-        `${clc.labels.wellCasePrefix} ${fmtD(d.diameter)}${dUnit} ${d.type}`,
+        `${clc.labels.wellCasePrefix} ${fmtD(d.diameter)}${dUnit} ${material(d.type)}`,
       ),
     );
 
@@ -125,7 +138,7 @@ export function drawConstructionLabels(
     .forEach((d: WellScreen) =>
       placeLabel(
         d,
-        `${clc.labels.wellScreenPrefix} ${fmtD(d.diameter)}${dUnit} ${d.type} ${clc.labels.wellScreenSlotPrefix} ${fmtD((d as WellScreen).screen_slot)}${dUnit}`,
+        `${clc.labels.wellScreenPrefix} ${fmtD(d.diameter)}${dUnit} ${material(d.type)} ${clc.labels.wellScreenSlotPrefix} ${fmtD((d as WellScreen).screen_slot)}${dUnit}`,
       ),
     );
 }

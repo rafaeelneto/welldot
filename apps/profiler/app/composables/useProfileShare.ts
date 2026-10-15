@@ -1,4 +1,4 @@
-import type { SectionVisibility } from '@welldot/core';
+import type { WellVisibility } from '@welldot/core';
 import { isWellEmpty, redactWell, serializeWell } from '@welldot/core';
 import { ref } from 'vue';
 import { useProfileStore } from '~/stores/profile.store';
@@ -22,13 +22,13 @@ export function useProfileShare() {
 
   /**
    * Returns the share id/expiry for the current profile, or `null` if it's
-   * empty. Caches by content. When `visibility` is passed, hidden sections
+   * empty. Caches by content. When `visibility` is passed, hidden sections and fields
    * are redacted out before anything is cached or uploaded — the cache key
    * is derived from the already-redacted content, so a preference change
    * always produces a fresh share rather than reusing a stale one.
    */
   async function getShare(
-    visibility?: SectionVisibility,
+    visibility?: WellVisibility,
   ): Promise<ShareResult | null> {
     const rawWell = profileStore.getExportableWell();
     if (!rawWell) return null;

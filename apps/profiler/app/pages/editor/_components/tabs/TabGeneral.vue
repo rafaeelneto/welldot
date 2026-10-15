@@ -1,8 +1,27 @@
 <script setup lang="ts">
-import AppChip from '~/components/AppChip.vue';
+import type { Attachment } from '@welldot/core';
+import { WELL_PURPOSES, WELL_TYPES, isVocabValue } from '@welldot/core';
+import { getCurrentWellStatus } from '@welldot/utils';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import type { CoordinateFormat } from '~/stores/ui.store';
 
 const { t } = useI18n();
+const { vocabLabel, vocabOptions } = useVocab();
 const profileStore = useProfileStore();
+const uiStore = useUiStore();
+
+/** Current status (.well v2.3), derived from `status_change` history logs. */
+const wellStatus = computed(() => getCurrentWellStatus(profileStore.well));
+
+/**
+ * Root `attachments` (.well v2.3): general files about the well as a whole,
+ * e.g. the drilling report. They never aggregate the attachments of pumps,
+ * events or log entries, which stay on their own records.
+ */
+const generalAttachments = computed<Attachment[] | undefined>({
+  get: () => profileStore.well.attachments,
+  set: list => profileStore.updateWell(draft => assignAttachments(draft, list)),
+});
 
 const constructionDate = computed({
   get: () =>
@@ -21,6 +40,14 @@ const location = computed(() => ({
   elevation: profileStore.well.location?.elevation ?? 0,
   ...profileStore.well.location,
 }));
+
+/** DD/DMS display preference (Settings), shared with every location input. */
+const coordinateFormat = computed({
+  get: () => uiStore.coordinateFormat,
+  set: (value: CoordinateFormat | undefined) => {
+    if (value) uiStore.coordinateFormat = value;
+  },
+});
 
 async function updateLocationField<K extends 'lat' | 'lng' | 'elevation'>(
   key: K,
@@ -50,19 +77,25 @@ const primaryIndex = computed(
 );
 
 function addWellId() {
-  if (!profileStore.well.well_id) profileStore.well.well_id = [];
-  profileStore.well.well_id.push({ authority: '', id: '' });
+  profileStore.updateWell(draft => {
+    if (!draft.well_id) draft.well_id = [];
+    draft.well_id.push({ authority: '', id: '' });
+  });
 }
 
 function deleteWellId(index: number) {
-  profileStore.well.well_id?.splice(index, 1);
+  profileStore.updateWell(draft => {
+    draft.well_id?.splice(index, 1);
+  });
 }
 
 function setPrimary(index: number) {
   if (!profileStore.well.well_id) return;
   const isAlreadyPrimary = primaryIndex.value === index;
-  profileStore.well.well_id.forEach((entry, i) => {
-    entry.primary = !isAlreadyPrimary && i === index ? true : undefined;
+  profileStore.updateWell(draft => {
+    draft.well_id?.forEach((entry, i) => {
+      entry.primary = !isAlreadyPrimary && i === index ? true : undefined;
+    });
   });
 }
 
@@ -70,15 +103,9 @@ function setPrimary(index: number) {
 
 // Deprecated values (e.g. `artesian`) are never offered, but stay visible as
 // an option while the loaded well still uses one, so the Select shows it.
-const wellTypeOptions = computed(() => {
-  const current = profileStore.well.well_type;
-  const values: string[] = [...WELL_TYPE_VALUES];
-  if (current && isDeprecatedWellType(current)) values.push(current);
-  return values.map(value => ({
-    label: resolveWellTypeLabel(value, t),
-    value,
-  }));
-});
+const wellTypeOptions = computed(() =>
+  vocabOptions(WELL_TYPES, profileStore.well.well_type),
+);
 
 const hasDeprecatedWellType = computed(() =>
   isDeprecatedWellType(profileStore.well.well_type),
@@ -89,12 +116,12 @@ const hasDeprecatedWellType = computed(() =>
 const wellPurposeOptions = computed(() => {
   // Keep non-canonical values (e.g. `x-` prefixed) from loaded files visible.
   const extra = (profileStore.well.well_purpose ?? []).filter(
-    v => !(WELL_PURPOSE_VALUES as readonly string[]).includes(v),
+    v => !isVocabValue(WELL_PURPOSES, v),
   );
-  return [...WELL_PURPOSE_VALUES, ...extra].map(value => ({
-    label: resolveWellPurposeLabel(value, t),
-    value,
-  }));
+  return [
+    ...vocabOptions(WELL_PURPOSES),
+    ...extra.map(value => ({ value, label: vocabLabel(WELL_PURPOSES, value) })),
+  ];
 });
 
 const wellPurpose = computed({
@@ -134,16 +161,16 @@ function removeWellPurpose(value: string) {
       </div>
 
       <!-- Name -->
-      <LabeledField :label="t('editor.general.name')">
+      <WellLabeledField :label="t('editor.general.name')">
         <InputText v-model="profileStore.well.name" class="w-full" />
-      </LabeledField>
+      </WellLabeledField>
 
       <!-- Driller + Construction Date -->
       <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-        <LabeledField :label="t('editor.general.driller')">
+        <WellLabeledField :label="t('editor.general.driller')">
           <InputText v-model="profileStore.well.well_driller" class="w-full" />
-        </LabeledField>
-        <LabeledField :label="t('editor.general.constructionDate')">
+        </WellLabeledField>
+        <WellLabeledField :label="t('editor.general.constructionDate')">
           <DatePicker
             v-model="constructionDate"
             show-button-bar
@@ -151,14 +178,15 @@ function removeWellPurpose(value: string) {
             class="w-full"
             :pt="{ pcInput: { root: 'font-mono text-sm w-full' } }"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- Well Type (half-width) -->
       <div class="grid sm:grid-cols-2 gap-4">
-        <LabeledField
+        <WellLabeledField
           :label="t('editor.general.wellType')"
           :info="t('editor.general.wellTypeInfo')"
+          :info-label="t('editor.fieldInfo')"
         >
           <Select
             v-model="profileStore.well.well_type"
@@ -168,13 +196,13 @@ function removeWellPurpose(value: string) {
             :placeholder="t('editor.general.wellType')"
             class="w-full"
           />
-        </LabeledField>
+        </WellLabeledField>
       </div>
 
       <!-- Well Purpose -->
-      <LabeledField :label="t('editor.general.wellPurpose')">
+      <WellLabeledField :label="t('editor.general.wellPurpose')">
         <div class="flex flex-wrap items-center gap-2 pt-1">
-          <AppChip
+          <WellChip
             v-for="option in selectedWellPurposes"
             :key="option.value"
             :label="option.label"
@@ -209,7 +237,7 @@ function removeWellPurpose(value: string) {
             </template>
           </Button>
         </div>
-      </LabeledField>
+      </WellLabeledField>
 
       <Popover ref="wellPurposePopover">
         <div class="flex flex-col gap-2.5 p-1 min-w-60">
@@ -237,12 +265,26 @@ function removeWellPurpose(value: string) {
         </div>
       </Message>
 
-      <Tag
-        v-if="profileStore.flowingArtesian"
-        severity="info"
-        class="self-start"
-        :value="t('editor.general.flowingArtesian')"
-      />
+      <div class="flex items-center flex-wrap gap-2">
+        <Tag
+          v-if="wellStatus"
+          v-tooltip.top="t('editor.operation.wellStatus.derivedInfo')"
+          :severity="WELL_STATUS_SEVERITY[wellStatus] ?? 'secondary'"
+          :value="resolveWellStatusLabel(wellStatus, t)"
+        />
+        <Tag
+          v-else
+          v-tooltip.top="t('editor.operation.wellStatus.unknownInfo')"
+          severity="secondary"
+          class="opacity-70"
+          :value="t('editor.operation.wellStatus.unknown')"
+        />
+        <Tag
+          v-if="profileStore.flowingArtesian"
+          severity="info"
+          :value="t('editor.general.flowingArtesian')"
+        />
+      </div>
     </section>
 
     <!-- ── Section: Well Identifiers ────────────────────────────────────── -->
@@ -254,7 +296,7 @@ function removeWellPurpose(value: string) {
           >
             {{ t('editor.general.wellIds.title') }}
           </h3>
-          <InfoPopover
+          <WellInfoPopover
             size="md"
             :label="t('editor.general.wellIds.info.label')"
           >
@@ -274,7 +316,7 @@ function removeWellPurpose(value: string) {
               <p class="m-0">{{ t('editor.general.wellIds.info.fields') }}</p>
               <p class="m-0">{{ t('editor.general.wellIds.info.primary') }}</p>
             </div>
-          </InfoPopover>
+          </WellInfoPopover>
         </div>
         <span
           class="font-mono text-[10px] tracking-[0.08em] uppercase text-content-500"
@@ -302,10 +344,10 @@ function removeWellPurpose(value: string) {
             @click="setPrimary(index)"
           />
           <div class="flex flex-1 flex-col gap-2 sm:flex-row">
-            <Select
+            <WellComboSelect
               v-model="entry.authority"
               :options="AUTHORITY_SUGGESTIONS"
-              editable
+              :hint="t('editor.comboHint')"
               :placeholder="t('editor.general.wellIds.authorityPlaceholder')"
               class="w-full sm:w-40 sm:shrink-0"
             />
@@ -360,13 +402,23 @@ function removeWellPurpose(value: string) {
         </span>
       </div>
 
-      <LocationPicker
+      <WellLocationPicker
+        v-model:format="coordinateFormat"
         :lat="location.lat"
         :lng="location.lng"
         :elevation="location.elevation"
+        :labels="{
+          coordinates: t('editor.general.coordinatesLabel'),
+          latitude: t('editor.general.latitude'),
+          longitude: t('editor.general.longitude'),
+          elevation: t('editor.general.elevation'),
+          hint: t('editor.general.clickOrDragPin'),
+        }"
         @update:lat="value => updateLocationField('lat', value)"
         @update:lng="value => updateLocationField('lng', value)"
-        @update:elevation="value => updateLocationField('elevation', value)"
+        @update:elevation="
+          value => updateLocationField('elevation', value as number)
+        "
       />
     </section>
 
@@ -385,13 +437,26 @@ function removeWellPurpose(value: string) {
         </span>
       </div>
 
-      <LabeledField :label="t('editor.general.observationsLabel')">
+      <WellLabeledField :label="t('editor.general.observationsLabel')">
         <Textarea
           v-model="profileStore.well.obs"
           class="w-full font-mono text-sm"
           :rows="5"
         />
-      </LabeledField>
+      </WellLabeledField>
+
+      <WellLabeledField
+        :label="t('editor.general.attachments')"
+        :info="t('editor.general.attachmentsInfo')"
+        :info-label="t('editor.fieldInfo')"
+      >
+        <AttachmentField
+          v-model="generalAttachments"
+          context="root"
+          confirm-delete
+          :visible-count="Infinity"
+        />
+      </WellLabeledField>
     </section>
   </div>
 </template>

@@ -21,6 +21,13 @@ describe('applyRenderLocale', () => {
     expect(result.labels.typeLabels).toEqual(
       INTERACTIVE_RENDER_CONFIG.labels.typeLabels,
     );
+    expect(result.columnHeaders).toEqual(
+      INTERACTIVE_RENDER_CONFIG.columnHeaders,
+    );
+    expect(result.labels.continuation).toEqual(
+      INTERACTIVE_RENDER_CONFIG.labels.continuation,
+    );
+    expect(result.overlap).toEqual(INTERACTIVE_RENDER_CONFIG.overlap);
   });
 
   it('resolves every label-bearing field to English, leaving everything else unchanged', () => {
@@ -33,6 +40,12 @@ describe('applyRenderLocale', () => {
     expect(result.tooltipLabels.common.diameter).toBe('Diameter:');
     expect(result.labels.typeLabels?.fractureWater).toBe('open fracture');
     expect(result.labels.typeLabels?.caveWater).toBe('wet cave');
+    expect(result.columnHeaders.labels.depth).toBe('DEPTH');
+    expect(result.labels.continuation.prefix).toBe('continued');
+    expect(result.overlap.label).toBe('{range} repeated from previous page');
+    expect(result.columnHeaders.active).toBe(
+      INTERACTIVE_RENDER_CONFIG.columnHeaders.active,
+    );
 
     // Unrelated fields untouched.
     expect(result.zoom).toBe(INTERACTIVE_RENDER_CONFIG.zoom);

@@ -11,11 +11,20 @@ import type {
   Fracture,
   HoleFill,
   Lithology,
+  PumpInstallation,
   Reduction,
   SurfaceCase,
   Units,
   WellCase,
   WellScreen,
+} from '@welldot/core';
+import {
+  CEMENT_PAD_TYPES,
+  CENTRALIZER_TYPES,
+  CONSTRUCTION_MATERIALS,
+  SCREEN_SLOT_TYPES,
+  getVocabLabel,
+  powerFromCanonical,
 } from '@welldot/core';
 import { formatNumber } from '@welldot/utils';
 import type {
@@ -80,6 +89,9 @@ export const populateTooltips = (
     return cached.tooltips;
   }
 
+  const material = (value: string) =>
+    getVocabLabel(CONSTRUCTION_MATERIALS, value, locale);
+
   const tipsText = {
     geology: (_: unknown, d: Lithology) => `
         <span class="${customClasses.tooltip.title}">${labels.geology.title}</span>
@@ -112,14 +124,15 @@ export const populateTooltips = (
               <span class="${customClasses.tooltip.secondaryInfo}">
                 <strong>${labels.common.diameter}</strong> ${esc(formatDiameter(d.diameter, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}
               </span>
-              <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(d.type)}</span>
+              <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(material(d.type))}</span>
           `,
     wellScreen: (_: unknown, d: WellScreen) => `
           <span class="${customClasses.tooltip.title}">${labels.wellScreen.title}</span>
               <span class="${customClasses.tooltip.primaryInfo}">${labels.common.from} ${esc(formatLength(d.from, units.length, locale))} ${esc(getLengthUnit(units.length))} ${labels.common.to} ${esc(formatLength(d.to, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>
               <span class="${customClasses.tooltip.secondaryInfo}">
                 <strong>${labels.common.diameter}</strong> ${esc(formatDiameter(d.diameter, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}</span>
-              <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(d.type)}</span>
+              <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.wellScreen.material}</strong> ${esc(material(d.type))}</span>
+              ${d.slot_type ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.wellScreen.slotType}</strong> ${esc(getVocabLabel(SCREEN_SLOT_TYPES, d.slot_type, locale))}</span>` : ''}
               <span class="${customClasses.tooltip.secondaryInfo}">
                 <strong>${labels.wellScreen.slot}</strong> ${esc(formatNumber(d.screen_slot, { maximumFractionDigits: 2, locale }))} mm
               </span>
@@ -130,17 +143,30 @@ export const populateTooltips = (
               <span class="${customClasses.tooltip.secondaryInfo}">
                 <strong>${labels.common.diameter}</strong> ${esc(formatDiameter(d.diam_from, units.diameter, locale))} → ${esc(formatDiameter(d.diam_to, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}
               </span>
-              <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(d.type)}</span>
+              <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(material(d.type))}</span>
           `,
     centralizer: (_: unknown, d: Centralizer & { depth: number }) => `
           <span class="${customClasses.tooltip.title}">${labels.centralizer.title}</span>
           <span class="${customClasses.tooltip.primaryInfo}"><strong>${labels.centralizer.depth}</strong> ${esc(formatLength(d.depth, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>
           ${d.from !== d.to ? `<span class="${customClasses.tooltip.secondaryInfo}">${labels.common.from} ${esc(formatLength(d.from, units.length, locale))} ${esc(getLengthUnit(units.length))} ${labels.common.to} ${esc(formatLength(d.to, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>` : ''}
           ${d.spacing ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.centralizer.spacing}</strong> ${esc(formatLength(d.spacing, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>` : ''}
-          <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(d.type)}</span>
+          <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.type}</strong> ${esc(getVocabLabel(CENTRALIZER_TYPES, d.type, locale))}</span>
           ${d.diameter ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.diameter}</strong> ${esc(formatDiameter(d.diameter, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}</span>` : ''}
           ${d.description ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.description}</strong> ${esc(d.description)}</span>` : ''}
         `,
+    pump: (_: unknown, d: PumpInstallation) => {
+      const typeLabel =
+        (labels.pump as Record<string, string>)[`type_${d.type}`] ?? d.type;
+      const model = [d.manufacturer, d.model].filter(Boolean).join(' ');
+      return `
+          <span class="${customClasses.tooltip.title}">${labels.pump.title}</span>
+          <span class="${customClasses.tooltip.primaryInfo}">${esc(typeLabel)}</span>
+          ${d.intake_depth !== undefined ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.pump.intakeDepth}</strong> ${esc(formatLength(d.intake_depth, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>` : ''}
+          ${model ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.pump.model}</strong> ${esc(model)}</span>` : ''}
+          ${d.rated_power !== undefined ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.pump.power}</strong> ${esc(formatNumber(powerFromCanonical(d.rated_power, units.power ?? 'kW'), { maximumFractionDigits: 2, locale }))} ${esc(units.power ?? 'kW')}</span>` : ''}
+          ${d.riser_diameter !== undefined ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.pump.riser}</strong> ${esc(formatDiameter(d.riser_diameter, units.diameter, locale))} ${esc(getDiameterUnit(units.diameter, locale))}${d.riser_material ? ` · ${esc(material(d.riser_material))}` : ''}</span>` : ''}
+        `;
+    },
     conflict: (_: unknown, d: { from: number; to: number }) => `
           <span class="${customClasses.tooltip.title}">${labels.conflict.title}</span>
           <span class="${customClasses.tooltip.primaryInfo}">${labels.common.from} ${esc(formatLength(d.from, units.length, locale))} ${esc(getLengthUnit(units.length))} ${labels.common.to} ${esc(formatLength(d.to, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>
@@ -153,14 +179,14 @@ export const populateTooltips = (
           <span class="${customClasses.tooltip.title}">${title}</span>
           <span class="${customClasses.tooltip.primaryInfo}"><strong>${labels.fracture.depth}</strong> ${esc(formatLength(d.depth, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>
           ${d.water_intake ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.waterIntake}</strong> ${esc(formatLength(d.depth, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>` : ''}
-          <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.dip}</strong> ${esc(d.dip)}°</span>
-          <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.azimuth}</strong> ${esc(d.azimuth)}°</span>
+          ${typeof d.dip === 'number' ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.dip}</strong> ${esc(d.dip)}°</span>` : ''}
+          ${typeof d.azimuth === 'number' ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.fracture.azimuth}</strong> ${esc(d.azimuth)}°</span>` : ''}
           ${d.description ? `<span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.common.description}</strong> ${esc(d.description)}</span>` : ''}
         `;
     },
     cementPad: (_: unknown, d: CementPad) => `
           <span class="${customClasses.tooltip.title}">${labels.cementPad.title}</span>
-          <span class="${customClasses.tooltip.primaryInfo}">${esc(d.type)}</span>
+          <span class="${customClasses.tooltip.primaryInfo}">${esc(getVocabLabel(CEMENT_PAD_TYPES, d.type, locale))}</span>
           <span class="${customClasses.tooltip.secondaryInfo}"><strong>${labels.cementPad.thickness}</strong>
           ${esc(formatLength(d.thickness, units.length, locale))} ${esc(getLengthUnit(units.length))}</span>
           <span class="${customClasses.tooltip.secondaryInfo}">

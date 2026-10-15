@@ -1,6 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import type { PwaModuleOptions } from '@vite-pwa/nuxt';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -28,10 +28,7 @@ export default defineNuxtConfig({
 
   css: ['@/assets/styles/main.css'],
 
-  components: [
-    { path: '~/components/DataGrid', pathPrefix: false },
-    { path: '~/components', pathPrefix: true, ignore: ['**/DataGrid/**'] },
-  ],
+  components: [{ path: '~/components', pathPrefix: true }],
 
   pages: {
     pattern: ['**/*.vue', '!**/_*/**'],
@@ -50,6 +47,7 @@ export default defineNuxtConfig({
     '@nuxtjs/seo',
     '@vite-pwa/nuxt',
     '@vueuse/nuxt',
+    '@welldot/vue/nuxt',
   ],
 
   i18n: {
@@ -99,11 +97,6 @@ export default defineNuxtConfig({
 
   // @ts-ignore
   primevue: {
-    importPT: {
-      as: 'customPt',
-      from: path.resolve(__dirname, './app/theme/customPt.js'),
-    },
-    importTheme: { from: '@/theme/customTheme.ts' },
     autoImport: true,
     components: {
       include: ['*'],
@@ -139,7 +132,15 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      include: ['@vueuse/core', 'd3', 'd3-tip', 'textures', 'sanitize-html'],
+      include: [
+        '@vueuse/core',
+        'd3',
+        'd3-tip',
+        'textures',
+        'sanitize-html',
+        // CJS browser build lazy-loaded by @welldot/pdf.
+        '@welldot/pdf > pdfmake/build/pdfmake',
+      ],
     },
   },
 
@@ -199,6 +200,17 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'cloudflare-module',
+    // Example wells from @welldot/core, served as static files at /examples/*
+    // (index.json + *.well). The editor offers them when it is empty.
+    publicAssets: [
+      {
+        dir: fileURLToPath(
+          new URL('../../packages/core/examples', import.meta.url),
+        ),
+        baseURL: '/examples',
+        maxAge: 60 * 60 * 24,
+      },
+    ],
     experimental: { tasks: true },
     // Cron string must match wrangler.json's `triggers.crons` exactly.
     scheduledTasks: {

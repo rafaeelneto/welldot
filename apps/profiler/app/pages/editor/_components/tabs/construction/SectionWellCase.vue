@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import type { Well } from '@welldot/core';
-import type { WellGridColumn } from '~/components/DataGrid/types';
-import { materialOptions } from '~/utils/materialOptions';
+import { CONSTRUCTION_MATERIALS } from '@welldot/core';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 
-const wellCaseTypeOptions = computed(() => materialOptions(t));
+const wellCaseTypeOptions = computed(() =>
+  vocabOptions(CONSTRUCTION_MATERIALS),
+);
 
 const wellCaseColumns = computed<WellGridColumn[]>(() => [
   {
@@ -44,7 +47,7 @@ function addWellCase() {
 }
 
 function deleteWellCase(index: number) {
-  profileStore.well.well_case.splice(index, 1);
+  profileStore.removeWellFeature('well_case', index);
 }
 
 function updateWellCase(index: number, prop: string, value: unknown) {
@@ -80,6 +83,12 @@ function reorderWellCase(from: number, to: number) {
       :rows="[...profileStore.well.well_case]"
       :columns="wellCaseColumns"
       :add-label="t('editor.construction.wellCase.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
+      }"
       @add="addWellCase"
       @delete="deleteWellCase"
       @change="updateWellCase"

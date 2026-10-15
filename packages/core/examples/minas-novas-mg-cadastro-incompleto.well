@@ -1,0 +1,157 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3100020670"
+  },
+  "well_type": "tubular",
+  "name": "Poço C-03 — Comunidade Forquilha (Minas Novas/MG)",
+  "well_driller": "Engeplan Poços Ltda.",
+  "construction_date": "2009-09-23",
+  "obs": "Cadastro incompleto: ficha de perfuração sem teste de bombeamento, sem análise de água e sem nível estático. Situação atual desconhecida.",
+  "well_id": [
+    {
+      "authority": "Prefeitura",
+      "id": "C-03",
+      "primary": true
+    }
+  ],
+  "location": {
+    "lat": -17.33306,
+    "lng": -42.48694,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.001,
+      "lng_precision": 0.001,
+      "original_crs": "EPSG:31983"
+    }
+  },
+  "well_depth": 210,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 48,
+      "diameter": 254,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 48,
+      "to": 50.9,
+      "diameter": 203,
+      "drilling_method": "air_hammer"
+    },
+    {
+      "from": 50.9,
+      "to": 210,
+      "diameter": 152,
+      "drilling_method": "air_hammer"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.6,
+      "to": 45.2,
+      "type": "carbon_steel",
+      "diameter": 168
+    },
+    {
+      "from": 47.7,
+      "to": 50.9,
+      "type": "carbon_steel",
+      "diameter": 168
+    }
+  ],
+  "reduction": [],
+  "well_screen": [
+    {
+      "from": 45.2,
+      "to": 47.7,
+      "type": "galvanized_steel",
+      "diameter": 168,
+      "screen_slot": 1,
+      "slot_type": "nold"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 15,
+      "type": "seal",
+      "diameter": 254,
+      "description": "Cimentação"
+    },
+    {
+      "from": 15,
+      "to": 48,
+      "type": "gravel_pack",
+      "diameter": 254,
+      "description": "Brita"
+    },
+    {
+      "from": 48,
+      "to": 50.9,
+      "type": "gravel_pack",
+      "diameter": 203,
+      "description": "Brita"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 8,
+      "description": "Material areno-argiloso cinza, areia média a grossa arredondada",
+      "color": "#a8a29a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Cobertura",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 8,
+      "to": 48,
+      "description": "Material argiloso cinza com grânulos de quartzo",
+      "color": "#9e9a92",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Manto de alteração",
+      "aquifer_unit": "Aquífero intersticial (manto de alteração)"
+    },
+    {
+      "from": 48,
+      "to": 210,
+      "description": "Xisto mesocrático com mica e quartzo, xistosidade marcada, fragmentação grossa",
+      "color": "#7c8478",
+      "texture": {
+        "code": 705,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Macaúbas",
+      "aquifer_unit": "Aquífero fissural"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "2009-09-23T17:00:00-03:00",
+      "category": "event",
+      "description": "Perfuração concluída (dados da ficha do perfurador).",
+      "author": "Engeplan Poços Ltda."
+    },
+    {
+      "id": "log-02",
+      "datetime": "2026-02-10T10:00:00-03:00",
+      "category": "event",
+      "description": "Registro importado de planilha da prefeitura; teste de vazão e análise de água não localizados.",
+      "author": "Prefeitura — Setor de Meio Ambiente"
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import SettingsModal from '~/components/SettingsModal.vue';
 import ExportPdfDialog from '~/components/ExportPdfDialog.vue';
 import AiImporterDialog from '~/components/AiImporterDialog.vue';
 import ToolsMenu, { type ToolItem } from './ToolsMenu.vue';
+import NewWellDialog from './new-well/NewWellDialog.vue';
 
 const props = defineProps<{ mobileView: 'profile' | 'data' }>();
 const emit = defineEmits<{
@@ -14,7 +15,7 @@ const { t } = useI18n();
 const localePath = useLocalePath();
 const store = useProfileStore();
 const { save, saveAs } = useProfileExport();
-const persistence = useFilePersistence();
+const newWell = useNewWellDialog();
 
 const viewport = useViewport();
 const isMobile = computed(() => viewport.isLessThan('lg'));
@@ -30,43 +31,7 @@ const totalLayers = computed(
 );
 
 // ── Open ────────────────────────────────────────────────────────────
-const fileInputRef = ref<HTMLInputElement | null>(null);
-const confirm = useConfirm();
-
-async function _doOpenFile() {
-  if (persistence.hasFileSystemAccess) {
-    const text = await persistence.open();
-    if (text !== null) store.loadWell(text);
-  } else {
-    fileInputRef.value?.click();
-  }
-}
-
-async function openFile() {
-  if (store.isDirty && hasWell.value) {
-    confirm.require({
-      icon: 'ph:warning-duotone',
-      header: t('editor.confirmOpen.header'),
-      message: t('editor.confirmOpen.message'),
-      acceptLabel: t('editor.confirmOpen.accept'),
-      rejectLabel: t('editor.confirmOpen.reject'),
-      defaultFocus: 'reject',
-      rejectProps: { text: true, severity: 'secondary' },
-      accept: () => _doOpenFile(),
-    });
-  } else {
-    await _doOpenFile();
-  }
-}
-
-async function onFileSelected(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-  persistence.clearHandle();
-  store.loadWell(await file.text());
-  input.value = '';
-}
+const { openFile } = useOpenWellFile();
 
 // ── Save / Save As ───────────────────────────────────────────────────
 async function saveFile() {
@@ -77,25 +42,17 @@ async function saveFileAs() {
   await saveAs();
 }
 
-// ── Clear ────────────────────────────────────────────────────────────
-function clearWell() {
-  confirm.require({
-    icon: 'ph:warning-duotone',
-    header: t('editor.confirmClear.header'),
-    message: t('editor.confirmClear.message'),
-    acceptLabel: t('editor.confirmClear.accept'),
-    rejectLabel: t('editor.confirmClear.reject'),
-    acceptProps: { severity: 'danger' },
-    rejectProps: { text: true, severity: 'secondary' },
-    defaultFocus: 'reject',
-    accept: () => store.clear(),
-  });
-}
-
 // ── Keyboard shortcuts ───────────────────────────────────────────────
 function _onKeyDown(e: KeyboardEvent) {
   const mod = e.metaKey || e.ctrlKey;
-  if (!mod || !hasWell.value) return;
+  if (!mod) return;
+  // The new well dialog handles its own ⌘O and shows load errors.
+  if (e.key === 'o' && !e.shiftKey && !newWell.visible.value) {
+    e.preventDefault();
+    openFile();
+    return;
+  }
+  if (!hasWell.value) return;
   if (e.key === 's' && e.shiftKey) {
     e.preventDefault();
     saveFileAs();
@@ -135,6 +92,11 @@ const toolsMenuVisible = ref(false);
 
 const toolItems = computed<ToolItem[]>(() => [
   {
+    label: t('editor.newWell.button'),
+    icon: 'ph:file-plus-duotone',
+    onClick: () => newWell.open(),
+  },
+  {
     label: t('editor.save'),
     icon: 'ph:floppy-disk-duotone',
     disabled: !hasWell.value,
@@ -151,6 +113,12 @@ const toolItems = computed<ToolItem[]>(() => [
     label: t('editor.open'),
     icon: 'ph:folder-open-duotone',
     onClick: openFile,
+  },
+  {
+    label: t('editor.examples.open'),
+    icon: 'ph:books-duotone',
+    alwaysInMenu: true,
+    onClick: () => newWell.open('examples'),
   },
   {
     label: t('editor.share'),
@@ -177,16 +145,8 @@ const toolItems = computed<ToolItem[]>(() => [
   {
     label: t('editor.importSiagas'),
     icon: 'ph:download-simple-duotone',
-    comingSoon: true,
     alwaysInMenu: true,
-    disabled: true,
-  },
-  {
-    label: t('editor.clearWell'),
-    icon: 'welldot:delete-well',
-    disabled: !hasWell.value,
-    alwaysInMenu: true,
-    onClick: clearWell,
+    onClick: () => newWell.open('siagas'),
   },
 ]);
 
@@ -278,6 +238,17 @@ const viewOptions = computed(() => [
 
     <!-- Action buttons -->
     <div class="flex items-center gap-0.5">
+      <Button
+        v-tooltip.bottom="t('editor.newWell.button')"
+        :aria-label="t('editor.newWell.button')"
+        unstyled
+        :pt="actionBtnPt"
+        @click="newWell.open()"
+      >
+        <template #icon>
+          <Icon name="ph:file-plus-duotone" class="size-4 shrink-0" />
+        </template>
+      </Button>
       <Button
         v-tooltip.bottom="t('editor.aiImporter.title')"
         :aria-label="t('editor.aiImporter.title')"
@@ -450,21 +421,15 @@ const viewOptions = computed(() => [
   <!-- ─── AI importer dialog ────────────────────────────────────────── -->
   <AiImporterDialog v-if="aiImporterVisible" v-model="aiImporterVisible" />
 
+  <!-- ─── New well dialog (blank, examples, open, paste) ────────────── -->
+  <ClientOnly>
+    <NewWellDialog />
+  </ClientOnly>
+
   <!-- ─── Tools menu ────────────────────────────────────────────────── -->
   <ToolsMenu
     v-if="toolsMenuVisible"
     v-model="toolsMenuVisible"
     :items="isMobile ? toolItems : extraToolItems"
   />
-
-  <!-- ─── Hidden file input ─────────────────────────────────────────── -->
-  <ClientOnly>
-    <input
-      ref="fileInputRef"
-      type="file"
-      accept=".well,.json"
-      class="sr-only"
-      @change="onFileSelected"
-    />
-  </ClientOnly>
 </template>

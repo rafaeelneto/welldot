@@ -12,6 +12,7 @@ import ZoomControls from './ZoomControls.vue';
 const { t, locale } = useI18n();
 const profileStore = useProfileStore();
 const uiStore = useUiStore();
+const newWell = useNewWellDialog();
 
 const svgId = `well-canvas-${Math.random().toString(36).slice(2, 8)}`;
 const containerRef = ref<HTMLElement | null>(null);
@@ -85,7 +86,11 @@ async function initRenderer() {
   const renderer = new WellRenderer(
     [{ selector: `#${svgId}`, width, height, margins: MARGINS }],
     {
-      units: { length: uiStore.lengthUnit, diameter: uiStore.diameterUnit },
+      units: {
+        length: uiStore.lengthUnit,
+        diameter: uiStore.diameterUnit,
+        power: uiStore.powerUnit,
+      },
       locale: locale.value as 'en' | 'pt',
       renderConfig: applyRenderLocale(
         INTERACTIVE_RENDER_CONFIG,
@@ -110,9 +115,17 @@ async function initRenderer() {
 function redraw() {
   if (!wellRenderer) return;
   const profile = well.value;
-  if (!profile || isWellEmpty(profile)) return;
+  // Cleared or empty well: wipe the previous drawing under the empty overlay.
+  if (!profile || isWellEmpty(profile)) {
+    wellRenderer.clear();
+    return;
+  }
   wellRenderer.draw(profile, {
-    units: { length: uiStore.lengthUnit, diameter: uiStore.diameterUnit },
+    units: {
+      length: uiStore.lengthUnit,
+      diameter: uiStore.diameterUnit,
+      power: uiStore.powerUnit,
+    },
     locale: locale.value as 'en' | 'pt',
   });
 }
@@ -146,8 +159,13 @@ async function reload() {
 watch(well, redraw);
 // Unit changes do a full reinit (same path as the reload button), not just
 // redraw(), so anything the constructor's `units` option seeds is rebuilt too.
-watch([() => uiStore.lengthUnit, () => uiStore.diameterUnit], () =>
-  reinitAndRedraw(),
+watch(
+  [
+    () => uiStore.lengthUnit,
+    () => uiStore.diameterUnit,
+    () => uiStore.powerUnit,
+  ],
+  () => reinitAndRedraw(),
 );
 // Locale changes need a full reinit, not just redraw() — renderConfig's
 // translated strings (construction labels, tooltip text, legend, type words)
@@ -180,13 +198,47 @@ onUnmounted(() => {
         </template>
       </ClientOnly>
 
+      <!-- Empty well: the "New well" dialog offers the ways to start -->
       <div
         v-if="isEmpty"
-        class="absolute inset-0 flex items-center justify-center pointer-events-none"
+        class="absolute inset-0 flex items-center justify-center px-6 py-8"
       >
-        <span class="font-mono text-xs text-content-400">{{
-          t('editor.canvas.empty')
-        }}</span>
+        <div
+          class="w-full max-w-xs flex flex-col items-center gap-4 text-center"
+        >
+          <div class="flex flex-col gap-1">
+            <span class="font-mono text-xs text-content-400">{{
+              t('editor.canvas.empty')
+            }}</span>
+            <h3
+              class="m-0 font-serif text-xl font-medium tracking-tight text-content-0"
+            >
+              {{ t('editor.canvas.startTitle') }}
+            </h3>
+          </div>
+          <div class="flex flex-wrap justify-center gap-2">
+            <Button
+              :label="t('editor.canvas.newWell')"
+              size="small"
+              @click="newWell.open()"
+            >
+              <template #icon>
+                <Icon name="ph:file-plus-duotone" class="size-4 shrink-0" />
+              </template>
+            </Button>
+            <Button
+              :label="t('editor.examples.open')"
+              size="small"
+              severity="secondary"
+              outlined
+              @click="newWell.open('examples')"
+            >
+              <template #icon>
+                <Icon name="ph:books-duotone" class="size-4 shrink-0" />
+              </template>
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
 

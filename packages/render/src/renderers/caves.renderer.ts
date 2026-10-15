@@ -17,11 +17,10 @@ import {
  * irregular and wavy rather than straight horizontal lines. Two independent
  * seeded PRNGs ensure the top and bottom contacts are visually uncorrelated.
  * Geometry is fully deterministic via those seeded PRNGs, so every redraw
- * (including zoom) produces identical shapes. Returns early if `data` is empty.
+ * (including zoom) produces identical shapes. An empty `data` removes the
+ * caves already drawn.
  */
 export function drawCaves(ctx: DrawContext, data: Cave[]): void {
-  if (!data.length) return;
-
   const {
     groups: { cavesGroup },
     geoXLeft,

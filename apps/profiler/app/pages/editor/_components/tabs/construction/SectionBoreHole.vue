@@ -1,37 +1,17 @@
 <script setup lang="ts">
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import { DRILLING_METHODS } from '@welldot/core';
+import type { WellGridColumn } from '@welldot/vue/grid';
 import { calculatedWellDepth } from '~/utils/wellDepth';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 const { unit: lengthUnit, toDisplay } = useUnitDisplay('length');
 const { formatNumber } = useNumberFormat();
 
-// Canonical values match the recommended `drilling_method` keys in the
-// .well v2 spec (docs/spec/v2/object-schemas.md) — not an enforced
-// enumeration, just suggestions. Any free text is stored as-is.
-const drillingMethodOptions = computed(() => [
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.rotary'),
-    value: 'rotary',
-  },
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.percussion'),
-    value: 'percussion',
-  },
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.cableTool'),
-    value: 'cable_tool',
-  },
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.auger'),
-    value: 'auger',
-  },
-  {
-    label: t('editor.construction.boreHole.drillingMethodOptions.airHammer'),
-    value: 'air_hammer',
-  },
-]);
+// Recommended `drilling_method` values (core vocabulary) — suggestions only;
+// any free text is stored as-is.
+const drillingMethodOptions = computed(() => vocabOptions(DRILLING_METHODS));
 
 const boreHoleColumns = computed<WellGridColumn[]>(() => [
   {
@@ -69,7 +49,7 @@ function addBoreHole() {
 }
 
 function deleteBoreHole(index: number) {
-  profileStore.well.bore_hole.splice(index, 1);
+  profileStore.removeWellFeature('bore_hole', index);
 }
 
 function updateBoreHole(index: number, prop: string, value: unknown) {
@@ -114,13 +94,19 @@ function syncWellDepth() {
       :rows="[...profileStore.well.bore_hole]"
       :columns="boreHoleColumns"
       :add-label="t('editor.construction.boreHole.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
+      }"
       @add="addBoreHole"
       @delete="deleteBoreHole"
       @change="updateBoreHole"
       @reorder="reorderBoreHole"
     />
-    <LabeledField :label="t('editor.construction.boreHole.wellDepth')">
-      <UnitInput
+    <WellLabeledField :label="t('editor.construction.boreHole.wellDepth')">
+      <WellUnitInput
         unit-type="length"
         :model-value="profileStore.well.well_depth ?? null"
         :placeholder="calculatedDepthText"
@@ -146,6 +132,6 @@ function syncWellDepth() {
           @click="syncWellDepth"
         />
       </div>
-    </LabeledField>
+    </WellLabeledField>
   </section>
 </template>

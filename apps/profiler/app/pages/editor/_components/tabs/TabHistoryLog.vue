@@ -1,11 +1,26 @@
 <script setup lang="ts">
 import type { Attachment, HistoryLogEntry } from '@welldot/core';
+import { MAINTENANCE_TYPES } from '@welldot/core';
+import {
+  getOperationWarnings,
+  type OperationWarningCode,
+} from '@welldot/utils';
 import { useConfirm } from 'primevue/useconfirm';
-import AppChip from '~/components/AppChip.vue';
-import AttachmentDialog from './historyLog/AttachmentDialog.vue';
+import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import RecordCard, {
+  type RecordAction,
+} from '~/components/records/RecordCard.vue';
+import {
+  WELL_STATUS_SEVERITY,
+  meterLabel,
+  pumpInstallationLabel,
+  resolveWellStatusLabel,
+} from '~/utils/operationVocab';
+import { sampleLabel } from '~/utils/waterQualityVocab';
 import LogEntryDialog from './historyLog/LogEntryDialog.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { vocabLabel } = useVocab();
 const profileStore = useProfileStore();
 const confirm = useConfirm();
 const {
@@ -16,23 +31,13 @@ const {
   severityLabel,
   severityToChip,
 } = useHistoryLogCategories();
-const {
-  attachmentIcon,
-  attachmentLabel,
-  copiedAttachmentId,
-  copyAttachmentPath,
-} = useAttachmentDisplay();
+const { eventTypeLabel } = useHydrodynamicEventTypes();
 
 // ─── Dialog bindings — the dialogs edit a copy and hand it back on save ──────
 
 /** Entry passed to the entry dialog; null opens it in "add" mode. */
 const entryDraft = ref<HistoryLogEntry | null>(null);
 const entryDialogVisible = ref(false);
-
-/** Attachment passed to the file dialog, plus the entry it belongs to. */
-const attachmentDraft = ref<Attachment | null>(null);
-const attachmentDialogVisible = ref(false);
-const attachmentTargetEntryId = ref<string>('');
 
 function addEntry() {
   entryDraft.value = null;
@@ -42,18 +47,6 @@ function addEntry() {
 function editEntry(entry: HistoryLogEntry) {
   entryDraft.value = entry;
   entryDialogVisible.value = true;
-}
-
-function addAttachment(entryId: string) {
-  attachmentTargetEntryId.value = entryId;
-  attachmentDraft.value = null;
-  attachmentDialogVisible.value = true;
-}
-
-function editAttachment(entryId: string, attachment: Attachment) {
-  attachmentTargetEntryId.value = entryId;
-  attachmentDraft.value = attachment;
-  attachmentDialogVisible.value = true;
 }
 
 // ─── Filter / search ──────────────────────────────────────────────────────────
@@ -88,6 +81,82 @@ function toggleCategory(cat: string) {
   activeCategory.value = activeCategory.value === cat ? null : cat;
 }
 
+/**
+ * Linked events and samples (`hydrodynamic_event_ids` / `sample_ids`, .well
+ * v2.3), any category; unresolved ids are shown raw.
+ */
+function linksRef(entry: HistoryLogEntry): string | null {
+  const well = profileStore.well;
+  const events = (entry.hydrodynamic_event_ids ?? []).map(id => {
+    const event = well.hydrodynamic_events?.find(e => e.id === id);
+    return event
+      ? `${eventTypeLabel(event.type)} · ${formatDate(event.datetime, 'dd/MM/yyyy')}`
+      : id;
+  });
+  const samples = (entry.sample_ids ?? []).map(id => {
+    const sample = well.water_samples?.find(s => s.id === id);
+    return sample ? sampleLabel(sample, locale.value) : id;
+  });
+  return [...events, ...samples].join(' · ') || null;
+}
+
+// ─── maintenance / status_change (.well v2.3) ────────────────────────────────
+
+/** "Pump service · Submersible Acme · 01/02/2024 · Meter …". */
+function maintenanceRef(entry: HistoryLogEntry): string | null {
+  if (entry.category !== 'maintenance') return null;
+  const well = profileStore.well;
+  const pump = entry.pump_installation_id
+    ? well.pump_installations?.find(p => p.id === entry.pump_installation_id)
+    : undefined;
+  const meter = entry.meter_id
+    ? well.meters?.find(m => m.id === entry.meter_id)
+    : undefined;
+  return (
+    [
+      entry.maintenance_type
+        ? vocabLabel(MAINTENANCE_TYPES, entry.maintenance_type)
+        : null,
+      pump
+        ? pumpInstallationLabel(pump, locale.value)
+        : entry.pump_installation_id,
+      meter ? meterLabel(meter, t, locale.value) : entry.meter_id,
+    ]
+      .filter(Boolean)
+      .join(' · ') || null
+  );
+}
+
+function statusSeverity(status: string): string {
+  return (
+    WELL_STATUS_SEVERITY[status as keyof typeof WELL_STATUS_SEVERITY] ??
+    'secondary'
+  );
+}
+
+const LOG_WARNING_CODES: readonly OperationWarningCode[] = [
+  'log_category_field_mismatch',
+  'log_reference_unresolved',
+  'log_after_decommission',
+  'missing_maintenance_type',
+  'missing_status',
+];
+
+/** Warning messages per log entry id. */
+const warningsById = computed(() => {
+  const map = new Map<string, string[]>();
+  for (const w of getOperationWarnings(profileStore.well)) {
+    if (!LOG_WARNING_CODES.includes(w.code)) continue;
+    for (const id of w.ids) {
+      const list = map.get(id) ?? [];
+      const msg = t(`editor.operation.warnings.${w.code}`);
+      if (!list.includes(msg)) list.push(msg);
+      map.set(id, list);
+    }
+  }
+  return map;
+});
+
 // ─── Description expand ───────────────────────────────────────────────────────
 
 const expandedDescriptions = ref(new Set<string>());
@@ -103,26 +172,6 @@ function toggleDescription(id: string) {
 
 function isDescriptionExpanded(id: string) {
   return expandedDescriptions.value.has(id);
-}
-
-// ─── Attachment expand ────────────────────────────────────────────────────────
-
-const VISIBLE_ATTACHMENTS = 3;
-const expandedAttachments = ref(new Set<string>());
-
-function toggleAttachments(id: string) {
-  if (expandedAttachments.value.has(id)) {
-    expandedAttachments.value.delete(id);
-  } else {
-    expandedAttachments.value.add(id);
-  }
-  expandedAttachments.value = new Set(expandedAttachments.value);
-}
-
-function visibleAttachments(entry: HistoryLogEntry): Attachment[] {
-  const list = entry.attachments ?? [];
-  if (expandedAttachments.value.has(entry.id)) return list;
-  return list.slice(0, VISIBLE_ATTACHMENTS);
 }
 
 // ─── Entries ──────────────────────────────────────────────────────────────────
@@ -157,40 +206,12 @@ function deleteEntry(id: string) {
 
 // ─── Attachments on saved entries ─────────────────────────────────────────────
 
-function upsertStoredAttachment(attachment: Attachment) {
+function setAttachments(entryId: string, list: Attachment[]) {
   profileStore.updateWell(draft => {
-    const entry = draft.history_logs?.find(
-      e => e.id === attachmentTargetEntryId.value,
+    assignAttachments(
+      draft.history_logs?.find(e => e.id === entryId),
+      list,
     );
-    if (!entry) return;
-    if (!entry.attachments) entry.attachments = [];
-
-    const idx = entry.attachments.findIndex(a => a.id === attachment.id);
-    if (idx === -1) entry.attachments.push(attachment);
-    else entry.attachments[idx] = attachment;
-  });
-}
-
-function deleteAttachment(entryId: string, attachmentId: string) {
-  confirm.require({
-    icon: 'ph:warning-duotone',
-    header: t('editor.historyLog.logs.deleteAttachment'),
-    message: t('editor.historyLog.logs.deleteAttachment'),
-    acceptLabel: t('editor.confirmClear.accept'),
-    rejectLabel: t('editor.confirmClear.reject'),
-    acceptProps: { severity: 'danger' },
-    rejectProps: { text: true, severity: 'secondary' },
-    defaultFocus: 'reject',
-    accept: () => {
-      profileStore.updateWell(draft => {
-        const entry = draft.history_logs?.find(e => e.id === entryId);
-        if (entry) {
-          entry.attachments = entry.attachments?.filter(
-            a => a.id !== attachmentId,
-          );
-        }
-      });
-    },
   });
 }
 
@@ -202,6 +223,35 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
     new Date(entry.updated_at).getTime() - new Date(entry.datetime).getTime(),
   );
   return diff > 60_000;
+}
+
+function entryMeta(entry: HistoryLogEntry): (string | false)[] {
+  return [
+    !!entry.author && `${t('editor.record.by')} ${entry.author}`,
+    showEditedAt(entry) &&
+      t('editor.historyLog.logs.editedAt', {
+        date: formatDate(entry.updated_at, 'dd/MM/yyyy'),
+      }),
+  ];
+}
+
+function entryActions(entry: HistoryLogEntry): RecordAction[] {
+  return [
+    {
+      key: 'edit',
+      label: t('editor.edit'),
+      ariaLabel: t('editor.historyLog.logs.editEvent'),
+      icon: 'ph:pencil-simple-duotone',
+      onClick: () => editEntry(entry),
+    },
+    {
+      key: 'delete',
+      label: t('editor.historyLog.logs.deleteConfirm'),
+      icon: 'ph:x-bold',
+      severity: 'danger',
+      onClick: () => deleteEntry(entry.id),
+    },
+  ];
 }
 </script>
 
@@ -253,7 +303,7 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
 
     <!-- ── Category filter chips ──────────────────────────────────────────── -->
     <div class="flex flex-wrap gap-2">
-      <AppChip
+      <WellChip
         v-for="opt in categoryOptions"
         :key="opt.value"
         :label="opt.label"
@@ -307,14 +357,22 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
         </div>
 
         <!-- card -->
-        <div
-          class="flex-1 rounded-xl border border-surface-200/70 bg-surface-0 px-4 py-3 flex flex-col gap-3"
+        <RecordCard
+          class="flex-1 min-w-0"
+          :date="formatDate(entry.datetime, 'dd/MM/yyyy HH:mm')"
+          :meta="entryMeta(entry)"
+          :actions="entryActions(entry)"
         >
-          <!-- ── header row: tags + date ─────────────────────────────────── -->
-          <div class="flex items-center flex-wrap gap-2">
+          <template #tags>
             <Tag
               :value="categoryLabel(entry.category)"
               :severity="categorySeverity(entry.category)"
+              class="text-[11px]"
+            />
+            <Tag
+              v-if="entry.category === 'status_change' && entry.status"
+              :value="resolveWellStatusLabel(entry.status, t)"
+              :severity="statusSeverity(entry.status)"
               class="text-[11px]"
             />
             <Tag
@@ -323,13 +381,24 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
               :severity="severityToChip(entry.severity)"
               class="text-[11px]"
             />
-            <span class="ml-auto font-mono text-xs text-content-300">
-              {{ formatDate(entry.datetime, 'dd/MM/yyyy HH:mm') }}
-            </span>
-          </div>
+          </template>
 
           <!-- ── description ────────────────────────────────────────────── -->
           <div class="flex flex-col gap-1">
+            <span
+              v-if="maintenanceRef(entry)"
+              class="flex items-center gap-1.5 text-xs text-content-400"
+            >
+              <Icon name="ph:wrench-duotone" class="size-3.5 shrink-0" />
+              {{ maintenanceRef(entry) }}
+            </span>
+            <span
+              v-if="linksRef(entry)"
+              class="flex items-center gap-1.5 text-xs text-content-400"
+            >
+              <Icon name="ph:link-duotone" class="size-3.5 shrink-0" />
+              {{ linksRef(entry) }}
+            </span>
             <p
               class="text-sm leading-relaxed whitespace-pre-line m-0 transition-all"
               :class="{ 'line-clamp-3': !isDescriptionExpanded(entry.id) }"
@@ -350,149 +419,25 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
             </button>
           </div>
 
-          <!-- ── attachments section ────────────────────────────────────── -->
-          <div class="flex flex-col gap-2">
-            <!-- label row -->
-            <div class="flex items-center gap-2">
-              <span
-                class="font-mono text-[10px] tracking-[0.08em] uppercase text-content-400"
-              >
-                {{
-                  t('editor.historyLog.logs.attachments', {
-                    n: (entry.attachments ?? []).length,
-                  })
-                }}
-              </span>
-              <button
-                class="add-attachment-btn"
-                type="button"
-                @click="addAttachment(entry.id)"
-              >
-                <Icon name="ph:plus" class="size-3" />
-                {{ t('editor.historyLog.logs.addAttachment') }}
-              </button>
-            </div>
+          <!-- ── warnings ────────────────────────────────────────────────── -->
+          <Message
+            v-for="msg in warningsById.get(entry.id) ?? []"
+            :key="msg"
+            severity="warn"
+            size="small"
+            variant="simple"
+          >
+            {{ msg }}
+          </Message>
 
-            <!-- thumbnail strip -->
-            <div
-              v-if="(entry.attachments ?? []).length"
-              class="flex flex-wrap gap-2"
-            >
-              <div
-                v-for="att in visibleAttachments(entry)"
-                :key="att.id"
-                class="attachment-thumb"
-              >
-                <Icon
-                  :name="attachmentIcon(att.media_type)"
-                  class="size-5 text-content-300 shrink-0"
-                />
-                <span
-                  class="font-mono text-[10px] text-content-300 truncate flex-1 min-w-0"
-                  :title="att.uri"
-                >
-                  {{ attachmentLabel(att) }}
-                </span>
-                <div class="flex items-center gap-1 shrink-0">
-                  <button
-                    class="thumb-action"
-                    type="button"
-                    :aria-label="t('editor.historyLog.logs.copyPath')"
-                    :title="
-                      copiedAttachmentId === att.id
-                        ? t('editor.historyLog.logs.copied')
-                        : t('editor.historyLog.logs.copyPath')
-                    "
-                    @click="copyAttachmentPath(att)"
-                  >
-                    <Icon
-                      :name="
-                        copiedAttachmentId === att.id
-                          ? 'ph:check-bold'
-                          : 'ph:copy-duotone'
-                      "
-                      class="size-3"
-                    />
-                  </button>
-                  <button
-                    class="thumb-action"
-                    type="button"
-                    :aria-label="t('editor.historyLog.logs.editAttachment')"
-                    @click="editAttachment(entry.id, att)"
-                  >
-                    <Icon name="ph:pencil-simple-duotone" class="size-3" />
-                  </button>
-                  <button
-                    class="thumb-action thumb-action--danger"
-                    type="button"
-                    :aria-label="t('editor.historyLog.logs.deleteAttachment')"
-                    @click="deleteAttachment(entry.id, att.id)"
-                  >
-                    <Icon name="ph:trash-duotone" class="size-3" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- overflow / show more -->
-              <button
-                v-if="(entry.attachments ?? []).length > VISIBLE_ATTACHMENTS"
-                class="attachment-overflow-btn"
-                type="button"
-                @click="toggleAttachments(entry.id)"
-              >
-                <span v-if="!expandedAttachments.has(entry.id)">
-                  +{{ (entry.attachments?.length ?? 0) - VISIBLE_ATTACHMENTS }}
-                  {{ t('editor.historyLog.logs.showMore') }}
-                </span>
-                <span v-else>{{ t('editor.historyLog.logs.showLess') }}</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- ── footer row: author + actions ───────────────────────────── -->
-          <div class="flex items-center gap-2 pt-1 border-t border-surface-100">
-            <div
-              class="flex items-center gap-2 flex-1 text-xs text-content-400"
-            >
-              <span v-if="entry.author">
-                {{ t('editor.historyLog.logs.by') }} {{ entry.author }}
-              </span>
-              <span
-                v-if="showEditedAt(entry)"
-                :class="{ 'before:content-[\'·\'] before:mr-2': entry.author }"
-              >
-                {{
-                  t('editor.historyLog.logs.editedAt', {
-                    date: formatDate(entry.updated_at, 'dd/MM/yyyy'),
-                  })
-                }}
-              </span>
-            </div>
-            <Button
-              severity="secondary"
-              text
-              size="small"
-              :label="t('editor.edit')"
-              :aria-label="t('editor.historyLog.logs.editEvent')"
-              @click="editEntry(entry)"
-            >
-              <template #icon>
-                <Icon name="ph:pencil-simple-duotone" />
-              </template>
-            </Button>
-            <Button
-              severity="danger"
-              text
-              size="small"
-              :aria-label="t('editor.historyLog.logs.deleteConfirm')"
-              @click="deleteEntry(entry.id)"
-            >
-              <template #icon>
-                <Icon name="ph:x-bold" />
-              </template>
-            </Button>
-          </div>
-        </div>
+          <!-- ── attachments ─────────────────────────────────────────────── -->
+          <AttachmentField
+            :model-value="entry.attachments"
+            context="history"
+            confirm-delete
+            @update:model-value="setAttachments(entry.id, $event)"
+          />
+        </RecordCard>
       </div>
     </div>
   </div>
@@ -502,12 +447,6 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
     v-model="entryDraft"
     v-model:visible="entryDialogVisible"
     @save="upsertEntry"
-  />
-  <AttachmentDialog
-    v-if="attachmentDialogVisible"
-    v-model="attachmentDraft"
-    v-model:visible="attachmentDialogVisible"
-    @save="upsertStoredAttachment"
   />
 </template>
 
@@ -567,90 +506,5 @@ function showEditedAt(entry: HistoryLogEntry): boolean {
 .show-more-btn:hover {
   color: var(--color-primary-600);
   text-decoration: underline;
-}
-
-.add-attachment-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px dashed var(--color-surface-300);
-  background: transparent;
-  color: var(--color-content-400);
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-.add-attachment-btn:hover {
-  background: var(--color-surface-50);
-  color: var(--color-content-200);
-  border-color: var(--color-surface-400);
-}
-
-.attachment-thumb {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--color-surface-200);
-  background: var(--color-surface-50);
-  max-width: 200px;
-  min-width: 120px;
-}
-
-.thumb-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 2px;
-  border-radius: 4px;
-  color: var(--color-content-400);
-  cursor: pointer;
-  transition:
-    color 100ms ease,
-    background 100ms ease;
-}
-
-.thumb-action:hover {
-  background: var(--color-surface-100);
-  color: var(--color-content-100);
-}
-
-.thumb-action--danger:hover {
-  background: color-mix(in srgb, var(--color-error-500) 10%, transparent);
-  color: var(--color-error-500);
-}
-
-.attachment-overflow-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px dashed var(--color-surface-300);
-  background: transparent;
-  color: var(--color-content-400);
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease;
-}
-
-.attachment-overflow-btn:hover {
-  background: var(--color-surface-50);
-  color: var(--color-primary-500);
 }
 </style>

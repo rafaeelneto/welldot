@@ -2,12 +2,43 @@ import textures from 'textures';
 
 import { Lithology } from '@welldot/core';
 import { Conflict, SvgSelection } from '~/types/render.types';
+import { getCementPadGeometry } from '~/utils/construction.geometry';
 import { importFgdcTextures } from '~/utils/fgdcTextures';
 
 // Re-exports so consumers and tests can still import from this single barrel.
 export { filterByDepth, getYAxisFunctions } from './d3.utils';
 export { makeSeededPrng, ptsToSmoothPath, wavyContact } from './geometry.utils';
 export { populateTooltips } from './tooltips.utils';
+
+/** Fracture rotation in degrees; a missing or non-finite dip renders horizontal (0°). */
+export const fractureDip = (dip: number | null | undefined): number =>
+  typeof dip === 'number' && Number.isFinite(dip) ? dip : 0;
+
+/**
+ * Box around the cement pad in construction-group coordinates, resting on the
+ * surface line `surfaceY`. Its size is fixed in px (see
+ * `getCementPadGeometry`): the pad's real width and thickness are left out,
+ * so it never overflows the panel whatever the diameters or depth range.
+ * `openingWidth` is the px width of the pipe through the pad, `outerWidth`
+ * of the widest item it covers.
+ */
+export function getCementPadRect(
+  pocoWidth: number,
+  pocoCenter: number,
+  surfaceY: number,
+  config: { widthRatio: number; height: number },
+  openingWidth = 0,
+  outerWidth = openingWidth,
+): { x: number; y: number; width: number; height: number } {
+  return getCementPadGeometry(
+    pocoWidth,
+    pocoCenter,
+    surfaceY,
+    config,
+    openingWidth,
+    outerWidth,
+  ).bbox;
+}
 
 let _fgdcTextures: Record<string, string> = {};
 let _fgdcTexturesPromise: Promise<void> | null = null;

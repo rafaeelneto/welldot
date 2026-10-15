@@ -1,0 +1,554 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=1500000136"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Poço 4ST-05 — Santarém/PA",
+  "well_driller": "Sondagens Tapajós S.A.",
+  "construction_date": "1977-11-04",
+  "obs": "Poço jorrante no Aquífero Alter do Chão: carga 3,98 m acima do terreno e vazão livre de 8 m³/h. Teste de 52 h a 126,5 m³/h interpretado por Jacob (T = 0,003 m²/s). Abandonado em 1996.",
+  "well_id": [
+    {
+      "authority": "Operadora",
+      "id": "4ST-05",
+      "primary": true
+    }
+  ],
+  "location": {
+    "lat": -2.43861,
+    "lng": -54.73722,
+    "elevation": 22,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31981"
+    }
+  },
+  "well_depth": 160,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 16,
+      "diameter": 559,
+      "drilling_method": "rotary"
+    },
+    {
+      "from": 16,
+      "to": 66,
+      "diameter": 445,
+      "drilling_method": "rotary"
+    },
+    {
+      "from": 66,
+      "to": 160,
+      "diameter": 381,
+      "drilling_method": "rotary"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.42,
+      "to": 87.5,
+      "type": "galvanized_steel",
+      "diameter": 324
+    },
+    {
+      "from": 115.01,
+      "to": 133.66,
+      "type": "galvanized_steel",
+      "diameter": 244
+    },
+    {
+      "from": 136.66,
+      "to": 154.07,
+      "type": "galvanized_steel",
+      "diameter": 244
+    },
+    {
+      "from": 157.07,
+      "to": 158.07,
+      "type": "galvanized_steel",
+      "diameter": 244
+    }
+  ],
+  "reduction": [
+    {
+      "from": 87.5,
+      "to": 88.01,
+      "diam_from": 324,
+      "diam_to": 244,
+      "type": "galvanized_steel"
+    }
+  ],
+  "well_screen": [
+    {
+      "from": 88.01,
+      "to": 115.01,
+      "type": "stainless_steel",
+      "diameter": 244,
+      "screen_slot": 0.5,
+      "slot_type": "continuous_slot"
+    },
+    {
+      "from": 133.66,
+      "to": 136.66,
+      "type": "stainless_steel",
+      "diameter": 244,
+      "screen_slot": 0.5,
+      "slot_type": "continuous_slot"
+    },
+    {
+      "from": 154.07,
+      "to": 157.07,
+      "type": "stainless_steel",
+      "diameter": 244,
+      "screen_slot": 0.5,
+      "slot_type": "continuous_slot"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 16,
+      "type": "seal",
+      "diameter": 559,
+      "description": "Cimentação"
+    },
+    {
+      "from": 16,
+      "to": 66,
+      "type": "gravel_pack",
+      "diameter": 445,
+      "description": "Areia quartzosa 1,00–3,00 mm"
+    },
+    {
+      "from": 66,
+      "to": 160,
+      "type": "gravel_pack",
+      "diameter": 381,
+      "description": "Areia quartzosa 1,00–3,00 mm"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 2,
+      "description": "Areia argilosa orgânica",
+      "color": "#6b5a44",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Aluviões",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 2,
+      "to": 10,
+      "description": "Argila arenosa clara",
+      "color": "#d6cbb6",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Aluviões",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 10,
+      "to": 27,
+      "description": "Areia média a conglomerática esbranquiçada",
+      "color": "#ece6d6",
+      "texture": {
+        "code": 601,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Aluviões",
+      "aquifer_unit": "Aquífero aluvial"
+    },
+    {
+      "from": 27,
+      "to": 30,
+      "description": "Argila arenosa amarelada",
+      "color": "#d9c27a",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 30,
+      "to": 45,
+      "description": "Argila arenosa com níveis de areia média",
+      "color": "#cdb98a",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 45,
+      "to": 56,
+      "description": "Areia média a grossa esbranquiçada",
+      "color": "#ece6d6",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Sistema Aquífero Alter do Chão"
+    },
+    {
+      "from": 56,
+      "to": 76,
+      "description": "Argila arenosa com níveis milimétricos de areia fina",
+      "color": "#cdb98a",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 76,
+      "to": 86,
+      "description": "Argila compacta com níveis arenosos",
+      "color": "#b3a58c",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 86,
+      "to": 118,
+      "description": "Areia fina a média com níveis de argila arenosa",
+      "color": "#e3d9c0",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Sistema Aquífero Alter do Chão"
+    },
+    {
+      "from": 118,
+      "to": 132,
+      "description": "Argila compacta intercalada com areia quartzosa esbranquiçada",
+      "color": "#b3a58c",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 132,
+      "to": 138,
+      "description": "Areia grossa branca",
+      "color": "#f2eee4",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Sistema Aquífero Alter do Chão"
+    },
+    {
+      "from": 138,
+      "to": 144,
+      "description": "Argila arenosa amarelada",
+      "color": "#d9c27a",
+      "texture": {
+        "code": 619,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 144,
+      "to": 149,
+      "description": "Areia média clara",
+      "color": "#e3d9c0",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Sistema Aquífero Alter do Chão"
+    },
+    {
+      "from": 149,
+      "to": 153,
+      "description": "Argila compacta com nível de argila arenosa",
+      "color": "#b3a58c",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 153,
+      "to": 160,
+      "description": "Areia clara mal selecionada, média a grossa",
+      "color": "#e3d9c0",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Alter do Chão",
+      "aquifer_unit": "Sistema Aquífero Alter do Chão"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "spot_measurement",
+      "datetime": "1978-02-20T08:00:00-03:00",
+      "static_level": -3.98,
+      "measurement_method": "x-pressure_gauge",
+      "notes": "Poço jorrante: vazão livre de 8 m³/h com a válvula aberta."
+    },
+    {
+      "id": "evt-02",
+      "type": "constant_rate",
+      "datetime": "1978-02-21T07:00:00-03:00",
+      "equipment": "Bomba de turbina vertical; medidor de nível por linha de ar",
+      "static_level": -3.98,
+      "measurement_method": "air_line",
+      "steps": [
+        {
+          "rate": 126.5,
+          "duration": 3120,
+          "readings": [
+            {
+              "elapsed": 1,
+              "depth": 37.41
+            },
+            {
+              "elapsed": 2,
+              "depth": 38.06
+            },
+            {
+              "elapsed": 3,
+              "depth": 38.43
+            },
+            {
+              "elapsed": 5,
+              "depth": 38.91
+            },
+            {
+              "elapsed": 7,
+              "depth": 39.22
+            },
+            {
+              "elapsed": 10,
+              "depth": 39.55
+            },
+            {
+              "elapsed": 15,
+              "depth": 39.93
+            },
+            {
+              "elapsed": 20,
+              "depth": 40.2
+            },
+            {
+              "elapsed": 30,
+              "depth": 40.58
+            },
+            {
+              "elapsed": 45,
+              "depth": 40.95
+            },
+            {
+              "elapsed": 60,
+              "depth": 41.22
+            },
+            {
+              "elapsed": 90,
+              "depth": 41.6
+            },
+            {
+              "elapsed": 120,
+              "depth": 41.87
+            },
+            {
+              "elapsed": 180,
+              "depth": 42.24
+            },
+            {
+              "elapsed": 240,
+              "depth": 42.51
+            },
+            {
+              "elapsed": 360,
+              "depth": 42.89
+            },
+            {
+              "elapsed": 480,
+              "depth": 43.16
+            },
+            {
+              "elapsed": 600,
+              "depth": 43.37
+            },
+            {
+              "elapsed": 720,
+              "depth": 43.53
+            },
+            {
+              "elapsed": 900,
+              "depth": 43.74
+            },
+            {
+              "elapsed": 1080,
+              "depth": 43.91
+            },
+            {
+              "elapsed": 1260,
+              "depth": 44.06
+            },
+            {
+              "elapsed": 1440,
+              "depth": 44.18
+            },
+            {
+              "elapsed": 1800,
+              "depth": 44.39
+            },
+            {
+              "elapsed": 2160,
+              "depth": 44.56
+            },
+            {
+              "elapsed": 2520,
+              "depth": 44.7
+            },
+            {
+              "elapsed": 2880,
+              "depth": 44.83
+            },
+            {
+              "elapsed": 3120,
+              "depth": 44.9
+            }
+          ]
+        }
+      ],
+      "recovery": {
+        "readings": [
+          {
+            "elapsed": 1,
+            "depth": 3.51
+          },
+          {
+            "elapsed": 2,
+            "depth": 2.86
+          },
+          {
+            "elapsed": 3,
+            "depth": 2.49
+          },
+          {
+            "elapsed": 5,
+            "depth": 2.01
+          },
+          {
+            "elapsed": 10,
+            "depth": 1.37
+          },
+          {
+            "elapsed": 15,
+            "depth": 0.99
+          },
+          {
+            "elapsed": 30,
+            "depth": 0.35
+          },
+          {
+            "elapsed": 60,
+            "depth": -0.28
+          },
+          {
+            "elapsed": 120,
+            "depth": -0.91
+          },
+          {
+            "elapsed": 240,
+            "depth": -1.52
+          },
+          {
+            "elapsed": 360,
+            "depth": -1.87
+          },
+          {
+            "elapsed": 480,
+            "depth": -2.1
+          },
+          {
+            "elapsed": 720,
+            "depth": -2.42
+          }
+        ]
+      }
+    }
+  ],
+  "aquifer_analysis": [
+    {
+      "id": "an-1978",
+      "datetime": "1978-03-10T10:00:00-03:00",
+      "analyst": "Sondagens Tapajós — Hidrogeologia",
+      "source_event_ids": [
+        "evt-02"
+      ],
+      "method": "cooper_jacob",
+      "static_level": -3.98,
+      "static_level_source_id": "evt-01",
+      "dynamic_level": 44.9,
+      "flow_rate": 126.5,
+      "specific_capacity": 2.588,
+      "transmissivity": 259.2,
+      "notes": "Grande perda de carga no poço: a maior parte do rebaixamento ocorre no primeiro minuto."
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1978-06-01T08:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço em operação no abastecimento da cidade."
+    },
+    {
+      "id": "log-02",
+      "datetime": "1996-02-19T08:00:00-03:00",
+      "category": "status_change",
+      "status": "abandoned",
+      "description": "Poço desativado após a entrada em operação da captação superficial no Tapajós."
+    }
+  ]
+}

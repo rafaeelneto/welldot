@@ -1,20 +1,14 @@
 <script setup lang="ts">
 import type { Centralizer, Well } from '@welldot/core';
-import type { WellGridColumn } from '~/components/DataGrid/types';
-import { materialOptions } from '~/utils/materialOptions';
+import { CENTRALIZER_TYPES } from '@welldot/core';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
+const { vocabOptions } = useVocab();
 const profileStore = useProfileStore();
 
-// Spec-recommended centralizer kinds (stored as keys) followed by common
-// materials (stored as their label).
-const typeOptions = computed(() => [
-  ...CENTRALIZER_TYPE_VALUES.map(value => ({
-    label: resolveCentralizerTypeLabel(value, t),
-    value,
-  })),
-  ...materialOptions(t, ['carbonSteel', 'galvanizedSteel', 'stainlessSteel']),
-]);
+// Spec-recommended centralizer kinds, then the steels that name rigid ones.
+const typeOptions = computed(() => vocabOptions(CENTRALIZER_TYPES));
 
 const centralizerColumns = computed<WellGridColumn[]>(() => [
   {
@@ -135,6 +129,12 @@ function reorderCentralizer(from: number, to: number) {
       :rows="rows"
       :columns="centralizerColumns"
       :add-label="t('editor.construction.centralizer.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+        comboHint: t('editor.comboHint'),
+      }"
       @add="addCentralizer"
       @delete="deleteCentralizer"
       @change="updateCentralizer"

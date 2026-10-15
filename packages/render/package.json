@@ -35,6 +35,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./textures": {
+      "types": "./dist/textures.d.ts",
+      "import": "./dist/textures.js",
+      "require": "./dist/textures.cjs"
     }
   },
   "files": [
@@ -49,6 +54,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
+    "thumbnails:examples": "node scripts/generate-example-thumbnails.mjs",
     "prepublishOnly": "pnpm run build && pnpm run test"
   },
   "dependencies": {
@@ -65,6 +71,7 @@
     "@types/d3-tip": "^3.5.8",
     "@types/sanitize-html": "^2.16.1",
     "@welldot/lint": "workspace:*",
+    "jsdom": "^23.2.0",
     "tsup": "^8.3.0",
     "typescript": "^5.3.3",
     "vite": "^8.0.9",

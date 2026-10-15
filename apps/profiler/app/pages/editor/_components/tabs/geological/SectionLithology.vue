@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WellGridColumn } from '~/components/DataGrid/types';
+import type { WellGridColumn } from '@welldot/vue/grid';
 
 const { t } = useI18n();
 const profileStore = useProfileStore();
@@ -71,7 +71,7 @@ function addLithology() {
 }
 
 function deleteLithology(index: number) {
-  profileStore.well.lithology.splice(index, 1);
+  profileStore.removeWellFeature('lithology', index);
 }
 
 function updateLithology(index: number, prop: string, value: unknown) {
@@ -139,6 +139,11 @@ const geologicUnitSummary = computed(() => {
       :rows="lithologyRows"
       :columns="lithologyColumns"
       :add-label="t('editor.geological.lithology.addRow')"
+      :delete-label="t('editor.deleteRow')"
+      :labels="{
+        showPendingTextures: t('editor.showPendingTextures'),
+        columnInfo: t('editor.fieldInfo'),
+      }"
       @add="addLithology"
       @delete="deleteLithology"
       @change="updateLithology"

@@ -1,0 +1,360 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=4300001500"
+  },
+  "well_type": "hand_dug",
+  "well_purpose": [
+    "production"
+  ],
+  "name": "Cacimba da sede — propriedade rural (São Gabriel/RS)",
+  "well_driller": "Escavada pelos moradores",
+  "construction_date": "1970-01-01",
+  "obs": "Poço escavado à mão, Ø 1,2 m e 10 m de profundidade, em arenitos e folhelhos do Subgrupo Estrada Nova. Revestido com tijolos até 6 m; abaixo, parede em rocha. Uso doméstico com bomba injetora. Cadastrado no SIOUT como uso insignificante.",
+  "well_id": [
+    {
+      "authority": "SIOUT-RS",
+      "id": "2023/0041.187",
+      "primary": true
+    }
+  ],
+  "location": {
+    "lat": -30.13639,
+    "lng": -54.42194,
+    "elevation": 150,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.001,
+      "lng_precision": 0.001,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31981"
+    }
+  },
+  "well_depth": 10,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 10,
+      "diameter": 1200,
+      "drilling_method": "x-hand_dug"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.3,
+      "to": 6,
+      "type": "x-brick_masonry",
+      "diameter": 1000
+    }
+  ],
+  "reduction": [],
+  "well_screen": [],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 0.5,
+      "type": "seal",
+      "diameter": 1200,
+      "description": "Argila compactada e calçada de concreto ao redor da boca"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 1.5,
+      "description": "Solo argiloso avermelhado",
+      "color": "#9c5a3c",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Cobertura",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 1.5,
+      "to": 6,
+      "description": "Arenito argiloso alterado, friável",
+      "color": "#c9a27a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Subgrupo Estrada Nova",
+      "aquifer_unit": "Aquífero poroso raso"
+    },
+    {
+      "from": 6,
+      "to": 10,
+      "description": "Arenitos argilosos intercalados com folhelhos cinza",
+      "color": "#8f8a7a",
+      "texture": {
+        "code": 670,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Subgrupo Estrada Nova",
+      "aquifer_unit": "Aquífero poroso raso"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "spot_measurement",
+      "datetime": "1972-01-01T08:00:00-03:00",
+      "static_level": 7,
+      "measurement_method": "tape",
+      "notes": "Data aproximada (apenas o ano é conhecido)."
+    },
+    {
+      "id": "evt-02",
+      "type": "spot_measurement",
+      "datetime": "2023-02-14T08:00:00-03:00",
+      "static_level": 8.35,
+      "measurement_method": "tape",
+      "notes": "Estiagem 2022–2023."
+    },
+    {
+      "id": "evt-03",
+      "type": "spot_measurement",
+      "datetime": "2024-05-20T08:00:00-03:00",
+      "static_level": 3.1,
+      "measurement_method": "tape",
+      "notes": "Após as cheias de maio de 2024."
+    }
+  ],
+  "cement_pad": {
+    "type": "concrete",
+    "width": 2,
+    "thickness": 0.1,
+    "length": 2
+  },
+  "pump_installations": [
+    {
+      "id": "pump-1997",
+      "installed_at": "1997-03-25T09:00:00-03:00",
+      "type": "jet",
+      "power_source": "grid",
+      "manufacturer": "Schneider",
+      "model": "BC-92 S",
+      "intake_depth": 9.2,
+      "rated_flow_rate": 1.5,
+      "rated_power": 0.37,
+      "riser_diameter": 25,
+      "riser_material": "pvc"
+    }
+  ],
+  "permits": [
+    {
+      "id": "cad-2023",
+      "type": "registration",
+      "authority": "SEMA-RS",
+      "status": "granted",
+      "identifier": "SIOUT 2023/0041.187",
+      "issued_at": "2023-06-02",
+      "water_use": [
+        "human_supply",
+        "livestock"
+      ],
+      "notes": "Uso insignificante: cadastro sem outorga."
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "am-1997",
+      "datetime": "1997-03-25T10:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "no_purge",
+      "sampling_point": {
+        "type": "in_well",
+        "depth": 8
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 300,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_dissolved_solids",
+            "vocabulary": "welldot"
+          },
+          "value": 262,
+          "measured_in": "lab"
+        }
+      ]
+    },
+    {
+      "id": "am-2024",
+      "datetime": "2024-06-04T09:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Pós-enchente 2024",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge",
+        "pump_installation_id": "pump-1997"
+      },
+      "collected_by": "Secretaria Municipal de Saúde",
+      "laboratory": {
+        "name": "Laboratório Regional de Saúde Pública",
+        "report_number": "LRSP-24/2210"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 6.6,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 412,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 6.8,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 11.3,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 38,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "presence": true,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "presence": true,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    },
+    {
+      "id": "am-2024b",
+      "datetime": "2024-07-10T09:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Pós-desinfecção",
+      "sampling_method": "pump_discharge",
+      "sampling_point": {
+        "type": "pump_discharge",
+        "pump_installation_id": "pump-1997"
+      },
+      "collected_by": "Secretaria Municipal de Saúde",
+      "laboratory": {
+        "name": "Laboratório Regional de Saúde Pública",
+        "report_number": "LRSP-24/2688"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "turbidity_ntu",
+            "vocabulary": "welldot"
+          },
+          "value": 1.2,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "nitrate_as_n",
+            "vocabulary": "welldot"
+          },
+          "value": 8.9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "total_coliforms",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        },
+        {
+          "parameter": {
+            "code": "e_coli",
+            "vocabulary": "welldot"
+          },
+          "presence": false,
+          "measured_in": "lab",
+          "method": "SMEWW 9223 B"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-00",
+      "datetime": "1970-01-01T08:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Cacimba em uso desde a escavação (data aproximada)."
+    },
+    {
+      "id": "log-01",
+      "datetime": "1997-03-25T09:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "pump_service",
+      "pump_installation_id": "pump-1997",
+      "description": "Instalação de bomba injetora; balde e sarilho aposentados."
+    },
+    {
+      "id": "log-02",
+      "datetime": "2024-05-06T08:00:00-03:00",
+      "category": "incident",
+      "severity": "critical",
+      "description": "Enchente: água superficial entrou pela boca do poço."
+    },
+    {
+      "id": "log-03",
+      "datetime": "2024-06-10T09:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "disinfection",
+      "description": "Esgotamento, limpeza das paredes e desinfecção com hipoclorito; tampa de concreto vedada.",
+      "sample_ids": [
+        "am-2024",
+        "am-2024b"
+      ]
+    }
+  ]
+}

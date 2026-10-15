@@ -1,0 +1,1141 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=1500002024"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "monitoring"
+  ],
+  "name": "PM-02 — Posto de combustível, jusante dos tanques (Belém/PA)",
+  "well_driller": "Ambiental Norte Consultoria",
+  "construction_date": "2023-11-08",
+  "obs": "Poço de monitoramento de 2\" (ABNT NBR 15495-1) a jusante dos tanques subterrâneos, no aquífero livre do Barreiras. Benzeno detectado após vazamento em 2023; remediação por bombeamento e extração de vapores com queda das concentrações. Valores de BTEX em mg/L (µg/L nas notas).",
+  "well_id": [
+    {
+      "authority": "Posto",
+      "id": "PM-02",
+      "primary": true
+    },
+    {
+      "authority": "SEMAS-PA",
+      "id": "LO 12877/2021 — PM-02"
+    }
+  ],
+  "location": {
+    "lat": -1.44667,
+    "lng": -48.485,
+    "elevation": 11,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.00005,
+      "lng_precision": 0.00005,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31982"
+    }
+  },
+  "well_depth": 12,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 12,
+      "diameter": 203,
+      "drilling_method": "auger"
+    }
+  ],
+  "well_case": [
+    {
+      "from": -0.05,
+      "to": 5,
+      "type": "pvc",
+      "diameter": 60
+    },
+    {
+      "from": 11,
+      "to": 12,
+      "type": "pvc",
+      "diameter": 60
+    }
+  ],
+  "reduction": [],
+  "well_screen": [
+    {
+      "from": 5,
+      "to": 11,
+      "type": "pvc",
+      "diameter": 60,
+      "screen_slot": 0.25,
+      "slot_type": "slotted"
+    }
+  ],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 0.5,
+      "type": "seal",
+      "diameter": 203,
+      "description": "Calda de cimento com caixa de proteção afogada no piso"
+    },
+    {
+      "from": 0.5,
+      "to": 4,
+      "type": "seal",
+      "diameter": 203,
+      "description": "Bentonita em pellets hidratada"
+    },
+    {
+      "from": 4,
+      "to": 12,
+      "type": "gravel_pack",
+      "diameter": 203,
+      "description": "Areia quartzosa selecionada 1–2 mm"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 1.2,
+      "description": "Aterro e base do piso",
+      "color": "#a39a8a",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Aterro",
+      "aquifer_unit": "Não aquífero"
+    },
+    {
+      "from": 1.2,
+      "to": 3.3,
+      "description": "Solo arenoso amarelo-amarronzado",
+      "color": "#c9a24a",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Cobertura",
+      "aquifer_unit": "Aquífero livre"
+    },
+    {
+      "from": 3.3,
+      "to": 6.7,
+      "description": "Argila amarela",
+      "color": "#d9b45a",
+      "texture": {
+        "code": 620,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Aquitarde"
+    },
+    {
+      "from": 6.7,
+      "to": 12,
+      "description": "Areia média cinza-esbranquiçada",
+      "color": "#d9d5c8",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Barreiras",
+      "aquifer_unit": "Sistema Aquífero Barreiras"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "nv-1",
+      "type": "spot_measurement",
+      "datetime": "2024-02-20T08:30:00-03:00",
+      "static_level": 2.84,
+      "static_level_precision": 0.005,
+      "measurement_method": "electric_probe",
+      "operator": "Ambiental Norte Consultoria"
+    },
+    {
+      "id": "nv-2",
+      "type": "spot_measurement",
+      "datetime": "2024-08-21T08:30:00-03:00",
+      "static_level": 3.62,
+      "static_level_precision": 0.005,
+      "measurement_method": "electric_probe",
+      "operator": "Ambiental Norte Consultoria"
+    },
+    {
+      "id": "nv-3",
+      "type": "spot_measurement",
+      "datetime": "2025-02-18T08:30:00-03:00",
+      "static_level": 2.71,
+      "static_level_precision": 0.005,
+      "measurement_method": "electric_probe",
+      "operator": "Ambiental Norte Consultoria"
+    },
+    {
+      "id": "nv-4",
+      "type": "spot_measurement",
+      "datetime": "2025-08-19T08:30:00-03:00",
+      "static_level": 3.55,
+      "static_level_precision": 0.005,
+      "measurement_method": "electric_probe",
+      "operator": "Ambiental Norte Consultoria"
+    }
+  ],
+  "water_samples": [
+    {
+      "id": "pm02-2024-02",
+      "datetime": "2024-02-20T10:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Monitoramento semestral 2024-02",
+      "sampling_method": "low_flow",
+      "sampling_point": {
+        "type": "in_well",
+        "depth": 8,
+        "depth_precision": 0.1,
+        "device": "low_flow_pump"
+      },
+      "static_level_event_id": "nv-1",
+      "collected_by": "Ambiental Norte Consultoria",
+      "purge": {
+        "duration": 30,
+        "volume": 0.009,
+        "flow_rate": 0.018,
+        "stabilized": true,
+        "readings": [
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.25
+          },
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 224
+          },
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 2.1
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.2
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 220
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 1.8
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.15
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 216
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 1.5
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.1
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 212
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 1.2
+          }
+        ]
+      },
+      "preservation": "Frascos VOA com HCl; refrigeração a 4 °C",
+      "chain_of_custody": "CC-PM02-2024-02",
+      "laboratory": {
+        "name": "Laboratório Ambiental Amazônia",
+        "accreditation": "CRL 1147 (ISO/IEC 17025)",
+        "report_number": "LAMZ-24/3100"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 6.1,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 212,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "dissolved_oxygen",
+            "vocabulary": "welldot"
+          },
+          "value": 1.2,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "orp",
+            "vocabulary": "welldot"
+          },
+          "value": 85,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 28.9,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "71-43-2",
+            "vocabulary": "cas"
+          },
+          "value": 0.048,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "48 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "108-88-3",
+            "vocabulary": "cas"
+          },
+          "value": 0.031,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "31 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "100-41-4",
+            "vocabulary": "cas"
+          },
+          "value": 0.0062,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "6.2 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "1330-20-7",
+            "vocabulary": "cas"
+          },
+          "value": 0.022,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "22 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "total_petroleum_hydrocarbons",
+            "vocabulary": "welldot"
+          },
+          "value": 0.41,
+          "measured_in": "lab",
+          "method": "US EPA 8015D",
+          "notes": "410 µg/L"
+        }
+      ]
+    },
+    {
+      "id": "pm02-2024-08",
+      "datetime": "2024-08-21T10:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Monitoramento semestral 2024-08",
+      "sampling_method": "low_flow",
+      "sampling_point": {
+        "type": "in_well",
+        "depth": 8,
+        "depth_precision": 0.1,
+        "device": "low_flow_pump"
+      },
+      "static_level_event_id": "nv-2",
+      "collected_by": "Ambiental Norte Consultoria",
+      "purge": {
+        "duration": 30,
+        "volume": 0.009,
+        "flow_rate": 0.018,
+        "stabilized": true,
+        "readings": [
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.15
+          },
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 210
+          },
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 2.5
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.1
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 206
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 2.2
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.05
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 202
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 1.9
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 198
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 1.6
+          }
+        ]
+      },
+      "preservation": "Frascos VOA com HCl; refrigeração a 4 °C",
+      "chain_of_custody": "CC-PM02-2024-08",
+      "laboratory": {
+        "name": "Laboratório Ambiental Amazônia",
+        "accreditation": "CRL 1147 (ISO/IEC 17025)",
+        "report_number": "LAMZ-24/3101"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 6,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 198,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "dissolved_oxygen",
+            "vocabulary": "welldot"
+          },
+          "value": 1.6,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "orp",
+            "vocabulary": "welldot"
+          },
+          "value": 102,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 28.9,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "71-43-2",
+            "vocabulary": "cas"
+          },
+          "value": 0.021,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "21 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "108-88-3",
+            "vocabulary": "cas"
+          },
+          "value": 0.014,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "14 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "100-41-4",
+            "vocabulary": "cas"
+          },
+          "value": 0.0029,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "2.9 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "1330-20-7",
+            "vocabulary": "cas"
+          },
+          "value": 0.011,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "11 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "total_petroleum_hydrocarbons",
+            "vocabulary": "welldot"
+          },
+          "value": 0.18,
+          "measured_in": "lab",
+          "method": "US EPA 8015D",
+          "notes": "180 µg/L"
+        }
+      ]
+    },
+    {
+      "id": "pm02-2025-02",
+      "datetime": "2025-02-18T10:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Monitoramento semestral 2025-02",
+      "sampling_method": "low_flow",
+      "sampling_point": {
+        "type": "in_well",
+        "depth": 8,
+        "depth_precision": 0.1,
+        "device": "low_flow_pump"
+      },
+      "static_level_event_id": "nv-3",
+      "collected_by": "Ambiental Norte Consultoria",
+      "purge": {
+        "duration": 30,
+        "volume": 0.009,
+        "flow_rate": 0.018,
+        "stabilized": true,
+        "readings": [
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.35
+          },
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 197
+          },
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 3
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.3
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 193
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 2.7
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.25
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 189
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 2.4
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.2
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 185
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 2.1
+          }
+        ]
+      },
+      "preservation": "Frascos VOA com HCl; refrigeração a 4 °C",
+      "chain_of_custody": "CC-PM02-2025-02",
+      "laboratory": {
+        "name": "Laboratório Ambiental Amazônia",
+        "accreditation": "CRL 1147 (ISO/IEC 17025)",
+        "report_number": "LAMZ-25/3102"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 6.2,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 185,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "dissolved_oxygen",
+            "vocabulary": "welldot"
+          },
+          "value": 2.1,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "orp",
+            "vocabulary": "welldot"
+          },
+          "value": 118,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 28.9,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "71-43-2",
+            "vocabulary": "cas"
+          },
+          "value": 0.0075,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "7.5 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "108-88-3",
+            "vocabulary": "cas"
+          },
+          "value": 0.0040999999999999995,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "4.1 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "100-41-4",
+            "vocabulary": "cas"
+          },
+          "value": 0.0009,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "0.9 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "1330-20-7",
+            "vocabulary": "cas"
+          },
+          "value": 0.0036,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "3.6 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "total_petroleum_hydrocarbons",
+            "vocabulary": "welldot"
+          },
+          "value": 0.095,
+          "measured_in": "lab",
+          "method": "US EPA 8015D",
+          "notes": "95 µg/L"
+        }
+      ]
+    },
+    {
+      "id": "pm02-2025-08",
+      "datetime": "2025-08-19T10:00:00-03:00",
+      "sample_type": "routine",
+      "campaign": "Monitoramento semestral 2025-08",
+      "sampling_method": "low_flow",
+      "sampling_point": {
+        "type": "in_well",
+        "depth": 8,
+        "depth_precision": 0.1,
+        "device": "low_flow_pump"
+      },
+      "static_level_event_id": "nv-4",
+      "collected_by": "Ambiental Norte Consultoria",
+      "purge": {
+        "duration": 30,
+        "volume": 0.009,
+        "flow_rate": 0.018,
+        "stabilized": true,
+        "readings": [
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.25
+          },
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 188
+          },
+          {
+            "elapsed": 0,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 3.5
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.2
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 184
+          },
+          {
+            "elapsed": 10,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 3.2
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.15
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 180
+          },
+          {
+            "elapsed": 20,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 2.9
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "ph",
+              "vocabulary": "welldot"
+            },
+            "value": 6.1
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "specific_conductance",
+              "vocabulary": "welldot"
+            },
+            "value": 176
+          },
+          {
+            "elapsed": 30,
+            "parameter": {
+              "code": "dissolved_oxygen",
+              "vocabulary": "welldot"
+            },
+            "value": 2.6
+          }
+        ]
+      },
+      "preservation": "Frascos VOA com HCl; refrigeração a 4 °C",
+      "chain_of_custody": "CC-PM02-2025-08",
+      "laboratory": {
+        "name": "Laboratório Ambiental Amazônia",
+        "accreditation": "CRL 1147 (ISO/IEC 17025)",
+        "report_number": "LAMZ-25/3103"
+      },
+      "results": [
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 6.1,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 176,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "dissolved_oxygen",
+            "vocabulary": "welldot"
+          },
+          "value": 2.6,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "orp",
+            "vocabulary": "welldot"
+          },
+          "value": 131,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 28.9,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "71-43-2",
+            "vocabulary": "cas"
+          },
+          "qualifier": "not_detected",
+          "detection_limit": 1,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "µg/L"
+        },
+        {
+          "parameter": {
+            "code": "108-88-3",
+            "vocabulary": "cas"
+          },
+          "value": 0.0012,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "1.2 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "100-41-4",
+            "vocabulary": "cas"
+          },
+          "qualifier": "not_detected",
+          "detection_limit": 1,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "µg/L"
+        },
+        {
+          "parameter": {
+            "code": "1330-20-7",
+            "vocabulary": "cas"
+          },
+          "value": 0.0011,
+          "measured_in": "lab",
+          "method": "US EPA 8260D",
+          "notes": "1.1 µg/L"
+        },
+        {
+          "parameter": {
+            "code": "total_petroleum_hydrocarbons",
+            "vocabulary": "welldot"
+          },
+          "qualifier": "not_detected",
+          "detection_limit": 0.05,
+          "measured_in": "lab",
+          "method": "US EPA 8015D"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "2023-11-08T16:00:00-03:00",
+      "category": "event",
+      "description": "Instalação do PM-02 e desenvolvimento por bailer até água clara."
+    },
+    {
+      "id": "log-02",
+      "datetime": "2023-11-09T08:00:00-03:00",
+      "category": "status_change",
+      "status": "active",
+      "description": "Poço incluído na rede de monitoramento do posto."
+    },
+    {
+      "id": "log-03",
+      "datetime": "2024-03-05T10:00:00-03:00",
+      "category": "incident",
+      "severity": "high",
+      "description": "Benzeno 48 µg/L, acima do valor de intervenção (5 µg/L). Remediação iniciada.",
+      "sample_ids": [
+        "pm02-2024-02"
+      ]
+    },
+    {
+      "id": "log-s1",
+      "datetime": "2024-02-20T10:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "water_sampling",
+      "sample_ids": [
+        "pm02-2024-02"
+      ],
+      "hydrodynamic_event_ids": [
+        "nv-1"
+      ],
+      "description": "Campanha semestral de baixa vazão."
+    },
+    {
+      "id": "log-s2",
+      "datetime": "2024-08-21T10:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "water_sampling",
+      "sample_ids": [
+        "pm02-2024-08"
+      ],
+      "hydrodynamic_event_ids": [
+        "nv-2"
+      ],
+      "description": "Campanha semestral de baixa vazão."
+    },
+    {
+      "id": "log-s3",
+      "datetime": "2025-02-18T10:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "water_sampling",
+      "sample_ids": [
+        "pm02-2025-02"
+      ],
+      "hydrodynamic_event_ids": [
+        "nv-3"
+      ],
+      "description": "Campanha semestral de baixa vazão."
+    },
+    {
+      "id": "log-s4",
+      "datetime": "2025-08-19T10:00:00-03:00",
+      "category": "maintenance",
+      "maintenance_type": "water_sampling",
+      "sample_ids": [
+        "pm02-2025-08"
+      ],
+      "hydrodynamic_event_ids": [
+        "nv-4"
+      ],
+      "description": "Campanha semestral de baixa vazão."
+    }
+  ]
+}

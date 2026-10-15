@@ -45,7 +45,7 @@ surface-100 + text-content-900  ✗  (dark mode: near-black on near-black)
 
 ### Available Tailwind utilities
 
-Scales are bridged from PrimeVue CSS vars in `app/assets/styles/main.css`:
+Scales are bridged from PrimeVue CSS vars by `@welldot/vue/tailwind.css` (imported in `app/assets/styles/main.css`):
 
 ```
 bg-surface-{0|50|100|200|300|400|500|600|700|800|900|950}   text-surface-*  border-surface-*
@@ -73,12 +73,12 @@ getComputedStyle(document.documentElement)
 
 Always prefer a PrimeVue component over a hand-rolled one. Customise in order — stop at the first layer that solves the problem:
 
-| Layer                   | Where                                         | When                                                       |
-| ----------------------- | --------------------------------------------- | ---------------------------------------------------------- |
-| **API** — props & slots | `primevue.org/<component>`                    | Behaviour or content changes                               |
-| **Theme**               | `app/theme/customTheme.ts` → `components` key | Global visual change (all instances)                       |
-| **Pass-through**        | `app/theme/customPt.js`                       | One-off Tailwind class or HTML attr on an internal element |
-| **Custom component**    | New file                                      | Last resort — all three layers above exhausted             |
+| Layer                   | Where                                                                    | When                                                       |
+| ----------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| **API** — props & slots | `primevue.org/<component>`                                               | Behaviour or content changes                               |
+| **Theme**               | `WelldotPreset` in `packages/vue/src/theme/preset.ts` → `components` key | Global visual change (all instances)                       |
+| **Pass-through**        | `welldotPt` in `packages/vue/src/theme/pt.ts`                            | One-off Tailwind class or HTML attr on an internal element |
+| **Custom component**    | New file                                                                 | Last resort — all three layers above exhausted             |
 
 Use `severity` props (`"primary"`, `"success"`, `"warn"`, `"danger"`, `"info"`) instead of manual color classes — the theme maps them to the semantic scales automatically. Never target PrimeVue internal class names in scoped CSS; they're not stable across minor versions.
 
@@ -91,4 +91,4 @@ Use `severity` props (`"primary"`, `"success"`, `"warn"`, `"danger"`, `"info"`) 
 | `text-blue-600` for a CTA                     | `text-primary-600`                  |
 | `bg-surface-100 text-content-900`             | `bg-surface-100 text-content-100`   |
 | `bg-surface-700` in a normal card             | `bg-surface-50`                     |
-| Scoped CSS targeting PrimeVue internals       | Pass-through in `customPt.js`       |
+| Scoped CSS targeting PrimeVue internals       | Pass-through in `welldotPt`         |

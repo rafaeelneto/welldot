@@ -18,6 +18,8 @@ export default [
       'tsup.config.ts',
       'vitest.config.ts',
       'eslint.config.js',
+      // Node maintenance scripts (plain .mjs, outside tsconfig).
+      'scripts/**',
     ],
   },
 ];

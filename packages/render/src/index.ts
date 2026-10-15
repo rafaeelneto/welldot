@@ -9,9 +9,15 @@ export {
 export { importFgdcTextures } from './utils/fgdcTextures';
 
 export { WellRenderer } from './Renderer';
-export { drawWellLegend } from './renderers/legend.renderer';
+export {
+  drawWellLegend,
+  drawWellLegendSymbol,
+  getWellLegendItems,
+} from './renderers/legend.renderer';
+export type { WellLegendItem } from './renderers/legend.renderer';
 export type {
   CaveTheme,
+  ColumnHeadersTheme,
   ComponentsClassNames,
   ConstructionTheme,
   DeepPartial,
@@ -21,8 +27,12 @@ export type {
   LabelsTheme,
   LegendRenderConfig,
   LegendTheme,
+  LithologyLabelItem,
   LithologyTextureTheme,
   LithologyTheme,
+  MarkersTheme,
+  OverlapTheme,
+  OverviewTheme,
   RenderConfig,
   RenderLabelPack,
   RenderLocalizedText,
@@ -40,3 +50,4 @@ export {
   getLengthUnit,
   resolveRenderLabel,
 } from './utils/format.utils';
+export { getProfileTopDepth } from './utils/layout.utils';

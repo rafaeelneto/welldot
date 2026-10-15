@@ -3,6 +3,11 @@ const { t } = useI18n();
 const profileStore = useProfileStore();
 const { unit: lengthUnit, toDisplay } = useUnitDisplay('length');
 const { formatNumber } = useNumberFormat();
+const { toFlow, flowUnit } = useUnitFormat();
+const { state: aquifer } = useAquiferState();
+
+const lengthValue = (value: number | null | undefined) =>
+  value != null ? formatNumber(toDisplay(value), { fractionDigits: 2 }) : '—';
 
 const screenLength = computed(() =>
   profileStore.well.well_screen.reduce((sum, s) => sum + (s.to - s.from), 0),
@@ -16,6 +21,30 @@ const kpis = computed(() => [
       fractionDigits: 2,
     }),
     unit: lengthUnit.value,
+  },
+  {
+    key: 'wellDepth',
+    label: t('editor.summary.kpis.wellDepth'),
+    value: lengthValue(
+      profileStore.well.well_depth ?? calculatedWellDepth(profileStore.well),
+    ),
+    unit: lengthUnit.value,
+  },
+  {
+    key: 'staticLevel',
+    label: t('editor.summary.kpis.staticLevel'),
+    value: lengthValue(aquifer.value.ne?.value),
+    unit: aquifer.value.ne ? lengthUnit.value : '',
+  },
+  {
+    key: 'flowRate',
+    label: t('editor.summary.kpis.flowRate'),
+    value: aquifer.value.flowRate
+      ? formatNumber(toFlow(aquifer.value.flowRate.value), {
+          maximumFractionDigits: 2,
+        })
+      : '—',
+    unit: aquifer.value.flowRate ? flowUnit.value : '',
   },
   {
     key: 'layers',
@@ -33,7 +62,7 @@ const kpis = computed(() => [
 </script>
 
 <template>
-  <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-2.5">
+  <div class="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-6 gap-2.5">
     <div
       v-for="kpi in kpis"
       :key="kpi.key"

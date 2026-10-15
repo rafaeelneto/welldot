@@ -1,0 +1,287 @@
+{
+  "$schema": "https://welldot.org/schema/v2/well.schema.json",
+  "version": 2,
+  "x-welldot-example": {
+    "illustrative": true,
+    "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3500000010"
+  },
+  "well_type": "tubular",
+  "well_purpose": [
+    "exploration"
+  ],
+  "name": "Poço estratigráfico LA-1 — Lagoa Azul (Rinópolis/SP)",
+  "well_driller": "Sondagens Profundas do Paraná S.A.",
+  "construction_date": "1982-08-12",
+  "obs": "Poço estratigráfico profundo (1561 m) que atravessa o Grupo Bauru, 1092 m de basaltos da Formação Serra Geral e atinge o Sistema Aquífero Guarani (Botucatu e Pirambóia) confinado. Água termal alcalina. Fechado em 1996.",
+  "well_id": [
+    {
+      "authority": "Operador",
+      "id": "LA-1",
+      "primary": true
+    }
+  ],
+  "location": {
+    "lat": -21.65417,
+    "lng": -50.79306,
+    "elevation": 408,
+    "properties": {
+      "crs": "EPSG:4326",
+      "lat_precision": 0.0003,
+      "lng_precision": 0.0003,
+      "elevation_datum": "x-imbituba",
+      "elevation_precision": 5,
+      "original_crs": "EPSG:31982"
+    }
+  },
+  "well_depth": 1561,
+  "bore_hole": [
+    {
+      "from": 0,
+      "to": 1561,
+      "diameter": 445,
+      "drilling_method": "rotary"
+    }
+  ],
+  "well_case": [
+    {
+      "from": 0,
+      "to": 1561,
+      "type": "carbon_steel",
+      "diameter": 340
+    }
+  ],
+  "reduction": [],
+  "well_screen": [],
+  "surface_case": [],
+  "hole_fill": [
+    {
+      "from": 0,
+      "to": 1245,
+      "type": "seal",
+      "diameter": 445,
+      "description": "Cimentação do anular em estágios até o topo do Botucatu"
+    }
+  ],
+  "lithology": [
+    {
+      "from": 0,
+      "to": 153,
+      "description": "Arenito fino",
+      "color": "#d8a878",
+      "texture": {
+        "code": 607,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Grupo Bauru",
+      "aquifer_unit": "Sistema Aquífero Bauru"
+    },
+    {
+      "from": 153,
+      "to": 1245,
+      "description": "Basalto",
+      "color": "#4d4d52",
+      "texture": {
+        "code": 717,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Serra Geral",
+      "aquifer_unit": "Aquífero Serra Geral (fissural)"
+    },
+    {
+      "from": 1245,
+      "to": 1345,
+      "description": "Arenito médio",
+      "color": "#e3b27a",
+      "texture": {
+        "code": 609,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Botucatu",
+      "aquifer_unit": "Sistema Aquífero Guarani"
+    },
+    {
+      "from": 1345,
+      "to": 1561,
+      "description": "Arenito argiloso",
+      "color": "#c98f6b",
+      "texture": {
+        "code": 612,
+        "vocabulary": "fgdc"
+      },
+      "geologic_unit": "Formação Pirambóia",
+      "aquifer_unit": "Sistema Aquífero Guarani"
+    }
+  ],
+  "fractures": [],
+  "caves": [],
+  "hydrodynamic_events": [
+    {
+      "id": "evt-01",
+      "type": "spot_measurement",
+      "datetime": "1983-02-08T10:00:00-03:00",
+      "static_level": -21.5,
+      "measurement_method": "x-pressure_gauge",
+      "notes": "Poço jorrante: pressão de fechamento de 211 kPa no cabeçote (≈ 21,5 m acima do terreno)."
+    }
+  ],
+  "cement_pad": {
+    "type": "reinforced_concrete",
+    "width": 3,
+    "thickness": 0.3,
+    "length": 3
+  },
+  "water_samples": [
+    {
+      "id": "am-1983",
+      "datetime": "1983-02-08T11:00:00-03:00",
+      "sample_type": "routine",
+      "sampling_method": "no_purge",
+      "sampling_point": {
+        "type": "wellhead_tap"
+      },
+      "notes": "Coleta no cabeçote, em fluxo livre.",
+      "results": [
+        {
+          "parameter": {
+            "code": "temperature",
+            "vocabulary": "welldot"
+          },
+          "value": 57.5,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "ph",
+            "vocabulary": "welldot"
+          },
+          "value": 9.3,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "specific_conductance",
+            "vocabulary": "welldot"
+          },
+          "value": 386,
+          "measured_in": "field"
+        },
+        {
+          "parameter": {
+            "code": "alkalinity_total_as_caco3",
+            "vocabulary": "welldot"
+          },
+          "value": 148,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sodium",
+            "vocabulary": "welldot"
+          },
+          "value": 86,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "calcium",
+            "vocabulary": "welldot"
+          },
+          "value": 1.8,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "potassium",
+            "vocabulary": "welldot"
+          },
+          "value": 0.9,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "magnesium",
+            "vocabulary": "welldot"
+          },
+          "value": 0.1,
+          "measured_in": "lab",
+          "qualifier": "<"
+        },
+        {
+          "parameter": {
+            "code": "bicarbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 112,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "carbonate",
+            "vocabulary": "welldot"
+          },
+          "value": 34,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "chloride",
+            "vocabulary": "welldot"
+          },
+          "value": 9.5,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "sulfate",
+            "vocabulary": "welldot"
+          },
+          "value": 21,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "fluoride",
+            "vocabulary": "welldot"
+          },
+          "value": 2.4,
+          "measured_in": "lab"
+        },
+        {
+          "parameter": {
+            "code": "silica_as_sio2",
+            "vocabulary": "welldot"
+          },
+          "value": 32,
+          "measured_in": "lab"
+        }
+      ]
+    }
+  ],
+  "history_logs": [
+    {
+      "id": "log-01",
+      "datetime": "1982-12-20T12:00:00-03:00",
+      "category": "event",
+      "description": "Perfuração concluída a 1561 m; revestimento 13 3/8\" até o fundo."
+    },
+    {
+      "id": "log-02",
+      "datetime": "1983-02-08T10:00:00-03:00",
+      "category": "inspection",
+      "description": "Teste de surgência e coleta de água termal.",
+      "hydrodynamic_event_ids": [
+        "evt-01"
+      ],
+      "sample_ids": [
+        "am-1983"
+      ]
+    },
+    {
+      "id": "log-03",
+      "datetime": "1996-03-12T09:00:00-03:00",
+      "category": "status_change",
+      "status": "decommissioned",
+      "description": "Poço fechado com válvula e flange cego no cabeçote."
+    }
+  ]
+}

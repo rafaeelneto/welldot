@@ -7,6 +7,13 @@ const { t } = useI18n();
 const { measurementMethodLabel } = useHydrodynamicEventTypes();
 
 const event = computed(() => props.event as Record<string, unknown>);
+
+// Flows are stored in m³/h; show them in the unit chosen in Settings.
+const { toFlow, flowUnit, toSpecificCapacity, specificCapacityUnit } =
+  useUnitFormat();
+const { formatNumber } = useNumberFormat();
+const flow = (value: number) =>
+  formatNumber(toFlow(value), { maximumFractionDigits: 2 });
 </script>
 
 <template>
@@ -78,7 +85,8 @@ const event = computed(() => props.event as Record<string, unknown>);
         t('editor.hydrodynamicEvents.stats.flowRate')
       }}</span>
       <span class="stat-chip-value">
-        {{ stepRate(props.event, 0) }}<span class="stat-chip-unit">m³/h</span>
+        {{ flow(stepRate(props.event, 0)!)
+        }}<span class="stat-chip-unit">{{ flowUnit }}</span>
       </span>
     </div>
     <div
@@ -94,12 +102,13 @@ const event = computed(() => props.event as Record<string, unknown>);
       }}</span>
       <span class="stat-chip-value">
         {{
-          (
+          toSpecificCapacity(
             stepRate(props.event, 0)! /
-            (lastReading(props.event)!.depth - (event.static_level as number))
+              (lastReading(props.event)!.depth -
+                (event.static_level as number)),
           ).toFixed(2)
         }}<sup class="stat-chip-final">f</sup
-        ><span class="stat-chip-unit">m²/h</span>
+        ><span class="stat-chip-unit">{{ specificCapacityUnit }}</span>
       </span>
     </div>
   </div>
@@ -142,7 +151,8 @@ const event = computed(() => props.event as Record<string, unknown>);
         t('editor.hydrodynamicEvents.stats.flowRate')
       }}</span>
       <span class="stat-chip-value">
-        {{ stepRate(props.event, 0) }}<span class="stat-chip-unit">m³/h</span>
+        {{ flow(stepRate(props.event, 0)!)
+        }}<span class="stat-chip-unit">{{ flowUnit }}</span>
       </span>
     </div>
     <div v-if="lastReading(props.event)" class="stat-chip">
@@ -159,7 +169,8 @@ const event = computed(() => props.event as Record<string, unknown>);
     <div v-if="event.pumping_rate != null" class="stat-chip">
       <span class="stat-chip-label">VAZÃO EST.</span>
       <span class="stat-chip-value">
-        {{ event.pumping_rate }}<span class="stat-chip-unit">m³/h</span>
+        {{ flow(event.pumping_rate as number)
+        }}<span class="stat-chip-unit">{{ flowUnit }}</span>
       </span>
     </div>
     <div v-if="event.pumping_duration != null" class="stat-chip">

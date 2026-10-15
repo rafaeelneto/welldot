@@ -1,10 +1,15 @@
 {
   "meta": {
     "title": "Editor de Perfil de Poço em Formato Aberto (.well)",
-    "description": "Antigo Well Profiler, agora editor gratuito de perfil de poço online: crie, visualize e exporte perfis construtivos e geológicos no formato aberto .well.",
+    "description": "Antigo Well Profiler, agora app gratuito para dados de poços no formato aberto .well — perfis construtivos e geológicos, testes de bombeamento, operação, outorgas e qualidade da água, exportados em relatórios PDF.",
     "featureList": [
       "Crie, visualize e exporte perfis geológicos e construtivos de poços",
+      "Testes de bombeamento com gráficos semilog, de recuperação de Theis e de teste escalonado",
+      "Operação, produção, outorgas e qualidade da água (.well v2.3)",
+      "Relatórios PDF personalizáveis",
       "Formato de arquivo .well aberto e versionado",
+      "Aceita registros de campo e legados incompletos — valor ausente significa desconhecido, nunca zero",
+      "Extensível com campos x-, blocos x- e profiles de instituições",
       "Gratuito e de código aberto"
     ]
   },
@@ -28,8 +33,8 @@
     }
   },
   "footer": {
-    "version": "welldot · v1.0.0",
-    "spec": ".well spec v2.0",
+    "version": "welldot · v2.3",
+    "spec": ".well spec v2.3",
     "license": "Aberto · Apache 2.0"
   },
   "hero": {
@@ -37,7 +42,7 @@
     "headline1": "Perfis de poços, em",
     "headlineEm": "arquivo aberto",
     "headline2": ".",
-    "body": "Editor livre para criar, visualizar e exportar perfis geológicos e construtivos. Um JSON simples, versionado, legível por qualquer linguagem.",
+    "body": "Editor livre para todo o registro de um poço: perfis construtivos e geológicos, testes de bombeamento, operação, outorgas e qualidade da água, exportados em PDF. Um JSON simples, versionado, legível por qualquer linguagem.",
     "ctaPrimary": "Abrir editor de poços →",
     "ctaSecondary": "Ver especificação",
     "badgeSpec": "spec",
@@ -49,15 +54,15 @@
   "format": {
     "kicker": "I · O formato",
     "headline1": "Um JSON.",
-    "headlineEm": "Três",
-    "headline2": "propósitos.",
-    "intro": "Hoje, dados de poços vivem em PDFs que não se conversam entre si. O arquivo {well} é um formato simples e versionado para mudar isso — um único JSON que descreve o poço por inteiro, da construção e geologia aos testes de bombeamento e ao histórico de manutenção, pensado como {standard}.",
+    "headlineEm": "Todo",
+    "headline2": "o poço.",
+    "intro": "Hoje, dados de poços vivem em PDFs que não se conversam entre si. O arquivo {well} é um formato simples e versionado para mudar isso — um único JSON que descreve o poço por inteiro, da construção e geologia aos testes de bombeamento, às bombas instaladas, hidrômetros e produção, outorgas, qualidade da água e histórico de manutenção, pensado como {standard}.",
     "standard": "padrão internacional",
     "props": [
       {
         "num": "§ 1.1",
-        "title": "Visualização",
-        "body": "Biblioteca livre em D3.js para renderizar e exportar perfis geológicos e construtivos em escala real."
+        "title": "Desenho",
+        "body": "Construção e geologia em escala real, desenhadas do mesmo jeito por qualquer ferramenta que leia o arquivo."
       },
       {
         "num": "§ 1.2",
@@ -77,12 +82,12 @@
       {
         "num": "§ 1.5",
         "title": "Testes de bombeamento",
-        "body": "Eventos hidrodinâmicos e parâmetros de aquífero derivados — transmissividade, armazenamento, capacidade específica — registrados como séries temporais estruturadas."
+        "body": "Leituras brutas dos testes e interpretações versionadas — transmissividade, armazenamento, capacidade específica — cada uma ligada aos testes de origem. Veja § III."
       },
       {
         "num": "§ 1.6",
-        "title": "Histórico operacional",
-        "body": "Um log datado de manutenções, inspeções e incidentes, com anexos, que acompanha o poço ao longo de sua vida útil."
+        "title": "Operação e histórico",
+        "body": "Bombas instaladas, hidrômetros, volumes produzidos e regime de operação, outorgas com suas condicionantes, amostras de qualidade da água e um log de manutenções e incidentes ao longo da vida útil do poço."
       }
     ]
   },
@@ -103,12 +108,39 @@
       },
       {
         "title": "Submissão pronta",
-        "body": "PDFs A4 em escala real, com cabeçalho, metadados e desenho multipágina."
+        "body": "Relatórios PDF com a sua marca, as seções que você escolher e o perfil em escala real em várias páginas, em português ou inglês."
+      }
+    ]
+  },
+  "tests": {
+    "kicker": "III · Testes e interpretação",
+    "headline1": "Da leitura de campo aos",
+    "headlineEm": "parâmetros do aquífero",
+    "headline2": ".",
+    "intro": "Cada medição de nível e cada teste de bombeamento é uma entrada de um {ledger} de acréscimo: medições pontuais, testes de vazão constante e escalonada, air-lift, recuperação etc. As leituras ficam como foram feitas, e rebaixamento, s/Q, Q/s e outros parâmetros são calculados automaticamente.",
+    "ledger": "registro",
+    "chartCaption": "Teste escalonado de exemplo, desenhado pelos gráficos do editor.",
+    "cards": [
+      {
+        "num": "§ 3.1",
+        "title": "O teste como foi feito",
+        "body": "Etapas com vazão e duração, leituras de nível no tempo e recuperação após a parada da bomba."
+      },
+      {
+        "num": "§ 3.2",
+        "title": "Interpretação versionada",
+        "body": "Cada análise registra método, analista, testes de origem e resultados — T, S, K, capacidade específica, vazão máxima recomendada. Várias podem coexistir."
+      },
+      {
+        "num": "§ 3.3",
+        "title": "Editor de análises",
+        "badge": "em breve",
+        "body": "O editor já lê as análises e mostra o estado atual do aquífero. Criar e editar análises no app está a caminho."
       }
     ]
   },
   "contexts": {
-    "kicker": "III · Um arquivo, muitos contextos",
+    "kicker": "IV · Um arquivo, muitos contextos",
     "headline1": "Padrão por dentro,",
     "headlineEm": "flexível",
     "headline2": "por fora.",
@@ -140,37 +172,105 @@
       }
     ]
   },
+  "incomplete": {
+    "kicker": "V · Incompletude graciosa",
+    "headline1": "Comece com",
+    "headlineEm": "o que você tem",
+    "headline2": ".",
+    "intro": "Dado de poço quase nunca está completo. Um relatório de 1987 só com a profundidade e a vazão do air-lift, um cadastro sem coordenadas, um perfil sem litologia, uma outorga ainda sem número: cada um já é um arquivo {well} válido. Quase todo campo é opcional, campos abertos aceitam qualquer texto e um campo ausente significa {unknown} — nunca {zero}. No campo e em arquivos antigos, saber o que falta também é informação.",
+    "unknown": "desconhecido",
+    "zero": "zero",
+    "valid": "✓ válido",
+    "stagesLabel": "Etapa do registro",
+    "stages": ["Relatório", "Visita", "Outorga"],
+    "sample": {
+      "obs": "Relatório de 1987. Sem perfil litológico.",
+      "inspection": "Sem bomba. Sem selo sanitário."
+    },
+    "rules": [
+      {
+        "num": "§ 5.1",
+        "title": "Quase tudo é opcional",
+        "body": "Nome, coordenadas, data de construção, perfurador, litologia, testes, outorgas: cada bloco e cada campo entra quando existir. Blocos construtivos podem ser listas vazias. Um evento precisa só de id, tipo e data; uma outorga, de tipo e órgão."
+      },
+      {
+        "num": "§ 5.2",
+        "title": "Valores sugeridos, texto livre",
+        "body": "Material do revestimento, método de perfuração, tipo de outorga, tipo de manutenção, uso do poço: o formato recomenda um vocabulário para interoperar, mas campos abertos aceitam qualquer valor. Valores fora dele levam o prefixo x- e são preservados e exibidos como foram escritos."
+      },
+      {
+        "num": "§ 5.3",
+        "title": "Ausente é desconhecido",
+        "body": "Sem regime, a vazão é desconhecida, não zero. Sem mudança de status, o status é desconhecido, não ativo. A produção antes da primeira leitura do hidrômetro é desconhecida."
+      },
+      {
+        "num": "§ 5.4",
+        "title": "A falta também é dado",
+        "body": "Dados faltantes e inconsistências viram avisos para revisão, nunca rejeição. O registro fica no arquivo com seu histórico, e o que não se sabe continua visível em vez de ser preenchido com valores inventados."
+      }
+    ]
+  },
+  "extensible": {
+    "kicker": "VI · Extensível por qualquer um",
+    "headline1": "Qualquer um pode",
+    "headlineEm": "estender",
+    "headline2": ".",
+    "intro": "Um perfurador, uma consultoria, uma companhia de saneamento, uma universidade ou um órgão gestor: {anyone} pode acrescentar o que o seu trabalho precisa, sem pedir licença e sem quebrar os arquivos dos outros. A spec obriga todo leitor a manter essas extensões ao abrir e ao salvar. E o que se mostra útil para muitos pode entrar no próprio formato.",
+    "anyone": "qualquer um",
+    "valid": "✓ válido",
+    "stagesLabel": "Nível de extensão",
+    "stages": ["Campo x-", "Profile", "Bloco x-"],
+    "levels": [
+      {
+        "num": "§ 6.1",
+        "title": "Campos e blocos próprios",
+        "body": "Qualquer objeto aceita campos com prefixo x-, e o arquivo aceita blocos inteiros novos: o número do cadastro estadual, o código interno da empresa, o monitoramento de gases de uma mina."
+      },
+      {
+        "num": "§ 6.2",
+        "title": "Profiles de instituições",
+        "body": "Um órgão, uma empresa ou uma rede de pesquisa publica um JSON Schema que exige campos extras, restringe vocabulários ou define suas extensões x-. O arquivo declara o perfil em profiles. Falhas viram avisos, e um profile fora do ar nunca bloqueia o arquivo."
+      },
+      {
+        "num": "§ 6.3",
+        "title": "Do x- ao padrão",
+        "body": "Um valor x- que se mostra útil em várias fontes pode ser promovido a canônico: x-slug_test vira slug_test, e as duas formas seguem válidas até a próxima versão maior. Mudanças no núcleo começam com uma issue aberta: o dado, a fonte real dele e por que nenhum campo o comporta."
+      }
+    ],
+    "ctaContribute": "Como contribuir",
+    "ctaPropose": "Propor uma mudança"
+  },
   "horizon": {
-    "kicker": "IV · No horizonte",
+    "kicker": "VII · No horizonte",
     "headline1": "O",
     "headlineEm": "futuro",
     "headline2": ".",
-    "intro": "A v2 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero e histórico operacional. A especificação evolui de forma aberta para abraçar o que ainda vem pela frente.",
+    "intro": "A v2.3 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero, instalações de bomba, hidrômetros, produção e regime de operação, outorgas e suas condicionantes, qualidade da água, anexos gerais e histórico operacional. A especificação evolui de forma aberta, e estas são as lacunas já mapeadas para as próximas versões.",
     "props": [
       {
-        "num": "§ 4.1",
+        "num": "§ 7.1",
         "title": ".las nativo",
-        "body": "Importação e armazenamento de perfis geofísicos LAS, lado a lado com o perfil litológico."
+        "body": "Importação e armazenamento de perfis geofísicos LAS (resistividade, raios gama, cáliper), lado a lado com o perfil litológico."
       },
       {
-        "num": "§ 4.2",
-        "title": "Qualidade da água",
-        "body": "Análises físico-químicas e bacteriológicas vinculadas à amostragem, profundidade e data."
+        "num": "§ 7.2",
+        "title": "Poços vinculados",
+        "body": "Referências entre arquivos: poços de observação para o coeficiente de armazenamento e uma outorga compartilhada por vários poços, em vez de repetida em cada um."
       },
       {
-        "num": "§ 4.3",
-        "title": "Metadados estendidos",
-        "body": "Outorga, proprietário, regime de uso, referências cadastrais e vínculos com bases regulatórias."
+        "num": "§ 7.3",
+        "title": "Texto multilíngue",
+        "body": "Descrições e observações marcadas com o idioma, para que o mesmo arquivo traga texto em português, inglês ou espanhol — strings simples continuam válidas."
       },
       {
-        "num": "§ 4.4",
-        "title": "Extensões da comunidade",
-        "body": "Namespaces para campos específicos de órgãos e regiões, sem quebrar o núcleo padronizado."
+        "num": "§ 7.4",
+        "title": "Avaliação da qualidade da água",
+        "body": "Julgamentos interpretados como classe da água, fácies hidroquímica e aptidão de uso, guardados junto às amostras de onde vêm."
       }
     ]
   },
   "tools": {
-    "kicker": "V · O ecossistema",
+    "kicker": "VIII · O ecossistema",
     "headline1": "Ferramentas livres",
     "headlineEm": "e abertas",
     "headline2": ", não só um app.",
@@ -179,18 +279,28 @@
     "cards": [
       {
         "title": "\\@welldot/core",
-        "body": "Tipos, validadores Zod e utilitários de serialização para o formato .well — a base sobre a qual tudo o mais é construído.",
+        "body": "Tipos, validadores Zod, JSON Schema e serialização do formato .well, mais seus vocabulários — materiais, tipos de outorga, parâmetros e limites de qualidade da água. A base sobre a qual tudo o mais é construído.",
         "path": "packages/core"
       },
       {
         "title": "\\@welldot/utils",
-        "body": "Utilitários de análise de perfil: cálculos de profundidade, volumes cilíndricos e estimativas de volume de pré-filtro.",
+        "body": "Análise de um arquivo .well: geometria e volumes, hidráulica de aquífero e séries de teste de bombeamento, produção por período e prazos de outorga, derivações de qualidade da água como balanço iônico, Piper e Stiff.",
         "path": "packages/utils"
       },
       {
         "title": "\\@welldot/render",
-        "body": "O renderizador SVG em D3 que desenha todo perfil deste site — incorporável em qualquer aplicação web.",
+        "body": "O renderizador SVG em D3 que desenha todo perfil deste site em escala real, com tema configurável — incorporável em qualquer aplicação web.",
         "path": "packages/render"
+      },
+      {
+        "title": "\\@welldot/pdf",
+        "body": "Relatórios PDF personalizáveis com pdfmake: marca, marca d'água, layout de página, tema, seções e sua ordem, textos em en/pt. Funciona sem nenhum framework de UI.",
+        "path": "packages/pdf"
+      },
+      {
+        "title": "\\@welldot/vue",
+        "body": "Componentes base em Vue 3 para editores .well, com o tema Welldot e um módulo Nuxt.",
+        "path": "packages/vue"
       },
       {
         "title": "App do profiler",
@@ -225,8 +335,15 @@
   "editor": {
     "well": "Poço",
     "fieldInfo": "Mais informações",
+    "comboHint": "Sugestões — você também pode digitar um valor livre",
+    "deleteRow": "Excluir linha",
+    "showPendingTextures": "Mostrar texturas pendentes",
     "save": "Salvar",
     "edit": "Editar",
+    "record": {
+      "by": "por",
+      "moreActions": "Mais ações"
+    },
     "saveAs": "Salvar Como",
     "open": "Abrir",
     "share": "Compartilhar",
@@ -249,7 +366,11 @@
       "units": {
         "title": "Unidades",
         "length": "Comprimento",
-        "diameter": "Diâmetro"
+        "diameter": "Diâmetro",
+        "flow": "Vazão",
+        "power": "Potência",
+        "volume": "Volume",
+        "inches": "pol."
       },
       "coordinates": {
         "title": "Coordenadas",
@@ -272,14 +393,17 @@
       "historyLog": "Histórico",
       "hydrodynamicEvents": "Hidrodinâmica",
       "hydro": "Hidro",
-      "inDevelopment": "Em dev"
+      "inDevelopment": "Em dev",
+      "operation": "Operação",
+      "permits": "Outorgas",
+      "waterQuality": "Qualidade da água",
+      "waterQualityShort": "Qualidade"
     },
     "status": {
       "saved": "Salvo",
       "unsaved": "Não salvo",
       "layers": "Camadas"
     },
-    "clearWell": "Limpar poço",
     "confirmOpen": {
       "header": "Abrir arquivo",
       "message": "Há alterações não salvas. Abrir um novo arquivo irá descartá-las.",
@@ -330,8 +454,35 @@
         "constructive": "Construção",
         "geology": "Geologia",
         "hydrodynamic": "Testes de bombeamento",
-        "history": "Histórico"
-      }
+        "history": "Histórico",
+        "operation": "Operação",
+        "water_quality": "Qualidade da água"
+      },
+      "fields": {
+        "identification": "Identificação",
+        "location": "Localização",
+        "obs": "Observações",
+        "attachments": "Anexos",
+        "bore_hole": "Perfuração",
+        "surface_case": "Tubo de boca",
+        "well_case": "Revestimento",
+        "reduction": "Reduções",
+        "well_screen": "Filtros",
+        "hole_fill": "Espaço anular",
+        "centralizers": "Centralizadores",
+        "cement_pad": "Laje de proteção sanitária",
+        "lithology": "Litologia",
+        "fractures": "Fraturas",
+        "caves": "Cavernas",
+        "hydrodynamic_events": "Testes de bombeamento e medições de nível",
+        "aquifer_analysis": "Análises de aquífero",
+        "pump_installations": "Instalações de bomba",
+        "meters": "Hidrômetros",
+        "operating_regime": "Regime de operação",
+        "production": "Produção",
+        "permits": "Outorgas"
+      },
+      "lastVisibleHint": "Pelo menos um item precisa continuar visível."
     },
     "exportPdfDialog": {
       "title": "Exportar PDF",
@@ -343,9 +494,15 @@
       "valuePlaceholder": "Valor",
       "syncedTooltip": "Valor sincronizado com o perfil",
       "deleteItem": "Remover",
-      "pageBreaks": {
-        "title": "Quebra de páginas",
-        "split": "Dividir perfil em páginas"
+      "format": {
+        "title": "Formato do perfil",
+        "compact": "Compacto",
+        "detailed": "Detalhado",
+        "split": "Dividir perfil em páginas",
+        "matchContent": "Acompanhar conteúdo",
+        "fitPage": "Limitar a uma página (A4)",
+        "compactHint": "Acompanhar conteúdo exige a divisão em páginas desligada",
+        "detailedHint": "Quebras ajustadas a contatos, com sobreposição e mini-mapa"
       },
       "metadataSection": {
         "title": "Seção de metadados",
@@ -356,9 +513,6 @@
       "visibilitySection": {
         "title": "Decidir o que compartilhar",
         "toggle": "Usar minha seleção de compartilhamento"
-      },
-      "scale": {
-        "title": "Escala"
       },
       "metadataFields": {
         "name": "Nome",
@@ -392,15 +546,6 @@
         "fit": "Ajustar",
         "empty": "Carregue um perfil para ver a pré-visualização do PDF",
         "error": "Não foi possível gerar a pré-visualização do PDF. Tente novamente ou ajuste as opções de exportação."
-      },
-      "content": {
-        "total": "Total",
-        "volumeTotal": "Volume total",
-        "slot": "Ranhura",
-        "footerTagline": "veja esse perfil\nonline",
-        "footerTaglineFallback": "veja mais poços\nonline",
-        "footerValidUntilLabel": "Expira",
-        "page": "Página"
       }
     },
     "zoom": {
@@ -410,7 +555,9 @@
     },
     "canvas": {
       "empty": "Nenhum dado de poço ainda",
-      "reload": "Recarregar visualização"
+      "reload": "Recarregar visualização",
+      "startTitle": "Comece um poço",
+      "newWell": "Novo poço"
     },
     "construction": {
       "tag": "Construtivo · Poço",
@@ -421,13 +568,7 @@
         "type": "Tipo",
         "width": "Largura",
         "length": "Comprimento",
-        "thickness": "Espessura",
-        "typeOptions": {
-          "concrete": "Concreto",
-          "reinforcedConcrete": "Concreto Armado",
-          "cement": "Cimento",
-          "mortar": "Argamassa"
-        }
+        "thickness": "Espessura"
       },
       "boreHole": {
         "title": "Poço (Sondagem)",
@@ -438,13 +579,6 @@
         "drillingMethod": "Método",
         "drillingMethodInfo": "Método de perfuração usado para abrir este intervalo do furo. Escolha uma das sugestões — rotativo, percussão, percussão a cabo, trado ou martelo pneumático.",
         "drillingMethodFreeText": "Este campo é livre: se o método não estiver na lista, basta digitá-lo (ex.: circulação reversa, sônico, jateamento) e ele será salvo como escrito.",
-        "drillingMethodOptions": {
-          "rotary": "Rotativo",
-          "percussion": "Percussão",
-          "cableTool": "Percussão a Cabo",
-          "auger": "Trado",
-          "airHammer": "Martelo Pneumático"
-        },
         "addRow": "Adicionar trecho",
         "empty": "Nenhum trecho cadastrado",
         "wellDepth": "Profundidade útil",
@@ -495,13 +629,7 @@
         "description": "Descrição",
         "descriptionInfo": "Observações opcionais sobre estes centralizadores, como fabricante, modelo, material ou forma de instalação.",
         "addRow": "Adicionar centralizadores",
-        "hint": "Uma linha por intervalo. Use a mesma profundidade em De e Até para um único centralizador; deixe o espaçamento vazio se desconhecido.",
-        "types": {
-          "springBow": "Mola (spring bow)",
-          "rigid": "Rígido",
-          "semiRigid": "Semirrígido",
-          "polymer": "Polimérico"
-        }
+        "hint": "Uma linha por intervalo. Use a mesma profundidade em De e Até para um único centralizador; deixe o espaçamento vazio se desconhecido."
       },
       "wellScreen": {
         "title": "Filtro",
@@ -509,10 +637,13 @@
         "from": "De",
         "to": "Até",
         "diameter": "Diâm.",
-        "screenSlot": "Slot (mm)",
-        "type": "Tipo",
-        "typeInfo": "Material (ou tipo construtivo) do filtro por onde a água entra no poço, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
-        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo (ex.: aço inox espiralado, ponte/bridge slot) e ele será salvo como escrito.",
+        "screenSlot": "Abertura (mm)",
+        "type": "Material",
+        "typeInfo": "Material do filtro por onde a água entra no poço, ex.: PVC, PVC geomecânico, aço carbono ou aço inox.",
+        "typeFreeText": "Este campo é livre: se o material não estiver na lista, basta digitá-lo e ele será salvo como escrito.",
+        "slotType": "Tipo",
+        "slotTypeInfo": "Tipo construtivo do filtro, ex.: espiralado (tipo Johnson), ranhurado, tipo ponte, veneziana, perfurado ou tipo Nold.",
+        "slotTypeFreeText": "Este campo é livre: se o tipo não estiver na lista, basta digitá-lo e ele será salvo como escrito.",
         "addRow": "Adicionar filtro"
       },
       "holeFill": {
@@ -530,14 +661,6 @@
           "gravelPack": "Pré-filtro",
           "seal": "Vedação"
         }
-      },
-      "materials": {
-        "pvc": "PVC",
-        "geomechanicalPvc": "PVC Geomecânico",
-        "carbonSteel": "Aço Carbono",
-        "galvanizedSteel": "Aço Galvanizado",
-        "stainlessSteel": "Aço Inox",
-        "fiberglass": "Fibra de Vidro"
       }
     },
     "geological": {
@@ -595,37 +718,14 @@
       "flowingArtesian": "Artesiano jorrante — último nível estático acima do terreno",
       "coordinates": "Coordenadas",
       "coordinatesLabel": "Formato de Coordenadas",
-      "dd": "DD",
-      "dms": "DMS",
       "latitude": "Latitude",
       "longitude": "Longitude",
       "elevation": "Elevação",
       "wellDepth": "Profundidade útil",
       "clickOrDragPin": "Clique no mapa ou arraste o pino",
-      "latPlaceholderDd": "-23.512533",
-      "latPlaceholderDms": "23°30'45.12\"S",
-      "lngPlaceholderDd": "-48.503900",
-      "lngPlaceholderDms": "48°30'14.04\"O",
       "observationsLabel": "Observações",
       "freeNotes": "Notas livres",
       "metadata": "Metadados",
-      "wellTypes": {
-        "tubular": "Tubular",
-        "artesian": "Artesiano (obsoleto)",
-        "handDug": "Cacimba / poço escavado",
-        "horizontal": "Horizontal",
-        "infiltrationGallery": "Galeria de infiltração"
-      },
-      "wellPurposes": {
-        "production": "Produção / captação",
-        "monitoring": "Poço de monitoramento",
-        "piezometer": "Piezômetro",
-        "waterLevelIndicator": "INA — indicador de nível d'água",
-        "observation": "Poço de observação",
-        "exploration": "Pesquisa / exploratório",
-        "injection": "Injeção / recarga",
-        "dewatering": "Rebaixamento"
-      },
       "wellIds": {
         "title": "Identificadores do Poço",
         "tag": "IDENTIFICADORES",
@@ -650,14 +750,19 @@
           "fields": "Autoridade é o nome do cadastro ou instituição que emitiu o código (escolha uma sugestão ou digite outra). ID é o código exatamente como emitido; mantenha zeros à esquerda e separadores (ex. SP-0042819).",
           "primary": "Use o botão de seleção para marcar o identificador principal. Se nenhum for marcado, o primeiro é considerado o principal. Cada par autoridade + ID deve ser único."
         }
-      }
+      },
+      "attachments": "Anexos gerais",
+      "attachmentsInfo": "Arquivos sobre o poço como um todo, como o relatório de perfuração ou o perfil as-built. Anexos de bombas, testes e do histórico ficam no próprio registro."
     },
     "summary": {
-      "tag": "Visão geral · Volumes",
+      "tag": "Visão geral do poço",
       "kpis": {
         "depth": "Prof. Total",
         "layers": "Camadas",
-        "screen": "Filtro"
+        "screen": "Filtro",
+        "wellDepth": "Prof. útil",
+        "staticLevel": "NE atual",
+        "flowRate": "Vazão"
       },
       "boreHole": {
         "title": "Furo",
@@ -679,14 +784,12 @@
       },
       "casing": {
         "title": "Revestimento",
-        "tag": "TUBULAÇÃO · FILTROS",
-        "type": "Tipo",
+        "tag": "TUBULAÇÃO CEGA",
+        "type": "Material",
         "diameter": "Diâm.",
         "from": "De",
         "to": "Até",
         "length": "Trecho",
-        "kindCase": "Revestimento",
-        "kindScreen": "Filtro",
         "total": "Total revestido"
       },
       "reduction": {
@@ -729,6 +832,129 @@
         "from": "De",
         "to": "Até",
         "thickness": "Espessura"
+      },
+      "unnamed": "Poço sem nome",
+      "seeIn": "Ver em {tab}",
+      "identity": {
+        "title": "Identificação",
+        "tag": "GERAL",
+        "ids": "Identificadores"
+      },
+      "location": {
+        "title": "Localização",
+        "tag": "COORDENADAS",
+        "empty": "Coordenadas não informadas."
+      },
+      "pump": {
+        "title": "Bomba atual",
+        "tag": "OPERAÇÃO",
+        "installedAt": "Instalada em {date}",
+        "intakeDepth": "Prof. de sucção",
+        "submergence": "Submergência",
+        "ratedFlow": "Vazão nominal",
+        "ratedHead": "Altura manométrica",
+        "ratedPower": "Potência",
+        "serviceTime": "Tempo em serviço",
+        "years": "{n} anos",
+        "days": "{n} dias",
+        "empty": "Nenhuma bomba instalada."
+      },
+      "aquifer": {
+        "title": "Aquífero",
+        "tag": "HIDRODINÂMICA",
+        "staticLevel": "Nível estático",
+        "dynamicLevel": "Nível dinâmico",
+        "flowRate": "Vazão",
+        "maxFlowRate": "Vazão máxima",
+        "specificCapacity": "Cap. específica",
+        "transmissivity": "Transmissividade",
+        "hydraulicConductivity": "Condutividade hidráulica",
+        "storativity": "Coef. de armazenamento",
+        "aquiferThickness": "Espessura saturada",
+        "wellEfficiency": "Eficiência do poço",
+        "latestAnalysis": "Análise mais recente em {date}",
+        "empty": "Nenhum dado hidrodinâmico registrado."
+      },
+      "waterQuality": {
+        "title": "Qualidade da água",
+        "tag": "ÚLTIMA ANÁLISE",
+        "collectedAt": "Coleta",
+        "sampleType": "Tipo de amostra",
+        "laboratory": "Laboratório",
+        "results": "Resultados",
+        "facies": "Fácies",
+        "ionBalance": "Balanço iônico",
+        "compliance": "Conformidade · {set}",
+        "noExceedances": "Nenhum parâmetro fora dos limites.",
+        "noLimitSet": "Selecione um conjunto de limites na aba Qualidade da água para verificar a conformidade.",
+        "empty": "Nenhuma amostra registrada."
+      },
+      "permit": {
+        "title": "Outorga",
+        "total": "{n} outorgas no total",
+        "validity": "Validade",
+        "flowRate": "Vazão outorgada",
+        "dailyTime": "Tempo diário",
+        "waterUse": "Finalidade de uso",
+        "nextDeadlines": "Próximas condicionantes",
+        "noDeadlines": "Nenhum prazo pendente.",
+        "empty": "Nenhuma outorga registrada.",
+        "overdueCount": "{n} atrasadas"
+      },
+      "activity": {
+        "title": "Eventos e alertas",
+        "tag": "HISTÓRICO",
+        "alerts": "Alertas",
+        "noAlerts": "Nenhum alerta.",
+        "latestEvent": "Último evento hidrodinâmico",
+        "noEvents": "Nenhum evento hidrodinâmico registrado.",
+        "recentLogs": "Últimos registros",
+        "noLogs": "Nenhum registro no histórico.",
+        "domains": {
+          "permits": "Outorgas",
+          "pump": "Bombas",
+          "operation": "Operação",
+          "historyLog": "Histórico",
+          "waterQuality": "Qualidade da água"
+        },
+        "dataIssues": "Inconsistências nos dados ({n})"
+      },
+      "construction": {
+        "title": "Detalhes construtivos",
+        "tag": "CONSTRUTIVO · GEOLOGIA",
+        "empty": "Nenhum dado construtivo registrado."
+      },
+      "screen": {
+        "title": "Filtro",
+        "tag": "SEÇÕES FILTRANTES",
+        "type": "Material",
+        "slotType": "Tipo",
+        "diameter": "Diâm.",
+        "slot": "Abertura",
+        "from": "De",
+        "to": "Até",
+        "length": "Trecho",
+        "total": "Total de filtros"
+      },
+      "cementPad": {
+        "title": "Laje de proteção",
+        "tag": "SUPERFÍCIE",
+        "type": "Tipo",
+        "width": "Largura",
+        "length": "Comprimento",
+        "thickness": "Espessura"
+      },
+      "alerts": {
+        "permitExpired": "Outorga {number} vencida em {date}.",
+        "permitPendingRenewal": "Outorga {number} vencida em {date}; renovação em análise.",
+        "permitExpiring": "Outorga {number} vence em {date} ({n} dias).",
+        "permit_suspended": "Outorga {number} suspensa.",
+        "permit_revoked": "Outorga {number} revogada.",
+        "permitStepsOverdue": "Outorga {number}: {n} etapa(s) administrativa(s) vencida(s) — {description}",
+        "conditionOverdue": "Condicionante atrasada desde {date}: {description}",
+        "conditionOverdueMany": "{n} prazos atrasados desde {date}: {description}",
+        "waterExceedances": "{n} parâmetro(s) fora dos limites de {set} na amostra de {date}.",
+        "wellStatus": "Situação do poço: {status} desde {date}."
       }
     },
     "historyLog": {
@@ -754,18 +980,6 @@
         "copyPath": "Copiar caminho",
         "copied": "Copiado",
         "noAttachments": "Nenhum arquivo anexado",
-        "categories": {
-          "maintenance": "Manutenção",
-          "inspection": "Inspeção",
-          "incident": "Incidente",
-          "event": "Evento"
-        },
-        "severity": {
-          "low": "Baixa",
-          "medium": "Média",
-          "high": "Alta",
-          "critical": "Crítica"
-        },
         "fields": {
           "category": "Categoria",
           "datetime": "Data / Hora",
@@ -775,7 +989,20 @@
           "attachments": "Anexos",
           "attachmentUrl": "URL do arquivo",
           "attachmentFilename": "Nome exibido",
-          "attachmentMediaType": "Tipo de arquivo"
+          "attachmentMediaType": "Tipo de arquivo",
+          "maintenanceType": "Tipo de manutenção",
+          "pumpInstallation": "Instalação de bomba",
+          "meter": "Hidrômetro",
+          "events": "Eventos hidrodinâmicos",
+          "eventsInfo": "Eventos com os dados produzidos ou observados neste registro, ex. o nível medido ou o teste de bombeamento realizado.",
+          "addEvent": "Adicionar evento…",
+          "status": "Situação",
+          "statusInfo": "A mudança de situação mais recente define a situação atual do poço.",
+          "sample": "Amostra de água",
+          "samples": "Amostras de água",
+          "samplesInfo": "Amostras de água coletadas ou relacionadas a este registro.",
+          "addSample": "Adicionar amostra…",
+          "removeLink": "Remover vínculo"
         }
       },
       "events": {
@@ -809,13 +1036,6 @@
         "flowRate": "VAZÃO Q",
         "noData": "—"
       },
-      "eventTypes": {
-        "spot_measurement": "Medição Pontual",
-        "constant_rate": "Vazão Constante",
-        "step_drawdown": "Escalonada",
-        "airlift": "Air-lift",
-        "recovery_only": "Recuperação"
-      },
       "fields": {
         "type": "Tipo de Evento",
         "datetime": "Data / Hora",
@@ -825,12 +1045,12 @@
         "staticLevel": "NE (m)",
         "staticLevelPrecision": "±Prec. NE",
         "measurementMethod": "Método de medição",
-        "pumpingRate": "Vazão estimada (m³/h)",
+        "pumpingRate": "Vazão estimada ({unit})",
         "pumpingDuration": "Duração estimada (min)",
         "steps": "Degraus de Bombeamento",
         "recovery": "Recuperação",
         "includeRecovery": "Incluir fase de recuperação",
-        "rate": "Vazão (m³/h)",
+        "rate": "Vazão ({unit})",
         "ratePrecision": "±Prec.",
         "duration": "Duração (min)",
         "durationDerivedHint": "Calculado a partir das leituras (tempo decorrido máximo)",
@@ -851,21 +1071,1002 @@
         "steps": "degraus",
         "readings": "leituras"
       },
-      "measurementMethods": {
-        "electric_probe": "Sonda elétrica",
-        "pressure_transducer": "Transdutor de pressão",
-        "air_line": "Linha de ar",
-        "tape": "Trena"
-      },
       "addStep": "Adicionar degrau",
       "addReading": "Adicionar leitura",
       "manageReadings": "Gerenciar",
       "readingsDialog": {
-        "stepTitle": "Leituras — Degrau {n} ({rate} m³/h)",
+        "stepTitle": "Leituras — Degrau {n} ({rate} {unit})",
         "recoveryTitle": "Leituras — Recuperação"
       },
       "validation": {
         "missing": "Adicione {fields} para salvar este evento"
+      },
+      "retracted": "Retificado",
+      "retractedInfo": "Um evento posterior corrige este. Ele permanece no arquivo, mas não conta mais.",
+      "correction": "Correção",
+      "correctionInfo": "Este evento corrige um anterior.",
+      "charts": {
+        "title": "Gráficos",
+        "empty": "Sem leituras suficientes para gerar gráficos.",
+        "kinds": {
+          "hydrograph": "Nível × tempo",
+          "semilog": "Rebaixamento × log t",
+          "recovery": "Recuperação (Theis)",
+          "stepTest": "Teste escalonado"
+        },
+        "axes": {
+          "time": "Tempo desde o início (min)",
+          "elapsed": "Tempo desde o início do degrau (min)",
+          "level": "Nível da água (m)",
+          "drawdown": "Rebaixamento s (m)",
+          "residualDrawdown": "Rebaixamento residual s′ (m)",
+          "ratio": "t/t′",
+          "flowRate": "Vazão Q ({unit})",
+          "specificDrawdown": "s/Q (m por {unit})"
+        },
+        "legend": {
+          "step": "Degrau {n}",
+          "pumping": "Bombeamento",
+          "recovery": "Recuperação",
+          "staticLevel": "NE",
+          "pumpStop": "Parada da bomba",
+          "fit": "Ajuste s/Q = B + C·Q",
+          "fitValues": "B = {b} · C = {c}",
+          "drawdownVsRate": "s × Q"
+        },
+        "tooltip": {
+          "time": "t",
+          "elapsed": "Δt",
+          "level": "Nível",
+          "drawdown": "s",
+          "ratio": "t/t′",
+          "rate": "Q"
+        }
+      },
+      "view": {
+        "open": "Visualizar",
+        "title": "Evento hidrodinâmico",
+        "edit": "Editar",
+        "close": "Fechar",
+        "tabs": {
+          "overview": "Visão geral",
+          "readings": "Leituras"
+        },
+        "sections": {
+          "details": "Detalhes",
+          "notes": "Observações e documentos",
+          "links": "Vínculos",
+          "stepSummary": "Resumo dos degraus",
+          "step": "Degrau {n}",
+          "recovery": "Recuperação"
+        },
+        "columns": {
+          "step": "Degrau",
+          "rate": "Q ({unit})",
+          "duration": "Duração (min)",
+          "finalLevel": "Nível final (m)",
+          "drawdown": "s (m)",
+          "specificDrawdown": "s/Q (m por {unit})",
+          "specificCapacity": "Q/s ({unit})",
+          "elapsed": "Δt (min)",
+          "testTime": "t (min)",
+          "level": "Nível (m)",
+          "recoveryElapsed": "t′ (min)",
+          "ratio": "t/t′",
+          "residualDrawdown": "s′ (m)"
+        },
+        "clockInfo": "Δt recomeça a cada degrau; t corre desde o início do primeiro degrau.",
+        "noReadings": "Nenhuma leitura registrada.",
+        "links": {
+          "corrects": "Retifica",
+          "correctedBy": "Retificado por",
+          "historyLogs": "Entradas do histórico",
+          "missing": "Registro não encontrado: {id}",
+          "empty": "Nenhum vínculo com outros registros."
+        }
+      }
+    },
+    "attachments": {
+      "documentType": "Tipo de documento",
+      "documentTypeInfo": "O que é o documento (.well v2.3). Opcional — deixe vazio se não tiver certeza.",
+      "documentTypePlaceholder": "Não informado",
+      "description": "Descrição",
+      "mediaTypeOther": "Outro"
+    },
+    "operation": {
+      "wellStatuses": {
+        "active": "Ativo",
+        "maintenance": "Em manutenção",
+        "inactive": "Paralisado",
+        "decommissioned": "Desativado",
+        "abandoned": "Abandonado"
+      },
+      "pump": {
+        "title": "Instalações de bomba",
+        "intro": "Um registro por instalação. Uma bomba retirada e reinstalada ganha um novo registro com o mesmo número de série. A bomba atual é a que não tem data de retirada.",
+        "add": "Adicionar instalação",
+        "edit": "Editar instalação",
+        "deleteConfirm": "Excluir esta instalação de bomba?",
+        "empty": "Nenhuma instalação de bomba registrada.",
+        "current": "Atual",
+        "removed": "Retirada",
+        "submergence": "Submergência",
+        "submergenceInfo": "Profundidade do crivo menos o nível dinâmico mais recente.",
+        "submergenceNegative": "O crivo está acima do nível dinâmico mais recente.",
+        "fields": {
+          "type": "Tipo de bomba",
+          "typeInfo": "Solar é fonte de energia, não tipo de bomba. Texto livre é permitido.",
+          "powerSource": "Fonte de energia",
+          "installedAt": "Instalada em",
+          "removedAt": "Retirada em",
+          "removedAtInfo": "Deixe vazio enquanto a bomba estiver instalada.",
+          "installedBy": "Instalado por",
+          "removedBy": "Retirado por",
+          "manufacturer": "Fabricante",
+          "model": "Modelo",
+          "serial": "Número de série",
+          "serialInfo": "Liga reinstalações da mesma unidade.",
+          "intakeDepth": "Profundidade do crivo",
+          "intakeDepthInfo": "Profundidade da entrada da bomba a partir do terreno. O perfil desenha a bomba terminando aqui.",
+          "ratedFlowRate": "Vazão nominal",
+          "ratedHead": "Altura manométrica",
+          "ratedPower": "Potência",
+          "ratedPowerInfo": "Armazenada em kW; exibida na unidade escolhida nas Configurações. 1 cv = 0,7355 kW · 1 hp = 0,7457 kW.",
+          "stages": "Estágios",
+          "checkValve": "Válvula de retenção",
+          "riser": "Edutor",
+          "riserDiameter": "Diâmetro do edutor",
+          "riserDiameterInfo": "Diâmetro externo real do tubo edutor.",
+          "riserMaterial": "Material do edutor",
+          "electrical": "Elétrica",
+          "voltage": "Tensão",
+          "phases": "Fases",
+          "cableSection": "Seção do cabo",
+          "cableLength": "Comprimento do cabo",
+          "notes": "Observações"
+        },
+        "warnings": {
+          "intake_below_well_bottom": "O crivo está abaixo do fundo do poço.",
+          "intake_in_screen": "O crivo está dentro de um intervalo de filtro.",
+          "multiple_open_installations": "Mais de uma instalação está sem data de retirada.",
+          "removed_before_installed": "A data de retirada deve ser posterior à de instalação."
+        }
+      },
+      "meter": {
+        "title": "Hidrômetros",
+        "intro": "Uma entrada por instalação de totalizador (hidrômetro). Somente dados do equipamento: toda leitura, inclusive as de instalação e retirada, é registrada em Produção.",
+        "add": "Adicionar hidrômetro",
+        "edit": "Editar hidrômetro",
+        "deleteConfirm": "Excluir este hidrômetro?",
+        "deleteConfirmWithReadings": "Este hidrômetro tem leituras no registro de produção. Elas permanecem no arquivo, mas deixarão de apontar para um hidrômetro. Excluir mesmo assim?",
+        "empty": "Nenhum hidrômetro registrado.",
+        "current": "Atual",
+        "removed": "Retirado",
+        "untyped": "Hidrômetro",
+        "lastReading": "Última leitura",
+        "readingsInfo": "Registre as leituras de instalação e retirada como leituras de hidrômetro em Produção, nesses mesmos instantes.",
+        "fields": {
+          "manufacturer": "Fabricante",
+          "model": "Modelo",
+          "type": "Tipo de hidrômetro",
+          "serial": "Número de série",
+          "serialInfo": "Um hidrômetro retirado e reinstalado ganha uma nova entrada com o mesmo número de série.",
+          "installedAt": "Instalado em",
+          "removedAt": "Retirado em",
+          "removedAtInfo": "Deixe vazio enquanto o hidrômetro estiver instalado.",
+          "installedBy": "Instalado por",
+          "removedBy": "Retirado por",
+          "nominalDiameter": "Diâmetro nominal",
+          "nominalDiameterInfo": "Diâmetro nominal (DN) do hidrômetro.",
+          "maxReading": "Capacidade do totalizador",
+          "maxReadingInfo": "Maior valor exibido antes de o totalizador voltar a zero. Usado para calcular o volume após a virada.",
+          "notes": "Observações"
+        }
+      },
+      "regime": {
+        "title": "Regime de operação",
+        "intro": "Como o poço deve operar a partir de um instante. Uma mudança de regime é uma nova entrada; a mais recente já em vigor é o regime vigente. Poço parado é uma mudança de situação no histórico, não vazão zero.",
+        "add": "Adicionar regime",
+        "edit": "Editar regime",
+        "deleteConfirm": "Excluir este regime?",
+        "empty": "Nenhum regime de operação registrado.",
+        "inForce": "Regime vigente",
+        "scheduled": "Programado",
+        "from": "A partir de",
+        "dailyVolume": "Volume diário",
+        "none": "Nenhum regime em vigor.",
+        "noValues": "Nenhum valor declarado",
+        "unknownInfo": "Deixe o campo vazio quando desconhecido — campo vazio nunca significa zero.",
+        "hoursPerDay": "{n} h/dia",
+        "daysPerWeekShort": "{n} dias/semana",
+        "fields": {
+          "effectiveFrom": "Vigente a partir de",
+          "effectiveFromInfo": "Único no bloco. Não há data de fim: o próximo regime substitui este.",
+          "flowRate": "Vazão",
+          "dailyOperatingTime": "Operação diária",
+          "daysPerWeek": "Dias por semana",
+          "notes": "Observações"
+        }
+      },
+      "production": {
+        "title": "Produção",
+        "intro": "Registro somente de inclusão da água produzida: leituras de hidrômetro e volumes declarados. Entradas nunca são editadas — uma correção é uma nova entrada que anula a original.",
+        "add": "Adicionar registro",
+        "correct": "Corrigir",
+        "correctInfo": "A correção é salva como uma nova entrada que anula esta. A original permanece no arquivo, mas deixa de contar.",
+        "saveCorrection": "Salvar correção",
+        "deleteConfirm": "Excluir este registro?",
+        "deleteInfo": "Excluir remove o registro do arquivo. Para corrigir um valor errado, prefira uma correção, que preserva o histórico. Excluir mesmo assim?",
+        "empty": "Nenhuma produção registrada.",
+        "noMeters": "Adicione um hidrômetro antes de registrar leituras.",
+        "types": {
+          "meter_reading": "Leitura de hidrômetro",
+          "estimated_volume": "Volume estimado"
+        },
+        "fields": {
+          "type": "Tipo",
+          "details": "Detalhes",
+          "value": "Valor",
+          "meter": "Hidrômetro",
+          "datetime": "Data / Hora",
+          "reading": "Leitura",
+          "readingInfo": "Valor do totalizador. Escolha a unidade de volume nas Configurações para lançar leituras de hidrômetros em litros ou galões — são armazenadas em m³.",
+          "source": "Origem",
+          "periodStart": "Início do período",
+          "periodEnd": "Fim do período",
+          "volume": "Volume",
+          "method": "Método",
+          "methodInfo": "Como o volume foi estimado (vazão × tempo, consumo de energia…). É só descritivo: volumes estimados contam apenas onde nenhuma leitura de hidrômetro cobre o período.",
+          "notes": "Observações"
+        },
+        "totals": {
+          "total": "Total",
+          "totalInfo": "Volumes medidos mais estimados. O hidrômetro tem precedência sobre estimativas.",
+          "metered": "Medido",
+          "estimated": "Estimado"
+        },
+        "unknownIntervals": "{n} intervalo entre leituras tem volume desconhecido (o totalizador diminuiu e o hidrômetro não tem capacidade informada). | {n} intervalos entre leituras têm volume desconhecido (o totalizador diminuiu e o hidrômetro não tem capacidade informada).",
+        "unknownIntervalsLabel": "Intervalos desconhecidos",
+        "compliance": {
+          "title": "Conformidade · outorga {number}",
+          "annual": "Ano {period}",
+          "monthly": "Mês {period}"
+        },
+        "periods": {
+          "period": "Período",
+          "month": "Mês",
+          "year": "Ano"
+        },
+        "byPeriod": "Produção por período",
+        "annual": "Produção anual",
+        "ofLimit": "% do limite",
+        "noPeriods": "Ainda não é possível calcular volumes.",
+        "ledger": "Registro",
+        "hideRetracted": "Ocultar anulados",
+        "allEntries": "Todos os registros",
+        "retracted": "Anulado",
+        "retractedInfo": "Um registro posterior corrige este. Ele permanece no arquivo, mas deixa de contar.",
+        "correction": "Correção",
+        "correctionInfo": "Este registro corrige um anterior."
+      },
+      "wellStatus": {
+        "title": "Situação do poço",
+        "unknown": "Situação desconhecida",
+        "unknownInfo": "A situação é derivada das entradas “Mudança de situação” do histórico. Nenhuma foi registrada ainda.",
+        "derivedInfo": "Derivada da entrada “Mudança de situação” mais recente do histórico.",
+        "since": "desde {date}"
+      },
+      "permit": {
+        "title": "Outorgas",
+        "intro": "Um registro por instrumento legal. O documento anexado prevalece. Uma renovação é uma nova outorga que substitui a anterior; situação e prazos das condicionantes são calculados.",
+        "add": "Adicionar outorga",
+        "edit": "Editar outorga",
+        "deleteConfirm": "Excluir esta outorga?",
+        "empty": "Nenhuma outorga registrada.",
+        "noExpiry": "sem vencimento",
+        "supersedes": "Substitui {number}",
+        "supersededBy": "Substituída por {number}",
+        "status": {
+          "requested": "Requerida",
+          "granted": "Concedida",
+          "suspended": "Suspensa",
+          "revoked": "Revogada",
+          "denied": "Indeferida",
+          "withdrawn": "Cancelada",
+          "superseded": "Substituída",
+          "not_yet_valid": "Ainda não vigente",
+          "active": "Vigente",
+          "active_pending_renewal": "Renovação em análise",
+          "expired": "Vencida"
+        },
+        "fields": {
+          "type": "Tipo",
+          "typeInfo": "Renovação não é um tipo: crie uma nova outorga do mesmo tipo que substitui a anterior.",
+          "authority": "Órgão",
+          "authorityInfo": "Órgão emissor, ex.: ANA, SEMAS-PA.",
+          "status": "Situação",
+          "statusInfo": "Situação administrativa definida pelo órgão. Mantenha \"Concedida\" para uma outorga emitida: a vigência é então derivada das datas.",
+          "identifier": "Identificação da outorga",
+          "identifierInfo": "Identificação do ato concedido (portaria, código da licença…), como no documento. Vazia enquanto a outorga está apenas requerida.",
+          "requestIdentifier": "Identificação do requerimento",
+          "requestIdentifierInfo": "Protocolo ou número do processo do requerimento, atribuído pelo órgão.",
+          "issuedAt": "Emitida em",
+          "validFrom": "Válida a partir de",
+          "validFromInfo": "Deixe vazio quando vale desde a emissão.",
+          "validUntil": "Válida até",
+          "validUntilInfo": "Deixe vazio quando não há vencimento.",
+          "renewalRequestedAt": "Renovação solicitada em",
+          "renewalRequestedAtInfo": "Um pedido protocolado até o vencimento mantém a outorga vigente enquanto é analisado.",
+          "validity": "Vigência",
+          "waterUse": "Finalidade de uso",
+          "waterUseEmpty": "Nenhuma finalidade selecionada",
+          "waterUseAdd": "Adicionar finalidade",
+          "waterUseEdit": "Editar",
+          "waterUseRemove": "Remover finalidade",
+          "flowRate": "Vazão máx.",
+          "dailyOperatingTime": "Tempo diário máx.",
+          "volumeLimits": "Limites de volume",
+          "volumeLimitsInfo": "Somente volumes declarados no documento. Volumes de vazão × tempo são calculados, nunca armazenados.",
+          "volumePeriods": {
+            "daily": "Diário",
+            "monthly": "Mensal",
+            "annual": "Anual"
+          },
+          "monthlySchedule": "Regime mensal",
+          "monthlyScheduleInfo": "Quando há regime mensal, meses vazios não têm captação outorgada.",
+          "month": "Mês",
+          "days": "Dias",
+          "supersedes": "Substitui",
+          "supersedesInfo": "A outorga que esta substitui legalmente (renovação).",
+          "notes": "Observações"
+        },
+        "grantDetails": "Vigência e concessão",
+        "grantDetailsInfo": "preenchidas quando a outorga for concedida",
+        "conditions": {
+          "title": "Condicionantes",
+          "add": "Adicionar condicionante",
+          "empty": "Nenhuma condicionante.",
+          "description": "Descrição",
+          "descriptionInfo": "Texto da condicionante como está no documento.",
+          "category": "Categoria",
+          "responsible": "Responsável",
+          "responsibleInfo": "Pessoa ou equipe responsável por cumprir esta condicionante.",
+          "deadline": "Primeiro prazo",
+          "deadlineModes": {
+            "none": "Sem prazo",
+            "fixed": "Data fixa",
+            "relative": "Após início"
+          },
+          "firstDue": "Data",
+          "dueAfter": "Após",
+          "recurrence": "Repete a cada",
+          "recurrenceNone": "Única",
+          "lastDue": "Até",
+          "occurrences": "Máx. de ocorrências",
+          "units": {
+            "D": "dias",
+            "W": "semanas",
+            "M": "meses",
+            "Y": "anos"
+          },
+          "preview": "Próximos prazos",
+          "previewNone": "Nenhum prazo é gerado.",
+          "noStartDate": "Precisa da data de emissão ou de início.",
+          "undated": "Sem prazo",
+          "more": "+{count} prazos",
+          "deadlineStatus": {
+            "fulfilled": "Cumprida",
+            "fulfilled_late": "Cumprida com atraso",
+            "upcoming": "A vencer",
+            "overdue": "Atrasada"
+          },
+          "markFulfilled": "Marcar cumprida",
+          "undoFulfilled": "Remover cumprimento",
+          "undoConfirm": "Remover este cumprimento?",
+          "remove": "Remover condicionante",
+          "schedule": "Cronograma da condicionante",
+          "openSchedule": "Ver cronograma",
+          "scheduleInfo": "Os cumprimentos marcados aqui são salvos junto com a outorga.",
+          "fulfilledCount": "{n} cumprido(s)"
+        },
+        "fulfill": {
+          "title": "Condicionante cumprida",
+          "deadline": "Prazo",
+          "datetime": "Cumprida em",
+          "author": "Cumprida por",
+          "authorInfo": "Por padrão, o responsável pela condicionante.",
+          "description": "Descrição",
+          "defaultDescription": "{condition} — cumprida",
+          "info": "Registrado nos cumprimentos da condicionante. Anexe o comprovante de protocolo como comprovante de condicionante.",
+          "sampleInfo": "Amostra de água cuja análise cumpre esta condicionante."
+        },
+        "history": {
+          "title": "Histórico",
+          "info": "Etapas administrativas da outorga: protocolo, andamentos do processo, notificações, taxas, vistorias, decisões.",
+          "add": "Adicionar etapa",
+          "empty": "Nenhuma etapa registrada.",
+          "remove": "Remover etapa",
+          "date": "Data",
+          "type": "Tipo",
+          "description": "Descrição",
+          "done": "Concluída",
+          "dueDate": "Prazo",
+          "dueDateInfo": "Para etapas com ação (taxa a pagar, notificação a responder). Vencida e não concluída gera um alerta.",
+          "dueOn": "Prazo {date}",
+          "overdue": "{n} etapa(s) administrativa(s) com prazo vencido.",
+          "addTitle": "Nova etapa",
+          "editTitle": "Editar etapa",
+          "edit": "Editar etapa",
+          "save": "Salvar etapa",
+          "markDone": "Marcar como concluída",
+          "reopen": "Reabrir etapa",
+          "deleteConfirm": "Remover esta etapa do histórico da outorga?"
+        },
+        "view": {
+          "open": "Visualizar",
+          "close": "Fechar",
+          "tabs": {
+            "grant": "Outorga",
+            "conditions": "Condicionantes",
+            "history": "Histórico"
+          },
+          "sections": {
+            "grant": "Outorga e concessão",
+            "notes": "Observações e documentos"
+          },
+          "fulfilledCount": "{done}/{total} cumpridos",
+          "conditionFulfilled": "Condicionante cumprida",
+          "timelineEmpty": "Nenhuma etapa ou cumprimento registrado."
+        },
+        "warnings": {
+          "valid_until_before_valid_from": "O vencimento é anterior ao início da vigência.",
+          "supersedes_unresolved": "A outorga substituída não existe neste arquivo.",
+          "supersedes_cycle": "A cadeia de substituições volta para si mesma.",
+          "overlapping_validity": "Outra outorga do mesmo tipo tem vigência sobreposta.",
+          "daily_operating_time_out_of_range": "Um tempo diário de operação está fora de 0–24 h.",
+          "monthly_above_max": "Um valor mensal excede o máximo da outorga.",
+          "duplicate_month": "Um mês aparece mais de uma vez no regime.",
+          "duplicate_volume_period": "Um período de volume aparece mais de uma vez.",
+          "duplicate_condition_id": "Duas condicionantes têm o mesmo id.",
+          "condition_due_conflict": "Uma condicionante tem data fixa e prazo relativo; a data fixa prevalece.",
+          "invalid_duration": "Uma condicionante tem duração inválida.",
+          "missing_identifier": "Preencha a identificação da outorga ou do requerimento.",
+          "granted_without_identifier": "Uma outorga concedida está sem identificação.",
+          "duplicate_history_id": "Duas etapas do histórico têm o mesmo id.",
+          "duplicate_fulfillment_id": "Dois cumprimentos de uma condicionante têm o mesmo id.",
+          "unmatched_fulfillment": "Um cumprimento de condicionante não corresponde a nenhum prazo desta outorga.",
+          "fulfillment_reference_unresolved": "Um cumprimento de condicionante aponta para um evento ou amostra inexistente."
+        }
+      },
+      "warnings": {
+        "meter_removed_before_installed": "A data de retirada deve ser posterior à de instalação.",
+        "overlapping_meters": "Este hidrômetro está instalado ao mesmo tempo que outro.",
+        "duplicate_meter_id": "Dois hidrômetros têm o mesmo id.",
+        "reading_meter_unresolved": "O hidrômetro desta leitura não existe neste arquivo.",
+        "reading_outside_installation": "Esta leitura está fora do período de instalação do hidrômetro.",
+        "reading_rollover_unknown": "O totalizador diminuiu e o hidrômetro não tem capacidade informada: o volume deste intervalo é desconhecido.",
+        "duplicate_production_id": "Dois registros de produção têm o mesmo id.",
+        "corrects_unresolved": "O registro corrigido não existe neste arquivo.",
+        "corrects_cycle": "A cadeia de correções volta a si mesma.",
+        "estimate_period_invalid": "O fim do período deve ser posterior ao início.",
+        "estimated_overlaps_meter": "Este volume estimado se sobrepõe a leituras de hidrômetro; o hidrômetro prevalece.",
+        "duplicate_regime_id": "Dois regimes têm o mesmo id.",
+        "regime_duplicate_effective_from": "Outro regime começa no mesmo instante.",
+        "regime_exceeds_permit": "O regime vigente excede a vazão ou a operação diária outorgadas.",
+        "log_category_field_mismatch": "Esta entrada tem campos de outra categoria.",
+        "log_reference_unresolved": "Uma bomba, hidrômetro ou evento referenciado não existe neste arquivo.",
+        "log_after_decommission": "Esta entrada é posterior à desativação ou ao abandono do poço.",
+        "missing_maintenance_type": "Esta manutenção referencia dados, mas não tem tipo de manutenção.",
+        "missing_status": "Esta mudança de situação não tem situação.",
+        "analysis_uses_retracted_event": "Esta análise usa um evento anulado."
+      }
+    },
+    "waterQuality": {
+      "title": "Qualidade da água",
+      "intro": "Registro cumulativo das amostras de água e de seus resultados de campo e de laboratório. Amostras não são editadas — laudo retificado ou revalidação de dados vira uma nova amostra que substitui a original.",
+      "add": "Adicionar amostra",
+      "edit": "Editar amostra",
+      "correct": "Retificar",
+      "correctInfo": "A retificação é salva como nova amostra, que substitui esta. A original permanece no arquivo, mas deixa de contar.",
+      "saveCorrection": "Salvar retificação",
+      "retracted": "Retificada",
+      "retractedInfo": "Uma amostra posterior retifica esta. Ela permanece no arquivo, mas fica fora dos cálculos derivados.",
+      "correction": "Retificação",
+      "correctionInfo": "Esta amostra retifica uma anterior.",
+      "hideRetracted": "Ocultar retificadas",
+      "deleteConfirm": "Excluir esta amostra?",
+      "deleteInfo": "A exclusão remove a amostra do arquivo. Para corrigir um valor errado, prefira uma retificação, que preserva o histórico. Excluir mesmo assim?",
+      "deleteBlocked": "Referenciada por uma retificação, duplicata/split ou entrada do histórico — não pode ser excluída. Registre uma retificação.",
+      "empty": "Nenhuma amostra de água registrada.",
+      "noMatches": "Nenhuma amostra corresponde aos filtros.",
+      "allCampaigns": "Todas as campanhas",
+      "allTypes": "Todos os tipos de amostra",
+      "compareAgainst": "Comparar com",
+      "compareAgainstInfo": "Limites nunca são gravados no arquivo .well. Escolha um conjunto de limites para destacar os resultados acima do permitido. Os valores foram transcritos da fonte citada e devem ser conferidos no documento oficial antes de uso regulatório.",
+      "noLimitSet": "Nenhum conjunto de limites",
+      "limitSetSource": "Fonte: {source}",
+      "exceeds": "Acima do limite",
+      "exceedsMax": "acima do máximo de {limit}",
+      "exceedsMin": "abaixo do mínimo de {limit}",
+      "exceedsPresence": "deve estar ausente",
+      "notDetected": "não detectado",
+      "estimatedShort": "est.",
+      "presence": {
+        "present": "presente",
+        "absent": "ausente"
+      },
+      "card": {
+        "parentOf": "Amostra original: {sample}",
+        "pumpIntake": "sucção da bomba",
+        "formationWater": "Água da formação",
+        "formationWaterInfo": "A profundidade da amostra está dentro de um filtro e abaixo do nível estático.",
+        "notFormationWater": "Não representa a formação",
+        "notFormationWaterInfo": "A profundidade da amostra está fora dos filtros ou acima do nível estático — pode ser água estagnada no revestimento."
+      },
+      "derived": {
+        "ionBalance": "Balanço iônico {pct}%",
+        "ionBalanceInfo": "Cátions {cations} meq/L · ânions {anions} meq/L",
+        "rpd": "DPR {pct}% ({name})",
+        "holdingTime": "Analisada em até {time}",
+        "hours": "{n} h",
+        "days": "{n} d",
+        "receivedTempOk": "Recebida refrigerada",
+        "receivedTempHigh": "Recebida acima da temperatura",
+        "purgeStabilized": "Purga estabilizada",
+        "purgeNotStabilized": "Purga não estabilizada",
+        "facies": "Fácies {facies}",
+        "faciesIons": {
+          "calcium": "Cálcica",
+          "magnesium": "Magnesiana",
+          "sodium_potassium": "Sódica/potássica",
+          "bicarbonate": "Bicarbonatada",
+          "chloride": "Cloretada",
+          "sulfate": "Sulfatada",
+          "mixed": "Mista"
+        }
+      },
+      "errors": {
+        "title": "A amostra não pode ser salva:",
+        "result": "Resultado {n} ({name}): {message}",
+        "idTaken": "Outra amostra já usa este identificador.",
+        "labNameRequired": "O nome do laboratório é obrigatório quando algum campo do laboratório é preenchido.",
+        "pointTypeRequired": "Escolha o tipo de ponto de amostragem para registrar dispositivo, profundidade ou bomba.",
+        "noResults": "Adicione pelo menos um resultado."
+      },
+      "fields": {
+        "id": "Identificador da amostra",
+        "idInfo": "Único no arquivo. Duplicatas, splits, retificações e entradas do histórico apontam para a amostra por este identificador.",
+        "datetime": "Coletada em",
+        "sampleType": "Tipo de amostra",
+        "sampleTypeInfo": "Amostra de rotina ou de controle de qualidade. Use o prefixo x- para outros tipos.",
+        "parentSample": "Amostra original",
+        "parentSampleId": "Amostra original",
+        "parentSampleInfo": "Obrigatória para duplicatas de campo e splits: a amostra que elas replicam.",
+        "campaign": "Campanha",
+        "campaignInfo": "Identificador livre que agrupa as amostras de uma rodada de amostragem.",
+        "sequence": "Sequência",
+        "sequenceInfo": "Ordena amostras coletadas no mesmo instante (ex.: perfil vertical).",
+        "samplingMethod": "Método de amostragem",
+        "samplingMethodInfo": "Como o poço foi purgado antes da coleta.",
+        "samplingPoint": "Ponto de amostragem",
+        "device": "Dispositivo",
+        "depth": "Profundidade",
+        "interval": "Intervalo",
+        "laboratory": "Laboratório",
+        "reportNumber": "Nº do laudo",
+        "receivedAt": "Recebida em",
+        "receivedTemperature": "Temperatura de recebimento",
+        "detectionLimit": "LD",
+        "staticLevelEvent": "Medição do nível estático",
+        "staticLevelEventInfo": "Evento hidrodinâmico com o nível d'água medido na coleta.",
+        "collectedBy": "Coletada por",
+        "preservation": "Preservação",
+        "preservationInfo": "Preservação e acondicionamento, texto livre (ex.: HNO₃ até pH < 2, refrigerada a 4 °C).",
+        "chainOfCustody": "Cadeia de custódia",
+        "chainOfCustodyInfo": "Número da ficha de cadeia de custódia.",
+        "notes": "Observações",
+        "attachments": "Anexos",
+        "results": "Resultados",
+        "dateOnly": "Só a data",
+        "yes": "Sim",
+        "no": "Não"
+      },
+      "samplingPoint": {
+        "title": "Ponto de amostragem",
+        "type": "Tipo de ponto",
+        "device": "Dispositivo",
+        "deviceInfo": "O que coletou a amostra. A purga é descrita pelo método de amostragem.",
+        "pumpInstallation": "Bomba de produção",
+        "pumpInstallationInfo": "Instalação de bomba amostrada na descarga. A profundidade da amostra passa a ser a profundidade de sucção da bomba.",
+        "linkPumpAtCollection": "Vincular a bomba instalada na coleta: {pump}",
+        "pumpNotInPlace": "Esta bomba não estava instalada no momento da coleta.",
+        "pumpDepthInfo": "Profundidade derivada da sucção da instalação de bomba.",
+        "depth": "Profundidade",
+        "depthInfo": "Profundidade pontual da entrada do amostrador, a partir do nível do terreno.",
+        "depthPrecision": "Precisão da profundidade (1σ)",
+        "from": "De",
+        "to": "Até",
+        "geometries": {
+          "none": "Sem profundidade",
+          "depth": "Profundidade pontual",
+          "interval": "Intervalo isolado"
+        }
+      },
+      "purge": {
+        "title": "Purga",
+        "duration": "Duração",
+        "volume": "Volume",
+        "flowRate": "Vazão",
+        "stabilized": "Parâmetros estabilizados",
+        "stabilizedInfo": "Os parâmetros de campo estavam estáveis antes da coleta.",
+        "readings": "Leituras de estabilização",
+        "readingsInfo": "Parâmetros de campo lidos durante a purga. Os valores finais na coleta vão nos resultados, medidos em campo.",
+        "elapsed": "Tempo decorrido",
+        "parameter": "Parâmetro",
+        "value": "Valor",
+        "addReading": "Adicionar leitura",
+        "removeReading": "Remover leitura"
+      },
+      "laboratory": {
+        "title": "Laboratório",
+        "name": "Laboratório",
+        "accreditation": "Acreditação",
+        "accreditationInfo": "Identificador de acreditação ISO/IEC 17025 ou equivalente.",
+        "reportNumber": "Nº do laudo",
+        "batchId": "Lote / ordem de serviço",
+        "sampleId": "Identificador no laboratório",
+        "receivedAt": "Recebida em",
+        "receivedTemperature": "Temperatura de recebimento"
+      },
+      "result": {
+        "add": "Adicionar resultado",
+        "remove": "Remover resultado",
+        "newRow": "novo resultado",
+        "details": "Mais sobre {name}",
+        "vocabulary": "Vocabulário",
+        "vocabularies": {
+          "welldot": "welldot",
+          "cas": "CAS",
+          "custom": "Próprio (x-)"
+        },
+        "parameter": "Parâmetro",
+        "parameterPlaceholder": "Buscar parâmetro",
+        "customVocabulary": "vocabulário x-",
+        "code": "Código",
+        "unit": "Unidade UCUM",
+        "unitInfo": "Obrigatória para códigos próprios (x-), em UCUM (ex.: mg/L, ug/L, uS/cm).",
+        "form": "Forma do valor",
+        "forms": {
+          "value": "Número",
+          "presence": "Presença",
+          "text": "Texto"
+        },
+        "qualifier": "Qualificador",
+        "value": "Valor",
+        "detectionLimit": "Limite de detecção",
+        "quantificationLimit": "Limite de quantificação",
+        "valuePrecision": "Precisão (1σ)",
+        "valuePrecisionInfo": "Incerteza de um sigma. Laudos costumam informar a incerteza expandida (k = 2): divida pelo fator de abrangência.",
+        "fraction": "Fração",
+        "measuredIn": "Medido em",
+        "method": "Método",
+        "analyzedAt": "Analisado em",
+        "labFlags": "Flags do laboratório",
+        "labFlagsInfo": "Flags como emitidas pelo laboratório, sem interpretação. Tecle Enter após cada uma."
+      },
+      "filtration": {
+        "poreSize": "Poro do filtro",
+        "location": "Filtrada em"
+      },
+      "validation": {
+        "status": "Validação",
+        "qualifier": "Qualificador de validação",
+        "qualifierInfo": "Código do guia de validação aplicado (ex.: J, UJ, R).",
+        "guideline": "Guia",
+        "validatedBy": "Validado por",
+        "validatedAt": "Validado em"
+      },
+      "qualifiers": {
+        "lt": "< menor que",
+        "gt": "> maior que",
+        "not_detected": "Não detectado",
+        "estimated": "Estimado"
+      },
+      "fractions": {
+        "total": "Total",
+        "dissolved": "Dissolvida",
+        "suspended": "Suspensa"
+      },
+      "measuredIn": {
+        "field": "Campo",
+        "lab": "Laboratório"
+      },
+      "validationStatuses": {
+        "unvalidated": "Não validado",
+        "validated": "Validado",
+        "qualified": "Qualificado",
+        "rejected": "Rejeitado"
+      },
+      "groups": {
+        "physical": "Físico / campo",
+        "aggregate": "Agregados",
+        "major_ion": "Íons maiores",
+        "nutrient": "Nutrientes",
+        "organic": "Orgânicos",
+        "disinfection": "Desinfecção",
+        "mining_redox": "Mineração e redox",
+        "metal": "Metais / traço",
+        "microbiology": "Microbiologia",
+        "radioactivity": "Radioatividade"
+      },
+      "warnings": {
+        "parent_missing": "Duplicatas de campo e splits devem apontar para a amostra original.",
+        "dissolved_without_filtration": "Fração dissolvida sem dados de filtração — resultados filtrados em campo e no laboratório não são comparáveis.",
+        "depth_outside_screen": "A profundidade da amostra está fora de todos os filtros (possível água estagnada no revestimento).",
+        "depth_below_well_bottom": "A profundidade da amostra está abaixo da profundidade do poço.",
+        "depth_above_static_level": "A profundidade da amostra está acima do nível estático medido na coleta.",
+        "value_form_mismatch": "A forma do valor não corresponde ao parâmetro (presença em código numérico ou valor em código de presença).",
+        "not_detected_without_limit": "Não detectado sem limite de detecção — o resultado fica sem escala.",
+        "duplicate_result": "O mesmo parâmetro, fração e local de medição aparecem mais de uma vez.",
+        "unknown_parameter_code": "Código welldot desconhecido para esta versão do vocabulário.",
+        "analyzed_before_collection": "Análise anterior à coleta da amostra.",
+        "received_before_collection": "Recebimento pelo laboratório anterior à coleta da amostra.",
+        "reference_unresolved": "Um registro referenciado (amostra retificada, amostra original, evento de nível estático ou instalação de bomba) não existe.",
+        "corrects_cycle": "As retificações formam um ciclo.",
+        "duplicate_sample_id": "Outra amostra usa o mesmo identificador."
+      },
+      "pdf": {
+        "title": "Qualidade da água",
+        "results": "Resultados",
+        "parameter": "Parâmetro",
+        "value": "Valor",
+        "unit": "Unidade",
+        "fraction": "Fração",
+        "measuredIn": "Medido em",
+        "method": "Método",
+        "flags": "Flags do laboratório",
+        "validation": "Validação",
+        "exceedances": "Excedências",
+        "limitSet": "Conjunto de limites"
+      },
+      "parameters": {
+        "temperature": "Temperatura",
+        "ph": "pH",
+        "specific_conductance": "Condutividade elétrica a 25 °C",
+        "conductivity_uncompensated": "Condutividade sem compensação",
+        "dissolved_oxygen": "Oxigênio dissolvido",
+        "orp": "Potencial redox vs. eletrodo de referência",
+        "eh": "Potencial redox corrigido vs. EPH",
+        "turbidity": "Turbidez, formazina sem método identificado",
+        "turbidity_ntu": "Turbidez nefelométrica, luz branca",
+        "turbidity_fnu": "Turbidez nefelométrica, infravermelho",
+        "turbidity_fau": "Turbidez por atenuação",
+        "apparent_color": "Cor aparente",
+        "true_color": "Cor verdadeira",
+        "odor": "Odor",
+        "taste": "Gosto",
+        "total_dissolved_solids": "Sólidos totais dissolvidos",
+        "total_suspended_solids": "Sólidos suspensos totais",
+        "total_solids": "Sólidos totais",
+        "free_co2": "Gás carbônico livre",
+        "alkalinity_total_as_caco3": "Alcalinidade total como CaCO₃",
+        "alkalinity_bicarbonate_as_caco3": "Alcalinidade de bicarbonatos como CaCO₃",
+        "alkalinity_carbonate_as_caco3": "Alcalinidade de carbonatos como CaCO₃",
+        "alkalinity_hydroxide_as_caco3": "Alcalinidade de hidróxidos como CaCO₃",
+        "acidity_total_as_caco3": "Acidez total como CaCO₃",
+        "hardness_total_as_caco3": "Dureza total como CaCO₃",
+        "hardness_calcium_as_caco3": "Dureza de cálcio como CaCO₃",
+        "calcium": "Cálcio",
+        "magnesium": "Magnésio",
+        "sodium": "Sódio",
+        "potassium": "Potássio",
+        "bicarbonate": "Bicarbonato como HCO₃⁻",
+        "carbonate": "Carbonato como CO₃²⁻",
+        "chloride": "Cloreto",
+        "sulfate": "Sulfato",
+        "fluoride": "Fluoreto",
+        "silica_as_sio2": "Sílica como SiO₂",
+        "nitrate_as_n": "Nitrato como N",
+        "nitrate_as_no3": "Nitrato como NO₃⁻",
+        "nitrite_as_n": "Nitrito como N",
+        "nitrite_as_no2": "Nitrito como NO₂⁻",
+        "ammonia_as_n": "Nitrogênio amoniacal como N",
+        "ammonia_as_nh3": "Amônia como NH₃",
+        "kjeldahl_nitrogen_as_n": "Nitrogênio Kjeldahl total como N",
+        "phosphorus_total_as_p": "Fósforo total como P",
+        "orthophosphate_as_po4": "Ortofosfato como PO₄³⁻",
+        "total_organic_carbon": "Carbono orgânico total",
+        "cod": "Demanda química de oxigênio (DQO)",
+        "bod5": "Demanda bioquímica de oxigênio (DBO₅)",
+        "total_petroleum_hydrocarbons": "Hidrocarbonetos totais de petróleo",
+        "oil_and_grease": "Óleos e graxas",
+        "free_chlorine": "Cloro residual livre",
+        "total_chlorine": "Cloro residual total",
+        "ferrous_iron": "Ferro ferroso (Fe²⁺)",
+        "chromium_hexavalent": "Cromo hexavalente",
+        "cyanide_total_as_cn": "Cianeto total como CN⁻",
+        "cyanide_wad_as_cn": "Cianeto WAD como CN⁻",
+        "cyanide_free_as_cn": "Cianeto livre como CN⁻",
+        "thiocyanate": "Tiocianato",
+        "sulfide_total_as_s": "Sulfeto total como S",
+        "iron": "Ferro",
+        "manganese": "Manganês",
+        "aluminum": "Alumínio",
+        "antimony": "Antimônio",
+        "arsenic": "Arsênio",
+        "barium": "Bário",
+        "beryllium": "Berílio",
+        "boron": "Boro",
+        "cadmium": "Cádmio",
+        "chromium": "Cromo total",
+        "cobalt": "Cobalto",
+        "copper": "Cobre",
+        "lead": "Chumbo",
+        "lithium": "Lítio",
+        "mercury": "Mercúrio",
+        "molybdenum": "Molibdênio",
+        "nickel": "Níquel",
+        "selenium": "Selênio",
+        "silver": "Prata",
+        "strontium": "Estrôncio",
+        "thallium": "Tálio",
+        "uranium": "Urânio",
+        "vanadium": "Vanádio",
+        "zinc": "Zinco",
+        "total_coliforms": "Coliformes totais em 100 mL",
+        "total_coliforms_mpn": "Coliformes totais, contagem",
+        "total_coliforms_cfu": "Coliformes totais, contagem",
+        "e_coli": "E. coli em 100 mL",
+        "e_coli_mpn": "E. coli, contagem",
+        "e_coli_cfu": "E. coli, contagem",
+        "thermotolerant_coliforms": "Coliformes termotolerantes em 100 mL",
+        "thermotolerant_coliforms_mpn": "Coliformes termotolerantes, contagem",
+        "thermotolerant_coliforms_cfu": "Coliformes termotolerantes, contagem",
+        "heterotrophic_plate_count": "Bactérias heterotróficas",
+        "gross_alpha": "Atividade alfa total",
+        "gross_beta": "Atividade beta total",
+        "radium_226": "Rádio-226",
+        "radium_228": "Rádio-228",
+        "radon_222": "Radônio-222"
+      },
+      "addShort": "Adicionar",
+      "editShort": "Editar",
+      "saveEdit": "Salvar alterações",
+      "editTooltip": "Editar no próprio registro — só para erros de digitação",
+      "editWarning": "A edição altera o registro original, sem guardar o que ele dizia antes. Use apenas para corrigir erros de digitação na entrada dos dados. Para laudo retificado ou revalidação de dados, use Retificar: isso salva uma nova amostra que substitui esta e preserva o histórico.",
+      "editConfirm": "Sobrescrever a amostra original?",
+      "editConfirmInfo": "As alterações substituem o que estava registrado nesta amostra, e os valores anteriores não são guardados. Continue só se estiver corrigindo erros de digitação; para laudo retificado, cancele e use Retificar.",
+      "view": {
+        "open": "Visualizar",
+        "close": "Fechar",
+        "tabs": {
+          "sample": "Coleta",
+          "results": "Resultados",
+          "links": "Vínculos"
+        },
+        "sections": {
+          "collection": "Coleta",
+          "notes": "Observações e documentos"
+        },
+        "columns": {
+          "limits": "Limites",
+          "ql": "LQ"
+        },
+        "comparingWith": "Comparando com {set}. Valores em vermelho excedem o limite.",
+        "links": {
+          "corrects": "Retifica",
+          "correctedBy": "Retificada por",
+          "parent": "Amostra original",
+          "children": "Duplicatas e splits",
+          "historyLogs": "Entradas do histórico",
+          "missing": "Registro não encontrado: {id}",
+          "empty": "Nenhum vínculo com outros registros."
+        }
+      }
+    },
+    "examples": {
+      "open": "Abrir exemplo",
+      "loading": "Carregando exemplos",
+      "loadError": "Não foi possível carregar os exemplos. Verifique a conexão e tente de novo.",
+      "disclaimer": "Baseados em poços reais do SIAGAS (SGB). Nomes, outorgas, análises e dados de operação são ilustrativos.",
+      "confirm": {
+        "header": "Abrir exemplo",
+        "message": "Há alterações não salvas. Abrir um exemplo irá descartá-las.",
+        "accept": "Abrir mesmo assim",
+        "reject": "Cancelar"
+      }
+    },
+    "newWell": {
+      "button": "Novo poço",
+      "kicker": "Novo poço",
+      "title": "Por onde começar?",
+      "close": "Fechar",
+      "back": "Voltar",
+      "note": "Seu poço atual não é apagado até você escolher uma opção.",
+      "dropHint": "Solte o arquivo .well para abrir",
+      "loadError": "Não foi possível ler este arquivo como um poço .well.",
+      "groups": {
+        "start": "Começar",
+        "import": "Importar"
+      },
+      "blank": {
+        "title": "Em branco",
+        "subtitle": "Perfil vazio, do zero"
+      },
+      "examples": {
+        "title": "Exemplos",
+        "subtitle": "Nenhum poço pronto | 1 poço pronto | {count} poços prontos",
+        "subtitleLoading": "Poços prontos para explorar",
+        "kicker": "Exemplos",
+        "heading": "Comece por um poço real",
+        "all": "Todos",
+        "open": "Abrir"
+      },
+      "open": {
+        "title": "Abrir arquivo .well",
+        "subtitle": "Do computador ou arraste aqui",
+        "subtitleMobile": "Do dispositivo"
+      },
+      "paste": {
+        "title": "Colar JSON",
+        "subtitle": "Conteúdo de um .well",
+        "placeholder": "Cole aqui o conteúdo de um arquivo .well",
+        "waiting": "Aguardando conteúdo",
+        "valid": "Poço válido",
+        "unnamed": "sem nome",
+        "empty": "O JSON é válido, mas não descreve nenhuma camada ou elemento do poço.",
+        "invalidJson": "JSON inválido: {detail}",
+        "invalidWell": "Não é um .well válido: {detail}",
+        "sample": "Colar exemplo",
+        "open": "Abrir poço"
+      },
+      "siagas": {
+        "subtitle": "Pelo código do poço",
+        "intro": "Importa a ficha do SIAGAS, do Serviço Geológico do Brasil (SGB), e, nos poços de monitoramento, a série de níveis e as fotos do RIMAS. Nada é inventado: o que o SIAGAS não tem fica de fora, e o que exigiu uma decisão aparece listado abaixo.",
+        "codeLabel": "Código ou link do poço",
+        "codePlaceholder": "ex.: 3100020782 ou um link do siagasweb/rimasweb",
+        "invalidCode": "Digite o código SIAGAS de 10 dígitos ou cole o link.",
+        "rimasLabel": "Série de níveis do RIMAS",
+        "rimas": {
+          "none": "Nenhuma",
+          "monthly": "Mensal",
+          "all": "Completa"
+        },
+        "rimasHint": "Mensal mantém a última leitura de cada mês.",
+        "media": "Fotos e documentos do RIMAS",
+        "import": "Importar",
+        "stats": {
+          "depth": "Profundidade",
+          "layers": "Camadas",
+          "casings": "Revestimentos",
+          "screens": "Filtros",
+          "events": "Níveis e testes",
+          "samples": "Análises de água",
+          "attachments": "Anexos"
+        },
+        "warnings": "Observações da importação ({count})",
+        "noWarnings": "Sem observações: todos os valores foram levados.",
+        "json": "JSON .well",
+        "copy": "Copiar JSON",
+        "copied": "Copiado",
+        "download": "Baixar .well",
+        "open": "Abrir no editor",
+        "source": "Ver no SIAGAS",
+        "errors": {
+          "invalid": "Este não é um código SIAGAS válido.",
+          "notFound": "O SIAGAS não tem poço com este código.",
+          "upstream": "Não foi possível acessar o servidor do SGB. Tente de novo em instantes.",
+          "timeout": "O SIAGAS demorou demais para responder. Tente de novo em instantes.",
+          "rateLimit": "Muitas importações em pouco tempo. Aguarde um minuto e tente de novo.",
+          "generic": "A importação falhou."
+        }
+      },
+      "confirmBlank": {
+        "header": "Começar em branco",
+        "message": "O poço atual será substituído por um perfil vazio.",
+        "messageUnsaved": "Há alterações não salvas. Começar em branco irá descartá-las.",
+        "accept": "Começar em branco",
+        "reject": "Cancelar"
       }
     }
   },

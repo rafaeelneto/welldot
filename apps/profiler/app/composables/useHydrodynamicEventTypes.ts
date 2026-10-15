@@ -1,57 +1,34 @@
+import {
+  HYDRODYNAMIC_EVENT_TYPES,
+  MEASUREMENT_METHODS,
+  getVocabLabel,
+} from '@welldot/core';
+import { vocabOptions } from '~/utils/vocab';
+
+const EVENT_TYPE_ICONS: Record<string, string> = {
+  spot_measurement: 'ph:drop-duotone',
+  constant_rate: 'ph:clock-duotone',
+  step_drawdown: 'ph:chart-bar-duotone',
+  airlift: 'ph:fan-duotone',
+  recovery_only: 'ph:arrow-up-duotone',
+};
+
 export function useHydrodynamicEventTypes() {
-  const { t } = useI18n();
+  const { locale } = useI18n();
 
-  const typeOptions = computed(() => [
-    {
-      value: 'spot_measurement',
-      label: t('editor.hydrodynamicEvents.eventTypes.spot_measurement'),
-      icon: 'ph:drop-duotone',
-    },
-    {
-      value: 'constant_rate',
-      label: t('editor.hydrodynamicEvents.eventTypes.constant_rate'),
-      icon: 'ph:clock-duotone',
-    },
-    {
-      value: 'step_drawdown',
-      label: t('editor.hydrodynamicEvents.eventTypes.step_drawdown'),
-      icon: 'ph:chart-bar-duotone',
-    },
-    {
-      value: 'airlift',
-      label: t('editor.hydrodynamicEvents.eventTypes.airlift'),
-      icon: 'ph:fan-duotone',
-    },
-    {
-      value: 'recovery_only',
-      label: t('editor.hydrodynamicEvents.eventTypes.recovery_only'),
-      icon: 'ph:arrow-up-duotone',
-    },
-  ]);
+  const typeOptions = computed(() =>
+    vocabOptions(HYDRODYNAMIC_EVENT_TYPES, locale.value).map(o => ({
+      ...o,
+      icon: EVENT_TYPE_ICONS[o.value]!,
+    })),
+  );
 
-  const measurementMethodOptions = computed(() => [
-    {
-      value: 'electric_probe',
-      label: t('editor.hydrodynamicEvents.measurementMethods.electric_probe'),
-    },
-    {
-      value: 'pressure_transducer',
-      label: t(
-        'editor.hydrodynamicEvents.measurementMethods.pressure_transducer',
-      ),
-    },
-    {
-      value: 'air_line',
-      label: t('editor.hydrodynamicEvents.measurementMethods.air_line'),
-    },
-    {
-      value: 'tape',
-      label: t('editor.hydrodynamicEvents.measurementMethods.tape'),
-    },
-  ]);
+  const measurementMethodOptions = computed(() =>
+    vocabOptions(MEASUREMENT_METHODS, locale.value),
+  );
 
   function eventTypeLabel(type: string): string {
-    return typeOptions.value.find(o => o.value === type)?.label ?? type;
+    return getVocabLabel(HYDRODYNAMIC_EVENT_TYPES, type, locale.value);
   }
 
   function eventTypeSeverity(type: string): string {
@@ -66,11 +43,9 @@ export function useHydrodynamicEventTypes() {
   }
 
   function measurementMethodLabel(method?: string): string {
-    return (
-      measurementMethodOptions.value.find(o => o.value === method)?.label ??
-      method ??
-      ''
-    );
+    return method
+      ? getVocabLabel(MEASUREMENT_METHODS, method, locale.value)
+      : '';
   }
 
   return {
