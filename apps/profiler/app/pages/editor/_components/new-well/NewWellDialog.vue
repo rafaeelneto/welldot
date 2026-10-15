@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { normalizeSiagasCode } from '@welldot/utils/siagas';
 import ExamplesPanel from './ExamplesPanel.vue';
 import PasteJsonPanel from './PasteJsonPanel.vue';
+import SiagasPanel from './SiagasPanel.vue';
 import type { NewWellSection } from '~/composables/useNewWellDialog';
 
 const { t } = useI18n();
@@ -15,6 +17,7 @@ const isMobile = computed(() => viewport.isLessThan('lg'));
 // On mobile the options are the first screen and a section opens over them.
 const mobilePanelOpen = ref(false);
 const pasteText = ref('');
+const siagasCode = ref('');
 const loadError = ref<string | null>(null);
 
 watch(
@@ -72,12 +75,18 @@ function onKeyDown(e: KeyboardEvent) {
   }
 }
 
-// Pasting anywhere in the dialog (outside a text field) opens "Paste JSON".
+// Pasting anywhere in the dialog (outside a text field) opens "Paste JSON",
+// or the SIAGAS import when the text is a SIAGAS code or link.
 function onPaste(e: ClipboardEvent) {
   if (isTextField(e.target)) return;
   const pasted = e.clipboardData?.getData('text') ?? '';
   if (!pasted.trim()) return;
   e.preventDefault();
+  if (normalizeSiagasCode(pasted)) {
+    siagasCode.value = pasted.trim();
+    showSection('siagas');
+    return;
+  }
   pasteText.value = pasted;
   showSection('paste');
 }
@@ -342,8 +351,12 @@ const dialogStyle = computed(() =>
             </button>
             <button
               type="button"
-              disabled
-              class="w-full flex items-center gap-3.5 px-3 py-3 rounded-xl border text-left transition-colors duration-150 cursor-pointer border-transparent opacity-60 disabled:cursor-not-allowed"
+              class="w-full flex items-center gap-3.5 px-3 py-3 rounded-xl border text-left transition-colors duration-150 cursor-pointer"
+              :class="optionClass(section === 'siagas')"
+              :aria-current="
+                section === 'siagas' && !isMobile ? 'true' : undefined
+              "
+              @click="showSection('siagas')"
             >
               <span
                 class="size-11 rounded-lg flex items-center justify-center shrink-0 border bg-surface-0 border-surface-200 text-content-0"
@@ -360,11 +373,11 @@ const dialogStyle = computed(() =>
                   {{ t('editor.newWell.siagas.subtitle') }}
                 </span>
               </span>
-              <span
-                class="shrink-0 font-mono text-xs uppercase tracking-wider text-content-400 px-2 py-0.5 rounded border border-surface-200 bg-surface-0"
-              >
-                {{ t('editor.shareDialog.comingSoon') }}
-              </span>
+              <Icon
+                v-if="isMobile"
+                name="ph:caret-right"
+                class="size-4 shrink-0 text-content-400"
+              />
             </button>
           </section>
 
@@ -404,6 +417,7 @@ const dialogStyle = computed(() =>
           {{ t('editor.newWell.back') }}
         </button>
         <ExamplesPanel v-if="section === 'examples'" />
+        <SiagasPanel v-else-if="section === 'siagas'" v-model="siagasCode" />
         <PasteJsonPanel v-else v-model="pasteText" />
       </main>
 

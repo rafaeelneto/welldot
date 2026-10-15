@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { deserializeWell, isWellEmpty } from '@welldot/core';
+import { deserializeWell, hasWellData } from '@welldot/core';
 import { useDebounceFn } from '@vueuse/core';
 
 /** The pasted text. The dialog fills it when the user pastes anywhere. */
@@ -38,7 +38,7 @@ function validate(value: string): Status {
   }
   try {
     const well = deserializeWell(value);
-    if (!well || isWellEmpty(well)) {
+    if (!well || !hasWellData(well)) {
       return { kind: 'error', message: t('editor.newWell.paste.empty') };
     }
     return {

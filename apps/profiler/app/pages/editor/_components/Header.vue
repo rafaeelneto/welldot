@@ -145,9 +145,8 @@ const toolItems = computed<ToolItem[]>(() => [
   {
     label: t('editor.importSiagas'),
     icon: 'ph:download-simple-duotone',
-    comingSoon: true,
     alwaysInMenu: true,
-    disabled: true,
+    onClick: () => newWell.open('siagas'),
   },
 ]);
 

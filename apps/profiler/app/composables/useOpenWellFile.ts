@@ -1,4 +1,4 @@
-import { isWellEmpty } from '@welldot/core';
+import { hasWellData } from '@welldot/core';
 
 /**
  * Opening a `.well` from outside the app: the file picker, a dropped file or
@@ -15,7 +15,8 @@ export function useOpenWellFile() {
 
   /** Resolves to true when nothing would be lost or the user accepts. */
   function confirmDiscard(): Promise<boolean> {
-    if (!store.isDirty || isWellEmpty(store.well)) return Promise.resolve(true);
+    if (!store.isDirty || !hasWellData(store.well))
+      return Promise.resolve(true);
     return new Promise(resolve => {
       confirm.require({
         icon: 'ph:warning-duotone',

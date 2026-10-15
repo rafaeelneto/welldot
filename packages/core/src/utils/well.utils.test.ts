@@ -5,6 +5,7 @@ import {
   checkIfProfileIsEmpty,
   convertProfileFromJSON,
   deserializeWell,
+  hasWellData,
   isWellEmpty,
   profileToWell,
   redactWell,
@@ -155,6 +156,33 @@ function fullWell(): Well {
     caves: [makeCave()],
   };
 }
+
+// ─── hasWellData ─────────────────────────────────────────────────────────────
+
+describe('hasWellData', () => {
+  it('returns false for null, undefined and a blank well', () => {
+    expect(hasWellData(null)).toBe(false);
+    expect(hasWellData(undefined)).toBe(false);
+    expect(hasWellData(emptyWell())).toBe(false);
+    expect(hasWellData({ ...emptyWell(), name: '  ' })).toBe(false);
+  });
+
+  it('returns true for a well with a profile', () => {
+    expect(hasWellData({ ...emptyWell(), lithology: [makeLithology()] })).toBe(
+      true,
+    );
+  });
+
+  it('returns true for a registry record without a profile', () => {
+    const record: Well = {
+      ...emptyWell(),
+      well_id: [{ authority: 'SIAGAS', id: '2600029321', primary: true }],
+      location: { lat: -6.7, lng: -36.6 },
+    };
+    expect(isWellEmpty(record)).toBe(true);
+    expect(hasWellData(record)).toBe(true);
+  });
+});
 
 // ─── isWellEmpty ─────────────────────────────────────────────────────────────
 

@@ -2021,7 +2021,45 @@
         "open": "Open well"
       },
       "siagas": {
-        "subtitle": "By the well code"
+        "subtitle": "By the well code",
+        "intro": "Imports the SIAGAS record of the Geological Survey of Brazil (SGB) and, for monitoring wells, the RIMAS level series and photos. Nothing is invented: what SIAGAS does not have stays out, and what needed a decision is listed below.",
+        "codeLabel": "Well code or link",
+        "codePlaceholder": "e.g. 3100020782 or a siagasweb/rimasweb link",
+        "invalidCode": "Type the 10-digit SIAGAS code or paste its link.",
+        "rimasLabel": "RIMAS level series",
+        "rimas": {
+          "none": "None",
+          "monthly": "Monthly",
+          "all": "Full"
+        },
+        "rimasHint": "Monthly keeps the last reading of each month.",
+        "media": "RIMAS photos and documents",
+        "import": "Import",
+        "stats": {
+          "depth": "Depth",
+          "layers": "Layers",
+          "casings": "Casings",
+          "screens": "Screens",
+          "events": "Levels and tests",
+          "samples": "Water analyses",
+          "attachments": "Attachments"
+        },
+        "warnings": "Notes from the import ({count})",
+        "noWarnings": "No notes: every value was carried over.",
+        "json": ".well JSON",
+        "copy": "Copy JSON",
+        "copied": "Copied",
+        "download": "Download .well",
+        "open": "Open in editor",
+        "source": "See on SIAGAS",
+        "errors": {
+          "invalid": "This is not a valid SIAGAS code.",
+          "notFound": "SIAGAS has no well with this code.",
+          "upstream": "The SGB server could not be reached. Try again in a moment.",
+          "timeout": "SIAGAS took too long to answer. Try again in a moment.",
+          "rateLimit": "Too many imports in a short time. Wait a minute and try again.",
+          "generic": "The import failed."
+        }
       },
       "confirmBlank": {
         "header": "Start blank",

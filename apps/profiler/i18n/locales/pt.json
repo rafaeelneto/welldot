@@ -2021,7 +2021,45 @@
         "open": "Abrir poço"
       },
       "siagas": {
-        "subtitle": "Pelo código do poço"
+        "subtitle": "Pelo código do poço",
+        "intro": "Importa a ficha do SIAGAS, do Serviço Geológico do Brasil (SGB), e, nos poços de monitoramento, a série de níveis e as fotos do RIMAS. Nada é inventado: o que o SIAGAS não tem fica de fora, e o que exigiu uma decisão aparece listado abaixo.",
+        "codeLabel": "Código ou link do poço",
+        "codePlaceholder": "ex.: 3100020782 ou um link do siagasweb/rimasweb",
+        "invalidCode": "Digite o código SIAGAS de 10 dígitos ou cole o link.",
+        "rimasLabel": "Série de níveis do RIMAS",
+        "rimas": {
+          "none": "Nenhuma",
+          "monthly": "Mensal",
+          "all": "Completa"
+        },
+        "rimasHint": "Mensal mantém a última leitura de cada mês.",
+        "media": "Fotos e documentos do RIMAS",
+        "import": "Importar",
+        "stats": {
+          "depth": "Profundidade",
+          "layers": "Camadas",
+          "casings": "Revestimentos",
+          "screens": "Filtros",
+          "events": "Níveis e testes",
+          "samples": "Análises de água",
+          "attachments": "Anexos"
+        },
+        "warnings": "Observações da importação ({count})",
+        "noWarnings": "Sem observações: todos os valores foram levados.",
+        "json": "JSON .well",
+        "copy": "Copiar JSON",
+        "copied": "Copiado",
+        "download": "Baixar .well",
+        "open": "Abrir no editor",
+        "source": "Ver no SIAGAS",
+        "errors": {
+          "invalid": "Este não é um código SIAGAS válido.",
+          "notFound": "O SIAGAS não tem poço com este código.",
+          "upstream": "Não foi possível acessar o servidor do SGB. Tente de novo em instantes.",
+          "timeout": "O SIAGAS demorou demais para responder. Tente de novo em instantes.",
+          "rateLimit": "Muitas importações em pouco tempo. Aguarde um minuto e tente de novo.",
+          "generic": "A importação falhou."
+        }
       },
       "confirmBlank": {
         "header": "Começar em branco",

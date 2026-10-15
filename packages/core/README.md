@@ -54,6 +54,7 @@ import {
   parseWell,
   serializeWell,
   deserializeWell,
+  hasWellData,
   isWellEmpty,
 } from '@welldot/core';
 
@@ -69,8 +70,9 @@ const jsonString = serializeWell(well);
 // Deserialize — handles versioned format and legacy formats
 const restored = deserializeWell(jsonString);
 
-// Check if a well contains any data
+// Check if a well has a profile to draw, or holds any data at all
 const empty = isWellEmpty(well);
+const hasData = hasWellData(well);
 ```
 
 ## API Reference
@@ -244,6 +246,10 @@ Returns `null` if the parsed data is empty. Throws on unrecognized version numbe
 #### `isWellEmpty(well: Well | null | undefined): boolean`
 
 Returns `true` when all constructive and geologic arrays are empty. Accepts `null` and `undefined` (both treated as empty).
+
+#### `hasWellData(well: Well | null | undefined): boolean`
+
+Returns `true` when the well holds any data: a profile, or any other filled root member (identification, location, events, samples, permits, `x-` members, …). A registry record without construction or geology has data although `isWellEmpty` says it has nothing to draw. Blank strings, zeros and objects holding only those do not count.
 
 #### `calculatedWellDepth(well: Well): number`
 

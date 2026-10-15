@@ -450,6 +450,37 @@ export function isWellEmpty(well: Well | null | undefined): boolean {
   );
 }
 
+/** A value that carries something: not blank, not 0, not all-blank inside
+ *  (an editor's placeholder `cement_pad` of zeros holds nothing). */
+function isFilled(value: unknown): boolean {
+  if (value === undefined || value === null) return false;
+  if (typeof value === 'string') return value.trim() !== '';
+  if (typeof value === 'number') return value !== 0;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'object') return Object.values(value).some(isFilled);
+  return true;
+}
+
+/** Root members that say nothing about the well itself. */
+const NON_DATA_ROOT_KEYS = new Set(['version', '$schema', '@context']);
+
+/**
+ * Returns `true` when the well holds any data at all: a profile (see
+ * {@link isWellEmpty}) or any other filled root member — identification,
+ * location, events, samples, permits, `x-` members, … A registry record
+ * with no construction or geology is not empty by this measure, while
+ * {@link isWellEmpty} (nothing to draw) still says it is.
+ *
+ * @param well - The well to check. `null` / `undefined` hold no data.
+ */
+export function hasWellData(well: Well | null | undefined): boolean {
+  if (!well) return false;
+  if (!isWellEmpty(well)) return true;
+  return Object.entries(well as RawJSON).some(
+    ([key, value]) => !NON_DATA_ROOT_KEYS.has(key) && isFilled(value),
+  );
+}
+
 /**
  * Returns a copy of `well` with hidden sections and fields cleared: array
  * fields become `[]` and optional fields become `undefined`, so the result

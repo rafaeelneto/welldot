@@ -1,4 +1,4 @@
-import { isWellEmpty } from '@welldot/core';
+import { hasWellData } from '@welldot/core';
 
 /** One entry of `@welldot/core/examples/index.json`, served at `/examples/`. */
 export interface WellExample {
@@ -97,7 +97,7 @@ export function useWellExamples() {
 
   /** Load an example, asking first when the current well has unsaved changes. */
   function openExample(example: WellExample): Promise<boolean> {
-    if (!store.isDirty || isWellEmpty(store.well)) return _load(example);
+    if (!store.isDirty || !hasWellData(store.well)) return _load(example);
     return new Promise(resolve => {
       confirm.require({
         icon: 'ph:warning-duotone',

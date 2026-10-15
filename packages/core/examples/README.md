@@ -61,6 +61,8 @@ The script ([`packages/render/scripts/generate-example-thumbnails.mjs`](../../re
 
 ## Mapping rules used for the physical base
 
+These examples were built by hand. To import a real SIAGAS record as it is, without invented data, use `importSiagasWell` from `@welldot/utils/siagas` (or "Import from SIAGAS" in the profiler). It follows the same rules, except that it interprets zeros per field and does not convert nominal pipe sizes to outer diameters.
+
 - **Coordinates:** SIAGAS latitude/longitude (GGMMSS, south/west) → negative decimal degrees, with `original_crs` set to the SIRGAS 2000 UTM zone. A SIAGAS elevation (`cota`) of 0 means unknown. Where an elevation is given, it is orthometric (`elevation_datum: "x-imbituba"`).
 - **Zero means missing:** SIAGAS writes 0 for an unknown value. It is never copied as 0.
 - **Diameters:** hole diameters use the bit size in mm. Pipes use the real outer diameter of the nominal size (6" steel → 168 mm, 8" → 219 mm, 14" → 356 mm).

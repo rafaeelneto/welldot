@@ -37,6 +37,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./siagas": {
+      "types": "./dist/siagas/index.d.ts",
+      "import": "./dist/siagas/index.js",
+      "require": "./dist/siagas/index.cjs"
     }
   },
   "sideEffects": false,

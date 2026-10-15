@@ -182,6 +182,22 @@ getRelativePercentDifferences(well, 'ws-2026-09-b'); // → [{ key: 'sulfate', r
 isFormationWater(well, sample); // → true (inside a screen, below the static level)
 ```
 
+### SIAGAS import (`@welldot/utils/siagas`)
+
+Imports a well from [SIAGAS](https://siagasweb.sgb.gov.br), the groundwater registry of the Geological Survey of Brazil (SGB), and, for monitoring wells, the level series and photos of its network RIMAS. Unlike the rest of the package, `importSiagasWell` does network I/O (the global `fetch`, or one you pass). The SGB pages send no CORS headers, so call it from a server.
+
+```ts
+import { importSiagasWell, SiagasError } from '@welldot/utils/siagas';
+
+const { json, well, warnings } = await importSiagasWell('3100020782', {
+  rimas: 'monthly', // 'none' | 'monthly' (last reading of each month) | 'all'
+  media: true, // RIMAS photos and documents as root attachments
+});
+warnings.map(w => w.message.pt); // what could not be carried over, or needed a decision
+```
+
+The conversion is faithful: nothing is invented, exact duplicate rows are dropped and everything else (overlaps, mismatches) stays as recorded and becomes a warning. The page as read is kept in `x-siagas.record`. SIAGAS writes `0` for "no data", so zeros are interpreted per field (a layer starting at 0 m is real, a ground elevation of 0 is not); negative concentrations become `qualifier: "<"`, and "Surgência: S" turns the static level negative. The steps are also exported on their own: `parseSiagasPage(html)`, `parseRimasPage(html)` and `siagasToWell(record, options)`. `importSiagasWell` throws a `SiagasError` whose `kind` is `invalid_code`, `not_found`, `upstream`, `parse` or `conversion`.
+
 ## Contributing
 
 Issues and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/rafaeelneto/welldot/blob/main/CONTRIBUTING.md). The source lives in `packages/utils` within the [welldot monorepo](https://github.com/rafaeelneto/welldot).

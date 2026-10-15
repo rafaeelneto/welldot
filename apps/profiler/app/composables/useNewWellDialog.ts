@@ -1,10 +1,11 @@
-import { isWellEmpty } from '@welldot/core';
+import { hasWellData } from '@welldot/core';
 
-export type NewWellSection = 'examples' | 'paste';
+export type NewWellSection = 'examples' | 'paste' | 'siagas';
 
 /**
- * The "New well" dialog: start blank, from an example, from a file or from
- * pasted JSON. One instance lives in the editor header; anything can open it.
+ * The "New well" dialog: start blank, from an example, from a file, from
+ * pasted JSON or from a SIAGAS code. One instance lives in the editor
+ * header; anything can open it.
  * It opens by itself once per session when the editor starts with an empty
  * well (`openIfEmpty`).
  */
@@ -37,7 +38,7 @@ export function useNewWellDialog() {
     if (autoOpened.value) return;
     autoOpened.value = true;
     if (route.query.share) return;
-    if (isWellEmpty(store.well)) open('examples');
+    if (!hasWellData(store.well)) open('examples');
   }
 
   function _startBlank() {
@@ -48,7 +49,7 @@ export function useNewWellDialog() {
 
   /** Replace the current well with an empty one (asks when it has data). */
   function startBlank() {
-    if (isWellEmpty(store.well)) return _startBlank();
+    if (!hasWellData(store.well)) return _startBlank();
     confirm.require({
       icon: 'ph:warning-duotone',
       header: t('editor.newWell.confirmBlank.header'),

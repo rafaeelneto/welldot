@@ -145,6 +145,7 @@ export {
   checkIfProfileIsEmpty,
   convertProfileFromJSON,
   deserializeWell,
+  hasWellData,
   isWellEmpty,
   profileToWell,
   redactWell,
