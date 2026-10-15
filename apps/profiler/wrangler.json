@@ -23,6 +23,11 @@
       "name": "SIAGAS_RATE_LIMITER",
       "namespace_id": "1002",
       "simple": { "limit": 20, "period": 60 }
+    },
+    {
+      "name": "EVENTS_RATE_LIMITER",
+      "namespace_id": "1003",
+      "simple": { "limit": 60, "period": 60 }
     }
   ],
   "env": {
@@ -38,6 +43,11 @@
           "name": "SIAGAS_RATE_LIMITER",
           "namespace_id": "1002",
           "simple": { "limit": 20, "period": 60 }
+        },
+        {
+          "name": "EVENTS_RATE_LIMITER",
+          "namespace_id": "1003",
+          "simple": { "limit": 60, "period": 60 }
         }
       ]
     }

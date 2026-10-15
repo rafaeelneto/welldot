@@ -74,8 +74,9 @@ export default defineEventHandler(async event => {
     });
   } catch (e) {
     if (e instanceof SiagasError) {
-      if (e.kind === 'conversion')
-        console.error('SIAGAS conversion', code, e.details);
+      // A page the reader or converter could not handle: worth a look.
+      if (e.kind === 'conversion' || e.kind === 'parse')
+        console.error(`SIAGAS ${e.kind}`, code, e.details);
       throw createError({
         statusCode: STATUS[e.kind],
         statusMessage: e.message,

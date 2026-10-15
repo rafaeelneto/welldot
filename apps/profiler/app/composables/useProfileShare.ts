@@ -62,6 +62,7 @@ export function useProfileShare() {
 
       const url = `${useRequestURL().origin}/editor?share=${share.id}`;
       const copied = await copyToClipboard(url);
+      if (copied) trackEvent('share_link');
       return copied
         ? { ok: true, url, expiresAt: share.expiresAt }
         : { ok: false, reason: 'error' };

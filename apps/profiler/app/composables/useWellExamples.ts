@@ -86,7 +86,10 @@ export function useWellExamples() {
       const json = await fetchExampleText(example);
       // An example is not the file the user opened: Save must ask for a name.
       persistence.clearHandle();
-      return store.loadWell(json);
+      const loaded = store.loadWell(json);
+      if (loaded)
+        trackEvent('well_open', { source: 'example', example: example.slug });
+      return loaded;
     } catch {
       failed.value = true;
       return false;

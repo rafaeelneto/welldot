@@ -149,12 +149,14 @@ export function usePdfExport(draftContainer: Ref<HTMLElement | null>) {
     await pdfDoc.download(
       buildDefaultPdfFilename(profileStore.getExportableWell()),
     );
+    trackEvent('pdf_download', { format: pdfExportStore.format });
   }
 
   async function print(): Promise<void> {
     const pdfDoc = await ensureCurrentPdf();
     if (!pdfDoc) return;
     await pdfDoc.print();
+    trackEvent('pdf_print', { format: pdfExportStore.format });
   }
 
   onMounted(() => {
