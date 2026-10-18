@@ -133,6 +133,10 @@ All types are exported as TypeScript type-only exports (zero runtime cost).
 | `StepDrawdownEvent`               | A step-drawdown pumping test                                                                                                                 |
 | `AirliftEvent`                    | An air-lift development or test                                                                                                              |
 | `RecoveryOnlyEvent`               | Recovery measurements without drawdown data                                                                                                  |
+| `LoggerSeriesEvent`               | Continuous level series recorded by an installed sensor (v2.4)                                                                               |
+| `LoggerReading`                   | A `logger_series` reading, located by `datetime` (v2.4)                                                                                      |
+| `BarometricCompensation`          | `logger_series.barometric_compensation` values (v2.4)                                                                                        |
+| `ReadingAggregation`              | `logger_series.aggregation` values (v2.4)                                                                                                    |
 | `HydrodynamicEvent`               | Discriminated union of all event types + x- custom events                                                                                    |
 | `AquiferAnalysis`                 | An interpreted set of aquifer parameters                                                                                                     |
 | `Attachment`                      | An HTTPS-referenced document, typed by `document_type` (common type since v2.3)                                                              |
@@ -212,7 +216,9 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 | `StepDrawdownEventSchema`          | `StepDrawdownEvent`                                                                                                                                               |
 | `AirliftEventSchema`               | `AirliftEvent`                                                                                                                                                    |
 | `RecoveryOnlyEventSchema`          | `RecoveryOnlyEvent`                                                                                                                                               |
-| `HydrodynamicEventSchema`          | `HydrodynamicEvent` (discriminated union + x- passthrough)                                                                                                        |
+| `LoggerSeriesEventSchema`          | `LoggerSeriesEvent`                                                                                                                                               |
+| `LoggerReadingSchema`              | `LoggerReading`                                                                                                                                                   |
+| `HydrodynamicEventSchema`          | `HydrodynamicEvent` (discriminated union; only `x-` types pass through)                                                                                           |
 | `AquiferAnalysisSchema`            | `AquiferAnalysis`                                                                                                                                                 |
 | `AttachmentSchema`                 | `Attachment`                                                                                                                                                      |
 | `PumpInstallationSchema`           | `PumpInstallation`                                                                                                                                                |
@@ -393,17 +399,19 @@ getVocabLabel(PERMIT_TYPES, 'x-special', 'pt'); // 'x-special'
 
 Fields whose values the schema fixes (no free text, no `x-`) ship in the same shape as the open vocabularies — `VocabEntry` lists with `en`/`pt` labels — so `getVocabLabel` labels any value without consumer translations. Each list is checked at compile time against its type, so it cannot drift from the schema. The `*_VALUES` lists are the bare values.
 
-| Vocabulary                                         | Field                                         |
-| -------------------------------------------------- | --------------------------------------------- |
-| `WELL_STATUSES` (`WELL_STATUS_VALUES`)             | `history_logs[].status` (`status_change`)     |
-| `PERMIT_ADMINISTRATIVE_STATUSES`                   | `permits[].status`                            |
-| `VOLUME_LIMIT_PERIODS`                             | `permits[].volume_limits[].period`            |
-| `PRODUCTION_ENTRY_TYPES`                           | `production[].type`                           |
-| `RESULT_QUALIFIERS` (`QUALIFIER_VALUES`)           | result `qualifier`                            |
-| `RESULT_FRACTIONS` (`FRACTION_VALUES`)             | result `fraction`                             |
-| `MEASUREMENT_LOCATIONS`                            | result `measured_in`, `filtration.location`   |
-| `VALIDATION_STATUSES` (`VALIDATION_STATUS_VALUES`) | result `validation.status`                    |
-| `PARAMETER_GROUPS` (`PARAMETER_GROUP_VALUES`)      | parameter vocabulary groups, in display order |
+| Vocabulary                                                    | Field                                         |
+| ------------------------------------------------------------- | --------------------------------------------- |
+| `WELL_STATUSES` (`WELL_STATUS_VALUES`)                        | `history_logs[].status` (`status_change`)     |
+| `PERMIT_ADMINISTRATIVE_STATUSES`                              | `permits[].status`                            |
+| `VOLUME_LIMIT_PERIODS`                                        | `permits[].volume_limits[].period`            |
+| `PRODUCTION_ENTRY_TYPES`                                      | `production[].type`                           |
+| `RESULT_QUALIFIERS` (`QUALIFIER_VALUES`)                      | result `qualifier`                            |
+| `RESULT_FRACTIONS` (`FRACTION_VALUES`)                        | result `fraction`                             |
+| `MEASUREMENT_LOCATIONS`                                       | result `measured_in`, `filtration.location`   |
+| `VALIDATION_STATUSES` (`VALIDATION_STATUS_VALUES`)            | result `validation.status`                    |
+| `PARAMETER_GROUPS` (`PARAMETER_GROUP_VALUES`)                 | parameter vocabulary groups, in display order |
+| `BAROMETRIC_COMPENSATIONS` (`BAROMETRIC_COMPENSATION_VALUES`) | `logger_series.barometric_compensation`       |
+| `READING_AGGREGATIONS` (`READING_AGGREGATION_VALUES`)         | `logger_series.aggregation`                   |
 
 Value rules without labels: `NUMERIC_QUALIFIERS`, `PARENT_SAMPLE_TYPES`, `BLANK_SAMPLE_TYPES`. Parameter names: `getParameterLabel(parameter, locale)` (CAS numbers resolve through the published equivalences; unknown codes are returned as-is).
 

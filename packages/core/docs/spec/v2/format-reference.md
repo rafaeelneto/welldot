@@ -565,7 +565,7 @@ Recommended values for `sample_type`, `sampling_method`, `sampling_point.type` a
 
 ## `hydrodynamic_events[].measurement_method` — Recommended values
 
-Used by `spot_measurement` events.
+Used by `spot_measurement` and `logger_series` _(since v2.4)_ events.
 
 | Value                 | English             | Portuguese (BR)       |
 | --------------------- | ------------------- | --------------------- |
@@ -809,6 +809,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `hydrodynamic_events[].static_level`, `static_level_precision`
 - `PumpingStep.readings[].depth`, `depth_precision`
 - `RecoveryPhase.readings[].depth`, `depth_precision`
+- `logger_series.sensor_depth`, `readings[].depth`, `depth_precision`, `depth_min`, `depth_max` _(since v2.4)_
 - `aquifer_analysis[].static_level`, `static_level_precision`
 - `aquifer_analysis[].dynamic_level`, `dynamic_level_precision`
 - `aquifer_analysis[].aquifer_thickness`
@@ -843,6 +844,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `PumpingStep.duration`
 - `LevelReading.elapsed`
 - `recovery_only.pumping_duration`
+- `logger_series.interval` _(since v2.4)_
 - `water_samples[].purge.duration`, `purge.readings[].elapsed` _(since v2.3)_
 
 **Cubic meter (`m3`)** — volume _(since v2.3)_:

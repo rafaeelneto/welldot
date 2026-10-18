@@ -33,6 +33,7 @@ This part of the `.well` v2.3 specification defines the records inside each top-
   - [`step_drawdown`](#step_drawdown)
   - [`airlift`](#airlift)
   - [`recovery_only`](#recovery_only)
+  - [`logger_series` _(since v2.4)_](#logger_series-since-v24)
 - [Supporting Object Schemas](#supporting-object-schemas)
   - [`PumpingStep`](#pumpingstep)
   - [`LevelReading`](#levelreading)
@@ -344,17 +345,20 @@ A cavity or void zone.
 
 A chronological, append-only ledger of all hydrodynamic observations. Events are ordered by `datetime` ascending (UTC-normalized instants); parsers MUST NOT assume order and SHOULD sort by `datetime` when querying. When two events share the same instant, an optional `sequence` integer breaks the tie.
 
-> **Note — interpretive contracts, not pumping methods.** Each `type` value identifies a _category of field record_ with a distinct semantic contract, not a pumping technique or equipment class. Equipment belongs in the `equipment` field; test-analysis method belongs in `method` on `aquifer_analysis`. The contract for each type specifies what data it reliably supplies, how many steps it may carry, whether recovery is permitted, and whether its event ID is valid input to `source_event_ids` on an `aquifer_analysis` entry.
+> **Note — interpretive contracts, not pumping methods.** Each `type` value identifies a _category of field record_ with a distinct semantic contract, not a pumping technique or equipment class. Equipment belongs in the `equipment` field; test-analysis method belongs in `method` on `aquifer_analysis`. The contract for each type specifies what data it reliably supplies, how many steps it should carry, whether recovery is permitted, and whether its event ID is valid input to `source_event_ids` on an `aquifer_analysis` entry.
 
 ### Event types
 
-| `type`             | Português (BR)            | What it records                                                                                                  | `steps` constraint | `recovery` | Valid in `source_event_ids`      |
-| ------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------ | ---------- | -------------------------------- |
-| `spot_measurement` | Medição pontual           | Static water level during a routine visit; optionally an informal brief pump observation. Not a controlled test. | 0 or 1             | Optional   | As `static_level_source_id` only |
-| `constant_rate`    | Teste de vazão constante  | Controlled pump test at exactly one fixed rate.                                                                  | Exactly 1          | Optional   | Yes                              |
-| `step_drawdown`    | Teste de vazão escalonada | Controlled pump test at two or more successive rates in ascending order.                                         | ≥ 2, ascending     | Optional   | Yes                              |
-| `airlift`          | Air-lift                  | Historical fact that air-lift development was performed and produced an estimated yield.                         | ≥ 1                | Optional   | No — see § airlift               |
-| `recovery_only`    | Apenas recuperação        | Recovery after a pumping event whose drawdown data was not recorded.                                             | None               | Required   | Yes                              |
+| `type`             | Português (BR)            | What it records                                                                                                   | `steps` constraint       | `recovery` | Valid in `source_event_ids`      |
+| ------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------ | ---------- | -------------------------------- |
+| `spot_measurement` | Medição pontual           | Static water level during a routine visit; optionally an informal brief pump observation. Not a controlled test.  | SHOULD be 0 or 1         | Optional   | As `static_level_source_id` only |
+| `constant_rate`    | Teste de vazão constante  | Controlled pump test at exactly one fixed rate.                                                                   | SHOULD be exactly 1      | Optional   | Yes                              |
+| `step_drawdown`    | Teste de vazão escalonada | Controlled pump test at two or more successive rates in ascending order.                                          | SHOULD be ≥ 2, ascending | Optional   | Yes                              |
+| `airlift`          | Air-lift                  | Historical fact that air-lift development was performed and produced an estimated yield.                          | ≥ 1                      | Optional   | No — see § airlift               |
+| `recovery_only`    | Apenas recuperação        | Recovery after a pumping event whose drawdown data was not recorded.                                              | None                     | Required   | Yes                              |
+| `logger_series`    | Série de datalogger       | Continuous level series recorded by an installed sensor. Not a controlled test nor a static level. _(since v2.4)_ | None                     | No         | No — see § logger_series         |
+
+Each known `type` MUST satisfy its own schema: a malformed `constant_rate`, for example, is invalid rather than read as an unknown type. The step counts in the table are recommendations: `steps` MUST be an array of valid `PumpingStep` entries, but another count is valid. _(since v2.4)_
 
 The `type` field accepts any string. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -387,24 +391,24 @@ Only `id`, `type`, and `datetime` are required. All others are optional for all 
 
 ### `spot_measurement`
 
-| Field                    | Type            | Required | Description                                                                                                                                   |
-| ------------------------ | --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `static_level`           | number          | yes      | Depth to water surface from ground level, in meters. Negative when the level is above ground (flowing artesian). See § Level sign convention. |
-| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                        |
-| `measurement_method`     | string          | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `hydrodynamic_events[].measurement_method`.                                 |
-| `steps`                  | `PumpingStep[]` | no       | At most one step. For an informal brief pump observation during the visit — not a controlled test. Use `constant_rate` for a formal test.     |
-| `recovery`               | `RecoveryPhase` | no       | Recovery after the optional pumping step.                                                                                                     |
+| Field                    | Type            | Required | Description                                                                                                                                                                    |
+| ------------------------ | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `static_level`           | number          | yes      | Depth to water surface from ground level, in meters. Negative when the level is above ground (flowing artesian). See § Level sign convention.                                  |
+| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                                                         |
+| `measurement_method`     | string          | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `hydrodynamic_events[].measurement_method`.                                                                  |
+| `steps`                  | `PumpingStep[]` | no       | SHOULD carry at most one step; another count is valid. For an informal brief pump observation during the visit — not a controlled test. Use `constant_rate` for a formal test. |
+| `recovery`               | `RecoveryPhase` | no       | Recovery after the optional pumping step.                                                                                                                                      |
 
 ---
 
 ### `constant_rate`
 
-| Field                    | Type            | Required | Description                                                                                                  |
-| ------------------------ | --------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| `static_level`           | number          | no       | Pre-test static level in meters. Omit if not measured.                                                       |
-| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                       |
-| `steps`                  | `PumpingStep[]` | no       | Exactly one entry. A second step would make this a `step_drawdown`. Omit if only recovery data is available. |
-| `recovery`               | `RecoveryPhase` | no       | Recovery measurements after pump shutdown.                                                                   |
+| Field                    | Type            | Required | Description                                                                                                                                       |
+| ------------------------ | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `static_level`           | number          | no       | Pre-test static level in meters. Omit if not measured.                                                                                            |
+| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                            |
+| `steps`                  | `PumpingStep[]` | no       | SHOULD carry exactly one entry; another count is valid. A second step would make this a `step_drawdown`. Omit if only recovery data is available. |
+| `recovery`               | `RecoveryPhase` | no       | Recovery measurements after pump shutdown.                                                                                                        |
 
 ---
 
@@ -412,12 +416,12 @@ Only `id`, `type`, and `datetime` are required. All others are optional for all 
 
 Jacob's `B` and `C` are derived — store them in `aquifer_analysis`, never here.
 
-| Field                    | Type            | Required | Description                                        |
-| ------------------------ | --------------- | -------- | -------------------------------------------------- |
-| `static_level`           | number          | no       | Pre-test static level in meters.                   |
-| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.             |
-| `steps`                  | `PumpingStep[]` | yes      | Two or more steps in ascending order of flow rate. |
-| `recovery`               | `RecoveryPhase` | no       | Recovery after the final step.                     |
+| Field                    | Type            | Required | Description                                                                             |
+| ------------------------ | --------------- | -------- | --------------------------------------------------------------------------------------- |
+| `static_level`           | number          | no       | Pre-test static level in meters.                                                        |
+| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                  |
+| `steps`                  | `PumpingStep[]` | yes      | SHOULD carry two or more steps in ascending order of flow rate; another count is valid. |
+| `recovery`               | `RecoveryPhase` | no       | Recovery after the final step.                                                          |
 
 ---
 
@@ -444,6 +448,62 @@ Static level is not reliably measurable during air-lift and SHOULD be omitted.
 
 ---
 
+### `logger_series` _(since v2.4)_
+
+A continuous level series recorded by an installed sensor: a pressure transducer with a datalogger, as used in monitoring networks and in mining (dewatering, slope piezometers, permit conditions). It is neither a controlled test nor a static level.
+
+| Contract                          | Value                                                                                                                                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `steps`                           | None. `steps` MUST NOT be present.                                                                                                               |
+| `recovery`                        | No. `recovery` MUST NOT be present.                                                                                                              |
+| Valid in `source_event_ids`       | No.                                                                                                                                              |
+| Valid as `static_level_source_id` | No.                                                                                                                                              |
+| Inherited common fields           | `equipment`, `operator`, `attachments` (the raw logger export, with `sha256`), `corrects`, and the `history_logs[].hydrodynamic_event_ids` link. |
+
+| Field                     | Type             | Required | Description                                                                                                                                                                               |
+| ------------------------- | ---------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `measurement_method`      | string           | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `hydrodynamic_events[].measurement_method`.                                                                             |
+| `sensor_depth`            | number           | no       | Sensor depth in meters from ground level. A level below it indicates an invalid reading.                                                                                                  |
+| `interval`                | number           | no       | Nominal interval between readings, in minutes. Greater than zero.                                                                                                                         |
+| `barometric_compensation` | string           | no       | Closed: `barologger` (Barologger / Barologger), `vented` (Vented cable / Cabo ventilado) or `none` (None / Nenhuma).                                                                      |
+| `aggregation`             | string           | no       | Closed: `none` (Raw readings / Leituras brutas), `hourly` (Hourly / Horária) or `daily` (Daily / Diária). When `hourly` or `daily`, every reading MUST carry `depth_min` and `depth_max`. |
+| `readings`                | `LevelReading[]` | yes      | One or more readings. Each reading MUST carry `datetime` and MUST NOT carry `elapsed`. See § LevelReading.                                                                                |
+
+> **Note — pump state is not stored per reading.** A series has no per-reading `pumping` flag. In a well that pumps, the series mixes static and dynamic levels; interpretation crosses the series with `production` and `pump_installations`.
+
+Validation (warnings, never rejection):
+
+- An `aquifer_analysis` whose `source_event_ids` or `static_level_source_id` points to a `logger_series` emits a warning naming both ids.
+- A reading whose `depth` is greater than `sensor_depth` (the level is below the sensor) emits a warning naming the event.
+
+```json
+{
+  "id": "8f2c1e4a-3b6d-4f0e-9a7c-5d1b2e3f4a5b",
+  "type": "logger_series",
+  "datetime": "2026-07-01T00:00:00-03:00",
+  "equipment": "Solinst Levelogger 5 LT, SN 2081234",
+  "measurement_method": "pressure_transducer",
+  "sensor_depth": 42.0,
+  "interval": 15,
+  "barometric_compensation": "barologger",
+  "aggregation": "none",
+  "readings": [
+    {
+      "datetime": "2026-07-01T00:00:00-03:00",
+      "depth": 18.42,
+      "pressure": 233.9
+    },
+    {
+      "datetime": "2026-07-01T00:15:00-03:00",
+      "depth": 18.44,
+      "pressure": 233.7
+    }
+  ]
+}
+```
+
+---
+
 ## Supporting Object Schemas
 
 ### `PumpingStep`
@@ -457,12 +517,15 @@ Static level is not reliably measurable during air-lift and SHOULD be omitted.
 
 ### `LevelReading`
 
-| Field             | Type   | Required | Description                                                       |
-| ----------------- | ------ | -------- | ----------------------------------------------------------------- |
-| `elapsed`         | number | yes      | Time since step start (or pump shutdown for recovery) in minutes. |
-| `depth`           | number | yes      | Depth to water surface from ground level in meters.               |
-| `depth_precision` | number | no       | One-sigma precision of `depth`.                                   |
-| `pressure`        | number | no       | Pressure transducer reading in kPa.                               |
+| Field             | Type   | Required                        | Description                                                                                                                      |
+| ----------------- | ------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `elapsed`         | number | yes, except in `logger_series`  | Time since step start (or pump shutdown for recovery) in minutes. MUST NOT be present in `logger_series` readings.               |
+| `datetime`        | string | in `logger_series` only         | RFC 3339 instant of the reading, with UTC offset. Required in `logger_series`; optional elsewhere. _(since v2.4)_                |
+| `depth`           | number | yes                             | Depth to water surface from ground level in meters. In an aggregated `logger_series`, the representative value of the interval.  |
+| `depth_precision` | number | no                              | One-sigma precision of `depth`.                                                                                                  |
+| `pressure`        | number | no                              | Pressure transducer reading in kPa.                                                                                              |
+| `depth_min`       | number | aggregated `logger_series` only | Shallowest depth in the interval, in meters. Required when `aggregation` is `hourly` or `daily`; used only there. _(since v2.4)_ |
+| `depth_max`       | number | aggregated `logger_series` only | Deepest depth in the interval, in meters. Required when `aggregation` is `hourly` or `daily`; used only there. _(since v2.4)_    |
 
 ### `RecoveryPhase`
 

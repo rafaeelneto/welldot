@@ -266,6 +266,8 @@ export type Cave = {
 export type LevelReading = {
   /** Time since step start (or pump shutdown for recovery) in minutes. */
   elapsed: number;
+  /** RFC 3339 instant of the reading, with UTC offset. Since v2.4. */
+  datetime?: string;
   /** Depth to water surface from ground level in meters. */
   depth: number;
   /** One-sigma precision of `depth`. */
@@ -273,6 +275,34 @@ export type LevelReading = {
   /** Pressure transducer reading in kPa. */
   pressure?: number;
 };
+
+/**
+ * A reading of a `logger_series`: located by its `datetime`, never by
+ * `elapsed`. Since v2.4.
+ */
+export type LoggerReading = {
+  /** RFC 3339 instant of the reading, with UTC offset. */
+  datetime: string;
+  /**
+   * Depth to water surface from ground level in meters. In an aggregated
+   * series, the representative value of the interval.
+   */
+  depth: number;
+  /** One-sigma precision of `depth`. */
+  depth_precision?: number;
+  /** Pressure transducer reading in kPa. */
+  pressure?: number;
+  /** Shallowest depth in the interval. Required when the series is aggregated. */
+  depth_min?: number;
+  /** Deepest depth in the interval. Required when the series is aggregated. */
+  depth_max?: number;
+};
+
+/** `logger_series.barometric_compensation`. Since v2.4. */
+export type BarometricCompensation = 'barologger' | 'vented' | 'none';
+
+/** `logger_series.aggregation`. Since v2.4. */
+export type ReadingAggregation = 'none' | 'hourly' | 'daily';
 
 export type RecoveryPhase = {
   /** Time-series after pump shutdown. `elapsed` measured from shutdown. */
@@ -321,7 +351,10 @@ export type SpotMeasurementEvent = HydrodynamicEventBase & {
   static_level_precision?: number;
   /** Recommended values: {@link MEASUREMENT_METHODS}. */
   measurement_method?: OpenVocab<MeasurementMethod>;
-  /** At most one step — an informal brief pump observation, not a controlled test. */
+  /**
+   * SHOULD carry at most one step — an informal brief pump observation, not a
+   * controlled test. Another count is valid.
+   */
   steps?: PumpingStep[];
   recovery?: RecoveryPhase;
 };
@@ -330,8 +363,11 @@ export type ConstantRateEvent = HydrodynamicEventBase & {
   type: 'constant_rate';
   static_level?: number;
   static_level_precision?: number;
-  /** Exactly one entry if present. A second step would make this a step_drawdown. */
-  steps?: [PumpingStep];
+  /**
+   * SHOULD carry exactly one entry if present (a second step would make this a
+   * step_drawdown). Another count is valid.
+   */
+  steps?: PumpingStep[];
   recovery?: RecoveryPhase;
 };
 
@@ -356,12 +392,34 @@ export type RecoveryOnlyEvent = HydrodynamicEventBase & {
   recovery: RecoveryPhase;
 };
 
+/**
+ * Continuous level series recorded by an installed sensor (pressure
+ * transducer with datalogger). Not a controlled test and not a static level:
+ * it carries no steps or recovery and is not a valid analysis source. Pump
+ * state is not stored per reading. Since v2.4.
+ */
+export type LoggerSeriesEvent = HydrodynamicEventBase & {
+  type: 'logger_series';
+  /** Recommended values: {@link MEASUREMENT_METHODS}. */
+  measurement_method?: OpenVocab<MeasurementMethod>;
+  /** Sensor depth in meters from ground level. A level below it is an invalid reading. */
+  sensor_depth?: number;
+  /** Nominal interval between readings, in minutes. */
+  interval?: number;
+  barometric_compensation?: BarometricCompensation;
+  /** `none` (raw readings), `hourly` or `daily`. */
+  aggregation?: ReadingAggregation;
+  /** At least one reading. */
+  readings: LoggerReading[];
+};
+
 export type HydrodynamicEvent =
   | SpotMeasurementEvent
   | ConstantRateEvent
   | StepDrawdownEvent
   | AirliftEvent
   | RecoveryOnlyEvent
+  | LoggerSeriesEvent
   | (HydrodynamicEventBase & Record<string, unknown>);
 
 // ─── Aquifer analysis ─────────────────────────────────────────────────────────

@@ -3072,3 +3072,207 @@ describe('v2.4 version', () => {
     expect(result!.hydrodynamic_events).toHaveLength(1);
   });
 });
+
+describe('v2.4 logger_series and LevelReading.datetime', () => {
+  const doc = (events: unknown[]) =>
+    JSON.stringify({
+      version: '2.4',
+      well_type: 'tubular',
+      bore_hole: [],
+      well_case: [],
+      reduction: [],
+      well_screen: [],
+      surface_case: [],
+      hole_fill: [],
+      lithology: [],
+      fractures: [],
+      caves: [],
+      hydrodynamic_events: events,
+    });
+
+  // Spec item 10, verbatim (with a UUID for `id`).
+  const SPEC_LOGGER_SERIES = {
+    id: '8f2c1e4a-3b6d-4f0e-9a7c-5d1b2e3f4a5b',
+    type: 'logger_series',
+    datetime: '2026-07-01T00:00:00-03:00',
+    equipment: 'Solinst Levelogger 5 LT, SN 2081234',
+    measurement_method: 'pressure_transducer',
+    sensor_depth: 42.0,
+    interval: 15,
+    barometric_compensation: 'barologger',
+    aggregation: 'none',
+    readings: [
+      { datetime: '2026-07-01T00:00:00-03:00', depth: 18.42, pressure: 233.9 },
+      { datetime: '2026-07-01T00:15:00-03:00', depth: 18.44, pressure: 233.7 },
+    ],
+  };
+  const DT = '2026-07-01T00:00:00-03:00';
+  const series = (extra: Record<string, unknown> = {}) => ({
+    ...SPEC_LOGGER_SERIES,
+    ...extra,
+  });
+
+  it('parses the spec logger_series example', () => {
+    const well = parseWell(doc([SPEC_LOGGER_SERIES]));
+    expect(well.hydrodynamic_events![0]).toEqual(SPEC_LOGGER_SERIES);
+    const again = parseWell(serializeWell(well));
+    expect(again.hydrodynamic_events![0]).toEqual(SPEC_LOGGER_SERIES);
+  });
+
+  it('logger_series readings require datetime and reject elapsed', () => {
+    expect(() =>
+      parseWell(doc([series({ readings: [{ depth: 18.42 }] })])),
+    ).toThrow();
+    expect(() =>
+      parseWell(
+        doc([
+          series({ readings: [{ datetime: DT, elapsed: 0, depth: 18.42 }] }),
+        ]),
+      ),
+    ).toThrow();
+  });
+
+  it('logger_series rejects an empty series and unknown closed values', () => {
+    expect(() => parseWell(doc([series({ readings: [] })]))).toThrow();
+    expect(() =>
+      parseWell(doc([series({ barometric_compensation: 'x-other' })])),
+    ).toThrow();
+    expect(() => parseWell(doc([series({ aggregation: 'weekly' })]))).toThrow();
+    expect(() => parseWell(doc([series({ interval: 0 })]))).toThrow();
+  });
+
+  it('aggregated series require depth_min and depth_max', () => {
+    expect(() =>
+      parseWell(
+        doc([
+          series({
+            aggregation: 'hourly',
+            readings: [{ datetime: DT, depth: 18.4, depth_min: 18.3 }],
+          }),
+        ]),
+      ),
+    ).toThrow();
+    const ok = parseWell(
+      doc([
+        series({
+          aggregation: 'daily',
+          readings: [
+            { datetime: DT, depth: 18.4, depth_min: 18.3, depth_max: 18.5 },
+          ],
+        }),
+      ]),
+    );
+    expect(ok.hydrodynamic_events).toHaveLength(1);
+    expect(() =>
+      parseWell(
+        doc([
+          series({
+            aggregation: 'none',
+            readings: [{ datetime: DT, depth: 18.4 }],
+          }),
+        ]),
+      ),
+    ).not.toThrow();
+  });
+
+  it('logger_series rejects steps and recovery', () => {
+    expect(() => parseWell(doc([series({ steps: [{ rate: 1 }] })]))).toThrow();
+    expect(() =>
+      parseWell(
+        doc([series({ recovery: { readings: [{ elapsed: 0, depth: 18 }] } })]),
+      ),
+    ).toThrow();
+  });
+
+  it('known event types do not fall back to passthrough', () => {
+    const bad = [
+      { id: 'e1', type: 'constant_rate', datetime: DT, steps: 'garbage' },
+      { id: 'e2', type: 'spot_measurement', datetime: DT },
+      { id: 'e3', type: 'recovery_only', datetime: DT },
+      { id: 'e4', type: 'logger_series', datetime: DT },
+    ];
+    for (const event of bad) {
+      expect(() => parseWell(doc([event]))).toThrow();
+    }
+    const custom = parseWell(
+      doc([{ id: 'e5', type: 'x-slug_test', datetime: DT, foo: 1 }]),
+    );
+    expect(custom.hydrodynamic_events![0]).toMatchObject({
+      type: 'x-slug_test',
+      foo: 1,
+    });
+  });
+
+  it('step count is free but steps must be valid PumpingStep[]', () => {
+    expect(() =>
+      parseWell(
+        doc([
+          {
+            id: 'e1',
+            type: 'constant_rate',
+            datetime: DT,
+            steps: [{ rate: 1 }, { rate: 2 }],
+          },
+          {
+            id: 'e2',
+            type: 'spot_measurement',
+            datetime: DT,
+            static_level: 10,
+            steps: [{ rate: 1 }, { rate: 2 }],
+          },
+        ]),
+      ),
+    ).not.toThrow();
+    expect(() =>
+      parseWell(
+        doc([
+          {
+            id: 'e1',
+            type: 'constant_rate',
+            datetime: DT,
+            steps: [{ duration: 60 }],
+          },
+        ]),
+      ),
+    ).toThrow();
+  });
+
+  it('LevelReading accepts an optional datetime', () => {
+    const well = parseWell(
+      doc([
+        {
+          id: 'e1',
+          type: 'constant_rate',
+          datetime: DT,
+          steps: [
+            {
+              rate: 10,
+              readings: [{ elapsed: 0, depth: 20, datetime: DT }],
+            },
+          ],
+        },
+      ]),
+    );
+    const event = well.hydrodynamic_events![0] as {
+      steps: { readings: { datetime?: string }[] }[];
+    };
+    expect(event.steps[0]!.readings[0]!.datetime).toBe(DT);
+    expect(() =>
+      parseWell(
+        doc([
+          {
+            id: 'e1',
+            type: 'constant_rate',
+            datetime: DT,
+            steps: [
+              {
+                rate: 10,
+                readings: [{ elapsed: 0, depth: 20, datetime: 'yesterday' }],
+              },
+            ],
+          },
+        ]),
+      ),
+    ).toThrow();
+  });
+});

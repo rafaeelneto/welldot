@@ -3,6 +3,11 @@ import { z } from 'zod';
 import type { Well } from '../types/well.types';
 import { isIanaTimeZone } from '../utils/timezone.utils';
 import { parseFormatVersion } from '../utils/version.utils';
+import {
+  BAROMETRIC_COMPENSATION_VALUES,
+  READING_AGGREGATION_VALUES,
+} from '../vocab/closed.vocab';
+import { HYDRODYNAMIC_EVENT_TYPES } from '../vocab/hydrodynamic.vocab';
 
 // ─── defu custom merger ───────────────────────────────────────────────────────
 // In createDefu callbacks: obj = defaults object, key = key, value = source value.
@@ -200,6 +205,7 @@ export const CaveSchema = z.object({
 
 export const LevelReadingSchema = z.object({
   elapsed: z.number(),
+  datetime: rfc3339().optional(),
   depth: z.number(),
   depth_precision: z.number().optional(),
   pressure: z.number().optional(),
@@ -233,7 +239,8 @@ export const SpotMeasurementEventSchema = HydrodynamicEventBaseSchema.extend({
   static_level: z.number(),
   static_level_precision: z.number().optional(),
   measurement_method: z.string().optional(),
-  steps: z.array(PumpingStepSchema).max(1).optional(),
+  // SHOULD carry at most one step; another count is valid (v2.4).
+  steps: z.array(PumpingStepSchema).optional(),
   recovery: RecoveryPhaseSchema.optional(),
 });
 
@@ -241,7 +248,8 @@ export const ConstantRateEventSchema = HydrodynamicEventBaseSchema.extend({
   type: z.literal('constant_rate'),
   static_level: z.number().optional(),
   static_level_precision: z.number().optional(),
-  steps: z.tuple([PumpingStepSchema]).optional(),
+  // SHOULD carry exactly one step; another count is valid (v2.4).
+  steps: z.array(PumpingStepSchema).optional(),
   recovery: RecoveryPhaseSchema.optional(),
 });
 
@@ -266,6 +274,44 @@ export const RecoveryOnlyEventSchema = HydrodynamicEventBaseSchema.extend({
   recovery: RecoveryPhaseSchema,
 });
 
+// A logger reading is located by its instant, never by `elapsed` (v2.4).
+export const LoggerReadingSchema = z.object({
+  datetime: rfc3339(),
+  elapsed: z
+    .undefined({ message: 'logger_series readings use datetime, not elapsed' })
+    .optional(),
+  depth: z.number(),
+  depth_precision: z.number().optional(),
+  pressure: z.number().optional(),
+  depth_min: z.number().optional(),
+  depth_max: z.number().optional(),
+});
+
+const closedEnum = <T extends string>(values: readonly T[]) =>
+  z.enum(values as [T, ...T[]]);
+
+export const LoggerSeriesEventSchema = HydrodynamicEventBaseSchema.extend({
+  type: z.literal('logger_series'),
+  measurement_method: z.string().optional(),
+  sensor_depth: z.number().optional(),
+  interval: z.number().positive().optional(),
+  barometric_compensation: closedEnum(
+    BAROMETRIC_COMPENSATION_VALUES,
+  ).optional(),
+  aggregation: closedEnum(READING_AGGREGATION_VALUES).optional(),
+  readings: z.array(LoggerReadingSchema).min(1),
+  steps: z.undefined({ message: 'logger_series carries no steps' }).optional(),
+  recovery: z
+    .undefined({ message: 'logger_series carries no recovery' })
+    .optional(),
+});
+
+const HYDRODYNAMIC_TYPES: readonly string[] = HYDRODYNAMIC_EVENT_TYPES.map(
+  t => t.value,
+);
+
+// Unknown (`x-`) event types fall back to the base schema with passthrough;
+// known types must satisfy their own schema (v2.4).
 export const HydrodynamicEventSchema = z
   .discriminatedUnion('type', [
     SpotMeasurementEventSchema,
@@ -273,8 +319,33 @@ export const HydrodynamicEventSchema = z
     StepDrawdownEventSchema,
     AirliftEventSchema,
     RecoveryOnlyEventSchema,
+    LoggerSeriesEventSchema,
   ])
-  .or(HydrodynamicEventBaseSchema.passthrough());
+  .or(
+    HydrodynamicEventBaseSchema.passthrough().refine(
+      e => !HYDRODYNAMIC_TYPES.includes(e.type),
+      { message: 'malformed hydrodynamic event' },
+    ),
+  )
+  .superRefine((e, ctx) => {
+    // Aggregated logger readings carry the interval's range.
+    if (e.type !== 'logger_series') return;
+    const series = e as z.infer<typeof LoggerSeriesEventSchema>;
+    if (series.aggregation !== 'hourly' && series.aggregation !== 'daily') {
+      return;
+    }
+    series.readings.forEach((r, i) => {
+      for (const key of ['depth_min', 'depth_max'] as const) {
+        if (r[key] === undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['readings', i, key],
+            message: `${key} is required in an aggregated logger_series`,
+          });
+        }
+      }
+    });
+  });
 
 // ─── Aquifer analysis + history log schemas ───────────────────────────────────
 

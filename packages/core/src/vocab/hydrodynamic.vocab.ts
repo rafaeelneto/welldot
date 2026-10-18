@@ -16,9 +16,13 @@ export const HYDRODYNAMIC_EVENT_TYPES = [
     value: 'recovery_only',
     label: { en: 'Recovery only', pt: 'Recuperação' },
   },
+  {
+    value: 'logger_series',
+    label: { en: 'Logger series', pt: 'Série de datalogger' },
+  },
 ] as const satisfies readonly VocabEntry[];
 
-/** Recommended `spot_measurement.measurement_method` values. */
+/** Recommended `measurement_method` values (`spot_measurement`, `logger_series`). */
 export const MEASUREMENT_METHODS = [
   {
     value: 'electric_probe',

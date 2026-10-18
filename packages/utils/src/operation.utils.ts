@@ -1,6 +1,7 @@
 import type {
   EstimatedVolume,
   HistoryLogEntry,
+  LoggerSeriesEvent,
   Meter,
   MeterReading,
   OperatingRegime,
@@ -516,7 +517,9 @@ export type OperationWarningCode =
   | 'log_after_decommission'
   | 'missing_maintenance_type'
   | 'missing_status'
-  | 'analysis_uses_retracted_event';
+  | 'analysis_uses_retracted_event'
+  | 'analysis_uses_logger_series'
+  | 'logger_reading_below_sensor';
 
 export type OperationWarning = {
   code: OperationWarningCode;
@@ -540,9 +543,10 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
 /**
  * Returns the validation warnings of the `meters`, `production` and
  * `operating_regime` blocks, of the v2.3 `history_logs` categories and of
- * `aquifer_analysis` references (.well v2.3). Warnings never make a file
- * invalid. `today` (local calendar date) selects the active permit and the
- * regime in force for `regime_exceeds_permit`.
+ * `aquifer_analysis` references (.well v2.3) and of `logger_series` events
+ * (.well v2.4). Warnings never make a file invalid. `today` (local calendar
+ * date) selects the active permit and the regime in force for
+ * `regime_exceeds_permit`.
  *
  * Meters:
  * - `meter_removed_before_installed` — `removed_at` not after `installed_at`. ids: [meter].
@@ -590,6 +594,14 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
  * Aquifer analysis:
  * - `analysis_uses_retracted_event` — `source_event_ids` or
  *   `static_level_source_id` points to a retracted event. ids: [analysis, event].
+ * - `analysis_uses_logger_series` — `source_event_ids` or
+ *   `static_level_source_id` points to an effective `logger_series`, which is
+ *   not a valid analysis source (v2.4). ids: [analysis, event].
+ *
+ * Logger series (effective events only, v2.4):
+ * - `logger_reading_below_sensor` — a reading whose `depth` is greater than
+ *   `sensor_depth` (the level is below the sensor, so the reading is
+ *   invalid). Once per event. ids: [event].
  */
 export function getOperationWarnings(
   well: Well,
@@ -771,18 +783,33 @@ export function getOperationWarnings(
   }
 
   // ── Aquifer analysis ──
-  const retractedEvents = getRetractedIds(well.hydrodynamic_events ?? []);
-  if (retractedEvents.size > 0) {
-    for (const a of well.aquifer_analysis ?? []) {
-      const refs = [...(a.source_event_ids ?? []), a.static_level_source_id];
-      const flagged = new Set<string>();
-      for (const id of refs) {
-        if (id === undefined || flagged.has(id) || !retractedEvents.has(id)) {
-          continue;
-        }
-        flagged.add(id);
+  const events = well.hydrodynamic_events ?? [];
+  const retractedEvents = getRetractedIds(events);
+  const loggerSeries = events.filter(
+    (e): e is LoggerSeriesEvent =>
+      e.type === 'logger_series' && !retractedEvents.has(e.id),
+  );
+  const loggerIds = new Set(loggerSeries.map(e => e.id));
+  for (const a of well.aquifer_analysis ?? []) {
+    const refs = [
+      ...new Set([...(a.source_event_ids ?? []), a.static_level_source_id]),
+    ];
+    for (const id of refs) {
+      if (id === undefined) continue;
+      if (retractedEvents.has(id)) {
         push('analysis_uses_retracted_event', [a.id, id]);
+      } else if (loggerIds.has(id)) {
+        push('analysis_uses_logger_series', [a.id, id]);
       }
+    }
+  }
+
+  // ── Logger series ──
+  for (const e of loggerSeries) {
+    const sensor = e.sensor_depth;
+    if (typeof sensor !== 'number') continue;
+    if ((e.readings ?? []).some(r => r.depth > sensor)) {
+      push('logger_reading_below_sensor', [e.id]);
     }
   }
 
