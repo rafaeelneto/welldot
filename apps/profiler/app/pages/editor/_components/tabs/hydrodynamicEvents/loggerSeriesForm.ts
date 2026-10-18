@@ -5,7 +5,7 @@ import {
   type LoggerReading,
   type LoggerSeriesEvent,
 } from '@welldot/core';
-import { localDateTimeToInstant } from '@welldot/utils';
+import { localDateTimeToInstant, mergeLoggerReadings } from '@welldot/utils';
 
 /**
  * Form model of the `logger_series` editor (`LoggerSeriesDialog.vue`) and its
@@ -122,6 +122,46 @@ export function toLoggerForm(event: LoggerSeriesEvent | null): LoggerForm {
     }),
     attachments: (event?.attachments ?? []).map(a => ({ ...a })),
   };
+}
+
+/**
+ * Merges imported readings into the form rows by instant. In `append` mode an
+ * incoming reading replaces an existing one at the same instant; in `replace`
+ * mode only the incoming readings remain. Existing rows keep their identity,
+ * and rows with no instant or no depth (still being typed) stay at the end in
+ * `append` mode. The caller must bump `readingsVersion` afterwards.
+ */
+export function mergeImportedReadings(
+  rows: LoggerFormReading[],
+  incoming: LoggerReading[],
+  mode: 'append' | 'replace',
+): { readings: LoggerFormReading[]; replaced: number } {
+  const byReading = new Map<LoggerReading, LoggerFormReading>();
+  const existing: LoggerReading[] = [];
+  const pending: LoggerFormReading[] = [];
+  for (const row of rows) {
+    if (isReadingInstant(row.datetime) && row.depth != null) {
+      const reading: LoggerReading = {
+        datetime: row.datetime,
+        depth: row.depth,
+      };
+      byReading.set(reading, row);
+      existing.push(reading);
+    } else pending.push(row);
+  }
+  const merged = mergeLoggerReadings(existing, incoming, mode);
+  const readings = merged.readings.map(
+    r =>
+      byReading.get(r) ?? {
+        ...blankLoggerReading(r.datetime),
+        depth: r.depth,
+        pressure: r.pressure ?? null,
+        depthMin: r.depth_min ?? null,
+        depthMax: r.depth_max ?? null,
+      },
+  );
+  if (mode === 'append') readings.push(...pending);
+  return { readings, replaced: merged.replaced };
 }
 
 function isBlankRow(r: LoggerFormReading): boolean {

@@ -54,7 +54,10 @@ app/                      ← srcDir
                              `LoggerSeriesEventSchema` plus the aggregated `depth_min`/`depth_max`
                              rule, debounced while editing and synchronously on save; readings are
                              read raw and tracked by `readingsVersion`, which every change to
-                             `form.readings` must bump). Its form model and round trip live in
+                             `form.readings` must bump). Its "Import CSV" button opens
+                             LoggerImportDialog (file/paste, column mapping, live summary from
+                             `buildLoggerReadings`), which emits `import`; the dialog merges with
+                             `mergeImportedReadings` and bumps `readingsVersion`. Its form model and round trip live in
                              loggerSeriesForm.ts (`toLoggerForm` / `fromLoggerForm`: readings
                              sorted by instant, empty fields omitted, members the form does not
                              own carried over)).

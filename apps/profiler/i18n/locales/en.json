@@ -1119,6 +1119,63 @@
           "required": "required",
           "datetime": "use YYYY-MM-DD HH:mm:ss or an RFC 3339 instant",
           "positive": "must be greater than 0"
+        },
+        "import": {
+          "button": "Import CSV",
+          "title": "Import readings from CSV",
+          "chooseFile": "Choose file",
+          "noFile": "No file chosen",
+          "help": {
+            "title": "What the file should look like",
+            "rows": "One reading per row, as exported by the logger software (CSV or plain text).",
+            "columns": "Needed columns: the date and time (one column, or a date column and a time column) and the level. A pressure column is optional. Other columns, such as temperature or conductivity, are ignored.",
+            "dates": "Pick the date format the file uses. A date that carries a UTC offset (2026-07-01T00:15:00-03:00) keeps it; otherwise the well time zone applies.",
+            "values": "Columns can be separated by comma, semicolon or tab, detected automatically. Values can use a decimal comma (23,58) or point (23.58). The level can be depth to water or the water column above the sensor, which pressure transducers usually report.",
+            "header": "Title or header lines at the top are fine: set how many to skip in \"Header rows\".",
+            "example": "Example (semicolon, decimal comma, two header lines):",
+            "exampleMapping": "Map it as: header rows 2, date column 1 (DD/MM/YYYY), time column 2, value column 3 as water column above the sensor, pressure column 4."
+          },
+          "file": "CSV or text file",
+          "paste": "…or paste the file's text here",
+          "column": "Column {n}",
+          "headerRows": "Header rows",
+          "dateColumn": "Date column",
+          "timeColumn": "Time column (optional)",
+          "dateFormat": "Date format",
+          "dateFormats": {
+            "iso": "YYYY-MM-DD",
+            "dmy": "DD/MM/YYYY",
+            "mdy": "MM/DD/YYYY",
+            "ymd": "YYYY/MM/DD"
+          },
+          "valueColumn": "Value column",
+          "valueKind": "Value is",
+          "valueKinds": {
+            "depth": "Depth to water",
+            "water_column": "Water column above the sensor"
+          },
+          "pressureColumn": "Pressure column (optional)",
+          "timeZone": "Time zone",
+          "noTimezone": "The well has no time zone set, so times are read with this UTC offset.",
+          "needSensorDepth": "Enter the sensor depth to convert water column to depth.",
+          "summary": "{count} reading · {first} → {last} | {count} readings · {first} → {last}",
+          "summaryEmpty": "No readings found with this mapping",
+          "skipped": "{count} rows skipped",
+          "skippedGroup": "{issue}: {count} (rows {rows})",
+          "issues": {
+            "invalid_date": "Invalid date or time",
+            "invalid_value": "Invalid value",
+            "missing_sensor_depth": "Sensor depth missing",
+            "missing_offset": "UTC offset missing or invalid"
+          },
+          "modes": {
+            "append": "Append (equal instants are replaced)",
+            "replace": "Replace the existing readings"
+          },
+          "replaceHeader": "Replace readings",
+          "replaceMessage": "This drops the {count} readings already in the series.",
+          "replaceAccept": "Replace",
+          "confirm": "Import"
         }
       },
       "charts": {

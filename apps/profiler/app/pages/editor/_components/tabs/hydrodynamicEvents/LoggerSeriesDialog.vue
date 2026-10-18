@@ -9,12 +9,16 @@ import {
 import { getWellTimeZone, inferLoggerInterval } from '@welldot/utils';
 import type { WellGridColumn } from '@welldot/vue/grid';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import LoggerImportDialog, {
+  type LoggerImportPayload,
+} from './LoggerImportDialog.vue';
 import {
   applyTypedDatetime,
   blankLoggerReading,
   formatReadingLocal,
   isAggregated,
   isReadingInstant,
+  mergeImportedReadings,
   nextReadingDatetime,
   toLoggerForm,
   validateLoggerForm,
@@ -307,6 +311,24 @@ const gridRows = computed(() => {
   }));
 });
 
+// ─── CSV import ───────────────────────────────────────────────────────────────
+
+const importDialog = ref<InstanceType<typeof LoggerImportDialog> | null>(null);
+
+function applyImport(payload: LoggerImportPayload) {
+  const { readings } = mergeImportedReadings(
+    rawReadings(),
+    payload.readings,
+    payload.mode,
+  );
+  // Replace the array in place: `form.readings` is read raw elsewhere.
+  toRaw(form).readings = readings;
+  if (form.interval == null && payload.interval != null)
+    form.interval = payload.interval;
+  readingsVersion.value++;
+  validate();
+}
+
 function addReading() {
   const readings = rawReadings();
   const timed = readings.filter(r => isReadingInstant(r.datetime));
@@ -470,6 +492,16 @@ function reorderReading(from: number, to: number) {
           </span>
           <span class="font-mono text-xs text-content-300">{{ summary }}</span>
         </div>
+        <div>
+          <Button
+            :label="t('editor.hydrodynamicEvents.logger.import.button')"
+            icon="pi pi-upload"
+            size="small"
+            severity="secondary"
+            outlined
+            @click="importDialog?.open()"
+          />
+        </div>
         <p class="m-0 flex items-center gap-1.5 text-xs text-content-400">
           <Icon
             name="ph:globe-hemisphere-west-duotone"
@@ -514,6 +546,14 @@ function reorderReading(from: number, to: number) {
         <AttachmentField v-model="form.attachments" context="event" />
       </WellLabeledField>
     </div>
+
+    <LoggerImportDialog
+      ref="importDialog"
+      v-model:sensor-depth="form.sensorDepth"
+      :time-zone="wellTimeZone"
+      :existing-count="readingSpan.count"
+      @import="applyImport"
+    />
 
     <template #footer>
       <div class="flex flex-col gap-2 w-full pt-2">

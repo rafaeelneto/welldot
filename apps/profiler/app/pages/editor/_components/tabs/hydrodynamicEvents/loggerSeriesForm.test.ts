@@ -1,10 +1,12 @@
 import type { LoggerSeriesEvent } from '@welldot/core';
+import { buildLoggerReadings, parseDelimitedText } from '@welldot/utils';
 import { describe, expect, it } from 'vitest';
 import {
   applyTypedDatetime,
   formatReadingLocal,
   fromLoggerForm,
   loggerSeriesIssues,
+  mergeImportedReadings,
   nextReadingDatetime,
   parseReadingDatetime,
   toLoggerForm,
@@ -289,5 +291,42 @@ describe('loggerSeriesForm', () => {
     expect(issues).toEqual([]);
     expect(event.readings).toHaveLength(35000);
     expect(elapsed).toBeLessThan(1000);
+  });
+
+  it('imported readings merge into the form', () => {
+    const csv = [
+      'Date,Time,LEVEL',
+      '2026/07/01,00:00:00,23.58',
+      '2026/07/01,00:15:00,23.56',
+    ].join('\n');
+    const { rows } = parseDelimitedText(csv);
+    const { readings, skipped } = buildLoggerReadings(rows, {
+      headerRows: 1,
+      dateColumn: 0,
+      timeColumn: 1,
+      valueColumn: 2,
+      valueKind: 'water_column',
+      sensorDepth: 42,
+      dateFormat: 'ymd',
+      timeZone: 'America/Belem',
+    });
+    expect(skipped).toEqual([]);
+    const form = toLoggerForm(null);
+    const merged = mergeImportedReadings(form.readings, readings, 'append');
+    expect(merged.readings).toHaveLength(2);
+    expect(merged.readings[0]).toMatchObject({
+      datetime: '2026-07-01T00:00:00-03:00',
+      depth: 18.42,
+    });
+    // Equal instants are replaced, blank rows are kept, replace drops all.
+    const again = mergeImportedReadings(merged.readings, readings, 'append');
+    expect(again.readings).toHaveLength(2);
+    expect(again.replaced).toBe(2);
+    const replaced = mergeImportedReadings(
+      merged.readings,
+      readings.slice(0, 1),
+      'replace',
+    );
+    expect(replaced.readings).toHaveLength(1);
   });
 });

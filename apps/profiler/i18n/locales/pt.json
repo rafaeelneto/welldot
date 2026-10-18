@@ -1119,6 +1119,63 @@
           "required": "obrigatório",
           "datetime": "use AAAA-MM-DD HH:mm:ss ou um instante RFC 3339",
           "positive": "deve ser maior que 0"
+        },
+        "import": {
+          "button": "Importar CSV",
+          "title": "Importar leituras de CSV",
+          "chooseFile": "Escolher arquivo",
+          "noFile": "Nenhum arquivo escolhido",
+          "help": {
+            "title": "Como o arquivo deve ser",
+            "rows": "Uma leitura por linha, como exportado pelo software do datalogger (CSV ou texto).",
+            "columns": "Colunas necessárias: data e hora (em uma coluna, ou uma coluna de data e outra de hora) e o nível. A coluna de pressão é opcional. Outras colunas, como temperatura ou condutividade, são ignoradas.",
+            "dates": "Escolha o formato de data usado no arquivo. Uma data com deslocamento UTC (2026-07-01T00:15:00-03:00) o mantém; nas demais vale o fuso horário do poço.",
+            "values": "As colunas podem ser separadas por vírgula, ponto e vírgula ou tabulação, detectados automaticamente. Os valores podem usar vírgula (23,58) ou ponto (23.58) decimal. O nível pode ser a profundidade do nível d'água ou a coluna d'água acima do sensor, que é o que os transdutores de pressão costumam registrar.",
+            "header": "Linhas de título ou cabeçalho no início não são problema: informe quantas pular em \"Linhas de cabeçalho\".",
+            "example": "Exemplo (ponto e vírgula, vírgula decimal, duas linhas de cabeçalho):",
+            "exampleMapping": "Mapeie assim: linhas de cabeçalho 2, coluna de data 1 (DD/MM/AAAA), coluna de hora 2, coluna do valor 3 como coluna d'água acima do sensor, coluna de pressão 4."
+          },
+          "file": "Arquivo CSV ou de texto",
+          "paste": "…ou cole aqui o texto do arquivo",
+          "column": "Coluna {n}",
+          "headerRows": "Linhas de cabeçalho",
+          "dateColumn": "Coluna de data",
+          "timeColumn": "Coluna de hora (opcional)",
+          "dateFormat": "Formato da data",
+          "dateFormats": {
+            "iso": "AAAA-MM-DD",
+            "dmy": "DD/MM/AAAA",
+            "mdy": "MM/DD/AAAA",
+            "ymd": "AAAA/MM/DD"
+          },
+          "valueColumn": "Coluna do valor",
+          "valueKind": "O valor é",
+          "valueKinds": {
+            "depth": "Profundidade do nível d'água",
+            "water_column": "Coluna d'água acima do sensor"
+          },
+          "pressureColumn": "Coluna de pressão (opcional)",
+          "timeZone": "Fuso horário",
+          "noTimezone": "O poço não tem fuso horário definido, então os horários são lidos com este deslocamento UTC.",
+          "needSensorDepth": "Informe a profundidade do sensor para converter a coluna d'água em profundidade.",
+          "summary": "{count} leitura · {first} → {last} | {count} leituras · {first} → {last}",
+          "summaryEmpty": "Nenhuma leitura encontrada com este mapeamento",
+          "skipped": "{count} linhas ignoradas",
+          "skippedGroup": "{issue}: {count} (linhas {rows})",
+          "issues": {
+            "invalid_date": "Data ou hora inválida",
+            "invalid_value": "Valor inválido",
+            "missing_sensor_depth": "Profundidade do sensor ausente",
+            "missing_offset": "Deslocamento UTC ausente ou inválido"
+          },
+          "modes": {
+            "append": "Acrescentar (instantes iguais são substituídos)",
+            "replace": "Substituir as leituras existentes"
+          },
+          "replaceHeader": "Substituir leituras",
+          "replaceMessage": "Isto descarta as {count} leituras já existentes na série.",
+          "replaceAccept": "Substituir",
+          "confirm": "Importar"
         }
       },
       "charts": {
