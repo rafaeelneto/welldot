@@ -257,19 +257,29 @@ Parses a raw JSON string and validates it against `WellSchema`. Throws a `ZodErr
 
 #### `serializeWell(well: Well): string`
 
-Serializes a `Well` object to a versioned `.well` JSON string (`"version": 2`). Emits `location` when set; does not emit deprecated flat `lat`/`lng`/`elevation` or other legacy v1 keys. Omits `undefined` optional fields. Root members the spec does not define (`x-` fields and blocks, foreign members) are written unchanged after the spec blocks, as the spec requires.
+Serializes a `Well` object to a versioned `.well` JSON string (`"version": "2.4"`, `WELL_FORMAT_VERSION`). Omits `null` members outside `x-` fields and `@context`. Emits `location` when set; does not emit deprecated flat `lat`/`lng`/`elevation` or other legacy v1 keys. Omits `undefined` optional fields. Root members the spec does not define (`x-` fields and blocks, foreign members) are written unchanged after the spec blocks, as the spec requires.
 
 #### `deserializeWell(jsonString: string): Well | null`
 
 Parses and normalizes a JSON string into a `Well`. Handles multiple formats:
 
-- v2 format (`"version": 2`) — passes v2-specific fields through directly
+- v2 format (`"version": 2` or `"2.x"`) — passes v2-specific fields through directly
 - v1 format (`"version": 1`) — applies v1→v2 normalizations: `fgdc_texture` → `texture`, `screen_slot_mm` → `screen_slot`, flat `lat/lng/elevation` → `location`
 - Legacy formats with `constructive` / `geologic` sub-objects
 - Legacy `diam_pol` inch diameters → `diameter` mm conversion (`× 25.4`)
 - Typo `bole_hole` → `bore_hole` compatibility
 
 Returns `null` if the parsed data is empty. Throws on unrecognized version numbers.
+
+#### Format version and time zone _(v2.4)_
+
+| Export                                | Description                                                                                                                       |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `WELL_FORMAT_VERSION`                 | The version `serializeWell` writes: `"2.4"`.                                                                                      |
+| `parseFormatVersion(value)`           | Parses `2` or `"M.m"` into a `FormatVersion` (`{ major, minor }`); `undefined` for `2.4`, `"2.4.1"`, `"v2.4"` and other values.   |
+| `compareFormatVersions(a, b)`         | Compares two `"M.m"` strings as two integers (`"2.10"` is after `"2.9"`); throws on malformed input.                              |
+| `isIanaTimeZone(value)`               | Whether `value` is an IANA time zone name (`America/Belem`), for `location.properties.timezone`. Offsets are not valid.           |
+| `LoggerSeriesEvent` / `LoggerReading` | Types of the `logger_series` hydrodynamic event and its readings; validated by `LoggerSeriesEventSchema` / `LoggerReadingSchema`. |
 
 #### `isWellEmpty(well: Well | null | undefined): boolean`
 

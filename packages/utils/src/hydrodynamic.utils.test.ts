@@ -88,7 +88,13 @@ const stepTest = {
         { elapsed: 110, depth: 47 },
       ],
     },
-    { rate: 90, readings: [{ elapsed: 30, depth: 50 }, { elapsed: 100, depth: 52 }] },
+    {
+      rate: 90,
+      readings: [
+        { elapsed: 30, depth: 50 },
+        { elapsed: 100, depth: 52 },
+      ],
+    },
     { rate: 120, duration: 60, readings: [{ elapsed: 60, depth: 60 }] },
   ],
   recovery: {

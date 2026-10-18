@@ -89,7 +89,11 @@ export type PumpingTimeline = {
   recovery: { start: number; points: TimelinePoint[] } | null;
 };
 
-export type PumpingChartKind = 'hydrograph' | 'semilog' | 'recovery' | 'stepTest';
+export type PumpingChartKind =
+  | 'hydrograph'
+  | 'semilog'
+  | 'recovery'
+  | 'stepTest';
 
 type RawStep = { rate?: number; duration?: number; readings?: LevelReading[] };
 
