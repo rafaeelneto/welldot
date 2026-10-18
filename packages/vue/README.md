@@ -429,6 +429,7 @@ const columns: WellGridColumn[] = [
 | `deleteLabel` | `LanguageTextInput`         | Accessible label of each delete button                                 |
 | `labels`      | `WellDataGridLabels`        | `texturePlaceholder`, `showPendingTextures`, `columnInfo`, `comboHint` |
 | `components`  | `WellDataGridComponents`    | `addButton`, `deleteButton`, `dragHandle`                              |
+| `maxHeight`   | `number`                    | Height cap in px; taller content scrolls (virtualized) inside the grid |
 
 | Event     | Payload                                       |
 | --------- | --------------------------------------------- |

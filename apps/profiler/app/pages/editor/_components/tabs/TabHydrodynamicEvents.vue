@@ -3,6 +3,7 @@ import type { HydrodynamicEvent } from '@welldot/core';
 import EventCard from './hydrodynamicEvents/EventCard.vue';
 import EventDialog from './hydrodynamicEvents/EventDialog.vue';
 import EventViewDialog from './hydrodynamicEvents/EventViewDialog.vue';
+import LoggerSeriesDialog from './hydrodynamicEvents/LoggerSeriesDialog.vue';
 
 const { t, locale } = useI18n();
 const profileStore = useProfileStore();
@@ -11,6 +12,14 @@ const { toFlow, flowUnit, toSpecificCapacity, specificCapacityUnit } =
 const { typeOptions } = useHydrodynamicEventTypes();
 const eventDialogRef =
   useTemplateRef<InstanceType<typeof EventDialog>>('eventDialogRef');
+const loggerDialogRef =
+  useTemplateRef<InstanceType<typeof LoggerSeriesDialog>>('loggerDialogRef');
+
+/** A logger series opens its own dialog; every other type the event form. */
+function editEvent(event: HydrodynamicEvent) {
+  if (isLoggerSeries(event)) loggerDialogRef.value?.openEdit(event);
+  else eventDialogRef.value?.openEdit(event);
+}
 
 // ─── Sub-tab ──────────────────────────────────────────────────────────────────
 
@@ -73,7 +82,7 @@ const viewVisible = computed({
 
 function editFromView(event: HydrodynamicEvent) {
   eventView.close();
-  eventDialogRef.value?.openEdit(event);
+  editEvent(event);
 }
 </script>
 
@@ -240,17 +249,30 @@ function editFromView(event: HydrodynamicEvent) {
                   @click="toggleTypeFilter(opt.value)"
                 />
               </div>
-              <Button
-                unstyled
-                class="add-entry-btn shrink-0"
-                type="button"
-                :label="t('editor.hydrodynamicEvents.addEvent')"
-                @click="eventDialogRef?.openAdd()"
-              >
-                <template #icon>
-                  <Icon name="ph:plus" />
-                </template>
-              </Button>
+              <div class="flex flex-wrap gap-2 shrink-0">
+                <Button
+                  unstyled
+                  class="add-entry-btn"
+                  type="button"
+                  :label="t('editor.hydrodynamicEvents.logger.addSeries')"
+                  @click="loggerDialogRef?.openAdd()"
+                >
+                  <template #icon>
+                    <Icon name="ph:chart-line-duotone" />
+                  </template>
+                </Button>
+                <Button
+                  unstyled
+                  class="add-entry-btn"
+                  type="button"
+                  :label="t('editor.hydrodynamicEvents.addEvent')"
+                  @click="eventDialogRef?.openAdd()"
+                >
+                  <template #icon>
+                    <Icon name="ph:plus" />
+                  </template>
+                </Button>
+              </div>
             </div>
 
             <!-- empty state -->
@@ -285,7 +307,7 @@ function editFromView(event: HydrodynamicEvent) {
                 :key="event.id"
                 :event="event"
                 @view="eventView.open"
-                @edit="eventDialogRef?.openEdit($event)"
+                @edit="editEvent"
               />
             </div>
           </div>
@@ -313,6 +335,7 @@ function editFromView(event: HydrodynamicEvent) {
   </div>
 
   <EventDialog ref="eventDialogRef" />
+  <LoggerSeriesDialog ref="loggerDialogRef" />
 
   <EventViewDialog
     v-if="viewVisible && eventView.eventId.value"

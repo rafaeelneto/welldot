@@ -70,18 +70,16 @@ const actions = computed<RecordAction[]>(() => [
     icon: 'ph:eye-duotone',
     onClick: () => emit('view', props.event.id),
   },
-  // A logger series is view-only: the form would rewrite its readings.
-  ...(isLoggerSeries(props.event)
-    ? []
-    : [
-        {
-          key: 'edit',
-          label: t('editor.edit'),
-          ariaLabel: t('editor.hydrodynamicEvents.editEvent'),
-          icon: 'ph:pencil-simple-duotone',
-          onClick: () => emit('edit', props.event),
-        },
-      ]),
+  // The parent routes a logger series to its own dialog.
+  {
+    key: 'edit',
+    label: t('editor.edit'),
+    ariaLabel: isLoggerSeries(props.event)
+      ? t('editor.hydrodynamicEvents.logger.editSeries')
+      : t('editor.hydrodynamicEvents.editEvent'),
+    icon: 'ph:pencil-simple-duotone',
+    onClick: () => emit('edit', props.event),
+  },
   {
     key: 'delete',
     label: t('editor.hydrodynamicEvents.deleteConfirm'),

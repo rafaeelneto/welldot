@@ -45,8 +45,19 @@ app/                      ← srcDir
                              also opened from the Summary latest-event card; pumping-test
                              charts in hydrodynamicEvents/charts/, shared by the view and
                              the edit dialog's preview, series from @welldot/utils). A `logger_series`
-                             (v2.4) is view-only: card and view show its facts, no edit action,
-                             and EventDialog does not offer the type).
+                             (v2.4) never opens in EventDialog (`editableTypeOptions` leaves it out):
+                             card and view show its facts, and their edit action (routed by the
+                             tab) and the tab's "Add logger series" button open LoggerSeriesDialog
+                             (fields; start and readings `WellDataGrid` (`max-height`, virtualized)
+                             with instants shown/typed as local `YYYY-MM-DD HH:mm:ss` in the well
+                             time zone, else the browser's; validated with core
+                             `LoggerSeriesEventSchema` plus the aggregated `depth_min`/`depth_max`
+                             rule, debounced while editing and synchronously on save; readings are
+                             read raw and tracked by `readingsVersion`, which every change to
+                             `form.readings` must bump). Its form model and round trip live in
+                             loggerSeriesForm.ts (`toLoggerForm` / `fromLoggerForm`: readings
+                             sorted by instant, empty fields omitted, members the form does not
+                             own carried over)).
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)

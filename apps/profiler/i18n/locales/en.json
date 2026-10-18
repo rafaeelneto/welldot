@@ -1091,6 +1091,36 @@
       "retractedInfo": "A later event corrects this one. It stays in the file but no longer counts.",
       "correction": "Correction",
       "correctionInfo": "This event corrects an earlier one.",
+      "logger": {
+        "addSeries": "Add logger series",
+        "editSeries": "Edit logger series",
+        "save": "Add series",
+        "start": "Start",
+        "startPlaceholder": "Empty = first reading (YYYY-MM-DD HH:mm:ss)",
+        "sensorDepth": "Sensor depth (m)",
+        "interval": "Interval (min)",
+        "readings": "Readings",
+        "summary": "{count} reading · {first} → {last} | {count} readings · {first} → {last}",
+        "summaryEmpty": "No readings yet",
+        "zone": "Times in {zone}",
+        "noTimezone": "The well has no time zone set, so times are read in your browser's zone ({zone}).",
+        "columns": {
+          "datetime": "Date / time",
+          "datetimeInfo": "Local time as YYYY-MM-DD HH:mm:ss in {zone}, or an RFC 3339 instant with offset.",
+          "depth": "Depth (m)",
+          "pressure": "Pressure (kPa)",
+          "depthMin": "Min depth (m)",
+          "depthMax": "Max depth (m)"
+        },
+        "validation": {
+          "field": "{field}: {message}",
+          "row": "Row {row} ({column}): {message}",
+          "noReadings": "Add at least one reading",
+          "required": "required",
+          "datetime": "use YYYY-MM-DD HH:mm:ss or an RFC 3339 instant",
+          "positive": "must be greater than 0"
+        }
+      },
       "charts": {
         "title": "Charts",
         "empty": "Not enough readings to draw charts.",

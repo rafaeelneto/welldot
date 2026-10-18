@@ -1091,6 +1091,36 @@
       "retractedInfo": "Um evento posterior corrige este. Ele permanece no arquivo, mas não conta mais.",
       "correction": "Correção",
       "correctionInfo": "Este evento corrige um anterior.",
+      "logger": {
+        "addSeries": "Adicionar série de logger",
+        "editSeries": "Editar série de logger",
+        "save": "Adicionar série",
+        "start": "Início",
+        "startPlaceholder": "Vazio = primeira leitura (AAAA-MM-DD HH:mm:ss)",
+        "sensorDepth": "Profundidade do sensor (m)",
+        "interval": "Intervalo (min)",
+        "readings": "Leituras",
+        "summary": "{count} leitura · {first} → {last} | {count} leituras · {first} → {last}",
+        "summaryEmpty": "Nenhuma leitura ainda",
+        "zone": "Horários em {zone}",
+        "noTimezone": "O poço não tem fuso horário definido, então os horários são lidos no fuso do navegador ({zone}).",
+        "columns": {
+          "datetime": "Data / hora",
+          "datetimeInfo": "Hora local como AAAA-MM-DD HH:mm:ss em {zone}, ou um instante RFC 3339 com offset.",
+          "depth": "Prof. (m)",
+          "pressure": "Pressão (kPa)",
+          "depthMin": "Prof. mín. (m)",
+          "depthMax": "Prof. máx. (m)"
+        },
+        "validation": {
+          "field": "{field}: {message}",
+          "row": "Linha {row} ({column}): {message}",
+          "noReadings": "Adicione ao menos uma leitura",
+          "required": "obrigatório",
+          "datetime": "use AAAA-MM-DD HH:mm:ss ou um instante RFC 3339",
+          "positive": "deve ser maior que 0"
+        }
+      },
       "charts": {
         "title": "Gráficos",
         "empty": "Sem leituras suficientes para gerar gráficos.",

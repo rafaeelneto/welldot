@@ -273,6 +273,20 @@ describe('WellDataGrid', () => {
     expect(live).toBe(0);
   });
 
+  it('grows with its rows, up to maxHeight', async () => {
+    mountGrid();
+    const [auto] = await waitFor('revo-grid.well-data-grid');
+    // header 38 + 2 rows × 30 + 2
+    expect(auto!.style.height).toBe('100px');
+    wrappers.pop()?.unmount();
+    document.body.innerHTML = '';
+
+    const many = Array.from({ length: 500 }, (_, i) => ({ from: i }));
+    mountGrid({ rows: many, maxHeight: 420 });
+    const [capped] = await waitFor('revo-grid.well-data-grid');
+    expect(capped!.style.height).toBe('420px');
+  });
+
   it('renders the add button with a label, or icon-only without one', async () => {
     const labelled = mountGrid({
       addLabel: { en: 'Add row', pt: 'Nova linha' },

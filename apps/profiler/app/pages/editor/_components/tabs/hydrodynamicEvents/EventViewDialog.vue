@@ -698,7 +698,7 @@ const linkCount = computed(
         @click="visible = false"
       />
       <Button
-        v-if="event && !isLoggerSeries(event)"
+        v-if="event"
         :label="t('editor.hydrodynamicEvents.view.edit')"
         @click="emit('edit', event)"
       >

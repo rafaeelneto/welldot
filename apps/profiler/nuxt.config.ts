@@ -138,6 +138,12 @@ export default defineNuxtConfig({
         'd3-tip',
         'textures',
         'sanitize-html',
+        // Reached only through the linked @welldot/vue dist, so the startup
+        // scan can miss them. A mid-session re-optimize leaves RevoGrid's lazy
+        // `*.entry.js` imports on stale hashes and the grid renders empty.
+        '@revolist/vue3-datagrid',
+        'vue-color',
+        'leaflet',
         // CJS browser build lazy-loaded by @welldot/pdf.
         '@welldot/pdf > pdfmake/build/pdfmake',
       ],

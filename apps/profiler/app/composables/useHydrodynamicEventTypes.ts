@@ -18,7 +18,10 @@ const EVENT_TYPE_ICONS: Record<string, string> = {
   logger_series: 'ph:chart-line-duotone',
 };
 
-/** `logger_series` is shown but never edited: no form rewrites its readings. */
+/**
+ * `logger_series` is edited in its own `LoggerSeriesDialog`, never in the
+ * generic event form (which would rewrite its readings).
+ */
 export function isLoggerSeries(
   event: HydrodynamicEvent,
 ): event is LoggerSeriesEvent {
@@ -35,7 +38,7 @@ export function useHydrodynamicEventTypes() {
     })),
   );
 
-  /** Types the event form can create; `logger_series` is view-only. */
+  /** Types the event form can create; `logger_series` has its own dialog. */
   const editableTypeOptions = computed(() =>
     typeOptions.value.filter(o => o.value !== 'logger_series'),
   );
