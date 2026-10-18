@@ -1,8 +1,28 @@
 # @welldot/utils
 
+## Overview
+
 Profile analysis utilities for the [`.well` open format](https://github.com/rafaeelneto/welldot) — depth and diameter summaries, cylindrical and annular volumes, gravel pack estimates, and aquifer hydraulics. Part of the [welldot](https://github.com/rafaeelneto/welldot) open-source ecosystem.
 
 These are pure functions over a parsed `Well` object. No DOM, no network, no side effects.
+
+This README covers installation, units, and the API grouped by area: geometry and volumes, aquifer hydraulics, queries and formatting, display helpers, operations, water quality and the SIAGAS importer.
+
+## Table of contents
+
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Units](#units)
+- [API](#api)
+  - [Geometry and volumes](#geometry-and-volumes)
+  - [Aquifer hydraulics](#aquifer-hydraulics)
+  - [Queries and formatting](#queries-and-formatting)
+  - [Display helpers](#display-helpers)
+  - [Operations (.well v2.3)](#operations-well-v23)
+  - [Water quality (.well v2.3)](#water-quality-well-v23)
+  - [SIAGAS import (`@welldot/utils/siagas`)](#siagas-import-welldotutilssiagas)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Install
 

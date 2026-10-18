@@ -2,6 +2,27 @@
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [water-quality.md](./water-quality.md)
 
+## Overview
+
+This part of the `.well` v2.3 specification covers how `.well` connects to other standards and tools: the reserved JSON-LD `@context` and its publication plan, how the format maps onto the OGC GroundWaterML 2 (GWML2) model, and validating files against the published JSON Schema.
+
+## Table of contents
+
+- [JSON-LD Context (Reserved)](#json-ld-context-reserved)
+  - [v2.0 parser requirements](#v20-parser-requirements)
+  - [Recommended usage](#recommended-usage)
+  - [Context publication plan](#context-publication-plan)
+  - [Versioning and stability](#versioning-and-stability)
+  - [Optional fallback](#optional-fallback)
+- [Relationship to GWML2](#relationship-to-gwml2)
+  - [Authoritative references](#authoritative-references)
+  - [Scope correspondence](#scope-correspondence)
+  - [Conceptual alignment](#conceptual-alignment)
+  - [Class mapping (informative)](#class-mapping-informative)
+  - [Notes on the mapping](#notes-on-the-mapping)
+  - [Profiles for regulatory adoption](#profiles-for-regulatory-adoption)
+- [Schema Validation](#schema-validation)
+
 ---
 
 ## JSON-LD Context (Reserved)

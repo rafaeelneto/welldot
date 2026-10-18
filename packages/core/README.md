@@ -4,7 +4,29 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178c6.svg)](https://www.typescriptlang.org/)
 
+## Overview
+
 TypeScript types, Zod validators, and serialization utilities for the `.well` open format — a JSON-based standard for representing water well data.
+
+This README covers installation, a quick start, the API (types, validators, functions and unit conversion), the water quality and recommended vocabularies, the FGDC texture codes and a short tour of the format. The normative specification lives in [docs/spec/v2](./docs/spec/v2/overview.md).
+
+## Table of contents
+
+- [What is `.well`?](#what-is-well)
+  - [Example wells](#example-wells)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+  - [Types](#types)
+  - [Validators](#validators)
+  - [Functions](#functions)
+- [Water Quality Vocabulary and Limit Sets _(v2.3)_](#water-quality-vocabulary-and-limit-sets-v23)
+- [Recommended Vocabularies _(v2.3)_](#recommended-vocabularies-v23)
+  - [Closed vocabularies](#closed-vocabularies)
+- [FGDC Texture Patterns](#fgdc-texture-patterns)
+- [`.well` Format Overview](#well-format-overview)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## What is `.well`?
 

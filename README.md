@@ -1,5 +1,7 @@
 # Welldot (fka Well Profiler)
 
+## Overview
+
 Most software for documenting and visualizing water well profiles is proprietary, expensive, and not interoperable. Well Profiler exists to change that.
 
 This repository started as **Well Profiler**, a tool focused on drawing well diagrams. It has since grown into **welldot**, a broader open-source ecosystem for geological well log visualization and profiling, designed for hydrogeologists, engineers, and researchers — spanning not just drawing, but also structured data recording and research. It consists of a web application and a set of reusable TypeScript libraries built around the **`.well` open file format**.
@@ -7,6 +9,27 @@ This repository started as **Well Profiler**, a tool focused on drawing well dia
 The core tools — the Well Profiler app, the `.well` format, and the libraries — are free and open source under the Apache 2.0 license.
 
 You can try the app at [welldot.org](https://welldot.org). The source lives at [github.com/rafaeelneto/welldot](https://github.com/rafaeelneto/welldot).
+
+This README covers the `.well` format at a glance, the published packages, the app's features, how to run the repository locally, the tech stack and the roadmap.
+
+## Table of contents
+
+- [The `.well` File Format](#the-well-file-format)
+- [Packages](#packages)
+  - [`@welldot/core`](#welldotcore)
+  - [`@welldot/render`](#welldotrender)
+  - [`@welldot/utils`](#welldotutils)
+- [App Features](#app-features)
+- [Getting Started](#getting-started)
+- [Tech Stack](#tech-stack)
+- [Geologic Symbolization](#geologic-symbolization)
+- [Roadmap](#roadmap)
+  - [`.well` format — v2 shipped](#well-format--v2-shipped)
+  - [`.well` format — future versions](#well-format--future-versions)
+  - [Ecosystem](#ecosystem)
+- [Claude Code Skill — `welldot-converter`](#claude-code-skill--welldot-converter)
+- [Contributing](#contributing)
+- [Licensing](#licensing)
 
 ---
 

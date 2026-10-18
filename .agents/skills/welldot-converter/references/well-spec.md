@@ -3,8 +3,59 @@
 **Extension:** `.well` | **Encoding:** UTF-8 | **Base format:** JSON
 **MIME type:** `application/vnd.well+json`
 
+## Overview
+
 This is a condensed reference for extraction. The normative source is
 `packages/core/docs/spec/v2/{format-reference,object-schemas}.md` in the repo — when in doubt, that wins.
+
+It lists the units, the top-level structure and every block the converter writes: construction,
+lithology and textures (with the FGDC codes most used in well logs), fractures and caves,
+hydrodynamic events, aquifer analyses, history logs and the v2.3 operational and water quality
+blocks. A complete example and common `aquifer_unit` values in Brazilian Portuguese close it.
+
+## Table of contents
+
+- [Units (all SI, no per-file declaration)](#units-all-si-no-per-file-declaration)
+- [Top-level structure](#top-level-structure)
+  - [`well_type` — open vocabulary (construction method only)](#well_type--open-vocabulary-construction-method-only)
+  - [`well_purpose` — open vocabulary, array (v2.1, optional)](#well_purpose--open-vocabulary-array-v21-optional)
+  - [Level sign convention](#level-sign-convention)
+  - [`well_depth` — current/usable depth, not the drilled depth](#well_depth--currentusable-depth-not-the-drilled-depth)
+- [Constructive objects](#constructive-objects)
+  - [`bore_hole[]`](#bore_hole)
+  - [`well_case[]`](#well_case)
+  - [`reduction[]`](#reduction)
+  - [`well_screen[]`](#well_screen)
+  - [`surface_case[]`](#surface_case)
+  - [`hole_fill[]`](#hole_fill)
+  - [`centralizers[]` (v2.1, optional — omit entirely if the report doesn't mention them)](#centralizers-v21-optional--omit-entirely-if-the-report-doesnt-mention-them)
+  - [`cement_pad` (single object, optional — omit entirely if not in the report)](#cement_pad-single-object-optional--omit-entirely-if-not-in-the-report)
+- [Free-text preservation rule (applies to every description-like field)](#free-text-preservation-rule-applies-to-every-description-like-field)
+- [`lithology[]` and `texture`](#lithology-and-texture)
+  - [`Texture` object](#texture-object)
+  - [FGDC Series 600 — Sedimentary Lithology (available, most common for well logging)](#fgdc-series-600--sedimentary-lithology-available-most-common-for-well-logging)
+  - [FGDC Series 700 — Metamorphic and Igneous Lithology (available)](#fgdc-series-700--metamorphic-and-igneous-lithology-available)
+- [`fractures[]` and `caves[]` (unchanged from v1)](#fractures-and-caves-unchanged-from-v1)
+  - [`fractures[]`](#fractures)
+  - [`caves[]`](#caves)
+- [`hydrodynamic_events[]`](#hydrodynamic_events)
+  - [Common fields (every event)](#common-fields-every-event)
+  - [Event types](#event-types)
+  - [Supporting objects](#supporting-objects)
+- [`aquifer_analysis[]`](#aquifer_analysis)
+- [`history_logs[]`](#history_logs)
+  - [`Attachment` (common type since v2.3)](#attachment-common-type-since-v23)
+- [`pump_installations[]` (v2.3, optional — omit entirely if the report has no pump data)](#pump_installations-v23-optional--omit-entirely-if-the-report-has-no-pump-data)
+- [`permits[]` (v2.3, optional — omit entirely if the report has no permit data)](#permits-v23-optional--omit-entirely-if-the-report-has-no-permit-data)
+- [`meters[]` (v2.3, optional — omit entirely if the report has no water meter)](#meters-v23-optional--omit-entirely-if-the-report-has-no-water-meter)
+- [`production[]` (v2.3, optional — omit entirely if the report has no readings or volumes)](#production-v23-optional--omit-entirely-if-the-report-has-no-readings-or-volumes)
+- [`operating_regime[]` (v2.3, optional — omit entirely if the report doesn't state how the well runs)](#operating_regime-v23-optional--omit-entirely-if-the-report-doesnt-state-how-the-well-runs)
+- [`water_samples[]` (v2.3, optional — omit entirely if the report has no water quality results)](#water_samples-v23-optional--omit-entirely-if-the-report-has-no-water-quality-results)
+  - [Import rules (laudos)](#import-rules-laudos)
+  - [Import checklist](#import-checklist)
+  - [Parameter vocabulary](#parameter-vocabulary)
+- [Complete example](#complete-example)
+- [Common `aquifer_unit` values (PT-BR)](#common-aquifer_unit-values-pt-br)
 
 ---
 

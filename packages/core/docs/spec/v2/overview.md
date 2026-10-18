@@ -4,6 +4,25 @@
 
 **See also:** [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
 
+## Overview
+
+The `.well` v2 specification is split into five documents. This one gives the context: what changed in each revision (v2.3, v2.1 and from v1), why the format exists, the design principles the other parts follow, and the known limitations. The other four are:
+
+- [format-reference.md](./format-reference.md) — the top-level fields, versioning and deprecation, datetimes, recommended vocabularies, `well_id`, `location`, units, profiles, extensibility, cross-reference rules and precision.
+- [object-schemas.md](./object-schemas.md) — every object schema, the `hydrodynamic_events` ledger, `aquifer_analysis`, `history_logs`, the operational blocks (pumps, permits, meters, production, operating regime) and a complete example.
+- [water-quality.md](./water-quality.md) — water samples and results, their units, the parameter vocabulary and regulatory profiles.
+- [interoperability.md](./interoperability.md) — the JSON-LD context, the relationship to GWML2 and JSON Schema validation.
+
+## Table of contents
+
+- [Changes in v2.3](#changes-in-v23)
+- [Changes in v2.1](#changes-in-v21)
+  - [Deprecations](#deprecations)
+- [Changes from v1](#changes-from-v1)
+- [Purpose](#purpose)
+- [Design Principles](#design-principles)
+- [Known Limitations of v2](#known-limitations-of-v2)
+
 ---
 
 ## Changes in v2.3

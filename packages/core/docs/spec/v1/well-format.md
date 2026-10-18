@@ -5,6 +5,32 @@
 **Encoding:** UTF-8
 **Base format:** JSON
 
+## Overview
+
+This is the specification of version 1 of the `.well` format: one JSON file that holds the static record of one water well, its identity, construction (borehole, casing, screens, fills, cement pad) and geology (lithology, fractures, caves). v1 is stable and kept for reference. New files use version 2, described in [../v2/overview.md](../v2/overview.md); `deserializeWell()` in `@welldot/core` reads v1 files and normalizes them to v2.
+
+## Table of contents
+
+- [Purpose](#purpose)
+- [Design Principles](#design-principles)
+- [File Structure](#file-structure)
+- [Top-level Fields](#top-level-fields)
+  - [`well_type` — Recommended values](#well_type--recommended-values)
+- [Object Schemas](#object-schemas)
+  - [`BoreHole` — `bore_hole[]`](#borehole--bore_hole)
+  - [`WellCase` — `well_case[]`](#wellcase--well_case)
+  - [`Reduction` — `reduction[]`](#reduction--reduction)
+  - [`WellScreen` — `well_screen[]`](#wellscreen--well_screen)
+  - [`SurfaceCase` — `surface_case[]`](#surfacecase--surface_case)
+  - [`HoleFill` — `hole_fill[]`](#holefill--hole_fill)
+  - [`CementPad` — `cement_pad`](#cementpad--cement_pad)
+  - [`Lithology` — `lithology[]`](#lithology--lithology)
+  - [`Fracture` — `fractures[]`](#fracture--fractures)
+  - [`Cave` — `caves[]`](#cave--caves)
+- [Complete Example](#complete-example)
+- [Versioning](#versioning)
+- [MIME Type](#mime-type)
+
 ---
 
 ## Purpose

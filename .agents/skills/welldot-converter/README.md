@@ -1,5 +1,7 @@
 # welldot-converter
 
+## Overview
+
 An [Agent Skill](https://agentskills.io) that converts water well reports into `.well` JSON
 (welldot spec v2). `SKILL.md` is the whole skill — there is no Claude-specific version and no
 per-vendor copy to keep in sync.
@@ -13,6 +15,15 @@ per-vendor copy to keep in sync.
 ```
 
 `.claude/skills/welldot-converter` is a symlink to this directory.
+
+This README explains why the skill lives in `.agents/skills/`, how to use it from ChatGPT or
+Gemini where Agent Skills are not supported, and how to edit it.
+
+## Table of contents
+
+- [Why it lives in `.agents/skills/`](#why-it-lives-in-agentsskills)
+- [Fallback: ChatGPT web/mobile and Gemini Gems](#fallback-chatgpt-webmobile-and-gemini-gems)
+- [Editing the skill](#editing-the-skill)
 
 ---
 

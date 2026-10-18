@@ -1,5 +1,7 @@
 # FGDC Texture Patterns Reference
 
+## Overview
+
 This document lists all texture patterns available in `FGDC_TEXTURES_OPTIONS` from `@welldot/core`. These codes follow the **FGDC (Federal Geographic Data Committee)** digital cartographic standard for geologic map symbolization.
 
 Use a `code` value in the `texture` field of a `Lithology` record to assign a pattern to a depth interval.
@@ -18,6 +20,19 @@ const available = FGDC_TEXTURES_OPTIONS.filter(t => !t.pending);
 > **Texture availability:** Some entries carry `pending: true`, meaning the SVG pattern image has not been implemented yet. Textures without this flag are fully rendered and ready to use. The flag is transitional and will be removed once all patterns are complete.
 >
 > Currently **120 of 282 textures** are available: all of Series 600 (84) and Series 700 (33), plus codes 120, 123, and 132 from Series 100.
+
+The patterns are grouped by FGDC series below. Each table lists the code and label of every pattern, and the summary at the end gives the available and pending counts per series.
+
+## Table of contents
+
+- [Series 100 — Surficial Patterns](#series-100--surficial-patterns)
+- [Series 200 — Sedimentary Patterns](#series-200--sedimentary-patterns)
+- [Series 300 — Igneous Patterns](#series-300--igneous-patterns)
+- [Series 400 — Miscellaneous and Metamorphic Patterns](#series-400--miscellaneous-and-metamorphic-patterns)
+- [Series 500 — Glacial and Periglacial Patterns](#series-500--glacial-and-periglacial-patterns)
+- [Series 600 — Sedimentary Lithology Patterns](#series-600--sedimentary-lithology-patterns)
+- [Series 700 — Metamorphic and Igneous Lithology Patterns](#series-700--metamorphic-and-igneous-lithology-patterns)
+- [Summary](#summary)
 
 ---
 

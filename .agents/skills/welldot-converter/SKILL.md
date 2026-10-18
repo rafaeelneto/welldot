@@ -20,12 +20,52 @@ description: >
 
 # welldot-converter
 
+## Overview
+
 Extracts data from a water well report (any format) and produces a valid `.well` JSON file
 per the **welldot** spec (https://github.com/rafaeelneto/welldot) for upload to **welldot.org**
 or use with `@welldot/core`.
 
 **You are the extractor.** Read the document yourself and write the JSON yourself — do not
 delegate extraction to another model or API.
+
+The procedure has six steps: get the spec, read the report, extract the well data, validate,
+deliver with a summary, and handle ambiguities. The sections before the steps set the rules that
+apply throughout (platform notes, the official docs as the source of truth, free-text
+preservation, metric fidelity). The sections after them are lookups for common report terms and
+the output filename.
+
+## Table of contents
+
+- [Platform notes](#platform-notes)
+- [⚠️ Source of truth: official docs](#️-source-of-truth-official-docs)
+  - [Doc caching across files](#doc-caching-across-files)
+- [Language and free-text preservation](#language-and-free-text-preservation)
+- [Metric fidelity — critical rule](#metric-fidelity--critical-rule)
+- [Step 1 — Get the spec](#step-1--get-the-spec)
+- [Step 2 — Read the report](#step-2--read-the-report)
+- [Step 3 — Extract the well data](#step-3--extract-the-well-data)
+  - [Vocabulary tiers — these fields are NOT uniformly enums](#vocabulary-tiers--these-fields-are-not-uniformly-enums)
+  - [Texture — `lithology[].texture`](#texture--lithologytexture)
+  - [Lithology color](#lithology-color)
+  - [Fractures and caves](#fractures-and-caves)
+  - [`hydrodynamic_events` — pumping tests, static/dynamic level measurements](#hydrodynamic_events--pumping-tests-staticdynamic-level-measurements)
+  - [`aquifer_analysis`](#aquifer_analysis)
+  - [`history_logs`](#history_logs)
+  - [`pump_installations` (v2.3)](#pump_installations-v23)
+  - [`permits` (v2.3)](#permits-v23)
+  - [`meters` (v2.3)](#meters-v23)
+  - [`production` (v2.3)](#production-v23)
+  - [`operating_regime` (v2.3)](#operating_regime-v23)
+  - [`water_samples` (v2.3) — laboratory reports (laudos)](#water_samples-v23--laboratory-reports-laudos)
+  - [`attachments` (v2.3)](#attachments-v23)
+  - [Top-level v2 structure](#top-level-v2-structure)
+  - [`well_depth`](#well_depth)
+- [Step 4 — Validate](#step-4--validate)
+- [Step 5 — Deliver and summarize](#step-5--deliver-and-summarize)
+- [Step 6 — Handle ambiguities](#step-6--handle-ambiguities)
+- [Common report term lookup](#common-report-term-lookup)
+- [Output filename](#output-filename)
 
 ---
 

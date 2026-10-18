@@ -2,14 +2,37 @@
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md)
 
+## Overview
+
 This document specifies the `water_samples` block _(since v2.3)_: the sample and result schemas, the recommended values, the unit rules, the `welldot` parameter vocabulary and how jurisdiction requirements are expressed. Cross-cutting rules that also cover water samples stay in their general sections: datetimes and the `_resolution: "day"` convention, canonical units and field bindings, cross-references, uniqueness and precision in [format-reference.md](format-reference.md); attachments, ledger corrections and `history_logs` links in [object-schemas.md](object-schemas.md). The Complete Example in object-schemas.md includes water samples.
 
-## Contents
+## Table of contents
 
 - [`water_samples[]`](#water_samples)
+  - [`WaterSample`](#watersample)
+  - [`SamplingPoint`](#samplingpoint)
+  - [`Purge`](#purge)
+  - [`PurgeReading`](#purgereading)
+  - [`Laboratory`](#laboratory)
+  - [`Result`](#result)
+  - [`Parameter`](#parameter)
+  - [`Filtration`](#filtration)
+  - [`Validation`](#validation)
+  - [Result rules](#result-rules)
+  - [Malformed (rejected)](#malformed-rejected)
+  - [Validation (warnings, never rejection)](#validation-warnings-never-rejection)
+  - [Derived values](#derived-values)
+  - [History log links](#history-log-links)
 - [Recommended values](#recommended-values)
+  - [`water_samples[].sample_type` — Recommended values _(since v2.3)_](#water_samplessample_type--recommended-values-since-v23)
+  - [`water_samples[].sampling_method` — Recommended values _(since v2.3)_](#water_samplessampling_method--recommended-values-since-v23)
+  - [`water_samples[].sampling_point.type` — Recommended values _(since v2.3)_](#water_samplessampling_pointtype--recommended-values-since-v23)
+  - [`water_samples[].sampling_point.device` — Recommended values _(since v2.3)_](#water_samplessampling_pointdevice--recommended-values-since-v23)
 - [Units](#units)
 - [Parameter vocabulary](#parameter-vocabulary)
+  - [Vocabulary rules](#vocabulary-rules)
+  - [Core vocabulary](#core-vocabulary)
+  - [Limit sets are not part of the file](#limit-sets-are-not-part-of-the-file)
 - [Regulatory profiles](#regulatory-profiles)
 
 ---

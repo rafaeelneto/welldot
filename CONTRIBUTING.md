@@ -1,11 +1,26 @@
 # Contributing to welldot
 
+## Overview
+
 Thanks for your interest. This project has two distinct kinds of contribution, and they work differently:
 
 - **The `.well` format** — an open specification other people implement. Changes here affect every tool that reads or writes `.well` files, so they go through discussion first.
 - **The code** — the three libraries and the web app. Ordinary pull requests.
 
 Both are welcome. Bug reports and questions are too — open an issue.
+
+This guide covers setting up the repository, its layout, how changes to the `.well` format are proposed, how code contributions are made, and where to start if you are building your own tool that reads or writes `.well` files.
+
+## Table of contents
+
+- [Getting set up](#getting-set-up)
+- [Repository layout](#repository-layout)
+- [Proposing a change to the `.well` format](#proposing-a-change-to-the-well-format)
+  - [Compatibility rules](#compatibility-rules)
+  - [Conventions](#conventions)
+- [Code contributions](#code-contributions)
+- [Building a tool that reads or writes `.well`](#building-a-tool-that-reads-or-writes-well)
+- [License](#license)
 
 ---
 
