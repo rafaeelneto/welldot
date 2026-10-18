@@ -937,7 +937,7 @@ Each ID-bearing array maintains its **own uniqueness scope**. The ID namespaces 
 - `production[].id` — unique within `production` _(since v2.3)_
 - `operating_regime[].id` — unique within `operating_regime`; `operating_regime[].effective_from` is also unique within the block _(since v2.3)_
 - `water_samples[].id` — unique within `water_samples` _(since v2.3)_
-- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis`, `water_samples`). The same id may appear under different records.
+- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `permits[].history`, `permits[].conditions[].fulfillments`, `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis`, `water_samples`). The same id may appear under different records.
 - `well_id[]` — uniqueness is on the composite key `(authority, id)`, not on `id` alone
 
 An ID value MAY repeat across different arrays without conflict (e.g. an event and an analysis MAY both use the ID `"001"`), though distinct values are recommended for clarity.
@@ -965,7 +965,7 @@ The following fields hold references to IDs in other arrays:
 | `water_samples[].static_level_event_id`               | `hydrodynamic_events[].id` | Same file only   |
 | `water_samples[].sampling_point.pump_installation_id` | `pump_installations[].id`  | Same file only   |
 
-Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
+Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits` (including their `history` entries and condition `fulfillments`), `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
 
 Cross-file references are not supported in v2.
 

@@ -22,18 +22,20 @@ The `.well` format is not a file container. Attachments are referenced by URL. S
 
 #### Where attachments are allowed
 
-| Location                            | Purpose                                                                     |
-| ----------------------------------- | --------------------------------------------------------------------------- |
-| Root `attachments[]`                | Documents about the well as a whole, not tied to any record. _(since v2.3)_ |
-| `history_logs[].attachments`        | Supporting documents or photos of a log entry.                              |
-| `permits[].attachments`             | The legal document (portaria, certificate). _(since v2.3)_                  |
-| `pump_installations[].attachments`  | Pump curves, invoices, photos. _(since v2.3)_                               |
-| `meters[].attachments`              | Installation photos, invoices, certificates. _(since v2.3)_                 |
-| `hydrodynamic_events[].attachments` | Field sheets, logger exports. _(since v2.3)_                                |
-| `aquifer_analysis[].attachments`    | Interpretation reports. _(since v2.3)_                                      |
-| `water_samples[].attachments`       | Laboratory reports (`lab_report`), field sheets, photos. _(since v2.3)_     |
+| Location                                            | Purpose                                                                     |
+| --------------------------------------------------- | --------------------------------------------------------------------------- |
+| Root `attachments[]`                                | Documents about the well as a whole, not tied to any record. _(since v2.3)_ |
+| `history_logs[].attachments`                        | Supporting documents or photos of a log entry.                              |
+| `permits[].attachments`                             | The legal document (portaria, certificate). _(since v2.3)_                  |
+| `permits[].history[].attachments`                   | Notices, receipts, protocols of an administrative step. _(since v2.3)_      |
+| `permits[].conditions[].fulfillments[].attachments` | Proof of submission (`condition_evidence`). _(since v2.3)_                  |
+| `pump_installations[].attachments`                  | Pump curves, invoices, photos. _(since v2.3)_                               |
+| `meters[].attachments`                              | Installation photos, invoices, certificates. _(since v2.3)_                 |
+| `hydrodynamic_events[].attachments`                 | Field sheets, logger exports. _(since v2.3)_                                |
+| `aquifer_analysis[].attachments`                    | Interpretation reports. _(since v2.3)_                                      |
+| `water_samples[].attachments`                       | Laboratory reports (`lab_report`), field sheets, photos. _(since v2.3)_     |
 
-An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries.
+An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits` (including their `history` entries and condition `fulfillments`), `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries.
 
 `Attachment.id` is unique within its owning array: the root `attachments[]`, or the `attachments` array of one record. The same id may appear under different records.
 

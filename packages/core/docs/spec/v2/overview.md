@@ -28,9 +28,10 @@ v2.3 additions:
   its identifier and/or request_identifier (verbatim, any format), a
   closed administrative status (requested, granted, suspended,
   revoked, denied, withdrawn), an administrative history (filing,
-  process, notifications, fees, with done/due_date) and, on each
-  condition, a responsible and the fulfillments of its deadlines
-  (datetime, due_date, author, event_id, sample_id)
+  process, notifications, fees, with done/due_date and attachments)
+  and, on each condition, a responsible and the fulfillments of its
+  deadlines (datetime, due_date, author, event_id, sample_id,
+  attachments)
 - meters (optional Meter[]): totalizer (hidrômetro) installation
   history; device facts only (type, serial, nominal diameter,
   max_reading for rollover)
