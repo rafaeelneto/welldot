@@ -1187,6 +1187,17 @@
           "recovery": "Recovery (Theis)",
           "stepTest": "Step test"
         },
+        "logger": {
+          "depth": "Water level",
+          "depthMin": "Minimum",
+          "depthMax": "Maximum",
+          "sensor": "Sensor",
+          "axisTime": "Time ({zone})",
+          "axisDepth": "Depth to water (m)",
+          "tooltipDepth": "Depth",
+          "ariaLabel": "Logger series: depth × time",
+          "mixedLevels": "This well pumps, so the series can mix static and pumping levels. Read it together with production and pump installations."
+        },
         "axes": {
           "time": "Time since start (min)",
           "elapsed": "Time since step start (min)",

@@ -60,7 +60,18 @@ app/                      ← srcDir
                              `mergeImportedReadings` and bumps `readingsVersion`. Its form model and round trip live in
                              loggerSeriesForm.ts (`toLoggerForm` / `fromLoggerForm`: readings
                              sorted by instant, empty fields omitted, members the form does not
-                             own carried over)).
+                             own carried over)). LoggerSeriesChart (charts/, series in
+                             charts/loggerChart.ts: bad rows dropped, then
+                             `downsampleLoggerReadings` to 2000 points, muted dashed
+                             `depth_min`/`depth_max` when aggregated, "Sensor" line, markers
+                             up to 40 points, a note on mixed static/pumping levels when the
+                             well has pump_installations or production) is shown in
+                             EventViewDialog and, as a compact preview rebuilt with a debounce
+                             from `readingsVersion`/sensor depth/aggregation, in
+                             LoggerSeriesDialog. It uses ChartFrame's `xScale="time"` (x in
+                             epoch ms, calendar-aligned ticks labelled by `formatXTick`; the
+                             default stays linear), with times in the well time zone, else
+                             the browser's.
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)

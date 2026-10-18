@@ -8,6 +8,7 @@ import {
 } from '@welldot/core';
 import { getWellTimeZone, inferLoggerInterval } from '@welldot/utils';
 import type { WellGridColumn } from '@welldot/vue/grid';
+import LoggerSeriesChart from './charts/LoggerSeriesChart.vue';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
 import LoggerImportDialog, {
   type LoggerImportPayload,
@@ -16,6 +17,7 @@ import {
   applyTypedDatetime,
   blankLoggerReading,
   formatReadingLocal,
+  fromLoggerForm,
   isAggregated,
   isReadingInstant,
   mergeImportedReadings,
@@ -266,6 +268,22 @@ const summary = computed(() => {
     count,
   );
 });
+
+// Compact preview. Rebuilt (debounced) only when the readings, the sensor
+// depth or the aggregation change, never on other fields, and it reads the raw
+// form so a large series is not made reactive.
+const previewEvent = shallowRef<LoggerSeriesEvent | null>(null);
+function buildPreview() {
+  const raw = toRaw(form);
+  previewEvent.value = raw.readings.some(r => isReadingInstant(r.datetime))
+    ? fromLoggerForm(raw, draftId.value || 'preview', null)
+    : null;
+}
+watchDebounced(
+  () => [readingsVersion.value, form.sensorDepth, form.aggregation],
+  buildPreview,
+  { debounce: VALIDATION_DEBOUNCE_MS, immediate: true },
+);
 
 const readingColumns = computed<WellGridColumn[]>(() => [
   {
@@ -529,6 +547,11 @@ function reorderReading(from: number, to: number) {
           @delete="deleteReading"
           @change="changeReading"
           @reorder="reorderReading"
+        />
+        <LoggerSeriesChart
+          v-if="previewEvent?.readings.length"
+          :event="previewEvent"
+          compact
         />
       </div>
 

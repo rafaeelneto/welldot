@@ -1,7 +1,8 @@
 // Shapes taken by ChartFrame. Values are in data units; ChartFrame maps them
 // to pixels.
 
-export type AxisKind = 'linear' | 'log';
+/** `time`: x values are epoch ms; ticks fall on calendar boundaries. */
+export type AxisKind = 'linear' | 'log' | 'time';
 
 export type ChartPoint = {
   x: number;

@@ -1187,6 +1187,17 @@
           "recovery": "Recuperação (Theis)",
           "stepTest": "Teste escalonado"
         },
+        "logger": {
+          "depth": "Nível d'água",
+          "depthMin": "Mínimo",
+          "depthMax": "Máximo",
+          "sensor": "Sensor",
+          "axisTime": "Tempo ({zone})",
+          "axisDepth": "Profundidade até a água (m)",
+          "tooltipDepth": "Profundidade",
+          "ariaLabel": "Série do logger: profundidade × tempo",
+          "mixedLevels": "Este poço é bombeado, então a série pode misturar níveis estáticos e dinâmicos. Interprete-a junto com a produção e as instalações de bomba."
+        },
         "axes": {
           "time": "Tempo desde o início (min)",
           "elapsed": "Tempo desde o início do degrau (min)",
