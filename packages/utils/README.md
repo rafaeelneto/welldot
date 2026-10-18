@@ -20,6 +20,7 @@ This README covers installation, units, and the API grouped by area: geometry an
   - [Display helpers](#display-helpers)
   - [Operations (.well v2.3)](#operations-well-v23)
   - [Water quality (.well v2.3)](#water-quality-well-v23)
+  - [Logger series import (.well v2.4)](#logger-series-import-well-v24)
   - [SIAGAS import (`@welldot/utils/siagas`)](#siagas-import-welldotutilssiagas)
 - [Contributing](#contributing)
 - [License](#license)
@@ -201,6 +202,44 @@ getHoldingTimes(sample); // → [{ key: 'e_coli', hours: 9.67, resolution: 'inst
 getRelativePercentDifferences(well, 'ws-2026-09-b'); // → [{ key: 'sulfate', rpd_pct: 3.46, … }]
 isFormationWater(well, sample); // → true (inside a screen, below the static level)
 ```
+
+### Logger series import (.well v2.4)
+
+Helpers to turn a datalogger export (CSV, semicolon or tab separated) into `logger_series` readings. There are no vendor-specific parsers: the caller maps columns.
+
+```ts
+import {
+  parseDelimitedText,
+  buildLoggerReadings,
+  mergeLoggerReadings,
+} from '@welldot/utils';
+
+const { rows } = parseDelimitedText(text);
+const { readings, skipped } = buildLoggerReadings(rows, {
+  headerRows: 1,
+  dateColumn: 0,
+  timeColumn: 1,
+  valueColumn: 2,
+  valueKind: 'water_column', // or 'depth'
+  sensorDepth: 42, // depth = sensorDepth - value
+  dateFormat: 'dmy',
+  timeZone: 'America/Belem', // else `offset: '-03:00'`
+});
+const { readings: merged } = mergeLoggerReadings(
+  event.readings,
+  readings,
+  'append',
+);
+```
+
+| Function                                        | Description                                                                                                                             |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `parseDelimitedText(text)`                      | Detects `,` `;` or tab and parses RFC 4180 quoting; drops empty lines.                                                                  |
+| `buildLoggerReadings(rows, mapping)`            | Rows to `LoggerReading[]` plus `skipped` rows (`invalid_date`, `invalid_value`, `missing_sensor_depth`, `missing_offset`) by row index. |
+| `localDateTimeToInstant(local, timeZone)`       | `YYYY-MM-DDTHH:mm[:ss]` in an IANA zone to an RFC 3339 instant with the offset in force then; `undefined` for an invalid zone.          |
+| `mergeLoggerReadings(existing, incoming, mode)` | Merges by instant (incoming wins), sorted; `replaced` counts overwritten (append) or dropped (replace) readings.                        |
+| `inferLoggerInterval(readings)`                 | Median spacing in minutes, rounded to 0.1; `undefined` under two readings.                                                              |
+| `downsampleLoggerReadings(readings, maxPoints)` | At most `maxPoints` readings keeping first, last and per-bucket min and max depth, for plotting.                                        |
 
 ### SIAGAS import (`@welldot/utils/siagas`)
 
