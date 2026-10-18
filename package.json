@@ -15,14 +15,19 @@
     "test": "turbo test",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
-    "format": "prettier --write \"**/*.{ts,tsx,vue,md,json}\""
+    "format": "prettier --write \"**/*.{ts,tsx,vue,md,json}\"",
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
+    "release:tag": "changeset tag",
+    "test:scripts": "node --test \"scripts/*.test.mjs\""
   },
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
-    "@welldot/lint": "workspace:*",
+    "@changesets/cli": "^3.0.3",
     "@eslint/js": "^8.57.1",
     "@typescript-eslint/eslint-plugin": "^8.59.0",
     "@typescript-eslint/parser": "^8.59.0",
+    "@welldot/lint": "workspace:*",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import-x": "^4.16.2",

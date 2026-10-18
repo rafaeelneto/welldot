@@ -30,6 +30,9 @@ pnpm test         # Run Vitest across all packages
 pnpm lint         # ESLint across all packages
 pnpm lint:fix     # Auto-fix ESLint issues
 pnpm format       # Prettier formatting
+pnpm changeset         # Author a changeset for a published-package change
+pnpm version-packages  # Bump versions, write CHANGELOGs, refresh the lockfile
+pnpm release:tag       # Create @welldot/<pkg>@<version> tags (then git push --follow-tags)
 ```
 
 To work on a single package (e.g., `render`):

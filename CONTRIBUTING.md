@@ -19,6 +19,7 @@ This guide covers setting up the repository, its layout, how changes to the `.we
   - [Compatibility rules](#compatibility-rules)
   - [Conventions](#conventions)
 - [Code contributions](#code-contributions)
+- [Releasing](#releasing)
 - [Building a tool that reads or writes `.well`](#building-a-tool-that-reads-or-writes-well)
 - [License](#license)
 
@@ -127,6 +128,18 @@ chore(lint): turn off no-plusplus
 **Tests.** New logic needs a test. Vitest runs everywhere; test files sit next to the code as `*.test.ts`. `@welldot/render`'s D3 drawing code is the one thinly-covered area — utility functions there are tested, the renderers are not, so be careful and verify visually.
 
 **Styling in `apps/profiler`.** The app uses semantic `surface-*` / `content-*` tokens that invert automatically between light and dark mode. Do not use Tailwind grays, `bg-white`, hardcoded hex, or `dark:` variants for neutrals. Prefer a PrimeVue component over a hand-rolled one. [apps/profiler/README.md](apps/profiler/README.md) explains the whole system — please read it before touching UI.
+
+---
+
+## Releasing
+
+Versions, CHANGELOGs and GitHub Releases are managed with [Changesets](https://github.com/changesets/changesets).
+
+1. Every PR that changes a published package (`@welldot/core`, `utils`, `render`, `pdf`, `vue`) runs `pnpm changeset` and commits the generated file in `.changeset/`. Apps are private and never get changesets.
+2. A release runs `pnpm version-packages`, which bumps the versions, writes each package's `CHANGELOG.md` and refreshes the lockfile. Review the result and merge it.
+3. Then `pnpm release:tag` creates the `@welldot/<pkg>@<version>` tags and `git push --follow-tags` pushes them. The tags trigger the publish workflows, which fail if the CHANGELOG has no entry for the version, publish to npm and create the GitHub Release from that CHANGELOG section.
+
+Changes to the format spec also get a "Changes in v2.x" section in [`overview.md`](packages/core/docs/spec/v2/overview.md), which is the format's changelog. The core changeset links to it.
 
 ---
 
