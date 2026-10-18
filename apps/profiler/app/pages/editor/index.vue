@@ -249,25 +249,31 @@ const tabs = computed<
             </span>
           </Tab>
         </TabList>
-        <TabPanels>
-          <TabPanel :value="EDITOR_TAB.summary">
-            <TabSummary @navigate="key => (activeTabKey = key)" />
-          </TabPanel>
-          <TabPanel :value="EDITOR_TAB.general"><TabGeneral /></TabPanel>
-          <TabPanel :value="EDITOR_TAB.construction"
-            ><TabConstruction
-          /></TabPanel>
-          <TabPanel :value="EDITOR_TAB.geological"><TabGeological /></TabPanel>
-          <TabPanel :value="EDITOR_TAB.historyLog"><TabHistoryLog /></TabPanel>
-          <TabPanel :value="EDITOR_TAB.hydrodynamicEvents"
-            ><TabHydrodynamicEvents
-          /></TabPanel>
-          <TabPanel :value="EDITOR_TAB.operation"><TabOperation /></TabPanel>
-          <TabPanel :value="EDITOR_TAB.permits"><TabPermits /></TabPanel>
-          <TabPanel :value="EDITOR_TAB.waterQuality"
-            ><TabWaterQuality
-          /></TabPanel>
-        </TabPanels>
+        <ClientOnly>
+          <TabPanels>
+            <TabPanel :value="EDITOR_TAB.summary">
+              <TabSummary @navigate="key => (activeTabKey = key)" />
+            </TabPanel>
+            <TabPanel :value="EDITOR_TAB.general"><TabGeneral /></TabPanel>
+            <TabPanel :value="EDITOR_TAB.construction"
+              ><TabConstruction
+            /></TabPanel>
+            <TabPanel :value="EDITOR_TAB.geological"
+              ><TabGeological
+            /></TabPanel>
+            <TabPanel :value="EDITOR_TAB.historyLog"
+              ><TabHistoryLog
+            /></TabPanel>
+            <TabPanel :value="EDITOR_TAB.hydrodynamicEvents"
+              ><TabHydrodynamicEvents
+            /></TabPanel>
+            <TabPanel :value="EDITOR_TAB.operation"><TabOperation /></TabPanel>
+            <TabPanel :value="EDITOR_TAB.permits"><TabPermits /></TabPanel>
+            <TabPanel :value="EDITOR_TAB.waterQuality"
+              ><TabWaterQuality
+            /></TabPanel>
+          </TabPanels>
+        </ClientOnly>
       </Tabs>
     </div>
   </div>
