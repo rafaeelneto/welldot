@@ -490,7 +490,6 @@
       "flow_rate": 7.2,
       "specific_capacity": 0.141,
       "transmissivity": 0.0000385,
-      "storativity": null,
       "notes": "Uma única fratura produtora; rebaixamento quase até a entrada d’água. Vazão recomendada: 4 m³/h."
     }
   ],

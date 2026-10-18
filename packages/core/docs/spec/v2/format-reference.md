@@ -12,6 +12,7 @@ This part of the `.well` v2.3 specification defines the file as a whole: the top
   - [Overview](#overview)
   - [Table of contents](#table-of-contents)
   - [Top-level Structure](#top-level-structure)
+    - [Absent values _(since v2.4)_](#absent-values-since-v24)
   - [Versioning](#versioning)
     - [Parser version handling](#parser-version-handling)
   - [Deprecation Policy](#deprecation-policy)
@@ -134,6 +135,12 @@ This part of the `.well` v2.3 specification defines the file as a whole: the top
   "water_samples": [ ... ]
 }
 ```
+
+### Absent values _(since v2.4)_
+
+An optional field without a value is omitted, never written as `null`. A `null` in an optional field is malformed. Absent means unknown.
+
+Readers accept `null` in `aquifer_analysis[].storativity` only in files whose `version` is the integer `2`, and treat it as absent.
 
 ---
 

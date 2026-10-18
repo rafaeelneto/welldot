@@ -1211,7 +1211,6 @@ A ledger of water samples, each with its field and laboratory results. The full 
       "flow_rate": 340.0,
       "specific_capacity": 21.17,
       "transmissivity": 4.2e-4,
-      "storativity": null,
       "notes": "Cooper-Jacob straight-line fit, t=10min to t=1440min. S not determinable — no observation well."
     }
   ],

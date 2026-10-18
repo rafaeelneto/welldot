@@ -954,10 +954,7 @@
             "type": "number"
           },
           "storativity": {
-            "type": [
-              "number",
-              "null"
-            ]
+            "type": "number"
           },
           "hydraulic_conductivity": {
             "type": "number"

@@ -476,7 +476,6 @@
       "flow_rate": 12.3,
       "specific_capacity": 0.724,
       "transmissivity": 0.000149,
-      "storativity": null,
       "notes": "Transmissividade aparente do meio fissural. A vazão de exploração recomendada é de 6 m³/h, metade da vazão de teste, por causa do rebaixamento e da salinidade."
     }
   ],

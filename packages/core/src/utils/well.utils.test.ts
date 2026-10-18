@@ -1285,20 +1285,65 @@ describe('parseWell', () => {
       expect(result.cement_pad).toBeUndefined();
     });
 
-    it('accepts storativity: null', () => {
-      const result = parseWell(
-        minV2({
-          aquifer_analysis: [
-            {
-              id: 'a1',
-              datetime: '2006-03-15T16:00:00-03:00',
-              source_event_ids: [],
-              storativity: null,
-            },
-          ],
+    const nullStorativity = (version: unknown) =>
+      minV2({
+        version,
+        aquifer_analysis: [
+          {
+            id: 'a1',
+            datetime: '2006-03-15T16:00:00-03:00',
+            source_event_ids: [],
+            storativity: null,
+          },
+        ],
+      });
+
+    it('parseWell rejects storativity null in a "2.4" file', () => {
+      expect(() => parseWell(nullStorativity('2.4'))).toThrow();
+    });
+
+    it('parseWell accepts storativity null in version 2 files and drops it', () => {
+      const result = parseWell(nullStorativity(2));
+      expect(result.aquifer_analysis![0]).not.toHaveProperty('storativity');
+    });
+  });
+
+  describe('serializeWell null handling', () => {
+    it('serializeWell omits null members but keeps them inside x- fields', () => {
+      const well = parseWell(
+        JSON.stringify({
+          version: 2,
+          well_type: 'tubular',
+          bore_hole: [],
+          well_case: [],
+          reduction: [],
+          well_screen: [],
+          surface_case: [],
+          hole_fill: [],
+          lithology: [],
+          fractures: [],
+          caves: [],
         }),
+      ) as unknown as Record<string, unknown>;
+      well.aquifer_analysis = [
+        {
+          id: 'a1',
+          datetime: '2006-03-15T16:00:00-03:00',
+          source_event_ids: [],
+          storativity: null,
+        },
+      ];
+      well.cement_pad = { type: null };
+      well['x-app'] = { a: null };
+      well['@context'] = { k: null };
+
+      const out = JSON.parse(
+        serializeWell(well as unknown as Parameters<typeof serializeWell>[0]),
       );
-      expect(result.aquifer_analysis![0].storativity).toBeNull();
+      expect(out.aquifer_analysis[0]).not.toHaveProperty('storativity');
+      expect(out.cement_pad).not.toHaveProperty('type');
+      expect(out['x-app']).toEqual({ a: null });
+      expect(out['@context']).toEqual({ k: null });
     });
   });
 

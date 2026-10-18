@@ -1031,7 +1031,6 @@
       "max_flow_rate_basis": "step_drawdown",
       "specific_capacity": 12.712,
       "transmissivity": 881.7,
-      "storativity": null,
       "jacob_b": 0.062,
       "jacob_c": 0.000139,
       "well_efficiency_pct": 79,

@@ -355,6 +355,25 @@ function unknownRootKeys(well: Well): string[] {
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
+ * Drops object members whose value is `null` (an optional field without a
+ * value is omitted, never written as `null`). Members under `x-` keys and
+ * `@context` are returned unchanged.
+ */
+function omitNulls(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(omitNulls);
+  if (typeof value !== 'object' || value === null) return value;
+  const out: Record<string, unknown> = {};
+  for (const [key, member] of Object.entries(value)) {
+    if (key.startsWith('x-') || key === '@context') {
+      out[key] = member;
+    } else if (member !== null) {
+      out[key] = omitNulls(member);
+    }
+  }
+  return out;
+}
+
+/**
  * Serializes a {@link Well} object into a versioned JSON string suitable for
  * storage or transmission.
  *
@@ -424,7 +443,7 @@ export function serializeWell(well: Well): string {
     if (value !== undefined) payload[key] = value;
   }
 
-  return JSON.stringify(payload);
+  return JSON.stringify(omitNulls(payload));
 }
 
 /**

@@ -437,7 +437,6 @@
       "flow_rate": 110,
       "specific_capacity": 35.48,
       "transmissivity": 0.00621,
-      "storativity": null,
       "notes": "Transmissividade alta, controlada pelo conduto. O nível estático caiu 4,3 m desde 1987, acompanhando o rebaixamento regional."
     }
   ],

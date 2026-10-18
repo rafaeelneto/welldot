@@ -383,7 +383,7 @@ export type AquiferAnalysis = {
   max_flow_rate_basis?: string;
   specific_capacity?: number;
   transmissivity?: number;
-  storativity?: number | null;
+  storativity?: number;
   hydraulic_conductivity?: number;
   aquifer_thickness?: number;
   jacob_b?: number;

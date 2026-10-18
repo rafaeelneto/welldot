@@ -316,7 +316,7 @@ export const AquiferAnalysisSchema = z.object({
   max_flow_rate_basis: z.string().optional(),
   specific_capacity: z.number().optional(),
   transmissivity: z.number().optional(),
-  storativity: z.number().nullable().optional(),
+  storativity: z.number().optional(),
   hydraulic_conductivity: z.number().optional(),
   aquifer_thickness: z.number().optional(),
   jacob_b: z.number().optional(),
@@ -821,6 +821,16 @@ export function parseWell(json: string): Well {
       throw new Error(
         `Unsupported .well format version: ${JSON.stringify(raw.version)}`,
       );
+    }
+  }
+
+  // v2.0–v2.3 files (integer `version: 2`, or absent) may carry
+  // `storativity: null`; read it as absent. "2.4" files must omit it.
+  if (raw.version === 2 && Array.isArray(raw.aquifer_analysis)) {
+    for (const item of raw.aquifer_analysis) {
+      if (isPlainObject(item) && item.storativity === null) {
+        delete item.storativity;
+      }
     }
   }
 
