@@ -8,80 +8,83 @@ This part of the `.well` v2.3 specification defines the file as a whole: the top
 
 ## Table of contents
 
-- [Top-level Structure](#top-level-structure)
-- [Versioning](#versioning)
-  - [Parser version handling](#parser-version-handling)
-- [Deprecation Policy](#deprecation-policy)
-  - [Field lifecycle](#field-lifecycle)
-  - [Parser behavior](#parser-behavior)
-  - [Vocabulary value promotion](#vocabulary-value-promotion)
-  - [Canonical deprecation registry](#canonical-deprecation-registry)
-- [Top-level Fields](#top-level-fields)
-  - [Core identity](#core-identity)
-  - [v2 additions](#v2-additions)
-  - [v2.1 additions](#v21-additions)
-  - [v2.3 additions](#v23-additions)
-  - [Block kinds _(since v2.3)_](#block-kinds-since-v23)
-  - [Naming rules _(since v2.3)_](#naming-rules-since-v23)
-- [Datetime Conventions](#datetime-conventions)
-  - [Instants known only by date _(since v2.3)_](#instants-known-only-by-date-since-v23)
-  - [Ordering and ties](#ordering-and-ties)
-- [Recommended vocabularies](#recommended-vocabularies)
-- [`well_type` — Recommended values](#well_type--recommended-values)
-- [`well_purpose` — Recommended values _(since v2.1)_](#well_purpose--recommended-values-since-v21)
-- [`bore_hole[].drilling_method` — Recommended values _(since v2.3)_](#bore_holedrilling_method--recommended-values-since-v23)
-- [Construction materials — Recommended values _(since v2.3)_](#construction-materials--recommended-values-since-v23)
-- [`well_screen[].slot_type` — Recommended values _(since v2.3)_](#well_screenslot_type--recommended-values-since-v23)
-- [`centralizers[].type` — Recommended values _(since v2.1)_](#centralizerstype--recommended-values-since-v21)
-- [`cement_pad.type` — Recommended values _(since v2.3)_](#cement_padtype--recommended-values-since-v23)
-- [`pump_installations[].type` — Recommended values _(since v2.3)_](#pump_installationstype--recommended-values-since-v23)
-- [`pump_installations[].power_source` — Recommended values _(since v2.3)_](#pump_installationspower_source--recommended-values-since-v23)
-- [`permits[].type` — Recommended values _(since v2.3)_](#permitstype--recommended-values-since-v23)
-- [`permits[].water_use` — Recommended values _(since v2.3)_](#permitswater_use--recommended-values-since-v23)
-- [`permits[].conditions[].category` — Recommended values _(since v2.3)_](#permitsconditionscategory--recommended-values-since-v23)
-- [`permits[].history[].type` — Recommended values _(since v2.3)_](#permitshistorytype--recommended-values-since-v23)
-- [`meters[].type` — Recommended values _(since v2.3)_](#meterstype--recommended-values-since-v23)
-- [`production[]` — Recommended values _(since v2.3)_](#production--recommended-values-since-v23)
-- [`water_samples[]` — Recommended values _(since v2.3)_](#water_samples--recommended-values-since-v23)
-- [`hydrodynamic_events[].measurement_method` — Recommended values](#hydrodynamic_eventsmeasurement_method--recommended-values)
-- [`aquifer_analysis[].method` — Recommended values](#aquifer_analysismethod--recommended-values)
-- [`history_logs[].category` — Recommended values](#history_logscategory--recommended-values)
-- [`history_logs[].severity` — Recommended values](#history_logsseverity--recommended-values)
-- [`history_logs[].maintenance_type` — Recommended values _(since v2.3)_](#history_logsmaintenance_type--recommended-values-since-v23)
-- [`history_logs[].status` — Allowed values _(since v2.3)_](#history_logsstatus--allowed-values-since-v23)
-- [`Attachment.document_type` — Recommended values _(since v2.3)_](#attachmentdocument_type--recommended-values-since-v23)
-- [`well_id`](#well_id)
-  - [Numeric ID conversion](#numeric-id-conversion)
-  - [Uniqueness](#uniqueness)
-- [`location`](#location)
-  - [`LocationProperties`](#locationproperties)
-  - [`elevation_datum` — Recommended values](#elevation_datum--recommended-values)
-  - [CRS scope](#crs-scope)
-- [Units](#units)
-  - [Canonical units](#canonical-units)
-  - [Field-to-unit binding (normative)](#field-to-unit-binding-normative)
-  - [Water quality units _(since v2.3)_](#water-quality-units-since-v23)
-  - [Level sign convention](#level-sign-convention)
-  - [Diameter and the as-built convention](#diameter-and-the-as-built-convention)
-  - [Screen slot](#screen-slot)
-  - [Rationale](#rationale)
-- [Water quality parameter vocabulary _(since v2.3)_](#water-quality-parameter-vocabulary-since-v23)
-- [`profiles`](#profiles)
-  - [Profile schema requirements](#profile-schema-requirements)
-  - [Example: a regulatory water quality profile _(since v2.3)_](#example-a-regulatory-water-quality-profile-since-v23)
-  - [Profile validation](#profile-validation)
-- [Extensibility](#extensibility)
-  - [Custom fields — `x-` prefix](#custom-fields--x--prefix)
-  - [Custom top-level blocks — `x-` prefix required](#custom-top-level-blocks--x--prefix-required)
-  - [Custom vocabulary values — `x-` prefix](#custom-vocabulary-values--x--prefix)
-- [Cross-reference and Uniqueness Rules](#cross-reference-and-uniqueness-rules)
-  - [Uniqueness scope](#uniqueness-scope)
-  - [Cross-array references](#cross-array-references)
-  - [Dangling references](#dangling-references)
-  - [Duplicate IDs within a scope](#duplicate-ids-within-a-scope)
-  - [`id` field convention](#id-field-convention)
-- [Precision and Uncertainty](#precision-and-uncertainty)
-  - [Supported precision fields](#supported-precision-fields)
+- [`.well` File Format Specification — Version 2.3: Format Reference](#well-file-format-specification--version-23-format-reference)
+  - [Overview](#overview)
+  - [Table of contents](#table-of-contents)
+  - [Top-level Structure](#top-level-structure)
+  - [Versioning](#versioning)
+    - [Parser version handling](#parser-version-handling)
+  - [Deprecation Policy](#deprecation-policy)
+    - [Field lifecycle](#field-lifecycle)
+    - [Parser behavior](#parser-behavior)
+    - [Vocabulary value promotion](#vocabulary-value-promotion)
+    - [Canonical deprecation registry](#canonical-deprecation-registry)
+  - [Top-level Fields](#top-level-fields)
+    - [Core identity](#core-identity)
+    - [v2 additions](#v2-additions)
+    - [v2.1 additions](#v21-additions)
+    - [v2.3 additions](#v23-additions)
+    - [Block kinds _(since v2.3)_](#block-kinds-since-v23)
+    - [Naming rules _(since v2.3)_](#naming-rules-since-v23)
+  - [Datetime Conventions](#datetime-conventions)
+    - [Instants known only by date _(since v2.3)_](#instants-known-only-by-date-since-v23)
+    - [Ordering and ties](#ordering-and-ties)
+  - [Recommended vocabularies](#recommended-vocabularies)
+  - [`well_type` — Recommended values](#well_type--recommended-values)
+  - [`well_purpose` — Recommended values _(since v2.1)_](#well_purpose--recommended-values-since-v21)
+  - [`bore_hole[].drilling_method` — Recommended values _(since v2.3)_](#bore_holedrilling_method--recommended-values-since-v23)
+  - [Construction materials — Recommended values _(since v2.3)_](#construction-materials--recommended-values-since-v23)
+  - [`well_screen[].slot_type` — Recommended values _(since v2.3)_](#well_screenslot_type--recommended-values-since-v23)
+  - [`centralizers[].type` — Recommended values _(since v2.1)_](#centralizerstype--recommended-values-since-v21)
+  - [`cement_pad.type` — Recommended values _(since v2.3)_](#cement_padtype--recommended-values-since-v23)
+  - [`pump_installations[].type` — Recommended values _(since v2.3)_](#pump_installationstype--recommended-values-since-v23)
+  - [`pump_installations[].power_source` — Recommended values _(since v2.3)_](#pump_installationspower_source--recommended-values-since-v23)
+  - [`permits[].type` — Recommended values _(since v2.3)_](#permitstype--recommended-values-since-v23)
+  - [`permits[].water_use` — Recommended values _(since v2.3)_](#permitswater_use--recommended-values-since-v23)
+  - [`permits[].conditions[].category` — Recommended values _(since v2.3)_](#permitsconditionscategory--recommended-values-since-v23)
+  - [`permits[].history[].type` — Recommended values _(since v2.3)_](#permitshistorytype--recommended-values-since-v23)
+  - [`meters[].type` — Recommended values _(since v2.3)_](#meterstype--recommended-values-since-v23)
+  - [`production[]` — Recommended values _(since v2.3)_](#production--recommended-values-since-v23)
+  - [`water_samples[]` — Recommended values _(since v2.3)_](#water_samples--recommended-values-since-v23)
+  - [`hydrodynamic_events[].measurement_method` — Recommended values](#hydrodynamic_eventsmeasurement_method--recommended-values)
+  - [`aquifer_analysis[].method` — Recommended values](#aquifer_analysismethod--recommended-values)
+  - [`history_logs[].category` — Recommended values](#history_logscategory--recommended-values)
+  - [`history_logs[].severity` — Recommended values](#history_logsseverity--recommended-values)
+  - [`history_logs[].maintenance_type` — Recommended values _(since v2.3)_](#history_logsmaintenance_type--recommended-values-since-v23)
+  - [`history_logs[].status` — Allowed values _(since v2.3)_](#history_logsstatus--allowed-values-since-v23)
+  - [`Attachment.document_type` — Recommended values _(since v2.3)_](#attachmentdocument_type--recommended-values-since-v23)
+  - [`well_id`](#well_id)
+    - [Numeric ID conversion](#numeric-id-conversion)
+    - [Uniqueness](#uniqueness)
+  - [`location`](#location)
+    - [`LocationProperties`](#locationproperties)
+    - [`elevation_datum` — Recommended values](#elevation_datum--recommended-values)
+    - [CRS scope](#crs-scope)
+  - [Units](#units)
+    - [Canonical units](#canonical-units)
+    - [Field-to-unit binding (normative)](#field-to-unit-binding-normative)
+    - [Water quality units _(since v2.3)_](#water-quality-units-since-v23)
+    - [Level sign convention](#level-sign-convention)
+    - [Diameter and the as-built convention](#diameter-and-the-as-built-convention)
+    - [Screen slot](#screen-slot)
+    - [Rationale](#rationale)
+  - [Water quality parameter vocabulary _(since v2.3)_](#water-quality-parameter-vocabulary-since-v23)
+  - [`profiles`](#profiles)
+    - [Profile schema requirements](#profile-schema-requirements)
+    - [Example: a regulatory water quality profile _(since v2.3)_](#example-a-regulatory-water-quality-profile-since-v23)
+    - [Profile validation](#profile-validation)
+  - [Extensibility](#extensibility)
+    - [Custom fields — `x-` prefix](#custom-fields--x--prefix)
+    - [Custom top-level blocks — `x-` prefix required](#custom-top-level-blocks--x--prefix-required)
+    - [Custom vocabulary values — `x-` prefix](#custom-vocabulary-values--x--prefix)
+  - [Cross-reference and Uniqueness Rules](#cross-reference-and-uniqueness-rules)
+    - [Uniqueness scope](#uniqueness-scope)
+    - [Cross-array references](#cross-array-references)
+    - [Dangling references](#dangling-references)
+    - [Duplicate IDs within a scope](#duplicate-ids-within-a-scope)
+    - [`id` field convention](#id-field-convention)
+  - [Precision and Uncertainty](#precision-and-uncertainty)
+    - [Supported precision fields](#supported-precision-fields)
 
 ---
 
@@ -140,14 +143,23 @@ This part of the `.well` v2.3 specification defines the file as a whole: the top
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `1`     | Initial release — constructive and geologic data only                                                                                                                                                                                                                 |
 | `2`     | Adds location, well_id (array), profiles, texture object, hydrodynamic_events, aquifer_analysis, history_logs, optional @context, \*\_precision fields, and extensibility conventions. Tightens unit semantics: all values are canonical SI, no per-file declaration. |
+| `"2.4"` | Version written as the string `"M.m"` (_since v2.4_). Read as v2; the integer `2` means v2.0 to v2.3.                                                                                                                                                                 |
 
-Minor revisions (`2.1`, `2.3`, …) are additive and do not change the `version` integer: a v2.3 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
+Minor revisions (`2.1`, `2.3`, …) are additive. Up to v2.3 they did not change the `version` integer: a v2.3 document declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
 
 The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `water_samples`, `hydrodynamic_events[].corrects`, the `history_logs` data links (`hydrodynamic_event_ids`, `sample_ids`) and category-specific fields (`maintenance`, `status_change`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
 
+_(since v2.4)_ The version is written as the string `"M.m"` (for example `"2.4"`). Versions are compared as two integers, never as text: `"2.10"` is greater than `"2.9"`. Patch levels (`"2.4.1"`) are not allowed. The integer `2` means v2.0 to v2.3 with the revision unknown, and it remains valid for reading. There is no separate `spec_version` field.
+
+**Intentional break.** A parser of `@welldot/core` 0.4.0 or earlier rejects `"2.4"` files because it only accepts the integers `1` and `2`. This is the one intentional exception to the minor-revision compatibility rule above. Upgrade readers before writing v2.4 files.
+
 ### Parser version handling
 
-The `version` field is an integer and must always be present.
+The `version` field MUST be written by producers. It takes one of three forms: the integer `1`, the integer `2`, or a string `"M.m"` matching `^\d+\.\d+$`.
+
+- A `version` that is none of these forms (`2.4` as a JSON number, `"2.4.1"`, `"v2.4"`, `"2"`) is malformed. A parser MUST reject the file with an error that names the value.
+- A major other than `1` or `2` (`3`, `"3.0"`) is unsupported. A parser MUST reject the file with an error that names the value.
+- Any minor of major `2` (`"2.4"`, a future `"2.9"`) is read as v2. Unknown members follow § Extensibility.
 
 - A v2 parser encountering `version: 1` MUST apply the v1-to-v2 normalizations listed in the changes section and treat the document as v2-equivalent for all subsequent processing.
 - A v1 parser encountering `version: 2` MUST reject the file with a clear error indicating an unsupported format version. v1 parsers MUST NOT attempt partial reads of v2 documents.
@@ -212,15 +224,15 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 
 ### Core identity
 
-| Field               | Type    | Required | Description                                                                                                                                                                                                                                     |
-| ------------------- | ------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `version`           | integer | yes      | Format version. Must be `2` for this spec.                                                                                                                                                                                                      |
-| `well_type`         | string  | yes      | Construction method of the well. See vocabulary below.                                                                                                                                                                                          |
-| `name`              | string  | no       | Well name or local identifier.                                                                                                                                                                                                                  |
-| `well_driller`      | string  | no       | Name of the drilling company or individual.                                                                                                                                                                                                     |
-| `construction_date` | string  | no       | ISO 8601 calendar date of well completion (`YYYY-MM-DD`). Date-only by design — time of day for construction completion is not meaningful at the precision the well registry cares about. Interpreted as the local civil date at the well site. |
-| `obs`               | string  | no       | Free-text observations about the well.                                                                                                                                                                                                          |
-| `well_depth`        | number  | no       | The well's current usable depth in meters from ground level, as measured or reported. May be less than the deepest constructive element (see `bore_hole`) due to siltation, debris, or partial backfill.                                        |
+| Field               | Type              | Required | Description                                                                                                                                                                                                                                     |
+| ------------------- | ----------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version`           | integer \| string | yes      | Format version. v2.4 files write `"2.4"`.                                                                                                                                                                                                       |
+| `well_type`         | string            | yes      | Construction method of the well. See vocabulary below.                                                                                                                                                                                          |
+| `name`              | string            | no       | Well name or local identifier.                                                                                                                                                                                                                  |
+| `well_driller`      | string            | no       | Name of the drilling company or individual.                                                                                                                                                                                                     |
+| `construction_date` | string            | no       | ISO 8601 calendar date of well completion (`YYYY-MM-DD`). Date-only by design — time of day for construction completion is not meaningful at the precision the well registry cares about. Interpreted as the local civil date at the well site. |
+| `obs`               | string            | no       | Free-text observations about the well.                                                                                                                                                                                                          |
+| `well_depth`        | number            | no       | The well's current usable depth in meters from ground level, as measured or reported. May be less than the deepest constructive element (see `bore_hole`) due to siltation, debris, or partial backfill.                                        |
 
 ### v2 additions
 

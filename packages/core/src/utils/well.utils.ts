@@ -11,6 +11,7 @@ import {
   WellVisibility,
 } from '../types/well.types';
 import { WellSchema, mergeWell } from '../validators/well.validators';
+import { WELL_FORMAT_VERSION, parseFormatVersion } from './version.utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,6 @@ type RawJSON = Record<string, unknown>;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const WELL_FORMAT_VERSION = 2;
 const INCHES_TO_MM = 25.4;
 
 // Root members that a v1 or legacy file leaves on the object after it is
@@ -84,7 +84,7 @@ export const VISIBILITY_LEAF_KEYS: readonly VisibilityKey[] =
   );
 
 const EMPTY_WELL: Well = {
-  version: 2,
+  version: WELL_FORMAT_VERSION,
   bore_hole: [],
   well_case: [],
   reduction: [],
@@ -213,7 +213,9 @@ function decodeV2Well(raw: RawJSON): Well {
 
   const decoded: Well = {
     ...createEmptyWell(),
-    ...(raw.version !== undefined && { version: raw.version as number }),
+    ...(raw.version !== undefined && {
+      version: raw.version as Well['version'],
+    }),
     ...(raw['@context'] !== undefined && {
       '@context': raw['@context'] as Well['@context'],
     }),
@@ -610,10 +612,18 @@ export function deserializeWell(jsonString: string): Well | null {
     throw new Error('Invalid profile format');
   }
 
-  if (typeof raw.version === 'number') {
-    if (raw.version === 2) return withCalculatedWellDepth(decodeV2Well(raw));
-    if (raw.version === 1) return withCalculatedWellDepth(decodeV1Well(raw));
-    throw new Error(`Unsupported .well format version: ${raw.version}`);
+  if (raw.version !== undefined) {
+    const parsed = parseFormatVersion(raw.version);
+    if (!parsed) {
+      throw new Error(
+        `Malformed .well format version: ${JSON.stringify(raw.version)}`,
+      );
+    }
+    if (parsed.major === 2) return withCalculatedWellDepth(decodeV2Well(raw));
+    if (parsed.major === 1) return withCalculatedWellDepth(decodeV1Well(raw));
+    throw new Error(
+      `Unsupported .well format version: ${JSON.stringify(raw.version)}`,
+    );
   }
 
   if (isWellEmpty(raw as unknown as Well)) return null;

@@ -962,7 +962,8 @@ export type WaterSample = {
 
 /** Complete static record of a water well. All depths in meters, all diameters in millimeters. */
 export type Well = {
-  version: number;
+  /** Format version: `1`, `2` (v2.0 to v2.3, revision unknown) or `"M.m"` (since v2.4). */
+  version: number | string;
 
   // v2 identity
   '@context'?: string | unknown[] | Record<string, unknown>;

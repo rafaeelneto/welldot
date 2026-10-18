@@ -6,7 +6,16 @@
   "type": "object",
   "properties": {
     "version": {
-      "type": "integer"
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$"
+        }
+      ]
     },
     "@context": {
       "anyOf": [

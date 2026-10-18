@@ -1,6 +1,7 @@
 import { createDefu } from 'defu';
 import { z } from 'zod';
 import type { Well } from '../types/well.types';
+import { parseFormatVersion } from '../utils/version.utils';
 
 // ─── defu custom merger ───────────────────────────────────────────────────────
 // In createDefu callbacks: obj = defaults object, key = key, value = source value.
@@ -661,7 +662,10 @@ export const WaterSampleSchema = z.object({
 
 export const WellSchema = z
   .object({
-    version: z.number().int(),
+    version: z.union([
+      z.number().int().nonnegative(),
+      z.string().regex(/^\d+\.\d+$/, 'version must be "M.m"'),
+    ]),
     '@context': z
       .union([z.string(), z.array(z.unknown()), z.record(z.unknown())])
       .optional(),
@@ -795,26 +799,31 @@ function normalizeV1Fields(
 
 export function parseWell(json: string): Well {
   const raw = JSON.parse(json) as Record<string, unknown>;
-  const version = raw.version;
 
-  if (version !== undefined && typeof version === 'number') {
-    if (version !== 1 && version !== 2) {
-      throw new Error(`Unsupported .well format version: ${version}`);
+  if (raw.version === undefined) {
+    // version absent — normalize to v2
+    raw.version = 2;
+  } else {
+    const parsed = parseFormatVersion(raw.version);
+    if (!parsed) {
+      throw new Error(
+        `Malformed .well format version: ${JSON.stringify(raw.version)}`,
+      );
     }
-    if (version === 1) {
+    if (parsed.major === 1) {
       const normalized = normalizeV1Fields(raw);
       return mergeParsed(
         WellSchema.parse(normalized) as Well,
         normalized,
       ) as Well;
     }
-  } else if (version !== undefined) {
-    throw new Error(`Unsupported .well format version: ${String(version)}`);
-  } else {
-    // version absent — normalize to v2
-    raw.version = 2;
+    if (parsed.major !== 2) {
+      throw new Error(
+        `Unsupported .well format version: ${JSON.stringify(raw.version)}`,
+      );
+    }
   }
 
-  // version === 2 (explicit or normalized from absent)
+  // major 2, any minor (explicit or normalized from absent)
   return mergeParsed(WellSchema.parse(raw) as Well, raw) as Well;
 }

@@ -305,9 +305,9 @@ describe('serializeWell', () => {
       expect(() => JSON.parse(serializeWell(emptyWell()))).not.toThrow();
     });
 
-    it('includes version: 2', () => {
+    it('includes the current format version', () => {
       const parsed = JSON.parse(serializeWell(emptyWell()));
-      expect(parsed.version).toBe(2);
+      expect(parsed.version).toBe('2.4');
     });
 
     it('includes all required array fields even when empty', () => {
@@ -1166,7 +1166,7 @@ describe('v2 serialize', () => {
     const reparsed = deserializeWell(reserialized)!;
     expect(reparsed.location).toEqual(deserialized.location);
     expect(reparsed.well_screen[0].screen_slot).toBe(0.5);
-    expect(JSON.parse(reserialized).version).toBe(2);
+    expect(JSON.parse(reserialized).version).toBe('2.4');
     expect(JSON.parse(reserialized)).not.toHaveProperty('lat');
     expect(JSON.parse(reserialized)).not.toHaveProperty('lng');
     expect(JSON.parse(reserialized)).not.toHaveProperty('elevation');
@@ -2940,5 +2940,71 @@ describe('unknown members', () => {
     expect(
       (shared.hydrodynamic_events as Record<string, unknown>[])[0]!['x-crew'],
     ).toBe('A');
+  });
+});
+
+describe('v2.4 version', () => {
+  const base = {
+    well_type: 'tubular',
+    bore_hole: [],
+    well_case: [],
+    reduction: [],
+    well_screen: [],
+    surface_case: [],
+    hole_fill: [],
+    lithology: [],
+    fractures: [],
+    caves: [],
+  };
+  const doc = (version: unknown, extra: Record<string, unknown> = {}) =>
+    JSON.stringify({ version, ...base, ...extra });
+
+  it('serializeWell writes "2.4"', () => {
+    expect(JSON.parse(serializeWell(emptyWell())).version).toBe('2.4');
+  });
+
+  it('parseWell reads "2.4", 2, 1 and a future minor "2.9"', () => {
+    expect(parseWell(doc('2.4')).version).toBe('2.4');
+    expect(parseWell(doc(2)).version).toBe(2);
+    expect(parseWell(doc(1)).version).toBe(2);
+    const future = parseWell(doc('2.9', { 'x-future': { a: 1 } })) as Record<
+      string,
+      unknown
+    >;
+    expect(future.version).toBe('2.9');
+    expect(future['x-future']).toEqual({ a: 1 });
+  });
+
+  it('parseWell rejects malformed versions with a clear message', () => {
+    for (const v of [2.4, '2.4.1', 'v2.4']) {
+      expect(() => parseWell(doc(v))).toThrow(
+        /Malformed \.well format version: .*2\.4/,
+      );
+    }
+  });
+
+  it('parseWell rejects an unsupported major', () => {
+    for (const v of [3, '3.0']) {
+      expect(() => parseWell(doc(v))).toThrow(
+        /Unsupported \.well format version/,
+      );
+    }
+  });
+
+  it('deserializeWell reads a "2.4" file through the v2 decoder', () => {
+    const result = deserializeWell(
+      doc('2.4', {
+        hydrodynamic_events: [
+          {
+            id: 'evt-001',
+            type: 'spot_measurement',
+            datetime: '2010-07-22T09:15:00-03:00',
+            static_level: 31.2,
+          },
+        ],
+      }),
+    );
+    expect(result!.version).toBe('2.4');
+    expect(result!.hydrodynamic_events).toHaveLength(1);
   });
 });

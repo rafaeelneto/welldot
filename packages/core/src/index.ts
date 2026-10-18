@@ -138,6 +138,12 @@ export {
 
 // Format utilities (serialise/deserialise .well format only)
 export {
+  WELL_FORMAT_VERSION,
+  compareFormatVersions,
+  parseFormatVersion,
+} from './utils/version.utils';
+export type { FormatVersion } from './utils/version.utils';
+export {
   SECTION_KEYS,
   VISIBILITY_LEAF_KEYS,
   VISIBILITY_TREE,
