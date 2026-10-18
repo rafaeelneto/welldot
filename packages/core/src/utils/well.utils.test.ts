@@ -2497,21 +2497,13 @@ describe('v2.3 — meters, production, operating_regime and log fields', () => {
     expect(() => parseWell(JSON.stringify(doc))).toThrow();
   });
 
-  it('parseWell rejects regime values out of range', () => {
+  it('parseWell rejects regime days_per_week out of range', () => {
     const base = OPS_DOC.operating_regime[0];
     expect(() =>
       parseWell(
         JSON.stringify({
           ...OPS_DOC,
           operating_regime: [{ ...base, days_per_week: 8 }],
-        }),
-      ),
-    ).toThrow();
-    expect(() =>
-      parseWell(
-        JSON.stringify({
-          ...OPS_DOC,
-          operating_regime: [{ ...base, daily_operating_time: 25 }],
         }),
       ),
     ).toThrow();
@@ -3274,5 +3266,95 @@ describe('v2.4 logger_series and LevelReading.datetime', () => {
         ]),
       ),
     ).toThrow();
+  });
+});
+
+describe('v2.4 — ledger rules, references and ranges', () => {
+  const doc = (extra: Record<string, unknown>) =>
+    JSON.stringify({
+      version: '2.4',
+      well_type: 'tubular',
+      bore_hole: [],
+      well_case: [],
+      reduction: [],
+      well_screen: [],
+      surface_case: [],
+      hole_fill: [],
+      lithology: [],
+      fractures: [],
+      caves: [],
+      ...extra,
+    });
+  const regime = (daily_operating_time: number) => ({
+    id: 'r1',
+    effective_from: '2026-01-01T00:00:00-03:00',
+    daily_operating_time,
+  });
+
+  it('operating_regime accepts daily_operating_time above 24 and rejects negatives', () => {
+    const well = parseWell(doc({ operating_regime: [regime(26)] }));
+    expect(well.operating_regime![0].daily_operating_time).toBe(26);
+    const again = JSON.parse(serializeWell(well));
+    expect(again.operating_regime[0].daily_operating_time).toBe(26);
+    expect(() => parseWell(doc({ operating_regime: [regime(-1)] }))).toThrow();
+  });
+
+  it('unresolved references survive the round trip', () => {
+    const input = {
+      hydrodynamic_events: [
+        {
+          id: 'e1',
+          type: 'spot_measurement',
+          datetime: '2026-01-01T00:00:00-03:00',
+          static_level: 10,
+          corrects: 'missing',
+        },
+      ],
+      aquifer_analysis: [
+        {
+          id: 'a1',
+          datetime: '2026-01-02T00:00:00-03:00',
+          source_event_ids: ['missing'],
+        },
+      ],
+      permits: [
+        {
+          id: 'p1',
+          type: 'abstraction_permit',
+          authority: 'X',
+          identifier: '1',
+          conditions: [
+            {
+              id: 'c1',
+              description: 'd',
+              fulfillments: [
+                {
+                  id: 'f1',
+                  datetime: '2026-01-03T00:00:00-03:00',
+                  event_id: 'missing',
+                  sample_id: 'missing',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      history_logs: [
+        {
+          id: 'h1',
+          datetime: '2026-01-04T00:00:00-03:00',
+          category: 'observation',
+          description: 'd',
+          hydrodynamic_event_ids: ['missing'],
+        },
+      ],
+    };
+    const out = JSON.parse(serializeWell(parseWell(doc(input))));
+    expect(out.hydrodynamic_events[0].corrects).toBe('missing');
+    expect(out.aquifer_analysis[0].source_event_ids).toEqual(['missing']);
+    const f = out.permits[0].conditions[0].fulfillments[0];
+    expect(f.event_id).toBe('missing');
+    expect(f.sample_id).toBe('missing');
+    expect(out.history_logs[0].hydrodynamic_event_ids).toEqual(['missing']);
   });
 });

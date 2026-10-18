@@ -19,6 +19,7 @@ import {
   getWellTimeZone,
   instantLocalDate,
   instantOffset,
+  normalizeDailyOperatingTime,
 } from './shared.utils';
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
@@ -511,6 +512,7 @@ export type OperationWarningCode =
   | 'estimated_overlaps_meter'
   | 'duplicate_regime_id'
   | 'regime_duplicate_effective_from'
+  | 'daily_operating_time_normalized'
   | 'regime_exceeds_permit'
   | 'log_category_field_mismatch'
   | 'log_reference_unresolved'
@@ -572,6 +574,8 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
  * Operating regime:
  * - `duplicate_regime_id` — ids: [regime id].
  * - `regime_duplicate_effective_from` — same instant. ids: every regime sharing it.
+ * - `daily_operating_time_normalized` — a regime `daily_operating_time` above
+ *   24, read as 24 (v2.4). ids: [regime].
  * - `regime_exceeds_permit` — the regime in force on `today` (latest whose
  *   `effective_from` local date is on or before `today`) has `flow_rate` or
  *   `daily_operating_time` above an `active` / `active_pending_renewal`
@@ -719,6 +723,12 @@ export function getOperationWarnings(
     if (ids.length > 1) push('regime_duplicate_effective_from', ids);
   }
 
+  for (const r of regimes) {
+    if (r.daily_operating_time !== undefined && r.daily_operating_time > 24) {
+      push('daily_operating_time_normalized', [r.id]);
+    }
+  }
+
   const regime = latestRegime(
     regimes,
     r => instantLocalDate(r.effective_from, getWellTimeZone(well)) <= today,
@@ -733,7 +743,8 @@ export function getOperationWarnings(
           regime.flow_rate > permit.flow_rate) ||
         (regime.daily_operating_time !== undefined &&
           permit.daily_operating_time !== undefined &&
-          regime.daily_operating_time > permit.daily_operating_time);
+          normalizeDailyOperatingTime(regime.daily_operating_time) >
+            normalizeDailyOperatingTime(permit.daily_operating_time));
       if (exceeds) push('regime_exceeds_permit', [regime.id, permit.id]);
     }
   }

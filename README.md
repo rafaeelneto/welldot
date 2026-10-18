@@ -150,7 +150,7 @@ The format captures:
 | Pump installations  | `pump_installations[]`                                                                     | Pump history with nameplate, intake depth, riser and electrical data (v2.3)                           |
 | Permits             | `permits[]`                                                                                | Outorgas with validity, granted flow and volumes, and conditions with derived deadlines (v2.3)        |
 | Meters              | `meters[]`                                                                                 | Totalizer (hidrômetro) installation history: type, serial, nominal diameter, register capacity (v2.3) |
-| Production          | `production[]`                                                                             | Append-only ledger of meter readings and declared volumes; volumes are derived, never stored (v2.3)   |
+| Production          | `production[]`                                                                             | Ledger of readings and volumes, editable, corrected via `corrects`; volumes derived (v2.3)            |
 | Operating regime    | `operating_regime[]`                                                                       | Declared flow rate, daily operating time and days per week, in force from a given instant (v2.3)      |
 | General attachments | `attachments[]`                                                                            | Root-level files about the well as a whole, e.g. the drilling report (v2.3)                           |
 | Water quality       | `water_samples[]`                                                                          | Ledger of water samples with field and lab results, sampling point, purge, lab and QA/QC data (v2.3)  |
@@ -259,7 +259,7 @@ The v2.3 revision (shipped in `@welldot/core` v0.4.0) adds the operational block
 
 - **Pump installations** — installation history with nameplate, intake depth, riser and electrical data; the current pump is drawn on the profile
 - **Permits** — outorgas with validity, granted flow, daily operating time and volumes, and conditions (condicionantes) whose deadlines are derived from ISO 8601 date durations and whose fulfillments are recorded on the condition; an administrative status (requested, suspended, revoked…) and an administrative history (filing, notifications, fees)
-- **Meters and production** — totalizer installation history plus an append-only production ledger of meter readings and declared volumes; volumes are derived with rollover handling and are never stored as totals
+- **Meters and production** — totalizer installation history plus a production ledger of meter readings and declared volumes; volumes are derived with rollover handling and are never stored as totals
 - **Operating regime** — declared flow rate, daily operating time and days per week, each entry in force from `effective_from`
 - **Structured history logs** — `maintenance` entries reference the pump, meter or event they concern (`maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`); the new `status_change` category records the well's operating status
 - **Attachments** — a root-level `attachments` array for general files about the well (e.g. the drilling report), plus `document_type` and per-record attachments on log entries, permits (and their history steps and condition fulfillments), pumps, meters, hydrodynamic events, aquifer analyses and water samples. The root array does not collect the per-record attachments

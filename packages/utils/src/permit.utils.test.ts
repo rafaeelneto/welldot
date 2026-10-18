@@ -591,7 +591,7 @@ describe('getPermitWarnings', () => {
 
   it('flags operating times and monthly values', () => {
     expect(codes(makeWell([base({ daily_operating_time: 25 })]))).toContain(
-      'daily_operating_time_out_of_range',
+      'daily_operating_time_normalized',
     );
     const p = base({
       flow_rate: 10,
@@ -675,11 +675,64 @@ describe('getPermitWarnings', () => {
         .filter(w => w.code === 'unmatched_fulfillment')
         .map(w => w.fulfillment_id),
     ).toEqual(['bad-date', 'no-date', 'dated']);
-    expect(
-      warnings
-        .filter(w => w.code === 'fulfillment_reference_unresolved')
-        .map(w => w.fulfillment_id),
-    ).toEqual(['ghost-sample']);
+    expect(warnings.map(w => w.code as string)).not.toContain(
+      'fulfillment_reference_unresolved',
+    );
+  });
+
+  it('unresolved fulfillment event_id and sample_id emit no warning', () => {
+    const p = base({
+      issued_at: '2025-01-01',
+      conditions: [
+        {
+          id: 'c1',
+          description: 'x',
+          fulfillments: [
+            { id: 'f1', datetime: '2025-03-01T10:00:00Z', event_id: 'gone' },
+            { id: 'f2', datetime: '2025-03-02T10:00:00Z', sample_id: 'gone' },
+          ],
+        },
+      ],
+    });
+    const warnings = getPermitWarnings(makeWell([p]), '2026-01-01');
+    expect(warnings.map(w => w.code as string)).not.toContain(
+      'fulfillment_reference_unresolved',
+    );
+  });
+
+  it('daily_operating_time above 24 warns as normalized', () => {
+    const onPermit = getPermitWarnings(
+      makeWell([base({ daily_operating_time: 26 })]),
+      '2026-01-01',
+    );
+    expect(onPermit).toContainEqual({
+      code: 'daily_operating_time_normalized',
+      ids: ['pmt-01'],
+    });
+    const onGrant = getPermitWarnings(
+      makeWell([
+        base({ monthly_schedule: [{ month: 1, daily_operating_time: 30 }] }),
+      ]),
+      '2026-01-01',
+    );
+    expect(onGrant.map(w => w.code)).toContain(
+      'daily_operating_time_normalized',
+    );
+    const fine = getPermitWarnings(
+      makeWell([base({ daily_operating_time: 24 })]),
+      '2026-01-01',
+    );
+    expect(fine.map(w => w.code)).not.toContain(
+      'daily_operating_time_normalized',
+    );
+  });
+
+  it('compares monthly daily_operating_time with the normalized permit maximum', () => {
+    const p = base({
+      daily_operating_time: 26,
+      monthly_schedule: [{ month: 1, daily_operating_time: 25 }],
+    });
+    expect(codes(makeWell([p]))).not.toContain('monthly_above_max');
   });
 
   it('flags duplicate history and fulfillment ids', () => {

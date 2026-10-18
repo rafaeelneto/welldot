@@ -82,6 +82,7 @@ This part of the `.well` v2.3 specification defines the file as a whole: the top
     - [Uniqueness scope](#uniqueness-scope)
     - [Cross-array references](#cross-array-references)
     - [Dangling references](#dangling-references)
+    - [Repeated records _(since v2.4)_](#repeated-records-since-v24)
     - [Duplicate IDs within a scope](#duplicate-ids-within-a-scope)
     - [`id` field convention](#id-field-convention)
   - [Precision and Uncertainty](#precision-and-uncertainty)
@@ -265,7 +266,7 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 | `pump_installations` | `PumpInstallation[]` | no       | Pump installation history (installation block). See object-schemas.md § `pump_installations[]`.                                       |
 | `permits`            | `Permit[]`           | no       | Legal instruments governing abstraction (mutable record block). See object-schemas.md § `permits[]`.                                  |
 | `meters`             | `Meter[]`            | no       | Totalizer (hidrômetro) installation history (installation block). See object-schemas.md § `meters[]`.                                 |
-| `production`         | `ProductionEntry[]`  | no       | Append-only ledger of meter readings and declared volumes (ledger block). See object-schemas.md § `production[]`.                     |
+| `production`         | `ProductionEntry[]`  | no       | Ledger of meter readings and declared volumes (ledger block). See object-schemas.md § `production[]`.                                 |
 | `operating_regime`   | `OperatingRegime[]`  | no       | Declared operating regimes, each in force from `effective_from` (mutable record block). See object-schemas.md § `operating_regime[]`. |
 | `water_samples`      | `WaterSample[]`      | no       | Water samples and their field and laboratory results (ledger block). See water-quality.md.                                            |
 
@@ -273,11 +274,11 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 
 Every top-level array is one of three kinds. The kind decides how records are corrected.
 
-| Kind           | Blocks                                               | Correction                                                                               | Edit tracking                           |
-| -------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
-| Ledger         | `hydrodynamic_events`, `production`, `water_samples` | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
-| Mutable record | `history_logs`, `permits`, `operating_regime`        | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
-| Installation   | `pump_installations`, `meters`                       | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Kind           | Blocks                                               | Correction                                                                                                                  | Edit tracking                                                                               |
+| -------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Ledger         | `hydrodynamic_events`, `production`, `water_samples` | MAY be edited in place (NOT RECOMMENDED after export). `corrects` is the recommended mechanism for measurement corrections. | `updated_at` where the block defines it; a `corrects` entry is the history of a correction. |
+| Mutable record | `history_logs`, `permits`, `operating_regime`        | Edit in place.                                                                                                              | `updated_at` (instant) on the record.                                                       |
+| Installation   | `pump_installations`, `meters`                       | Edit in place.                                                                                                              | `updated_at` (instant) on the record.                                                       |
 
 Constructive and geologic arrays describe the well as built and are edited in place. `aquifer_analysis` entries are interpretations: a new interpretation is a new entry, and earlier ones coexist.
 
@@ -766,7 +767,7 @@ All numeric values in a `.well` file are in **SI**. The format does not encode u
 | Diameter                 | millimeter                                         | `mm`                                           | number                                   |
 | Volumetric flow rate     | cubic meter per hour                               | `m3/h`                                         | number                                   |
 | Elapsed time, duration   | minute                                             | `min`                                          | number                                   |
-| Daily operating time     | hour                                               | `h`                                            | number (0–24)                            |
+| Daily operating time     | hour                                               | `h`                                            | number (above 24 read as 24)             |
 | Volume                   | cubic meter                                        | `m3`                                           | number                                   |
 | Power                    | kilowatt                                           | `kW`                                           | number                                   |
 | Voltage                  | volt                                               | `V`                                            | number                                   |
@@ -1038,7 +1039,7 @@ Each ID-bearing array maintains its **own uniqueness scope**. The ID namespaces 
 - `permits[].monthly_schedule[].month` and `permits[].volume_limits[].period` — unique within one permit _(since v2.3)_
 - `meters[].id` — unique within `meters` _(since v2.3)_
 - `production[].id` — unique within `production` _(since v2.3)_
-- `operating_regime[].id` — unique within `operating_regime`; `operating_regime[].effective_from` is also unique within the block _(since v2.3)_
+- `operating_regime[].id` — unique within `operating_regime` _(since v2.3)_. `operating_regime[].effective_from` is not unique: duplicates are a warning _(since v2.4)_
 - `water_samples[].id` — unique within `water_samples` _(since v2.3)_
 - `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `permits[].history`, `permits[].conditions[].fulfillments`, `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis`, `water_samples`). The same id may appear under different records.
 - `well_id[]` — uniqueness is on the composite key `(authority, id)`, not on `id` alone
@@ -1078,7 +1079,15 @@ A **dangling reference** is a reference field whose value does not match any ID 
 
 - Dangling references MUST emit a warning naming the referring field, the referring object's ID, and the missing target ID.
 - Dangling references MUST NOT cause file rejection. Events may be legitimately deleted from history (regulatory retention rules, GDPR-style erasure) leaving analyses that reference them stranded.
-- Applications SHOULD surface dangling references to the user as a data-integrity concern and offer to either (a) update the analysis to remove the reference, or (b) restore the missing event.
+- Consumers MUST preserve unresolved references when re-exporting and MUST NOT remove them silently. Removing a reference is always a deliberate user action, never a side effect of import or export. _(since v2.4)_
+
+### Repeated records _(since v2.4)_
+
+Collective permits and campaign blanks apply to several wells, so they are repeated in each well's file.
+
+- Copies MUST share the same `id` and SHOULD have identical content.
+- Consumers MAY merge copies by `id`.
+- A fulfillment's `event_id` or `sample_id` resolves only in the file of the well that produced it. In the other copies it is an expected unresolved reference and emits no warning.
 
 ### Duplicate IDs within a scope
 

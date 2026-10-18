@@ -532,7 +532,7 @@ export type MonthlyGrant = {
   month: number;
   /** Granted flow in m³/h. */
   flow_rate?: number;
-  /** Granted daily operating time in hours, 0–24. */
+  /** Granted daily operating time in hours. A value above 24 is stored as written; derivations read it as 24. */
   daily_operating_time?: number;
   /** Days of operation granted in the month. */
   days?: number;
@@ -674,7 +674,7 @@ export type Permit = {
   water_use?: OpenVocab<WaterUse>[];
   /** Maximum granted flow in m³/h. */
   flow_rate?: number;
-  /** Maximum granted daily operating time in hours, 0–24. */
+  /** Maximum granted daily operating time in hours. A value above 24 is stored as written; derivations read it as 24. */
   daily_operating_time?: number;
   /** Volumes stated in the document. */
   volume_limits?: VolumeLimit[];
@@ -785,11 +785,11 @@ export type ProductionEntry = MeterReading | EstimatedVolume;
 export type OperatingRegime = {
   /** Unique within `operating_regime`. UUID v4 recommended. */
   id: string;
-  /** RFC 3339 instant the regime takes effect. Unique within the block. */
+  /** RFC 3339 instant the regime takes effect. Duplicates are a warning. */
   effective_from: string;
   /** Flow in m³/h. */
   flow_rate?: number;
-  /** Daily operating time in hours, 0–24. */
+  /** Daily operating time in hours. A value above 24 is stored as written; derivations read it as 24. Negative is an error. */
   daily_operating_time?: number;
   /** Days of operation per week, 1–7. */
   days_per_week?: number;

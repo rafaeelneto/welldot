@@ -60,3 +60,11 @@ export function getWellTimeZone(well: Well): string | undefined {
 export function instantOffset(instant: string): string | undefined {
   return /(Z|[+-]\d{2}:\d{2})$/i.exec(instant)?.[1]?.toUpperCase();
 }
+
+/**
+ * Reads a `daily_operating_time` for a derivation: hours above 24 count as 24
+ * (.well v2.4). The stored value is never rewritten.
+ */
+export function normalizeDailyOperatingTime(hours: number): number {
+  return Math.min(hours, 24);
+}

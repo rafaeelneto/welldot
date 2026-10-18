@@ -39,7 +39,7 @@ This document specifies the `water_samples` block _(since v2.3)_: the sample and
 
 ## `water_samples[]`
 
-A ledger: each entry is one collection of water from the well, with the results measured on it in the field and in the laboratory. Entries are never edited in place. A corrected laboratory report, or a revalidation of data already recorded, is a new sample whose `corrects` holds the id of the retracted sample, following object-schemas.md § `hydrodynamic_events[]` — Corrections (retracted samples stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning).
+A ledger: each entry is one collection of water from the well, with the results measured on it in the field and in the laboratory. Entries MAY be edited in place, but editing is NOT RECOMMENDED after the entry has been exported. A revalidation of data already recorded is an edit of `Result.validation` in place. A corrected laboratory report is best written as a new sample whose `corrects` holds the id of the retracted sample, following object-schemas.md § `hydrodynamic_events[]` — Corrections (retracted samples stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning).
 
 The block serves drinking-water compliance, environmental and mining monitoring under licence, and hydrochemistry, in any jurisdiction. It follows the rigor of audited monitoring (chain of custody, field QA/QC, filtration, lab flags, data validation) with almost every field optional. It is jurisdiction-neutral: limits, exceedances and national rules are never stored; see § Parameter vocabulary — Limit sets are not part of the file.
 

@@ -35,12 +35,12 @@ This README covers installation, a quick start, the API (types, validators, func
 - **Constructive data** — borehole geometry, casing strings, screens, reducers, gravel packs, centralizers, and cement pads
 - **Geologic data** — lithological column, discrete fractures, and cave zones
 - **Administrative metadata** — well identity, construction type and purpose (`well_type`, `well_purpose`), authority-scoped IDs (`well_id`), driller, construction date, and geographic coordinates with explicit CRS
-- **Hydrodynamic events** — append-only ledger of static level readings, pumping tests (constant-rate, step-drawdown, airlift), and recovery phases
+- **Hydrodynamic events** — ledger of static level readings, pumping tests (constant-rate, step-drawdown, airlift), and recovery phases
 - **Aquifer analysis** — interpreted parameter sets: transmissivity, specific capacity, storativity, and Jacob loss coefficients
 - **Operational history** — timestamped log of maintenance, inspections, incidents, status changes and permit condition fulfillment, with HTTPS attachment references
 - **Pump installations** — installation history of the well's pumps: nameplate data, intake depth, riser and electrical data (v2.3)
 - **Permits** — legal instruments governing abstraction (outorgas): validity, granted flow and daily operating time, volume limits, monthly schedule, and conditions (condicionantes) whose deadlines are derived from ISO 8601 date durations, with their fulfillments, an administrative status (requested, suspended…) and an administrative history (v2.3)
-- **Meters, production and operating regime** — totalizer (hidrômetro) installation history, an append-only production ledger of meter readings and declared volumes (volumes are derived, never stored as totals), and the declared operating regime in force from a given instant (v2.3)
+- **Meters, production and operating regime** — totalizer (hidrômetro) installation history, a production ledger of meter readings and declared volumes (volumes are derived, never stored as totals), and the declared operating regime in force from a given instant (v2.3)
 - **Water quality** — a `water_samples` ledger of samples, each with its field and laboratory results, sampling point and depth, purge and stabilization readings, laboratory and chain of custody, field QA/QC (duplicates, splits, blanks), per-result filtration, lab flags and data validation. Parameters are identified by `{ code, vocabulary }` against a versioned vocabulary of 98 `welldot` codes (plus CAS numbers and `x-` codes), and units come from the code. Limits are never stored in the file (v2.3)
 - **Attachments** — HTTPS-referenced files typed by `document_type`: a root-level `attachments` array for general files about the well (e.g. the drilling report), plus per-record attachments on log entries, permits (and their history steps and condition fulfillments), pumps, meters, events, analyses and water samples. The root array does not collect the per-record ones (v2.3)
 
@@ -235,7 +235,7 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 | `MeterReadingSchema`               | `MeterReading`                                                                                                                                                    |
 | `EstimatedVolumeSchema`            | `EstimatedVolume`                                                                                                                                                 |
 | `ProductionEntrySchema`            | `ProductionEntry` (discriminated union + x- passthrough; a known type missing required fields is rejected)                                                        |
-| `OperatingRegimeSchema`            | `OperatingRegime` (`daily_operating_time` 0–24, integer `days_per_week` 1–7)                                                                                      |
+| `OperatingRegimeSchema`            | `OperatingRegime` (non-negative `daily_operating_time`, integer `days_per_week` 1–7)                                                                              |
 | `HistoryLogEntrySchema`            | `HistoryLogEntry`                                                                                                                                                 |
 | `WaterSampleSchema`                | `WaterSample` (`results` must have at least one entry)                                                                                                            |
 | `SamplingPointSchema`              | `SamplingPoint` (`depth` and `from`/`to` are mutually exclusive)                                                                                                  |

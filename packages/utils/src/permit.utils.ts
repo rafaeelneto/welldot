@@ -9,7 +9,11 @@ import type {
 
 import { PERMIT_ADMINISTRATIVE_STATUSES } from '@welldot/core';
 
-import { getWellTimeZone, instantLocalDate } from './shared.utils';
+import {
+  getWellTimeZone,
+  instantLocalDate,
+  normalizeDailyOperatingTime,
+} from './shared.utils';
 
 // ─── Calendar date helpers (.well v2.3) ──────────────────────────────────────
 // Permit dates are calendar dates (`YYYY-MM-DD`), the local civil date at the
@@ -464,7 +468,7 @@ export type PermitWarningCode =
   | 'supersedes_unresolved'
   | 'supersedes_cycle'
   | 'overlapping_validity'
-  | 'daily_operating_time_out_of_range'
+  | 'daily_operating_time_normalized'
   | 'monthly_above_max'
   | 'duplicate_month'
   | 'duplicate_volume_period'
@@ -476,7 +480,6 @@ export type PermitWarningCode =
   | 'duplicate_history_id'
   | 'duplicate_fulfillment_id'
   | 'unmatched_fulfillment'
-  | 'fulfillment_reference_unresolved'
   | 'missing_timezone';
 
 export type PermitWarning = {
@@ -489,8 +492,8 @@ export type PermitWarning = {
   fulfillment_id?: string;
 };
 
-function outOfDayRange(hours: number | undefined): boolean {
-  return hours !== undefined && (hours < 0 || hours > 24);
+function aboveDayRange(hours: number | undefined): boolean {
+  return hours !== undefined && hours > 24;
 }
 
 function hasDuplicates<T>(values: T[]): boolean {
@@ -505,7 +508,9 @@ function hasDuplicates<T>(values: T[]): boolean {
  * - `supersedes_unresolved` / `supersedes_cycle` — broken succession chain.
  * - `overlapping_validity` — two granted, non-superseded permits of the same
  *   `type` with overlapping validity.
- * - `daily_operating_time_out_of_range` — a permit or monthly value outside 0–24.
+ * - `daily_operating_time_normalized` — a permit or monthly value above 24, read
+ *   as 24 by every derivation (v2.4; renamed from
+ *   `daily_operating_time_out_of_range`). The stored value is not rewritten.
  * - `monthly_above_max` — a `monthly_schedule` value above the permit maximum.
  * - `duplicate_month` / `duplicate_volume_period` / `duplicate_condition_id` /
  *   `duplicate_history_id` / `duplicate_fulfillment_id`.
@@ -515,8 +520,6 @@ function hasDuplicates<T>(values: T[]): boolean {
  * - `granted_without_identifier` — a granted permit with no `identifier`.
  * - `unmatched_fulfillment` — a fulfillment whose `due_date` matches no
  *   generated deadline, or with no `due_date` on a dated condition.
- * - `fulfillment_reference_unresolved` — a fulfillment `event_id` or
- *   `sample_id` that resolves to nothing.
  * - `missing_timezone` — the well has no `location.properties.timezone` but
  *   some permits have condition fulfillments (listed in `ids`). v2.4.
  */
@@ -527,9 +530,6 @@ export function getPermitWarnings(
   const permits = well.permits ?? [];
   const byId = new Map(permits.map(p => [p.id, p]));
   const warnings: PermitWarning[] = [];
-
-  const eventIds = new Set((well.hydrodynamic_events ?? []).map(e => e.id));
-  const sampleIds = new Set((well.water_samples ?? []).map(s => s.id));
 
   for (const p of permits) {
     if (!p.identifier && !p.request_identifier) {
@@ -571,10 +571,10 @@ export function getPermitWarnings(
 
     const schedule = p.monthly_schedule ?? [];
     if (
-      outOfDayRange(p.daily_operating_time) ||
-      schedule.some(g => outOfDayRange(g.daily_operating_time))
+      aboveDayRange(p.daily_operating_time) ||
+      schedule.some(g => aboveDayRange(g.daily_operating_time))
     ) {
-      warnings.push({ code: 'daily_operating_time_out_of_range', ids: [p.id] });
+      warnings.push({ code: 'daily_operating_time_normalized', ids: [p.id] });
     }
     if (
       schedule.some(
@@ -584,7 +584,8 @@ export function getPermitWarnings(
             g.flow_rate > p.flow_rate) ||
           (p.daily_operating_time !== undefined &&
             g.daily_operating_time !== undefined &&
-            g.daily_operating_time > p.daily_operating_time),
+            normalizeDailyOperatingTime(g.daily_operating_time) >
+              normalizeDailyOperatingTime(p.daily_operating_time)),
       )
     ) {
       warnings.push({ code: 'monthly_above_max', ids: [p.id] });
@@ -640,17 +641,6 @@ export function getPermitWarnings(
         if (!matches) {
           warnings.push({
             code: 'unmatched_fulfillment',
-            ids: [p.id],
-            condition_id: c.id,
-            fulfillment_id: f.id,
-          });
-        }
-        if (
-          (f.event_id !== undefined && !eventIds.has(f.event_id)) ||
-          (f.sample_id !== undefined && !sampleIds.has(f.sample_id))
-        ) {
-          warnings.push({
-            code: 'fulfillment_reference_unresolved',
             ids: [p.id],
             condition_id: c.id,
             fulfillment_id: f.id,

@@ -10,6 +10,7 @@ import type {
   ProductionEntry,
   Well,
 } from '@welldot/core';
+import { parseWell, serializeWell } from '@welldot/core';
 
 import {
   getCurrentMeters,
@@ -884,6 +885,36 @@ describe('getOperationWarnings', () => {
           w => w.code === 'regime_exceeds_permit',
         ),
       ).toEqual([{ code: 'regime_exceeds_permit', ids: ['now', 'pmt-01'] }]);
+    });
+
+    it('compares normalized daily_operating_time values', () => {
+      const well = makeWell({
+        permits: [{ ...permit, daily_operating_time: 24 }],
+        operating_regime: [
+          {
+            id: 'r26',
+            effective_from: '2026-01-01T00:00:00-03:00',
+            daily_operating_time: 26,
+          },
+        ],
+      });
+      const warnings = getOperationWarnings(well, TODAY);
+      expect(warnings.map(w => w.code)).not.toContain('regime_exceeds_permit');
+      expect(warnings).toContainEqual({
+        code: 'daily_operating_time_normalized',
+        ids: ['r26'],
+      });
+    });
+
+    it('duplicate effective_from stays a warning and the file parses', () => {
+      const well = makeWell({
+        operating_regime: [
+          { id: 'a', effective_from: '2026-01-01T00:00:00-03:00' },
+          { id: 'b', effective_from: '2026-01-01T00:00:00-03:00' },
+        ],
+      });
+      expect(codes(well)).toContain('regime_duplicate_effective_from');
+      expect(() => parseWell(serializeWell(well))).not.toThrow();
     });
 
     it('ignores expired permits and regimes within limits', () => {

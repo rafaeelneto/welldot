@@ -54,7 +54,7 @@ v2.3 additions:
 - meters (optional Meter[]): totalizer (hidrômetro) installation
   history; device facts only (type, serial, nominal diameter,
   max_reading for rollover)
-- production (optional ProductionEntry[]): append-only ledger of
+- production (optional ProductionEntry[]): ledger of
   meter_reading entries (register values in m³) and estimated_volume
   entries (volumes estimated for a period without a meter); volumes
   are derived from consecutive readings, never stored as totals.
@@ -172,7 +172,7 @@ v2.0 additions:
 - well_id (array of authority-scoped identifiers)
 - profiles (JSON Schema URLs for regulatory and domain-specific constraints)
 - texture object (multi-vocabulary, replaces v1 fgdc_texture string)
-- hydrodynamic_events (append-only ledger of water-level observations)
+- hydrodynamic_events (ledger of water-level observations)
 - aquifer_analysis (interpreted aquifer parameter sets)
 - history_logs (operational log of interventions and incidents,
   with updated_at edit timestamp)
@@ -221,7 +221,7 @@ The `.well` format is an open standard for representing water well data. It is d
 - **Ground level as zero** — all depth values are measured from ground level (0); elevation above the WGS84 ellipsoid (or declared datum) is stored separately in `location.elevation`. Water levels above ground are negative.
 - **Geographic north** — all azimuth values are referenced to geographic north.
 - **Three block kinds** — every top-level array is one of three kinds, and the kind decides how records are corrected:
-  - **Ledger** (`hydrodynamic_events`, `production`, `water_samples`) — append-only. An error is corrected by appending a new entry whose `corrects` points to the retracted entry; existing entries are never edited in place. A retracted entry stays in the file but is excluded from every derivation. This is enforced by authoring tools in the welldot stack, not by the file format itself. The format provides `id`, `datetime`, `sequence` and `corrects` to support this discipline.
+  - **Ledger** (`hydrodynamic_events`, `production`, `water_samples`) — grows by appending. Entries MAY be edited in place, but editing is NOT RECOMMENDED after an entry has been exported. A measurement correction (a re-measurement, a revised laboratory report) is best written as a new entry whose `corrects` points to the retracted entry; a retracted entry stays in the file but is excluded from every derivation. The format provides `id`, `datetime`, `sequence` and `corrects` to support this discipline; it does not enforce it.
   - **Mutable record** (`history_logs`, `permits`, `operating_regime`) — edited in place; `updated_at` records the last edit.
   - **Installation** (`pump_installations`, `meters`) — equipment present in the well for a period (`installed_at` / `removed_at`); edited in place with `updated_at`.
 - **Derived values are never stored raw** — `s/Q`, `Q/s`, drawdown `s`, and any other value computable from stored fields must not appear as stored fields. Applications compute them on demand.

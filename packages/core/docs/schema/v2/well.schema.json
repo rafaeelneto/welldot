@@ -1776,8 +1776,7 @@
           },
           "daily_operating_time": {
             "type": "number",
-            "minimum": 0,
-            "maximum": 24
+            "minimum": 0
           },
           "days_per_week": {
             "type": "integer",

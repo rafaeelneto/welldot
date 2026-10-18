@@ -343,7 +343,7 @@ A cavity or void zone.
 
 ## `hydrodynamic_events[]`
 
-A chronological, append-only ledger of all hydrodynamic observations. Events are ordered by `datetime` ascending (UTC-normalized instants); parsers MUST NOT assume order and SHOULD sort by `datetime` when querying. When two events share the same instant, an optional `sequence` integer breaks the tie.
+A chronological ledger of all hydrodynamic observations; it grows by appending. Events are ordered by `datetime` ascending (UTC-normalized instants); parsers MUST NOT assume order and SHOULD sort by `datetime` when querying. When two events share the same instant, an optional `sequence` integer breaks the tie.
 
 > **Note — interpretive contracts, not pumping methods.** Each `type` value identifies a _category of field record_ with a distinct semantic contract, not a pumping technique or equipment class. Equipment belongs in the `equipment` field; test-analysis method belongs in `method` on `aquifer_analysis`. The contract for each type specifies what data it reliably supplies, how many steps it should carry, whether recovery is permitted, and whether its event ID is valid input to `source_event_ids` on an `aquifer_analysis` entry.
 
@@ -380,7 +380,7 @@ Only `id`, `type`, and `datetime` are required. All others are optional for all 
 
 ### Corrections _(since v2.3)_
 
-`hydrodynamic_events` is a ledger: an erroneous event is never edited in place. The correction is a new event whose `corrects` holds the id of the retracted event.
+`hydrodynamic_events` is a ledger: events MAY be edited in place, but editing is NOT RECOMMENDED after the event has been exported. `corrects` remains the recommended mechanism for measurement corrections (a re-measurement): the correction is a new event whose `corrects` holds the id of the retracted event.
 
 - A retracted event stays in the file but is excluded from every derivation (current static level, analyses, charts).
 - Chains are allowed (C corrects B, which corrected A); only the last uncorrected entry counts.
@@ -468,6 +468,8 @@ A continuous level series recorded by an installed sensor: a pressure transducer
 | `barometric_compensation` | string           | no       | Closed: `barologger` (Barologger / Barologger), `vented` (Vented cable / Cabo ventilado) or `none` (None / Nenhuma).                                                                      |
 | `aggregation`             | string           | no       | Closed: `none` (Raw readings / Leituras brutas), `hourly` (Hourly / Horária) or `daily` (Daily / Diária). When `hourly` or `daily`, every reading MUST carry `depth_min` and `depth_max`. |
 | `readings`                | `LevelReading[]` | yes      | One or more readings. Each reading MUST carry `datetime` and MUST NOT carry `elapsed`. See § LevelReading.                                                                                |
+
+A series MAY grow with new readings instead of becoming one event per download.
 
 > **Note — pump state is not stored per reading.** A series has no per-reading `pumping` flag. In a well that pumps, the series mixes static and dynamic levels; interpretation crosses the series with `production` and `pump_installations`.
 
@@ -770,29 +772,29 @@ A mutable record block: each entry transcribes one legal instrument governing ab
 
 ### `Permit`
 
-| Field                  | Type                   | Required | Unit | Description                                                                  |
-| ---------------------- | ---------------------- | -------- | ---- | ---------------------------------------------------------------------------- |
-| `id`                   | string                 | yes      |      | Unique within `permits`. UUID v4 recommended.                                |
-| `type`                 | string                 | yes      |      | See format-reference.md § `permits[].type`.                                  |
-| `authority`            | string                 | yes      |      | Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`. |
-| `identifier`           | string                 | no       |      | Identifier of the granted instrument (portaria, license code), verbatim.     |
-| `request_identifier`   | string                 | no       |      | Identifier of the request or administrative process (protocolo), verbatim.   |
-| `status`               | string (enum)          | no       |      | Administrative status. Closed vocabulary, see below. Absent means `granted`. |
-| `issued_at`            | string (date)          | no       |      | Issue date.                                                                  |
-| `valid_from`           | string (date)          | no       |      | Absent means valid from `issued_at`.                                         |
-| `valid_until`          | string (date)          | no       |      | Absent means no fixed expiry.                                                |
-| `renewal_requested_at` | string (date)          | no       |      | Date a renewal request was filed.                                            |
-| `water_use`            | string[]               | no       |      | See format-reference.md § `permits[].water_use`.                             |
-| `flow_rate`            | number                 | no       | m³/h | Maximum granted flow.                                                        |
-| `daily_operating_time` | number                 | no       | h    | Maximum granted daily operating time, 0–24.                                  |
-| `volume_limits`        | `VolumeLimit[]`        | no       |      | Only volumes stated in the document.                                         |
-| `monthly_schedule`     | `MonthlyGrant[]`       | no       |      | Month-by-month grant.                                                        |
-| `conditions`           | `PermitCondition[]`    | no       |      | Obligations (condicionantes).                                                |
-| `history`              | `PermitHistoryEntry[]` | no       |      | Administrative steps: filing, process, notifications, fees.                  |
-| `supersedes`           | string                 | no       |      | `permits[].id` of the instrument this one legally replaces.                  |
-| `notes`                | string                 | no       |      |                                                                              |
-| `updated_at`           | string (instant)       | no       |      | Last edit of this record.                                                    |
-| `attachments`          | `Attachment[]`         | no       |      | The legal document. See § Attachment.                                        |
+| Field                  | Type                   | Required | Unit | Description                                                                   |
+| ---------------------- | ---------------------- | -------- | ---- | ----------------------------------------------------------------------------- |
+| `id`                   | string                 | yes      |      | Unique within `permits`. UUID v4 recommended.                                 |
+| `type`                 | string                 | yes      |      | See format-reference.md § `permits[].type`.                                   |
+| `authority`            | string                 | yes      |      | Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`.  |
+| `identifier`           | string                 | no       |      | Identifier of the granted instrument (portaria, license code), verbatim.      |
+| `request_identifier`   | string                 | no       |      | Identifier of the request or administrative process (protocolo), verbatim.    |
+| `status`               | string (enum)          | no       |      | Administrative status. Closed vocabulary, see below. Absent means `granted`.  |
+| `issued_at`            | string (date)          | no       |      | Issue date.                                                                   |
+| `valid_from`           | string (date)          | no       |      | Absent means valid from `issued_at`.                                          |
+| `valid_until`          | string (date)          | no       |      | Absent means no fixed expiry.                                                 |
+| `renewal_requested_at` | string (date)          | no       |      | Date a renewal request was filed.                                             |
+| `water_use`            | string[]               | no       |      | See format-reference.md § `permits[].water_use`.                              |
+| `flow_rate`            | number                 | no       | m³/h | Maximum granted flow.                                                         |
+| `daily_operating_time` | number                 | no       | h    | Maximum granted daily operating time. Above 24 is read as 24, with a warning. |
+| `volume_limits`        | `VolumeLimit[]`        | no       |      | Only volumes stated in the document.                                          |
+| `monthly_schedule`     | `MonthlyGrant[]`       | no       |      | Month-by-month grant.                                                         |
+| `conditions`           | `PermitCondition[]`    | no       |      | Obligations (condicionantes).                                                 |
+| `history`              | `PermitHistoryEntry[]` | no       |      | Administrative steps: filing, process, notifications, fees.                   |
+| `supersedes`           | string                 | no       |      | `permits[].id` of the instrument this one legally replaces.                   |
+| `notes`                | string                 | no       |      |                                                                               |
+| `updated_at`           | string (instant)       | no       |      | Last edit of this record.                                                     |
+| `attachments`          | `Attachment[]`         | no       |      | The legal document. See § Attachment.                                         |
 
 `water_use` describes what the abstracted water is for. It is distinct from the top-level `well_purpose`, which describes the well's role.
 
@@ -845,7 +847,7 @@ Volumes implied by flow × time × days are derived and MUST NOT be stored here.
 | ---------------------- | ------- | -------- | ---- | --------------------------------------- |
 | `month`                | integer | yes      |      | 1–12, unique within the schedule.       |
 | `flow_rate`            | number  | no       | m³/h |                                         |
-| `daily_operating_time` | number  | no       | h    | 0–24.                                   |
+| `daily_operating_time` | number  | no       | h    | Above 24 is read as 24, with a warning. |
 | `days`                 | integer | no       |      | Days of operation granted in the month. |
 
 When `monthly_schedule` is present, a month absent from it has no abstraction granted. The top-level `flow_rate` and `daily_operating_time` hold the maximum across months; a monthly value above them emits a warning.
@@ -935,7 +937,7 @@ The lead time a renewal request requires varies by jurisdiction; it is evaluated
 - `valid_until` earlier than the start date.
 - A `supersedes` cycle, or a `supersedes` reference that does not resolve.
 - Two granted, non-superseded permits of the same `type` with overlapping validity.
-- A `daily_operating_time` outside 0–24, on the permit or in `monthly_schedule`.
+- A `daily_operating_time` above 24, on the permit or in `monthly_schedule`. It is read as 24 by every derivation; the stored value is not rewritten. A negative value is a schema error.
 - A `monthly_schedule` value above the permit's top-level maximum.
 - A duplicate `month`, `volume_limits` period, condition `id`, `history` `id` or fulfillment `id` within one permit.
 - A condition with both `first_due` and `due_after`.
@@ -982,7 +984,7 @@ The register values at installation and removal are recorded as ordinary `meter_
 
 ## `production[]` _(since v2.3)_
 
-A ledger: the append-only record of water produced by the well. An erroneous entry is never edited in place; the correction is a new entry whose `corrects` holds the id of the retracted entry, following § `hydrodynamic_events[]` — Corrections (retracted entries stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning). Entries are discriminated by `type`. Volumes are always derived, never stored as totals.
+A ledger: the record of water produced by the well, which grows by appending. Entries MAY be edited in place, but editing is NOT RECOMMENDED after the entry has been exported. `corrects` remains the recommended mechanism for measurement corrections: the correction is a new entry whose `corrects` holds the id of the retracted entry, following § `hydrodynamic_events[]` — Corrections (retracted entries stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning). Entries are discriminated by `type`. Volumes are always derived, never stored as totals.
 
 ### Common fields
 
@@ -1014,7 +1016,7 @@ A volume produced in a period, estimated without a meter (e.g. before a meter wa
 | Field          | Type             | Required | Unit | Description                                                                              |
 | -------------- | ---------------- | -------- | ---- | ---------------------------------------------------------------------------------------- |
 | `period_start` | string (instant) | yes      |      | Start of the declared period.                                                            |
-| `period_end`   | string (instant) | yes      |      | End of the declared period. Later than `period_start`.                                   |
+| `period_end`   | string (instant) | yes      |      | End of the declared period. SHOULD be later than `period_start`; otherwise a warning.    |
 | `volume`       | number           | yes      | m³   | Volume produced in the period.                                                           |
 | `method`       | string           | no       |      | Basis of the estimate: `flow_time`, `energy`, `user_statement`, `x-…`. Descriptive only. |
 
@@ -1053,22 +1055,23 @@ A mutable record block: each entry declares how the well is intended to run from
 
 ### `OperatingRegime`
 
-| Field                  | Type             | Required | Unit | Description                                            |
-| ---------------------- | ---------------- | -------- | ---- | ------------------------------------------------------ |
-| `id`                   | string           | yes      |      | Unique within `operating_regime`.                      |
-| `effective_from`       | string (instant) | yes      |      | When the regime takes effect. Unique within the block. |
-| `flow_rate`            | number           | no       | m³/h |                                                        |
-| `daily_operating_time` | number           | no       | h    | 0–24.                                                  |
-| `days_per_week`        | integer          | no       |      | 1–7.                                                   |
-| `notes`                | string           | no       |      |                                                        |
-| `updated_at`           | string (instant) | no       |      | Last edit of this record.                              |
+| Field                  | Type             | Required | Unit | Description                                             |
+| ---------------------- | ---------------- | -------- | ---- | ------------------------------------------------------- |
+| `id`                   | string           | yes      |      | Unique within `operating_regime`.                       |
+| `effective_from`       | string (instant) | yes      |      | When the regime takes effect. Duplicates are a warning. |
+| `flow_rate`            | number           | no       | m³/h |                                                         |
+| `daily_operating_time` | number           | no       | h    | Above 24 is read as 24, with a warning.                 |
+| `days_per_week`        | integer          | no       |      | 1–7.                                                    |
+| `notes`                | string           | no       |      |                                                         |
+| `updated_at`           | string (instant) | no       |      | Last edit of this record.                               |
 
 - An absent field means unknown, never zero.
 - A stopped well is recorded with a `history_logs` `status_change`, not a regime with `flow_rate: 0`.
-- `daily_operating_time` outside 0–24 and `days_per_week` outside 1–7 (or not an integer) are schema errors.
+- A `daily_operating_time` above 24 is stored as written, read as 24 by every derivation, and emits a warning. A negative `daily_operating_time` is a schema error, as is a `days_per_week` outside 1–7 (or not an integer).
 
 ### Validation (warnings, never rejection)
 
+- A `daily_operating_time` above 24.
 - Two entries with the same `effective_from`.
 - Regime values above those of the permit active at `effective_from` (`flow_rate`, `daily_operating_time`).
 

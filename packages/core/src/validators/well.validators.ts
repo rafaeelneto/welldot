@@ -575,7 +575,7 @@ export const OperatingRegimeSchema = z.object({
   id: z.string(),
   effective_from: rfc3339(),
   flow_rate: z.number().nonnegative().optional(),
-  daily_operating_time: z.number().min(0).max(24).optional(),
+  daily_operating_time: z.number().nonnegative().optional(),
   days_per_week: z.number().int().min(1).max(7).optional(),
   notes: z.string().optional(),
   updated_at: rfc3339().optional(),
