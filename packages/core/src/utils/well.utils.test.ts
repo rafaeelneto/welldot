@@ -1308,6 +1308,25 @@ describe('parseWell', () => {
     });
   });
 
+  describe('location timezone', () => {
+    const withTz = (timezone: string) =>
+      minV2({
+        version: '2.4',
+        location: { lat: -1.4, lng: -48.4, properties: { timezone } },
+      });
+
+    it('parseWell rejects an invalid timezone', () => {
+      expect(() => parseWell(withTz('-03:00'))).toThrow();
+    });
+
+    it('parseWell keeps a valid timezone through the round trip', () => {
+      const well = parseWell(withTz('America/Belem'));
+      expect(well.location?.properties?.timezone).toBe('America/Belem');
+      const again = parseWell(serializeWell(well));
+      expect(again.location?.properties?.timezone).toBe('America/Belem');
+    });
+  });
+
   describe('serializeWell null handling', () => {
     it('serializeWell omits null members but keeps them inside x- fields', () => {
       const well = parseWell(

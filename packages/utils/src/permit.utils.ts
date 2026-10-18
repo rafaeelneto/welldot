@@ -9,7 +9,7 @@ import type {
 
 import { PERMIT_ADMINISTRATIVE_STATUSES } from '@welldot/core';
 
-import { instantLocalDate } from './shared.utils';
+import { getWellTimeZone, instantLocalDate } from './shared.utils';
 
 // ─── Calendar date helpers (.well v2.3) ──────────────────────────────────────
 // Permit dates are calendar dates (`YYYY-MM-DD`), the local civil date at the
@@ -382,7 +382,7 @@ export function getConditionDeadlineStates(
       return {
         due_date,
         status:
-          instantLocalDate(f.datetime) > due_date
+          instantLocalDate(f.datetime, getWellTimeZone(well)) > due_date
             ? 'fulfilled_late'
             : 'fulfilled',
         fulfillment_id: f.id,
@@ -432,9 +432,13 @@ export type PermitTimelineItem =
 /**
  * Merges a permit's `history` and every condition's `fulfillments` into one
  * list ordered by local calendar date, newest first. Fulfillments are placed
- * at the local date of their `datetime`.
+ * at the local date of their `datetime` in `timeZone` (the well's
+ * `location.properties.timezone`), or as written when no zone is given.
  */
-export function getPermitTimeline(permit: Permit): PermitTimelineItem[] {
+export function getPermitTimeline(
+  permit: Permit,
+  timeZone?: string,
+): PermitTimelineItem[] {
   const items: PermitTimelineItem[] = [
     ...(permit.history ?? []).map(entry => ({
       kind: 'history' as const,
@@ -444,7 +448,7 @@ export function getPermitTimeline(permit: Permit): PermitTimelineItem[] {
     ...(permit.conditions ?? []).flatMap(condition =>
       (condition.fulfillments ?? []).map(fulfillment => ({
         kind: 'fulfillment' as const,
-        date: instantLocalDate(fulfillment.datetime),
+        date: instantLocalDate(fulfillment.datetime, timeZone),
         condition,
         fulfillment,
       })),
@@ -472,7 +476,8 @@ export type PermitWarningCode =
   | 'duplicate_history_id'
   | 'duplicate_fulfillment_id'
   | 'unmatched_fulfillment'
-  | 'fulfillment_reference_unresolved';
+  | 'fulfillment_reference_unresolved'
+  | 'missing_timezone';
 
 export type PermitWarning = {
   code: PermitWarningCode;
@@ -512,6 +517,8 @@ function hasDuplicates<T>(values: T[]): boolean {
  *   generated deadline, or with no `due_date` on a dated condition.
  * - `fulfillment_reference_unresolved` — a fulfillment `event_id` or
  *   `sample_id` that resolves to nothing.
+ * - `missing_timezone` — the well has no `location.properties.timezone` but
+ *   some permits have condition fulfillments (listed in `ids`). v2.4.
  */
 export function getPermitWarnings(
   well: Well,
@@ -651,6 +658,13 @@ export function getPermitWarnings(
         }
       }
     }
+  }
+
+  if (!getWellTimeZone(well)) {
+    const ids = permits
+      .filter(p => (p.conditions ?? []).some(c => c.fulfillments?.length))
+      .map(p => p.id);
+    if (ids.length) warnings.push({ code: 'missing_timezone', ids });
   }
 
   // Two granted, non-superseded permits of the same type with overlapping validity.

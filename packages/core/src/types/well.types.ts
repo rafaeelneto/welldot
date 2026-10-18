@@ -80,6 +80,8 @@ export type LocationProperties = {
   lng_precision?: number;
   elevation_precision?: number;
   original_crs?: string;
+  /** IANA time zone of the well site (e.g. `America/Belem`). Since v2.4. */
+  timezone?: string;
 };
 
 export type Location = {

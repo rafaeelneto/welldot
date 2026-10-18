@@ -848,7 +848,7 @@ A water-quality `monitoring` condition is fulfilled by pointing to the sample wi
 
 Derived status of each deadline, evaluated on the local civil date at the well site:
 
-- **fulfilled** — a fulfillment has its `due_date`. **Fulfilled late** when that fulfillment's local date (the date part of its `datetime`, in the offset it carries) is after `due_date`.
+- **fulfilled** — a fulfillment has its `due_date`. **Fulfilled late** when that fulfillment's local date is after `due_date`. The local date is the `datetime` converted to `location.properties.timezone` _(since v2.4)_; without `timezone`, the date part of the string in the offset it carries.
 - **upcoming** — no match and today is on or before `due_date`.
 - **overdue** — no match and today is after `due_date`.
 
@@ -878,6 +878,7 @@ The lead time a renewal request requires varies by jurisdiction; it is evaluated
 - A condition with both `first_due` and `due_after`.
 - A permit with neither `identifier` nor `request_identifier`, or a granted permit without `identifier`.
 - A condition fulfillment that matches no deadline, or whose `event_id` / `sample_id` does not resolve.
+- Permits with condition fulfillments in a file without `location.properties.timezone` _(since v2.4)_.
 
 A collective grant covering several wells is repeated in each well's file until cross-file references arrive in v3.
 

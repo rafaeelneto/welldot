@@ -23,6 +23,7 @@ import {
   parseDateDuration,
   todayCalendarDate,
 } from './permit.utils';
+import { instantLocalDate } from './shared.utils';
 
 function makeWell(permits: Permit[], extra: Partial<Well> = {}): Well {
   return {
@@ -725,5 +726,82 @@ describe('getPermitWarnings', () => {
     const a = base({ id: 'a', valid_from: '2025-01-01' });
     const b = base({ id: 'b', valid_from: '2025-06-01', status: 'requested' });
     expect(codes(makeWell([a, b]))).not.toContain('overlapping_validity');
+  });
+});
+
+describe('local civil dates and time zone (v2.4)', () => {
+  const permitWith = (datetime?: string): Permit =>
+    base({
+      issued_at: '2026-01-01',
+      valid_until: '2030-01-01',
+      conditions: [
+        {
+          id: 'c1',
+          description: 'x',
+          first_due: '2026-09-30',
+          ...(datetime && {
+            fulfillments: [{ id: 'f1', datetime, due_date: '2026-09-30' }],
+          }),
+        },
+      ],
+    });
+  const wellWith = (p: Permit, timezone?: string) =>
+    makeWell([p], {
+      ...(timezone && {
+        location: { lat: 0, lng: 0, properties: { timezone } },
+      }),
+    });
+  const statusOf = (datetime: string, timezone?: string) => {
+    const p = permitWith(datetime);
+    return getConditionDeadlineStates(
+      wellWith(p, timezone),
+      p,
+      p.conditions![0]!,
+      { today: '2026-10-15' },
+    ).find(s => s.due_date === '2026-09-30')!.status;
+  };
+
+  it('fulfillment at 2026-10-01T01:00:00Z is on time with timezone America/Belem', () => {
+    expect(statusOf('2026-10-01T01:00:00Z', 'America/Belem')).toBe('fulfilled');
+  });
+
+  it('same fulfillment is late without a timezone', () => {
+    expect(statusOf('2026-10-01T01:00:00Z')).toBe('fulfilled_late');
+  });
+
+  it('2026-09-30T22:00:00-03:00 is on time without a timezone', () => {
+    expect(statusOf('2026-09-30T22:00:00-03:00')).toBe('fulfilled');
+  });
+
+  it('getPermitTimeline places a fulfillment at its zone-local date', () => {
+    const p = permitWith('2026-10-01T01:00:00Z');
+    expect(getPermitTimeline(p)[0]!.date).toBe('2026-10-01');
+    expect(getPermitTimeline(p, 'America/Belem')[0]!.date).toBe('2026-09-30');
+  });
+
+  describe('missing_timezone', () => {
+    const warned = (well: Well) =>
+      getPermitWarnings(well, '2026-10-15').filter(
+        w => w.code === 'missing_timezone',
+      );
+
+    it('is warned when permits have fulfillments and no timezone', () => {
+      const p = permitWith('2026-10-01T01:00:00Z');
+      expect(warned(wellWith(p))).toEqual([
+        { code: 'missing_timezone', ids: [p.id] },
+      ]);
+    });
+
+    it('is absent when the timezone is set or no fulfillment exists', () => {
+      const p = permitWith('2026-10-01T01:00:00Z');
+      expect(warned(wellWith(p, 'America/Belem'))).toEqual([]);
+      expect(warned(wellWith(permitWith()))).toEqual([]);
+    });
+  });
+
+  it('instantLocalDate falls back to the written date for an invalid zone', () => {
+    expect(instantLocalDate('2026-10-01T01:00:00Z', 'Nowhere/X')).toBe(
+      '2026-10-01',
+    );
   });
 });

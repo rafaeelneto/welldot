@@ -304,7 +304,7 @@ Constructive and geologic arrays describe the well as built and are edited in pl
 
 The `.well` format distinguishes two kinds of temporal values:
 
-**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, since v2.3, for legal documents: `permits[].issued_at`, `valid_from`, `valid_until`, `renewal_requested_at`; `permits[].conditions[].first_due`, `last_due`; `permits[].conditions[].fulfillments[].due_date`; and `permits[].history[].date`, `due_date`. Interpreted as the local civil date at the well site. The well site's timezone is not stored separately; calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
+**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, since v2.3, for legal documents: `permits[].issued_at`, `valid_from`, `valid_until`, `renewal_requested_at`; `permits[].conditions[].first_due`, `last_due`; `permits[].conditions[].fulfillments[].due_date`; and `permits[].history[].date`, `due_date`. Interpreted as the local civil date at the well site. Calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
 
 **Instants** — RFC 3339 datetime strings with a mandatory UTC offset (e.g. `2006-03-14T08:00:00-03:00` or `2006-03-14T11:00:00Z`). Used for all event, analysis, and log timestamps:
 
@@ -319,7 +319,7 @@ The `.well` format distinguishes two kinds of temporal values:
 - `operating_regime[].effective_from`, `updated_at` _(since v2.3)_
 - `water_samples[].datetime`, `laboratory.received_at`, `results[].analyzed_at`, `results[].validation.validated_at` _(since v2.3)_
 
-Validity and deadline checks compare calendar dates, never UTC instants. When an instant must be compared with a calendar date — for example a condition fulfillment's `datetime` against its `due_date` — the instant's local date is the date part of the string, in the offset it carries. Producers SHOULD therefore write such instants in the well site's local offset.
+Validity and deadline checks compare calendar dates, never UTC instants. When an instant is compared with a calendar date — for example a condition fulfillment's `datetime` against its `due_date` — the instant's local date is the instant converted to `location.properties.timezone` _(since v2.4)_. Without `timezone`, it is the date part of the string, in the offset it carries; producers SHOULD then write such instants in the well site's local offset. A file without `timezone` whose permits have condition fulfillments emits a warning.
 
 Relative deadlines and recurrences are ISO 8601 date durations (`P90D`, `P6M`, `P1Y6M`); see object-schemas.md § Date duration.
 
@@ -719,6 +719,7 @@ The three primary measurements — `lat`, `lng`, `elevation` — are top-level f
 | `lng_precision`       | number | no       | One-sigma precision of `lng` in decimal degrees.                                                                                                                  |
 | `elevation_precision` | number | no       | One-sigma precision of `elevation` in meters.                                                                                                                     |
 | `original_crs`        | string | no       | EPSG code of the source CRS, preserved for traceability when source data was in a projected CRS that the converter transformed to geographic. Informational only. |
+| `timezone`            | string | no       | IANA time zone of the well site (e.g. `America/Belem`). A value that is not a valid IANA name is malformed. _(since v2.4)_                                        |
 
 ### `elevation_datum` — Recommended values
 

@@ -1,6 +1,7 @@
 import { createDefu } from 'defu';
 import { z } from 'zod';
 import type { Well } from '../types/well.types';
+import { isIanaTimeZone } from '../utils/timezone.utils';
 import { parseFormatVersion } from '../utils/version.utils';
 
 // ─── defu custom merger ───────────────────────────────────────────────────────
@@ -85,6 +86,10 @@ export const LocationPropertiesSchema = z.object({
   lng_precision: z.number().optional(),
   elevation_precision: z.number().optional(),
   original_crs: z.string().optional(),
+  timezone: z
+    .string()
+    .refine(isIanaTimeZone, 'timezone must be an IANA time zone name')
+    .optional(),
 });
 
 export const LocationSchema = z.object({

@@ -15,6 +15,7 @@ import { formatDate } from './date.utils';
 import { getPermitStatus, todayCalendarDate } from './permit.utils';
 import {
   getRetractedIds,
+  getWellTimeZone,
   instantLocalDate,
   instantOffset,
 } from './shared.utils';
@@ -708,7 +709,7 @@ export function getOperationWarnings(
 
   const regime = latestRegime(
     regimes,
-    r => instantLocalDate(r.effective_from) <= today,
+    r => instantLocalDate(r.effective_from, getWellTimeZone(well)) <= today,
   );
   if (regime) {
     for (const permit of well.permits ?? []) {

@@ -137,6 +137,7 @@ export {
 } from './validators/well.validators';
 
 // Format utilities (serialise/deserialise .well format only)
+export { isIanaTimeZone } from './utils/timezone.utils';
 export {
   WELL_FORMAT_VERSION,
   compareFormatVersions,

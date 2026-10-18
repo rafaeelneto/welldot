@@ -17,6 +17,7 @@ import {
   getPermitTimeline,
   getPermitWarnings,
   getSuccessorPermit,
+  getWellTimeZone,
   todayCalendarDate,
 } from '@welldot/utils';
 import type { ConditionDeadlineState } from '@welldot/utils';
@@ -279,7 +280,9 @@ function canFulfillUndated(c: PermitCondition): boolean {
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 
 const timeline = computed(() =>
-  permit.value ? getPermitTimeline(permit.value) : [],
+  permit.value
+    ? getPermitTimeline(permit.value, getWellTimeZone(profileStore.well))
+    : [],
 );
 
 function historyIcon(type: string | undefined): string {
