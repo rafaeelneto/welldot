@@ -88,7 +88,7 @@ These rules are non-negotiable and apply even if you have not read the knowledge
    {"code": 607, "vocabulary": "fgdc"}. Prefer FGDC Series 600 and 700 codes.
 6. Every datetime in hydrodynamic_events, aquifer_analysis and history_logs is RFC 3339 WITH a
    UTC offset. Never emit a naked timestamp.
-7. Top level uses location {lat, lng, elevation?}, not flat lat/lng. Set "version": 2.
+7. Top level uses location {lat, lng, elevation?}, not flat lat/lng. Set "version": "2.4" (a string).
 8. well_depth is the CURRENT/USABLE depth and is usually absent. A report's single total-depth
    figure belongs in bore_hole[].to only — never copy it into both.
 

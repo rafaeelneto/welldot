@@ -46,7 +46,7 @@ This README covers installation, a quick start, the API (types, validators, func
 
 The format is designed for three use cases: visualization of technical well profiles, registration with regulatory bodies, and hydrogeological research.
 
-See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.3) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
+See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.4) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
 
 ### Example wells
 

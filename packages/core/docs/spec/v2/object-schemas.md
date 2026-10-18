@@ -1,10 +1,10 @@
-# `.well` File Format Specification — Version 2.3: Object Schemas
+# `.well` File Format Specification — Version 2.4: Object Schemas
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
 
 ## Overview
 
-This part of the `.well` v2.3 specification defines the records inside each top-level block: the common types (`Attachment`, date durations), the construction and geology objects, the `hydrodynamic_events` ledger and its supporting objects, `aquifer_analysis`, `history_logs`, and the operational blocks added in v2.3 (`pump_installations`, `permits`, `meters`, `production`, `operating_regime`). It ends with a complete example file. Water samples are specified in [water-quality.md](./water-quality.md); units and cross-reference rules in [format-reference.md](./format-reference.md).
+This part of the `.well` v2.4 specification defines the records inside each top-level block: the common types (`Attachment`, date durations), the construction and geology objects, the `hydrodynamic_events` ledger and its supporting objects, `aquifer_analysis`, `history_logs`, and the operational blocks added in v2.3 (`pump_installations`, `permits`, `meters`, `production`, `operating_regime`). It ends with a complete example file. Water samples are specified in [water-quality.md](./water-quality.md); units and cross-reference rules in [format-reference.md](./format-reference.md).
 
 ## Table of contents
 
@@ -92,7 +92,7 @@ The `.well` format is not a file container. Attachments are referenced by URL. S
 | Field           | Type   | Required | Description                                                                                |
 | --------------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
 | `id`            | string | yes      | Unique within its owning `attachments` array. UUID v4 recommended.                         |
-| `uri`           | string | yes      | Full HTTPS URL. Relative paths are not permitted.                                          |
+| `uri`           | string | yes      | Full HTTPS URL. A relative path is valid only inside an offline package _(since v2.4)_.    |
 | `media_type`    | string | yes      | MIME type (e.g. `image/jpeg`, `application/pdf`).                                          |
 | `document_type` | string | no       | What the document is. See format-reference.md § `Attachment.document_type`. _(since v2.3)_ |
 | `filename`      | string | no       | Original filename for display.                                                             |
@@ -354,7 +354,7 @@ A chronological ledger of all hydrodynamic observations; it grows by appending. 
 | `spot_measurement` | Medição pontual           | Static water level during a routine visit; optionally an informal brief pump observation. Not a controlled test.  | SHOULD be 0 or 1         | Optional   | As `static_level_source_id` only |
 | `constant_rate`    | Teste de vazão constante  | Controlled pump test at exactly one fixed rate.                                                                   | SHOULD be exactly 1      | Optional   | Yes                              |
 | `step_drawdown`    | Teste de vazão escalonada | Controlled pump test at two or more successive rates in ascending order.                                          | SHOULD be ≥ 2, ascending | Optional   | Yes                              |
-| `airlift`          | Air-lift                  | Historical fact that air-lift development was performed and produced an estimated yield.                          | ≥ 1                      | Optional   | No — see § airlift               |
+| `airlift`          | Air-lift                  | Historical fact that air-lift development was performed and produced an estimated yield.                          | SHOULD be ≥ 1            | Optional   | No — see § airlift               |
 | `recovery_only`    | Apenas recuperação        | Recovery after a pumping event whose drawdown data was not recorded.                                              | None                     | Required   | Yes                              |
 | `logger_series`    | Série de datalogger       | Continuous level series recorded by an installed sensor. Not a controlled test nor a static level. _(since v2.4)_ | None                     | No         | No — see § logger_series         |
 
@@ -431,10 +431,10 @@ This type exists to record the historical fact that air-lift development was per
 
 Static level is not reliably measurable during air-lift and SHOULD be omitted.
 
-| Field      | Type            | Required | Description                                                    |
-| ---------- | --------------- | -------- | -------------------------------------------------------------- |
-| `steps`    | `PumpingStep[]` | yes      | One or more steps. Each step may carry time-series `readings`. |
-| `recovery` | `RecoveryPhase` | no       | Recovery measurements after air-lift shutdown, if recorded.    |
+| Field      | Type            | Required | Description                                                                                         |
+| ---------- | --------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| `steps`    | `PumpingStep[]` | yes      | SHOULD carry one or more steps; another count is valid. Each step may carry time-series `readings`. |
+| `recovery` | `RecoveryPhase` | no       | Recovery measurements after air-lift shutdown, if recorded.                                         |
 
 ---
 
@@ -651,7 +651,7 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
 ### `updated_at` semantics
 
-- `updated_at` MUST NOT be earlier than `datetime` only in the case of pre-dated logging — typically retroactive entry of historical events. There is no validation rule prohibiting `updated_at < datetime`; both orderings are legal.
+- `updated_at` is usually later than `datetime`. It MAY be earlier when an entry is pre-dated (retroactive entry of a historical event); both orderings are valid and neither emits a warning.
 - When a producer modifies the `description`, `category`, `severity`, `author`, or `attachments` of an existing entry, it SHOULD update `updated_at` to the current instant.
 - When a producer modifies only the `id` (e.g. during duplicate-resolution), it SHOULD NOT update `updated_at`, since the substantive content of the entry has not changed.
 - The `updated_at` field is not retroactive: parsers reading a v1 or early-v2.0 file without `updated_at` MUST NOT synthesize one.
@@ -1089,7 +1089,7 @@ A ledger of water samples, each with its field and laboratory results. The full 
 {
   "$schema": "https://welldot.org/schema/v2/well.schema.json",
   "@context": "https://welldot.org/context/v2.jsonld",
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "well_purpose": ["production"],
   "name": "Poço PP-01",
@@ -1107,6 +1107,7 @@ A ledger of water samples, each with its field and laboratory results. The full 
     "lng": -48.5039,
     "elevation": 12.5,
     "properties": {
+      "timezone": "America/Belem",
       "elevation_datum": "wgs84_ellipsoid",
       "crs": "EPSG:4326",
       "elevation_precision": 0.5
@@ -1159,7 +1160,7 @@ A ledger of water samples, each with its field and laboratory results. The full 
     }
   ],
   "cement_pad": {
-    "type": "square",
+    "type": "concrete",
     "width": 1.0,
     "thickness": 0.15,
     "length": 1.0
@@ -1701,4 +1702,4 @@ A ledger of water samples, each with its field and laboratory results. The full 
 
 ---
 
-_`.well` Format Specification v2.3_
+_`.well` Format Specification v2.4_

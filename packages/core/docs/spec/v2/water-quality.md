@@ -1,4 +1,4 @@
-# `.well` File Format Specification — Version 2.3: Water Quality
+# `.well` File Format Specification — Version 2.4: Water Quality
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md)
 

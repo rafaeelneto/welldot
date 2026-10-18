@@ -95,8 +95,8 @@ See `README.md` next to this file for per-client setup.
 **Always consult the latest spec before extracting or validating data.** The `.well` format may
 evolve; anything in this SKILL.md is secondary to the live spec.
 
-This skill targets **spec version 2** — welldot.org / `@welldot/core` do not accept `version: 1`
-files for new conversions.
+This skill targets **spec version 2.4** — write `"version": "2.4"` (a string). welldot.org / `@welldot/core`
+do not accept `version: 1` files for new conversions, and `@welldot/core` up to 0.4.0 rejects `"2.4"` files.
 
 | Doc              | URL                                                                                             |
 | ---------------- | ----------------------------------------------------------------------------------------------- |
@@ -144,7 +144,7 @@ recommended keys apply only when the report's wording maps to them losslessly.
 **Transcribe only values explicitly stated in the document.** For every numeric field:
 
 - Value present → transcribe precisely, converting units if needed
-- Value absent → **omit the field entirely** — never estimate, infer, or approximate
+- Value absent → **omit the field entirely** — never estimate, infer, or approximate, and never write `null`
 
 Applies to: `location.lat`, `location.lng`, `location.elevation`, `from`, `to`, `diameter`,
 `screen_slot`, `dip`, `azimuth`, all `hydrodynamic_events`/`aquifer_analysis` numerics, and all other
@@ -446,7 +446,7 @@ debris, or partial backfill reduced the depth; SIAGAS-style records with a separ
 
 ## Step 4 — Validate
 
-1. `"version": 2` present
+1. `"version": "2.4"` present (a string), and no optional field written as `null`
 2. All required fields present per object type (per spec from Step 1)
 3. Depth consistency: `from < to` for all interval objects
 4. Diameter sanity: boreholes 100–600 mm typical; casings smaller than borehole
@@ -475,10 +475,10 @@ debris, or partial backfill reduced the depth; SIAGAS-style records with a separ
    their own category; every `status` is one of the five closed values
    8d. `water_samples`: the checks in references/well-spec.md § `water_samples[]` — Import checklist
    pass (one value form per result, no `unit` on `welldot`/`cas`, `depth` xor `from`/`to`, all ids resolve)
-9. `hydrodynamic_events[].steps` cardinality matches its `type`: `spot_measurement` 0–1,
+9. `hydrodynamic_events[].steps` cardinality SHOULD match its `type` (a different count is still valid): `spot_measurement` 0–1,
    `constant_rate` exactly 1, `step_drawdown` ≥2 ascending, `airlift` ≥1, `recovery_only` none
-   (recovery required instead)
-10. No `aquifer_analysis[].source_event_ids` entry points to an `airlift`-type event
+   (recovery required instead), `logger_series` none (readings carry `datetime`, never `elapsed`)
+10. No `aquifer_analysis[].source_event_ids` entry points to an `airlift` or `logger_series` event
 11. No numeric field was estimated — if in doubt, remove and flag to user
 
 ---

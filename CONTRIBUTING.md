@@ -101,7 +101,7 @@ Within a major version (`"version": 2`), changes must be **additive and optional
 - ❌ Making an optional field required
 - ❌ Changing a field's type or unit
 
-Anything in the ❌ list requires a new format version, which is a deliberate, coordinated release — raise it in an issue.
+Anything in the ❌ list requires a new format version, which is a deliberate, coordinated release — raise it in an issue. v2.4 changed the representation of `version` (the integer `2` became the string `"2.4"`), which is the one documented exception; any further change to how a file is represented needs a new major.
 
 ### Conventions
 

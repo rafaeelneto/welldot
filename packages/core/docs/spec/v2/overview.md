@@ -1,12 +1,12 @@
-# `.well` File Format Specification — Version 2.3: Overview
+# `.well` File Format Specification — Version 2.4: Overview
 
-**Version:** 2.3 **Extension:** `.well` **Encoding:** UTF-8 **Base format:** JSON **MIME type:** `application/vnd.well+json` **JSON Schema:** `https://welldot.org/schema/v2/well.schema.json` **JSON Schema draft:** 2020-12 **JSON-LD Context (optional):** `https://welldot.org/context/v2.jsonld` **Status:** v2.0 ratified — shipped in `@welldot/core` v0.2.0 · v2.1 shipped in `@welldot/core` v0.3.0 · v2.3 shipped in `@welldot/core` v0.4.0
+**Version:** 2.4 **Extension:** `.well` **Encoding:** UTF-8 **Base format:** JSON **MIME type:** `application/vnd.well+json` **JSON Schema:** `https://welldot.org/schema/v2/well.schema.json` **JSON Schema draft:** 2020-12 **JSON-LD Context (optional):** `https://welldot.org/context/v2.jsonld` **Status:** v2.0 ratified — shipped in `@welldot/core` v0.2.0 · v2.1 shipped in `@welldot/core` v0.3.0 · v2.3 shipped in `@welldot/core` v0.4.0 · v2.4 shipped in `@welldot/core` v0.5.0
 
 **See also:** [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
 
 ## Overview
 
-The `.well` v2 specification is split into five documents. This one gives the context: what changed in each revision (v2.3, v2.1 and from v1), why the format exists, the design principles the other parts follow, and the known limitations. The other four are:
+The `.well` v2 specification is split into five documents. This one gives the context: what changed in each revision (v2.4, v2.3, v2.1 and from v1), why the format exists, the design principles the other parts follow, and the known limitations. The other four are:
 
 - [format-reference.md](./format-reference.md) — the top-level fields, versioning and deprecation, datetimes, recommended vocabularies, `well_id`, `location`, units, profiles, extensibility, cross-reference rules and precision.
 - [object-schemas.md](./object-schemas.md) — every object schema, the `hydrodynamic_events` ledger, `aquifer_analysis`, `history_logs`, the operational blocks (pumps, permits, meters, production, operating regime) and a complete example.
@@ -15,13 +15,76 @@ The `.well` v2 specification is split into five documents. This one gives the co
 
 ## Table of contents
 
+- [Changes in v2.4](#changes-in-v24)
+  - [Deprecations](#deprecations)
 - [Changes in v2.3](#changes-in-v23)
 - [Changes in v2.1](#changes-in-v21)
-  - [Deprecations](#deprecations)
+  - [Deprecations](#deprecations-1)
 - [Changes from v1](#changes-from-v1)
 - [Purpose](#purpose)
 - [Design Principles](#design-principles)
 - [Known Limitations of v2](#known-limitations-of-v2)
+
+---
+
+## Changes in v2.4
+
+v2.4 files write `"version": "2.4"`; parsers up to `@welldot/core` 0.4.0 reject them. Beyond that, v2.4 is an additive revision: every valid v2.3 document stays valid when its `version` is rewritten, and the integer `2` still means "v2.0 to v2.3, revision unknown".
+
+```
+v2.4 additions:
+- version is the string "M.m" (^\d+\.\d+$), compared as two integers,
+  never as text; patch levels are not allowed; readers accept 1, 2 and
+  "M.m"
+- location.properties.timezone (optional, IANA name): the local date of
+  an instant is its date converted to this zone; a missing timezone in
+  a file with condition fulfillments emits the warning missing_timezone
+- logger_series (hydrodynamic event type): a continuous level series
+  recorded by an installed sensor, with sensor_depth, interval,
+  barometric_compensation and aggregation (none, hourly, daily with
+  depth_min / depth_max); not a controlled test, not a static level
+- LevelReading.datetime: the instant of a reading, required in a
+  logger_series, where elapsed is absent
+- Offline packaging: an optional ZIP (.wellz) with the .well file at
+  the root and attachments at relative paths; relative uri allowed and
+  sha256 required only inside the package
+- Application extensions: x-<vendor>-<name> is RECOMMENDED
+  (e.g. x-welldot-custom)
+
+v2.4 clarifications:
+- A known hydrodynamic event type is validated against its own schema
+  and no longer falls back to the open x- rule; step counts per type
+  are SHOULD (a free count is valid), and steps must be valid
+  PumpingStep entries
+- An optional field without a value is omitted, never written as null
+  (storativity is no longer nullable); v2 integer files that still
+  carry it are tolerated on read
+- Ledgers MAY be edited in place; editing is NOT RECOMMENDED after a
+  record has been exported, and corrects remains the way to retract a
+  measurement. Result.validation is editable too
+- Repeated records (collective permits, campaign blanks) share the
+  same id and SHOULD have identical content; consumers MAY merge them
+  by id. A fulfillment event_id or sample_id resolves only in the file
+  of the well that produced it
+- Unresolved references MUST be preserved when a file is re-exported,
+  never silently removed
+- A duplicated operating_regime.effective_from and an
+  estimated_volume period_end not after period_start are warnings
+- daily_operating_time above 24 is normalized to 24 with a warning
+  (the stored value stays as written); a negative value is an error
+- Attachment.document_type condition_evidence is typically found in
+  permits[].conditions[].fulfillments
+- The attachment lists (id uniqueness, "root is not an aggregate",
+  where attachments are allowed) name the same set of records
+- history_logs updated_at may be earlier than datetime for a pre-dated
+  entry; neither ordering emits a warning
+- well_id: producers SHOULD mark exactly one entry primary: true; "the
+  first entry is canonical" is only the fallback
+```
+
+### Deprecations
+
+None.
 
 ---
 
@@ -245,4 +308,4 @@ The following are recognized limitations of this version, reserved for future ve
 
 ---
 
-_`.well` Format Specification v2.3_
+_`.well` Format Specification v2.4_

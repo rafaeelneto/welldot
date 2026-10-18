@@ -1,14 +1,14 @@
-# `.well` File Format Specification — Version 2.3: Format Reference
+# `.well` File Format Specification — Version 2.4: Format Reference
 
 **See also:** [overview.md](./overview.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
 
 ## Overview
 
-This part of the `.well` v2.3 specification defines the file as a whole: the top-level structure and fields, how versions and deprecations work, datetime conventions, the recommended values of every open vocabulary, `well_id` and `location`, the canonical units and which unit each field uses, `profiles`, the `x-` extension rules, cross-reference and uniqueness rules, and precision fields. The objects inside each block are specified in [object-schemas.md](./object-schemas.md).
+This part of the `.well` v2.4 specification defines the file as a whole: the top-level structure and fields, how versions and deprecations work, datetime conventions, the recommended values of every open vocabulary, `well_id` and `location`, the canonical units and which unit each field uses, `profiles`, the `x-` extension rules, cross-reference and uniqueness rules, and precision fields. The objects inside each block are specified in [object-schemas.md](./object-schemas.md).
 
 ## Table of contents
 
-- [`.well` File Format Specification — Version 2.3: Format Reference](#well-file-format-specification--version-23-format-reference)
+- [`.well` File Format Specification — Version 2.4: Format Reference](#well-file-format-specification--version-24-format-reference)
   - [Overview](#overview)
   - [Table of contents](#table-of-contents)
   - [Top-level Structure](#top-level-structure)
@@ -78,6 +78,7 @@ This part of the `.well` v2.3 specification defines the file as a whole: the top
     - [Custom fields — `x-` prefix](#custom-fields--x--prefix)
     - [Custom top-level blocks — `x-` prefix required](#custom-top-level-blocks--x--prefix-required)
     - [Custom vocabulary values — `x-` prefix](#custom-vocabulary-values--x--prefix)
+  - [Offline packaging _(since v2.4)_](#offline-packaging-since-v24)
   - [Cross-reference and Uniqueness Rules](#cross-reference-and-uniqueness-rules)
     - [Uniqueness scope](#uniqueness-scope)
     - [Cross-array references](#cross-array-references)
@@ -94,7 +95,7 @@ This part of the `.well` v2.3 specification defines the file as a whole: the top
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "@context": "https://welldot.org/context/v2.jsonld",
 
   "well_id": [ ... ],
@@ -647,19 +648,19 @@ The well's current status is the `status` of the `status_change` entry with the 
 
 ## `Attachment.document_type` — Recommended values _(since v2.3)_
 
-| Value                | Portuguese (BR)                             | Typical location      |
-| -------------------- | ------------------------------------------- | --------------------- |
-| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                  |
-| `as_built_drawing`   | Perfil construtivo as-built                 | Root                  |
-| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                  |
-| `photo`              | Fotografia                                  | Any                   |
-| `permit_document`    | Portaria / certificado de outorga           | `permits`             |
-| `condition_evidence` | Comprovante de cumprimento de condicionante | `history_logs`        |
-| `pump_curve`         | Curva da bomba                              | `pump_installations`  |
-| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events` |
-| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`    |
-| `lab_report`         | Laudo laboratorial                          | `water_samples`       |
-| `invoice`            | Nota fiscal                                 | Any                   |
+| Value                | Portuguese (BR)                             | Typical location                      |
+| -------------------- | ------------------------------------------- | ------------------------------------- |
+| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                                  |
+| `as_built_drawing`   | Perfil construtivo as-built                 | Root                                  |
+| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                                  |
+| `photo`              | Fotografia                                  | Any                                   |
+| `permit_document`    | Portaria / certificado de outorga           | `permits`                             |
+| `condition_evidence` | Comprovante de cumprimento de condicionante | `permits[].conditions[].fulfillments` |
+| `pump_curve`         | Curva da bomba                              | `pump_installations`                  |
+| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events`                 |
+| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`                    |
+| `lab_report`         | Laudo laboratorial                          | `water_samples`                       |
+| `invoice`            | Nota fiscal                                 | Any                                   |
 
 The vocabulary is open; non-canonical values SHOULD use the `x-` prefix.
 
@@ -675,7 +676,7 @@ Array of authority-scoped identifiers linking the well to external registries. A
 | `id`        | string  | yes      | The identifier as issued by the authority.                                        |
 | `primary`   | boolean | no       | Marks the canonical identifier. At most one entry may have `primary: true`.       |
 
-When `primary` is omitted on all entries, the first entry is canonical. Parsers MUST warn when multiple entries have `primary: true`.
+Producers SHOULD mark exactly one entry `primary: true`. The rule "the first entry is canonical" applies only as a fallback when no entry is marked, because it is fragile when the order changes. Parsers MUST warn when multiple entries have `primary: true`.
 
 ### Numeric ID conversion
 
@@ -978,7 +979,7 @@ See [water-quality.md](water-quality.md) § Regulatory profiles.
 
 ### Custom fields — `x-` prefix
 
-Any implementer may add custom fields to any object by prefixing the field name with `x-`. This convention is established by OpenAPI 3.x and JSON Schema. Parsers MUST preserve and ignore `x-` fields they do not recognize. Sub-properties within an `x-` object do not need to be prefixed.
+Any implementer may add custom fields to any object by prefixing the field name with `x-`. This convention is established by OpenAPI 3.x and JSON Schema. Parsers MUST preserve and ignore `x-` fields they do not recognize. Sub-properties within an `x-` object do not need to be prefixed. For application extensions, `x-<vendor>-<name>` is RECOMMENDED (e.g. `x-welldot-custom`), so tools that both use `x-custom` do not collide. _(since v2.4)_
 
 ```json
 {
@@ -996,11 +997,11 @@ Fields without the `x-` prefix that are not defined in this spec are technically
 
 ### Custom top-level blocks — `x-` prefix required
 
-Top-level blocks not defined in this spec MUST use the `x-` prefix. Parsers MUST preserve and ignore unrecognized top-level keys.
+Top-level blocks not defined in this spec MUST use the `x-` prefix. For application extensions, `x-<vendor>-<name>` is RECOMMENDED (e.g. `x-welldot-custom`), so tools that both use `x-custom` do not collide. _(since v2.4)_ Parsers MUST preserve and ignore unrecognized top-level keys.
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "x-gas_monitoring": [ ... ],
   "x-geophysical_logs": [ ... ]
 }
@@ -1017,6 +1018,18 @@ Parsers MUST treat `x-` prefixed vocabulary values as valid. Promotion from `x-`
 { "category": "x-site_visit" }
 { "method": "x-theis_recovery" }
 ```
+
+---
+
+## Offline packaging _(since v2.4)_
+
+A `.well` file references its attachments by absolute URL, and HTTPS links may expire. For regulators and long-term archiving, a `.well` file MAY be delivered as an offline package: a ZIP archive with the extension `.wellz`.
+
+- The `.well` file sits at the archive root, and the attachments sit at relative paths inside the archive.
+- In this mode an `Attachment.uri` MAY be a relative path to the file inside the archive, and `sha256` is required.
+- Outside a package, `uri` stays an absolute URL. A relative `uri` in a bare `.well` file is not valid.
+
+The package is a delivery wrapper, not a second format: the `.well` file inside it is an ordinary `.well` file. Validators and parsers read the `.well` alone, so the schema keeps `uri` as a URL; resolving relative paths and checking `sha256` is the job of the tool that opens the package.
 
 ---
 
@@ -1143,4 +1156,4 @@ Laboratory reports usually give an expanded uncertainty U with a coverage factor
 
 ---
 
-_`.well` Format Specification v2.3_
+_`.well` Format Specification v2.4_

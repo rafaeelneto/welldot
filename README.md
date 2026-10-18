@@ -45,11 +45,11 @@ The `.well` format is designed to serve three purposes:
 
 The format is human-readable JSON with full, descriptive key names. It is easy to inspect, diff, and version-control without tooling.
 
-**Example `.well` file (v2):**
+**Example `.well` file (v2.4):**
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "name": "Poço PP-01",
   "well_driller": "Perfuradora XYZ",
@@ -58,21 +58,24 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
   "bore_hole": [
     { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
   ],
-  "well_case": [{ "from": 0, "to": 60, "type": "steel", "diameter": 200 }],
+  "well_case": [
+    { "from": 0, "to": 60, "type": "carbon_steel", "diameter": 200 }
+  ],
   "reduction": [
     {
       "from": 58,
       "to": 60,
       "diam_from": 200,
       "diam_to": 150,
-      "type": "conical"
+      "type": "carbon_steel"
     }
   ],
   "well_screen": [
     {
       "from": 60,
       "to": 80,
-      "type": "wire_wound",
+      "type": "stainless_steel",
+      "slot_type": "continuous_slot",
       "diameter": 150,
       "screen_slot": 0.5
     }
@@ -88,7 +91,7 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
     }
   ],
   "cement_pad": {
-    "type": "square",
+    "type": "concrete",
     "width": 1.0,
     "thickness": 0.15,
     "length": 1.0
@@ -265,6 +268,14 @@ The v2.3 revision (shipped in `@welldot/core` v0.4.0) adds the operational block
 - **Attachments** — a root-level `attachments` array for general files about the well (e.g. the drilling report), plus `document_type` and per-record attachments on log entries, permits (and their history steps and condition fulfillments), pumps, meters, hydrodynamic events, aquifer analyses and water samples. The root array does not collect the per-record attachments
 - **Water quality** — a `water_samples` ledger: each sample carries its field and laboratory results, sampling point and depth, purge and stabilization readings, laboratory and chain of custody, field QA/QC (duplicates, splits, blanks), filtration, lab flags and data validation. Parameters use a versioned vocabulary of 98 `welldot` codes plus CAS numbers, with units fixed by code. Limits stay out of the file: WHO, EU and Brazilian limit sets ship as data in `@welldot/core`
 - **Ledger corrections** — `hydrodynamic_events[].corrects`, `production[].corrects` and `water_samples[].corrects` retract an erroneous entry without editing it
+
+The v2.4 revision (shipped in `@welldot/core` v0.5.0) changes how a file declares its version and adds continuous level series. Parsers up to `@welldot/core` 0.4.0 reject v2.4 files:
+
+- **Version as a string** — files write `"version": "2.4"`; readers also accept the integer `1` and `2`
+- **Time zone** — `location.properties.timezone` (IANA) fixes the local date of an instant, so permit deadlines no longer change with the offset a tool writes
+- **Logger series** — the `logger_series` event type for datalogger exports, with `LevelReading.datetime`
+- **Offline packaging** — an optional `.wellz` ZIP with the `.well` file and its attachments, for regulators and archiving
+- **Clearer rules** — optional fields are omitted, never `null`; ledgers may be edited in place; repeated records merge by `id`; unresolved references survive re-export; known event types are validated against their own schema
 
 ### `.well` format — future versions
 

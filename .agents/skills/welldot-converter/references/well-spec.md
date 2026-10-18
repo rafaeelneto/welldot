@@ -1,4 +1,4 @@
-# `.well` Format Specification — Quick Reference (v2.3)
+# `.well` Format Specification — Quick Reference (v2.4)
 
 **Extension:** `.well` | **Encoding:** UTF-8 | **Base format:** JSON
 **MIME type:** `application/vnd.well+json`
@@ -10,8 +10,8 @@ This is a condensed reference for extraction. The normative source is
 
 It lists the units, the top-level structure and every block the converter writes: construction,
 lithology and textures (with the FGDC codes most used in well logs), fractures and caves,
-hydrodynamic events, aquifer analyses, history logs and the v2.3 operational and water quality
-blocks. A complete example and common `aquifer_unit` values in Brazilian Portuguese close it.
+hydrodynamic events (including the v2.4 `logger_series`), aquifer analyses, history logs and the v2.3
+operational and water quality blocks. A complete example and common `aquifer_unit` values in Brazilian Portuguese close it.
 
 ## Table of contents
 
@@ -86,7 +86,7 @@ blocks. A complete example and common `aquifer_unit` values in Brazilian Portugu
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "well_purpose": ["production"],
   "name": "...",
@@ -98,7 +98,7 @@ blocks. A complete example and common `aquifer_unit` values in Brazilian Portugu
   "well_id": [ { "authority": "...", "id": "...", "primary": true } ],
   "location": {
     "lat": -1.4558, "lng": -48.5039, "elevation": 12.5,
-    "properties": { "elevation_datum": "wgs84_ellipsoid", "crs": "EPSG:4326" }
+    "properties": { "elevation_datum": "wgs84_ellipsoid", "crs": "EPSG:4326", "timezone": "America/Belem" }
   },
   "profiles": [],
 
@@ -115,6 +115,11 @@ blocks. A complete example and common `aquifer_unit` values in Brazilian Portugu
   "water_samples": [...]
 }
 ```
+
+`version` is the string `"M.m"` (`"2.4"`), never a number. `properties.timezone` (v2.4, optional) is the IANA
+zone of the well site (e.g. `America/Belem`, `America/Sao_Paulo`); set it from the well's state when the
+report gives a location, and always when `permits` carry condition fulfillments. **Never write `null`** in
+an optional field: omit it (a v2.4 file with `null` is malformed).
 
 `location` supersedes v1's flat top-level `lat`/`lng`/`elevation`. `elevation` is meters above the WGS84
 ellipsoid unless `properties.elevation_datum` says otherwise; only report an elevation if the document
@@ -429,17 +434,23 @@ equipment goes in `equipment`, interpretation method goes in `aquifer_analysis.m
 | `step_drawdown`    | Controlled pump test, ≥2 successive rates, ascending.                                        | ≥2, ascending | optional     | yes                                                                  |
 | `airlift`          | Air-lift development, historical yield estimate.                                             | ≥1            | optional     | **No — refuse if the user asks to reference an airlift event here.** |
 | `recovery_only`    | Recovery after a pumping event whose drawdown wasn't recorded.                               | none          | **required** | yes                                                                  |
+| `logger_series`    | (v2.4) Continuous level series from an installed datalogger. Not a test nor a static level.  | none          | no           | **No**                                                               |
 
 Extra fields per type: `spot_measurement` adds `static_level` (required), `static_level_precision`,
 `measurement_method` (recommended: `electric_probe`, `pressure_transducer`, `air_line`, `tape`).
 `constant_rate`/`step_drawdown` add optional `static_level`(+`_precision`). `recovery_only` adds optional
-`pumping_rate` (m³/h), `pumping_duration` (min).
+`pumping_rate` (m³/h), `pumping_duration` (min). `logger_series` (v2.4) takes `readings` (required, each with
+`datetime` and `depth`, never `elapsed`), `sensor_depth`, `interval` (min), `barometric_compensation`
+(`barologger`, `vented`, `none`) and `aggregation` (`none`, `hourly`, `daily`; the last two need
+`depth_min`/`depth_max` on every reading). Use it only for a datalogger export, never for a pumping test.
+Step counts in the table are recommendations (SHOULD); `steps` must still be valid `PumpingStep` entries.
 
 ### Supporting objects
 
 ```
 PumpingStep   { rate (m³/h, required), rate_precision, duration (min), readings: LevelReading[] }
-LevelReading  { elapsed (min, required), depth (m, required), depth_precision, pressure (kPa) }
+LevelReading  { elapsed (min, required except in logger_series), datetime (RFC 3339, logger_series only),
+                depth (m, required), depth_precision, pressure (kPa) }
 RecoveryPhase { readings: LevelReading[] (required) }
 ```
 
@@ -790,14 +801,19 @@ are in Bq/L.
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "name": "Poço PP-01",
   "well_driller": "Perfuradora XYZ",
   "construction_date": "2006-03-10",
   "obs": "Sem anomalias observadas durante a perfuração.",
 
-  "location": { "lat": -1.4558, "lng": -48.5039, "elevation": 12.5 },
+  "location": {
+    "lat": -1.4558,
+    "lng": -48.5039,
+    "elevation": 12.5,
+    "properties": { "timezone": "America/Belem" }
+  },
 
   "bore_hole": [
     { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
