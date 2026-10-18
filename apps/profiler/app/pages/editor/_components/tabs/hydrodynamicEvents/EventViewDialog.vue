@@ -34,6 +34,7 @@ const {
   eventTypeLabel,
   eventTypeSeverity,
   measurementMethodLabel,
+  loggerSeriesFacts,
 } = useHydrodynamicEventTypes();
 const { categoryIcon, categoryLabel } = useHistoryLogCategories();
 const { toFlow, flowUnit, toSpecificCapacity, specificCapacityUnit } =
@@ -105,6 +106,7 @@ const detailFacts = computed<Fact[]>(() => {
         ev.measurement_method as string | undefined,
       ),
     },
+    ...(isLoggerSeries(e) ? loggerSeriesFacts(e) : []),
   ]);
 });
 
@@ -696,7 +698,7 @@ const linkCount = computed(
         @click="visible = false"
       />
       <Button
-        v-if="event"
+        v-if="event && !isLoggerSeries(event)"
         :label="t('editor.hydrodynamicEvents.view.edit')"
         @click="emit('edit', event)"
       >

@@ -1045,6 +1045,12 @@
         "staticLevel": "NE (m)",
         "staticLevelPrecision": "±Prec. NE",
         "measurementMethod": "Método de medição",
+        "sensorDepth": "Profundidade do sensor",
+        "interval": "Intervalo",
+        "barometricCompensation": "Compensação barométrica",
+        "aggregation": "Agregação",
+        "firstReading": "Primeira leitura",
+        "lastReading": "Última leitura",
         "pumpingRate": "Vazão estimada ({unit})",
         "pumpingDuration": "Duração estimada (min)",
         "steps": "Degraus de Bombeamento",
@@ -1523,7 +1529,7 @@
           "supersedes_unresolved": "A outorga substituída não existe neste arquivo.",
           "supersedes_cycle": "A cadeia de substituições volta para si mesma.",
           "overlapping_validity": "Outra outorga do mesmo tipo tem vigência sobreposta.",
-          "daily_operating_time_out_of_range": "Um tempo diário de operação está fora de 0–24 h.",
+          "daily_operating_time_normalized": "Um tempo diário de operação acima de 24 h foi lido como 24 h.",
           "monthly_above_max": "Um valor mensal excede o máximo da outorga.",
           "duplicate_month": "Um mês aparece mais de uma vez no regime.",
           "duplicate_volume_period": "Um período de volume aparece mais de uma vez.",
@@ -1535,7 +1541,7 @@
           "duplicate_history_id": "Duas etapas do histórico têm o mesmo id.",
           "duplicate_fulfillment_id": "Dois cumprimentos de uma condicionante têm o mesmo id.",
           "unmatched_fulfillment": "Um cumprimento de condicionante não corresponde a nenhum prazo desta outorga.",
-          "fulfillment_reference_unresolved": "Um cumprimento de condicionante aponta para um evento ou amostra inexistente."
+          "missing_timezone": "O poço não tem fuso horário; os prazos usam o offset escrito em cada data."
         }
       },
       "warnings": {
@@ -1558,7 +1564,10 @@
         "log_after_decommission": "Esta entrada é posterior à desativação ou ao abandono do poço.",
         "missing_maintenance_type": "Esta manutenção referencia dados, mas não tem tipo de manutenção.",
         "missing_status": "Esta mudança de situação não tem situação.",
-        "analysis_uses_retracted_event": "Esta análise usa um evento anulado."
+        "analysis_uses_retracted_event": "Esta análise usa um evento anulado.",
+        "daily_operating_time_normalized": "Um tempo diário de operação acima de 24 h foi lido como 24 h.",
+        "analysis_uses_logger_series": "Esta análise usa uma série de datalogger como ensaio.",
+        "logger_reading_below_sensor": "Uma leitura do datalogger está abaixo do sensor."
       }
     },
     "waterQuality": {

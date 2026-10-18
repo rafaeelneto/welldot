@@ -162,4 +162,26 @@ describe('buildHydrodynamicEventsSection', () => {
     );
     expect(serialized).toContain('2024-01-02 03:04');
   });
+
+  it('prints the type label and reading count for a logger_series', () => {
+    const events = [
+      {
+        id: 'ls1',
+        type: 'logger_series',
+        datetime: '2024-06-01T00:00:00-03:00',
+        sensor_depth: 30,
+        readings: [
+          { datetime: '2024-06-01T00:00:00-03:00', depth: 12.1 },
+          { datetime: '2024-06-01T01:00:00-03:00', depth: 12.3 },
+        ],
+      },
+    ] as HydrodynamicEvent[];
+    const well = baseWell({ hydrodynamic_events: events });
+    const serialized = JSON.stringify(
+      buildHydrodynamicEventsSection(well, ctx),
+    );
+    expect(serialized).toContain('Logger series');
+    expect(serialized).toContain('2 readings');
+    expect(serialized).not.toContain('m³/h');
+  });
 });

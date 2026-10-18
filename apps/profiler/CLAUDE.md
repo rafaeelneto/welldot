@@ -44,7 +44,9 @@ app/                      ← srcDir
                              `useHydrodynamicEventView()` and the hash `#hydrodynamic/<id>`,
                              also opened from the Summary latest-event card; pumping-test
                              charts in hydrodynamicEvents/charts/, shared by the view and
-                             the edit dialog's preview, series from @welldot/utils).
+                             the edit dialog's preview, series from @welldot/utils). A `logger_series`
+                             (v2.4) is view-only: card and view show its facts, no edit action,
+                             and EventDialog does not offer the type).
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)

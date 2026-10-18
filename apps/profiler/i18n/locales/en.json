@@ -1045,6 +1045,12 @@
         "staticLevel": "SWL (m)",
         "staticLevelPrecision": "±Prec. SWL",
         "measurementMethod": "Measurement method",
+        "sensorDepth": "Sensor depth",
+        "interval": "Interval",
+        "barometricCompensation": "Barometric compensation",
+        "aggregation": "Aggregation",
+        "firstReading": "First reading",
+        "lastReading": "Last reading",
         "pumpingRate": "Estimated rate ({unit})",
         "pumpingDuration": "Estimated duration (min)",
         "steps": "Pumping Steps",
@@ -1523,7 +1529,7 @@
           "supersedes_unresolved": "The superseded permit does not exist in this file.",
           "supersedes_cycle": "The supersedes chain loops back on itself.",
           "overlapping_validity": "Another permit of the same type overlaps this one.",
-          "daily_operating_time_out_of_range": "A daily operating time is outside 0–24 h.",
+          "daily_operating_time_normalized": "A daily operating time above 24 h was read as 24 h.",
           "monthly_above_max": "A monthly value is above the permit maximum.",
           "duplicate_month": "A month appears more than once in the schedule.",
           "duplicate_volume_period": "A volume period appears more than once.",
@@ -1535,7 +1541,7 @@
           "duplicate_history_id": "Two history steps share the same id.",
           "duplicate_fulfillment_id": "Two fulfillments of a condition share the same id.",
           "unmatched_fulfillment": "A condition fulfillment matches no deadline of this permit.",
-          "fulfillment_reference_unresolved": "A condition fulfillment links to an event or sample that does not exist."
+          "missing_timezone": "The well has no time zone; deadlines use the offset written on each date."
         }
       },
       "warnings": {
@@ -1558,7 +1564,10 @@
         "log_after_decommission": "This entry is dated after the well was decommissioned or abandoned.",
         "missing_maintenance_type": "This maintenance entry references data but has no maintenance type.",
         "missing_status": "This status change has no status.",
-        "analysis_uses_retracted_event": "This analysis uses an event that has been retracted."
+        "analysis_uses_retracted_event": "This analysis uses an event that has been retracted.",
+        "daily_operating_time_normalized": "A daily operating time above 24 h was read as 24 h.",
+        "analysis_uses_logger_series": "This analysis uses a logger series as a test.",
+        "logger_reading_below_sensor": "A logger reading is deeper than the sensor."
       }
     },
     "waterQuality": {
