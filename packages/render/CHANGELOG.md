@@ -1,5 +1,15 @@
 # @welldot/render
 
+## 0.4.1
+
+### Patch Changes
+
+- a74ddd6: Accepts `.well` v2.4 files: the v2 check uses `parseFormatVersion`, so `"version": "2.4"` no longer triggers the unsupported-version warning.
+- Updated dependencies [a74ddd6]
+- Updated dependencies [a74ddd6]
+  - @welldot/core@0.5.0
+  - @welldot/utils@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes
