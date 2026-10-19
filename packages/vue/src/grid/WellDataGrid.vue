@@ -19,6 +19,7 @@ import type { LanguageTextInput } from '@welldot/core';
 import { computed, onMounted, ref } from 'vue';
 import { useWellText } from '../composables/useWellText';
 import { resolvePart, useWelldotConfig } from '../config';
+import { GRID_HEADER_H, GRID_ROW_H, gridHeight } from './gridHeight';
 import WellGridAddButton from './parts/WellGridAddButton.vue';
 import type {
   WellDataGridComponents,
@@ -106,14 +107,12 @@ const gridSource = computed(() => props.rows.map(r => ({ ...r })));
 
 // ─── Height — auto-size based on row count, up to `maxHeight` ─────────────────
 
-const HEADER_H = 38;
-const ROW_H = 30;
+const HEADER_H = GRID_HEADER_H;
+const ROW_H = GRID_ROW_H;
 
-const gridHeight = computed(() => {
-  const contentH = Math.max(1, props.rows.length) * ROW_H;
-  const height = HEADER_H + contentH + 2;
-  return `${props.maxHeight ? Math.min(height, props.maxHeight) : height}px`;
-});
+const height = computed(
+  () => `${gridHeight(props.rows.length, props.maxHeight)}px`,
+);
 
 // ─── Event handlers ───────────────────────────────────────────────────────────
 
@@ -136,7 +135,7 @@ function handleRowOrderChanged(
       <VGrid
         v-if="mounted"
         class="well-data-grid"
-        :style="{ height: gridHeight }"
+        :style="{ height }"
         :row-size="ROW_H"
         :stretch="gridStretch"
         :source="gridSource"
