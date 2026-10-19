@@ -1,4 +1,4 @@
-import type { HydrodynamicEvent, Well } from '@welldot/core';
+import type { HydrodynamicEvent, LoggerSeriesEvent, Well } from '@welldot/core';
 import { HYDRODYNAMIC_EVENT_TYPES } from '@welldot/core';
 import { lastReading, stepRate } from '@welldot/utils';
 import { format, parseISO } from 'date-fns';
@@ -24,6 +24,18 @@ function eventStats(event: HydrodynamicEvent): {
   };
 }
 
+/** Type label; a `logger_series` also prints its reading count. */
+function typeCell(
+  event: HydrodynamicEvent,
+  fmt: PdfFormatters,
+  ctx: PdfContext,
+): string {
+  const label = fmt.vocab(HYDRODYNAMIC_EVENT_TYPES, event.type);
+  if (event.type !== 'logger_series') return label;
+  const count = (event as LoggerSeriesEvent).readings?.length ?? 0;
+  return `${label} · ${count} ${ctx.labels.hydrodynamicEvents.stats.readings}`;
+}
+
 function eventRow(
   event: HydrodynamicEvent,
   fmt: PdfFormatters,
@@ -33,7 +45,7 @@ function eventRow(
   const { staticLevel, dynamicLevel, rate } = eventStats(event);
   const row: TableCell[] = [
     format(parseISO(event.datetime), ctx.dateFormats.dateTime),
-    fmt.vocab(HYDRODYNAMIC_EVENT_TYPES, event.type),
+    typeCell(event, fmt, ctx),
     valueCell(staticLevel != null ? fmt.formatLength(staticLevel) : '—'),
     valueCell(dynamicLevel != null ? fmt.formatLength(dynamicLevel) : '—'),
     valueCell(rate != null ? fmt.formatFlow(rate) : '—'),

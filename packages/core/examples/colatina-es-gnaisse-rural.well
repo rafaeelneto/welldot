@@ -1,6 +1,6 @@
 {
   "$schema": "https://welldot.org/schema/v2/well.schema.json",
-  "version": 2,
+  "version": "2.4",
   "x-welldot-example": {
     "illustrative": true,
     "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3100007879"
@@ -33,6 +33,7 @@
     "lng": -40.51389,
     "elevation": 71,
     "properties": {
+      "timezone": "America/Sao_Paulo",
       "crs": "EPSG:4326",
       "lat_precision": 0.0003,
       "lng_precision": 0.0003,
@@ -490,7 +491,6 @@
       "flow_rate": 7.2,
       "specific_capacity": 0.141,
       "transmissivity": 0.0000385,
-      "storativity": null,
       "notes": "Uma única fratura produtora; rebaixamento quase até a entrada d’água. Vazão recomendada: 4 m³/h."
     }
   ],

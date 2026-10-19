@@ -13,7 +13,11 @@ import type {
   WellCase,
   WellScreen,
 } from '@welldot/core';
-import { dmsToDecimalDegrees, inchesToMm } from '@welldot/core';
+import {
+  WELL_FORMAT_VERSION,
+  dmsToDecimalDegrees,
+  inchesToMm,
+} from '@welldot/core';
 import { parseInches, type SiagasRecord } from './parse';
 import { monthlyRimasReadings, type RimasPage } from './rimas';
 import {
@@ -801,7 +805,7 @@ export function siagasToWell(
   ].filter(Boolean);
 
   const well = {
-    version: 2,
+    version: WELL_FORMAT_VERSION,
     well_id: [{ authority: 'SIAGAS', id: record.code, primary: true }],
     ...(nature?.type && { well_type: nature.type }),
     ...(purposes.size && { well_purpose: [...purposes] }),

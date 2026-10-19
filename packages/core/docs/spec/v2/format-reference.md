@@ -1,6 +1,93 @@
-# `.well` File Format Specification — Version 2.3: Format Reference
+# `.well` File Format Specification — Version 2.4: Format Reference
 
 **See also:** [overview.md](./overview.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
+
+## Overview
+
+This part of the `.well` v2.4 specification defines the file as a whole: the top-level structure and fields, how versions and deprecations work, datetime conventions, the recommended values of every open vocabulary, `well_id` and `location`, the canonical units and which unit each field uses, `profiles`, the `x-` extension rules, cross-reference and uniqueness rules, and precision fields. The objects inside each block are specified in [object-schemas.md](./object-schemas.md).
+
+## Table of contents
+
+- [`.well` File Format Specification — Version 2.4: Format Reference](#well-file-format-specification--version-24-format-reference)
+  - [Overview](#overview)
+  - [Table of contents](#table-of-contents)
+  - [Top-level Structure](#top-level-structure)
+    - [Absent values _(since v2.4)_](#absent-values-since-v24)
+  - [Versioning](#versioning)
+    - [Parser version handling](#parser-version-handling)
+  - [Deprecation Policy](#deprecation-policy)
+    - [Field lifecycle](#field-lifecycle)
+    - [Parser behavior](#parser-behavior)
+    - [Vocabulary value promotion](#vocabulary-value-promotion)
+    - [Canonical deprecation registry](#canonical-deprecation-registry)
+  - [Top-level Fields](#top-level-fields)
+    - [Core identity](#core-identity)
+    - [v2 additions](#v2-additions)
+    - [v2.1 additions](#v21-additions)
+    - [v2.3 additions](#v23-additions)
+    - [Block kinds _(since v2.3)_](#block-kinds-since-v23)
+    - [Naming rules _(since v2.3)_](#naming-rules-since-v23)
+  - [Datetime Conventions](#datetime-conventions)
+    - [Instants known only by date _(since v2.3)_](#instants-known-only-by-date-since-v23)
+    - [Ordering and ties](#ordering-and-ties)
+  - [Recommended vocabularies](#recommended-vocabularies)
+  - [`well_type` — Recommended values](#well_type--recommended-values)
+  - [`well_purpose` — Recommended values _(since v2.1)_](#well_purpose--recommended-values-since-v21)
+  - [`bore_hole[].drilling_method` — Recommended values _(since v2.3)_](#bore_holedrilling_method--recommended-values-since-v23)
+  - [Construction materials — Recommended values _(since v2.3)_](#construction-materials--recommended-values-since-v23)
+  - [`well_screen[].slot_type` — Recommended values _(since v2.3)_](#well_screenslot_type--recommended-values-since-v23)
+  - [`centralizers[].type` — Recommended values _(since v2.1)_](#centralizerstype--recommended-values-since-v21)
+  - [`cement_pad.type` — Recommended values _(since v2.3)_](#cement_padtype--recommended-values-since-v23)
+  - [`pump_installations[].type` — Recommended values _(since v2.3)_](#pump_installationstype--recommended-values-since-v23)
+  - [`pump_installations[].power_source` — Recommended values _(since v2.3)_](#pump_installationspower_source--recommended-values-since-v23)
+  - [`permits[].type` — Recommended values _(since v2.3)_](#permitstype--recommended-values-since-v23)
+  - [`permits[].water_use` — Recommended values _(since v2.3)_](#permitswater_use--recommended-values-since-v23)
+  - [`permits[].conditions[].category` — Recommended values _(since v2.3)_](#permitsconditionscategory--recommended-values-since-v23)
+  - [`permits[].history[].type` — Recommended values _(since v2.3)_](#permitshistorytype--recommended-values-since-v23)
+  - [`meters[].type` — Recommended values _(since v2.3)_](#meterstype--recommended-values-since-v23)
+  - [`production[]` — Recommended values _(since v2.3)_](#production--recommended-values-since-v23)
+  - [`water_samples[]` — Recommended values _(since v2.3)_](#water_samples--recommended-values-since-v23)
+  - [`hydrodynamic_events[].measurement_method` — Recommended values](#hydrodynamic_eventsmeasurement_method--recommended-values)
+  - [`aquifer_analysis[].method` — Recommended values](#aquifer_analysismethod--recommended-values)
+  - [`history_logs[].category` — Recommended values](#history_logscategory--recommended-values)
+  - [`history_logs[].severity` — Recommended values](#history_logsseverity--recommended-values)
+  - [`history_logs[].maintenance_type` — Recommended values _(since v2.3)_](#history_logsmaintenance_type--recommended-values-since-v23)
+  - [`history_logs[].status` — Allowed values _(since v2.3)_](#history_logsstatus--allowed-values-since-v23)
+  - [`Attachment.document_type` — Recommended values _(since v2.3)_](#attachmentdocument_type--recommended-values-since-v23)
+  - [`well_id`](#well_id)
+    - [Numeric ID conversion](#numeric-id-conversion)
+    - [Uniqueness](#uniqueness)
+  - [`location`](#location)
+    - [`LocationProperties`](#locationproperties)
+    - [`elevation_datum` — Recommended values](#elevation_datum--recommended-values)
+    - [CRS scope](#crs-scope)
+  - [Units](#units)
+    - [Canonical units](#canonical-units)
+    - [Field-to-unit binding (normative)](#field-to-unit-binding-normative)
+    - [Water quality units _(since v2.3)_](#water-quality-units-since-v23)
+    - [Level sign convention](#level-sign-convention)
+    - [Diameter and the as-built convention](#diameter-and-the-as-built-convention)
+    - [Screen slot](#screen-slot)
+    - [Rationale](#rationale)
+  - [Water quality parameter vocabulary _(since v2.3)_](#water-quality-parameter-vocabulary-since-v23)
+  - [`profiles`](#profiles)
+    - [Profile schema requirements](#profile-schema-requirements)
+    - [Example: a regulatory water quality profile _(since v2.3)_](#example-a-regulatory-water-quality-profile-since-v23)
+    - [Profile validation](#profile-validation)
+  - [Extensibility](#extensibility)
+    - [Custom fields — `x-` prefix](#custom-fields--x--prefix)
+    - [Custom top-level blocks — `x-` prefix required](#custom-top-level-blocks--x--prefix-required)
+    - [Custom vocabulary values — `x-` prefix](#custom-vocabulary-values--x--prefix)
+  - [Offline packaging _(since v2.4)_](#offline-packaging-since-v24)
+  - [Cross-reference and Uniqueness Rules](#cross-reference-and-uniqueness-rules)
+    - [Uniqueness scope](#uniqueness-scope)
+    - [Cross-array references](#cross-array-references)
+    - [Dangling references](#dangling-references)
+    - [Repeated records _(since v2.4)_](#repeated-records-since-v24)
+    - [Duplicate IDs within a scope](#duplicate-ids-within-a-scope)
+    - [`id` field convention](#id-field-convention)
+  - [Precision and Uncertainty](#precision-and-uncertainty)
+    - [Supported precision fields](#supported-precision-fields)
 
 ---
 
@@ -8,7 +95,7 @@
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "@context": "https://welldot.org/context/v2.jsonld",
 
   "well_id": [ ... ],
@@ -51,6 +138,12 @@
 }
 ```
 
+### Absent values _(since v2.4)_
+
+An optional field without a value is omitted, never written as `null`. A `null` in an optional field is malformed. Absent means unknown.
+
+Readers accept `null` in `aquifer_analysis[].storativity` only in files whose `version` is the integer `2`, and treat it as absent.
+
 ---
 
 ## Versioning
@@ -59,14 +152,23 @@
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `1`     | Initial release — constructive and geologic data only                                                                                                                                                                                                                 |
 | `2`     | Adds location, well_id (array), profiles, texture object, hydrodynamic_events, aquifer_analysis, history_logs, optional @context, \*\_precision fields, and extensibility conventions. Tightens unit semantics: all values are canonical SI, no per-file declaration. |
+| `"2.4"` | Version written as the string `"M.m"` (_since v2.4_). Read as v2; the integer `2` means v2.0 to v2.3.                                                                                                                                                                 |
 
-Minor revisions (`2.1`, `2.3`, …) are additive and do not change the `version` integer: a v2.3 document still declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
+Minor revisions (`2.1`, `2.3`, …) are additive. Up to v2.3 they did not change the `version` integer: a v2.3 document declares `"version": 2`. A v2.0 parser reading a v2.1 document sees the v2.1 fields (`well_purpose`, `centralizers`) as unrecognized members without the `x-` prefix. Per § Extensibility it MUST preserve them and MUST NOT reject the file, and it SHOULD emit a warning.
 
 The same rule applies to v2.3: a v2.0 or v2.1 parser reading a v2.3 document sees `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime`, `water_samples`, `hydrodynamic_events[].corrects`, the `history_logs` data links (`hydrodynamic_event_ids`, `sample_ids`) and category-specific fields (`maintenance`, `status_change`) and the nested `attachments` arrays as unrecognized members. It MUST preserve them, MUST NOT reject the file, and SHOULD emit a warning. Such a parser does not know `corrects`, so it may still count a retracted event; this is the expected degradation.
 
+_(since v2.4)_ The version is written as the string `"M.m"` (for example `"2.4"`). Versions are compared as two integers, never as text: `"2.10"` is greater than `"2.9"`. Patch levels (`"2.4.1"`) are not allowed. The integer `2` means v2.0 to v2.3 with the revision unknown, and it remains valid for reading. There is no separate `spec_version` field.
+
+**Intentional break.** A parser of `@welldot/core` 0.4.0 or earlier rejects `"2.4"` files because it only accepts the integers `1` and `2`. This is the one intentional exception to the minor-revision compatibility rule above. Upgrade readers before writing v2.4 files.
+
 ### Parser version handling
 
-The `version` field is an integer and must always be present.
+The `version` field MUST be written by producers. It takes one of three forms: the integer `1`, the integer `2`, or a string `"M.m"` matching `^\d+\.\d+$`.
+
+- A `version` that is none of these forms (`2.4` as a JSON number, `"2.4.1"`, `"v2.4"`, `"2"`) is malformed. A parser MUST reject the file with an error that names the value.
+- A major other than `1` or `2` (`3`, `"3.0"`) is unsupported. A parser MUST reject the file with an error that names the value.
+- Any minor of major `2` (`"2.4"`, a future `"2.9"`) is read as v2. Unknown members follow § Extensibility.
 
 - A v2 parser encountering `version: 1` MUST apply the v1-to-v2 normalizations listed in the changes section and treat the document as v2-equivalent for all subsequent processing.
 - A v1 parser encountering `version: 2` MUST reject the file with a clear error indicating an unsupported format version. v1 parsers MUST NOT attempt partial reads of v2 documents.
@@ -131,15 +233,15 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 
 ### Core identity
 
-| Field               | Type    | Required | Description                                                                                                                                                                                                                                     |
-| ------------------- | ------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `version`           | integer | yes      | Format version. Must be `2` for this spec.                                                                                                                                                                                                      |
-| `well_type`         | string  | yes      | Construction method of the well. See vocabulary below.                                                                                                                                                                                          |
-| `name`              | string  | no       | Well name or local identifier.                                                                                                                                                                                                                  |
-| `well_driller`      | string  | no       | Name of the drilling company or individual.                                                                                                                                                                                                     |
-| `construction_date` | string  | no       | ISO 8601 calendar date of well completion (`YYYY-MM-DD`). Date-only by design — time of day for construction completion is not meaningful at the precision the well registry cares about. Interpreted as the local civil date at the well site. |
-| `obs`               | string  | no       | Free-text observations about the well.                                                                                                                                                                                                          |
-| `well_depth`        | number  | no       | The well's current usable depth in meters from ground level, as measured or reported. May be less than the deepest constructive element (see `bore_hole`) due to siltation, debris, or partial backfill.                                        |
+| Field               | Type              | Required | Description                                                                                                                                                                                                                                     |
+| ------------------- | ----------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version`           | integer \| string | yes      | Format version. v2.4 files write `"2.4"`.                                                                                                                                                                                                       |
+| `well_type`         | string            | yes      | Construction method of the well. See vocabulary below.                                                                                                                                                                                          |
+| `name`              | string            | no       | Well name or local identifier.                                                                                                                                                                                                                  |
+| `well_driller`      | string            | no       | Name of the drilling company or individual.                                                                                                                                                                                                     |
+| `construction_date` | string            | no       | ISO 8601 calendar date of well completion (`YYYY-MM-DD`). Date-only by design — time of day for construction completion is not meaningful at the precision the well registry cares about. Interpreted as the local civil date at the well site. |
+| `obs`               | string            | no       | Free-text observations about the well.                                                                                                                                                                                                          |
+| `well_depth`        | number            | no       | The well's current usable depth in meters from ground level, as measured or reported. May be less than the deepest constructive element (see `bore_hole`) due to siltation, debris, or partial backfill.                                        |
 
 ### v2 additions
 
@@ -165,7 +267,7 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 | `pump_installations` | `PumpInstallation[]` | no       | Pump installation history (installation block). See object-schemas.md § `pump_installations[]`.                                       |
 | `permits`            | `Permit[]`           | no       | Legal instruments governing abstraction (mutable record block). See object-schemas.md § `permits[]`.                                  |
 | `meters`             | `Meter[]`            | no       | Totalizer (hidrômetro) installation history (installation block). See object-schemas.md § `meters[]`.                                 |
-| `production`         | `ProductionEntry[]`  | no       | Append-only ledger of meter readings and declared volumes (ledger block). See object-schemas.md § `production[]`.                     |
+| `production`         | `ProductionEntry[]`  | no       | Ledger of meter readings and declared volumes (ledger block). See object-schemas.md § `production[]`.                                 |
 | `operating_regime`   | `OperatingRegime[]`  | no       | Declared operating regimes, each in force from `effective_from` (mutable record block). See object-schemas.md § `operating_regime[]`. |
 | `water_samples`      | `WaterSample[]`      | no       | Water samples and their field and laboratory results (ledger block). See water-quality.md.                                            |
 
@@ -173,11 +275,11 @@ Each minor revision of this spec MUST include a "Deprecations" subsection in its
 
 Every top-level array is one of three kinds. The kind decides how records are corrected.
 
-| Kind           | Blocks                                               | Correction                                                                               | Edit tracking                           |
-| -------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------- |
-| Ledger         | `hydrodynamic_events`, `production`, `water_samples` | Append a new entry with `corrects` pointing to the retracted entry. Never edit in place. | None needed; the ledger is the history. |
-| Mutable record | `history_logs`, `permits`, `operating_regime`        | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
-| Installation   | `pump_installations`, `meters`                       | Edit in place.                                                                           | `updated_at` (instant) on the record.   |
+| Kind           | Blocks                                               | Correction                                                                                                                  | Edit tracking                                                                               |
+| -------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Ledger         | `hydrodynamic_events`, `production`, `water_samples` | MAY be edited in place (NOT RECOMMENDED after export). `corrects` is the recommended mechanism for measurement corrections. | `updated_at` where the block defines it; a `corrects` entry is the history of a correction. |
+| Mutable record | `history_logs`, `permits`, `operating_regime`        | Edit in place.                                                                                                              | `updated_at` (instant) on the record.                                                       |
+| Installation   | `pump_installations`, `meters`                       | Edit in place.                                                                                                              | `updated_at` (instant) on the record.                                                       |
 
 Constructive and geologic arrays describe the well as built and are edited in place. `aquifer_analysis` entries are interpretations: a new interpretation is a new entry, and earlier ones coexist.
 
@@ -204,7 +306,7 @@ Constructive and geologic arrays describe the well as built and are edited in pl
 
 The `.well` format distinguishes two kinds of temporal values:
 
-**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, since v2.3, for legal documents: `permits[].issued_at`, `valid_from`, `valid_until`, `renewal_requested_at`; `permits[].conditions[].first_due`, `last_due`; `permits[].conditions[].fulfillments[].due_date`; and `permits[].history[].date`, `due_date`. Interpreted as the local civil date at the well site. The well site's timezone is not stored separately; calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
+**Calendar dates** — `YYYY-MM-DD`, no time, no offset. Used for `construction_date` and, since v2.3, for legal documents: `permits[].issued_at`, `valid_from`, `valid_until`, `renewal_requested_at`; `permits[].conditions[].first_due`, `last_due`; `permits[].conditions[].fulfillments[].due_date`; and `permits[].history[].date`, `due_date`. Interpreted as the local civil date at the well site. Calendar dates are sortable lexicographically and applications MUST NOT attempt to derive an instant from them.
 
 **Instants** — RFC 3339 datetime strings with a mandatory UTC offset (e.g. `2006-03-14T08:00:00-03:00` or `2006-03-14T11:00:00Z`). Used for all event, analysis, and log timestamps:
 
@@ -219,7 +321,7 @@ The `.well` format distinguishes two kinds of temporal values:
 - `operating_regime[].effective_from`, `updated_at` _(since v2.3)_
 - `water_samples[].datetime`, `laboratory.received_at`, `results[].analyzed_at`, `results[].validation.validated_at` _(since v2.3)_
 
-Validity and deadline checks compare calendar dates, never UTC instants. When an instant must be compared with a calendar date — for example a condition fulfillment's `datetime` against its `due_date` — the instant's local date is the date part of the string, in the offset it carries. Producers SHOULD therefore write such instants in the well site's local offset.
+Validity and deadline checks compare calendar dates, never UTC instants. When an instant is compared with a calendar date — for example a condition fulfillment's `datetime` against its `due_date` — the instant's local date is the instant converted to `location.properties.timezone` _(since v2.4)_. Without `timezone`, it is the date part of the string, in the offset it carries; producers SHOULD then write such instants in the well site's local offset. A file without `timezone` whose permits have condition fulfillments emits a warning.
 
 Relative deadlines and recurrences are ISO 8601 date durations (`P90D`, `P6M`, `P1Y6M`); see object-schemas.md § Date duration.
 
@@ -465,7 +567,7 @@ Recommended values for `sample_type`, `sampling_method`, `sampling_point.type` a
 
 ## `hydrodynamic_events[].measurement_method` — Recommended values
 
-Used by `spot_measurement` events.
+Used by `spot_measurement` and `logger_series` _(since v2.4)_ events.
 
 | Value                 | English             | Portuguese (BR)       |
 | --------------------- | ------------------- | --------------------- |
@@ -546,19 +648,19 @@ The well's current status is the `status` of the `status_change` entry with the 
 
 ## `Attachment.document_type` — Recommended values _(since v2.3)_
 
-| Value                | Portuguese (BR)                             | Typical location      |
-| -------------------- | ------------------------------------------- | --------------------- |
-| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                  |
-| `as_built_drawing`   | Perfil construtivo as-built                 | Root                  |
-| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                  |
-| `photo`              | Fotografia                                  | Any                   |
-| `permit_document`    | Portaria / certificado de outorga           | `permits`             |
-| `condition_evidence` | Comprovante de cumprimento de condicionante | `history_logs`        |
-| `pump_curve`         | Curva da bomba                              | `pump_installations`  |
-| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events` |
-| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`    |
-| `lab_report`         | Laudo laboratorial                          | `water_samples`       |
-| `invoice`            | Nota fiscal                                 | Any                   |
+| Value                | Portuguese (BR)                             | Typical location                      |
+| -------------------- | ------------------------------------------- | ------------------------------------- |
+| `drilling_report`    | Relatório de perfuração / relatório técnico | Root                                  |
+| `as_built_drawing`   | Perfil construtivo as-built                 | Root                                  |
+| `registry_record`    | Ficha cadastral (SIAGAS, CNARH)             | Root                                  |
+| `photo`              | Fotografia                                  | Any                                   |
+| `permit_document`    | Portaria / certificado de outorga           | `permits`                             |
+| `condition_evidence` | Comprovante de cumprimento de condicionante | `permits[].conditions[].fulfillments` |
+| `pump_curve`         | Curva da bomba                              | `pump_installations`                  |
+| `field_sheet`        | Planilha de campo                           | `hydrodynamic_events`                 |
+| `test_report`        | Relatório de teste de bombeamento           | `aquifer_analysis`                    |
+| `lab_report`         | Laudo laboratorial                          | `water_samples`                       |
+| `invoice`            | Nota fiscal                                 | Any                                   |
 
 The vocabulary is open; non-canonical values SHOULD use the `x-` prefix.
 
@@ -574,7 +676,7 @@ Array of authority-scoped identifiers linking the well to external registries. A
 | `id`        | string  | yes      | The identifier as issued by the authority.                                        |
 | `primary`   | boolean | no       | Marks the canonical identifier. At most one entry may have `primary: true`.       |
 
-When `primary` is omitted on all entries, the first entry is canonical. Parsers MUST warn when multiple entries have `primary: true`.
+Producers SHOULD mark exactly one entry `primary: true`. The rule "the first entry is canonical" applies only as a fallback when no entry is marked, because it is fragile when the order changes. Parsers MUST warn when multiple entries have `primary: true`.
 
 ### Numeric ID conversion
 
@@ -619,6 +721,7 @@ The three primary measurements — `lat`, `lng`, `elevation` — are top-level f
 | `lng_precision`       | number | no       | One-sigma precision of `lng` in decimal degrees.                                                                                                                  |
 | `elevation_precision` | number | no       | One-sigma precision of `elevation` in meters.                                                                                                                     |
 | `original_crs`        | string | no       | EPSG code of the source CRS, preserved for traceability when source data was in a projected CRS that the converter transformed to geographic. Informational only. |
+| `timezone`            | string | no       | IANA time zone of the well site (e.g. `America/Belem`). A value that is not a valid IANA name is malformed. _(since v2.4)_                                        |
 
 ### `elevation_datum` — Recommended values
 
@@ -665,7 +768,7 @@ All numeric values in a `.well` file are in **SI**. The format does not encode u
 | Diameter                 | millimeter                                         | `mm`                                           | number                                   |
 | Volumetric flow rate     | cubic meter per hour                               | `m3/h`                                         | number                                   |
 | Elapsed time, duration   | minute                                             | `min`                                          | number                                   |
-| Daily operating time     | hour                                               | `h`                                            | number (0–24)                            |
+| Daily operating time     | hour                                               | `h`                                            | number (above 24 read as 24)             |
 | Volume                   | cubic meter                                        | `m3`                                           | number                                   |
 | Power                    | kilowatt                                           | `kW`                                           | number                                   |
 | Voltage                  | volt                                               | `V`                                            | number                                   |
@@ -708,6 +811,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `hydrodynamic_events[].static_level`, `static_level_precision`
 - `PumpingStep.readings[].depth`, `depth_precision`
 - `RecoveryPhase.readings[].depth`, `depth_precision`
+- `logger_series.sensor_depth`, `readings[].depth`, `depth_precision`, `depth_min`, `depth_max` _(since v2.4)_
 - `aquifer_analysis[].static_level`, `static_level_precision`
 - `aquifer_analysis[].dynamic_level`, `dynamic_level_precision`
 - `aquifer_analysis[].aquifer_thickness`
@@ -742,6 +846,7 @@ UCUM is the **Unified Code for Units of Measure**, the international machine-par
 - `PumpingStep.duration`
 - `LevelReading.elapsed`
 - `recovery_only.pumping_duration`
+- `logger_series.interval` _(since v2.4)_
 - `water_samples[].purge.duration`, `purge.readings[].elapsed` _(since v2.3)_
 
 **Cubic meter (`m3`)** — volume _(since v2.3)_:
@@ -874,7 +979,7 @@ See [water-quality.md](water-quality.md) § Regulatory profiles.
 
 ### Custom fields — `x-` prefix
 
-Any implementer may add custom fields to any object by prefixing the field name with `x-`. This convention is established by OpenAPI 3.x and JSON Schema. Parsers MUST preserve and ignore `x-` fields they do not recognize. Sub-properties within an `x-` object do not need to be prefixed.
+Any implementer may add custom fields to any object by prefixing the field name with `x-`. This convention is established by OpenAPI 3.x and JSON Schema. Parsers MUST preserve and ignore `x-` fields they do not recognize. Sub-properties within an `x-` object do not need to be prefixed. For application extensions, `x-<vendor>-<name>` is RECOMMENDED (e.g. `x-welldot-custom`), so tools that both use `x-custom` do not collide. _(since v2.4)_
 
 ```json
 {
@@ -892,11 +997,11 @@ Fields without the `x-` prefix that are not defined in this spec are technically
 
 ### Custom top-level blocks — `x-` prefix required
 
-Top-level blocks not defined in this spec MUST use the `x-` prefix. Parsers MUST preserve and ignore unrecognized top-level keys.
+Top-level blocks not defined in this spec MUST use the `x-` prefix. For application extensions, `x-<vendor>-<name>` is RECOMMENDED (e.g. `x-welldot-custom`), so tools that both use `x-custom` do not collide. _(since v2.4)_ Parsers MUST preserve and ignore unrecognized top-level keys.
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "x-gas_monitoring": [ ... ],
   "x-geophysical_logs": [ ... ]
 }
@@ -913,6 +1018,18 @@ Parsers MUST treat `x-` prefixed vocabulary values as valid. Promotion from `x-`
 { "category": "x-site_visit" }
 { "method": "x-theis_recovery" }
 ```
+
+---
+
+## Offline packaging _(since v2.4)_
+
+A `.well` file references its attachments by absolute URL, and HTTPS links may expire. For regulators and long-term archiving, a `.well` file MAY be delivered as an offline package: a ZIP archive with the extension `.wellz`.
+
+- The `.well` file sits at the archive root, and the attachments sit at relative paths inside the archive.
+- In this mode an `Attachment.uri` MAY be a relative path to the file inside the archive, and `sha256` is required.
+- Outside a package, `uri` stays an absolute URL. A relative `uri` in a bare `.well` file is not valid.
+
+The package is a delivery wrapper, not a second format: the `.well` file inside it is an ordinary `.well` file. Validators and parsers read the `.well` alone, so the schema keeps `uri` as a URL; resolving relative paths and checking `sha256` is the job of the tool that opens the package.
 
 ---
 
@@ -935,9 +1052,9 @@ Each ID-bearing array maintains its **own uniqueness scope**. The ID namespaces 
 - `permits[].monthly_schedule[].month` and `permits[].volume_limits[].period` — unique within one permit _(since v2.3)_
 - `meters[].id` — unique within `meters` _(since v2.3)_
 - `production[].id` — unique within `production` _(since v2.3)_
-- `operating_regime[].id` — unique within `operating_regime`; `operating_regime[].effective_from` is also unique within the block _(since v2.3)_
+- `operating_regime[].id` — unique within `operating_regime` _(since v2.3)_. `operating_regime[].effective_from` is not unique: duplicates are a warning _(since v2.4)_
 - `water_samples[].id` — unique within `water_samples` _(since v2.3)_
-- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis`, `water_samples`). The same id may appear under different records.
+- `attachments[].id` — unique within its owning array: the root `attachments`, or the `attachments` array of one record (`history_logs`, `permits`, `permits[].history`, `permits[].conditions[].fulfillments`, `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis`, `water_samples`). The same id may appear under different records.
 - `well_id[]` — uniqueness is on the composite key `(authority, id)`, not on `id` alone
 
 An ID value MAY repeat across different arrays without conflict (e.g. an event and an analysis MAY both use the ID `"001"`), though distinct values are recommended for clarity.
@@ -965,7 +1082,7 @@ The following fields hold references to IDs in other arrays:
 | `water_samples[].static_level_event_id`               | `hydrodynamic_events[].id` | Same file only   |
 | `water_samples[].sampling_point.pump_installation_id` | `pump_installations[].id`  | Same file only   |
 
-Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
+Root `attachments` is not a registry: records never reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits` (including their `history` entries and condition `fulfillments`), `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries. A document that concerns several records is repeated on each; `sha256` guarantees both copies point to the same file.
 
 Cross-file references are not supported in v2.
 
@@ -975,7 +1092,15 @@ A **dangling reference** is a reference field whose value does not match any ID 
 
 - Dangling references MUST emit a warning naming the referring field, the referring object's ID, and the missing target ID.
 - Dangling references MUST NOT cause file rejection. Events may be legitimately deleted from history (regulatory retention rules, GDPR-style erasure) leaving analyses that reference them stranded.
-- Applications SHOULD surface dangling references to the user as a data-integrity concern and offer to either (a) update the analysis to remove the reference, or (b) restore the missing event.
+- Consumers MUST preserve unresolved references when re-exporting and MUST NOT remove them silently. Removing a reference is always a deliberate user action, never a side effect of import or export. _(since v2.4)_
+
+### Repeated records _(since v2.4)_
+
+Collective permits and campaign blanks apply to several wells, so they are repeated in each well's file.
+
+- Copies MUST share the same `id` and SHOULD have identical content.
+- Consumers MAY merge copies by `id`.
+- A fulfillment's `event_id` or `sample_id` resolves only in the file of the well that produced it. In the other copies it is an expected unresolved reference and emits no warning.
 
 ### Duplicate IDs within a scope
 
@@ -1031,4 +1156,4 @@ Laboratory reports usually give an expanded uncertainty U with a coverage factor
 
 ---
 
-_`.well` Format Specification v2.3_
+_`.well` Format Specification v2.4_

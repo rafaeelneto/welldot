@@ -1,22 +1,45 @@
-# `.well` File Format Specification — Version 2.3: Water Quality
+# `.well` File Format Specification — Version 2.4: Water Quality
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md)
 
+## Overview
+
 This document specifies the `water_samples` block _(since v2.3)_: the sample and result schemas, the recommended values, the unit rules, the `welldot` parameter vocabulary and how jurisdiction requirements are expressed. Cross-cutting rules that also cover water samples stay in their general sections: datetimes and the `_resolution: "day"` convention, canonical units and field bindings, cross-references, uniqueness and precision in [format-reference.md](format-reference.md); attachments, ledger corrections and `history_logs` links in [object-schemas.md](object-schemas.md). The Complete Example in object-schemas.md includes water samples.
 
-## Contents
+## Table of contents
 
 - [`water_samples[]`](#water_samples)
+  - [`WaterSample`](#watersample)
+  - [`SamplingPoint`](#samplingpoint)
+  - [`Purge`](#purge)
+  - [`PurgeReading`](#purgereading)
+  - [`Laboratory`](#laboratory)
+  - [`Result`](#result)
+  - [`Parameter`](#parameter)
+  - [`Filtration`](#filtration)
+  - [`Validation`](#validation)
+  - [Result rules](#result-rules)
+  - [Malformed (rejected)](#malformed-rejected)
+  - [Validation (warnings, never rejection)](#validation-warnings-never-rejection)
+  - [Derived values](#derived-values)
+  - [History log links](#history-log-links)
 - [Recommended values](#recommended-values)
+  - [`water_samples[].sample_type` — Recommended values _(since v2.3)_](#water_samplessample_type--recommended-values-since-v23)
+  - [`water_samples[].sampling_method` — Recommended values _(since v2.3)_](#water_samplessampling_method--recommended-values-since-v23)
+  - [`water_samples[].sampling_point.type` — Recommended values _(since v2.3)_](#water_samplessampling_pointtype--recommended-values-since-v23)
+  - [`water_samples[].sampling_point.device` — Recommended values _(since v2.3)_](#water_samplessampling_pointdevice--recommended-values-since-v23)
 - [Units](#units)
 - [Parameter vocabulary](#parameter-vocabulary)
+  - [Vocabulary rules](#vocabulary-rules)
+  - [Core vocabulary](#core-vocabulary)
+  - [Limit sets are not part of the file](#limit-sets-are-not-part-of-the-file)
 - [Regulatory profiles](#regulatory-profiles)
 
 ---
 
 ## `water_samples[]`
 
-A ledger: each entry is one collection of water from the well, with the results measured on it in the field and in the laboratory. Entries are never edited in place. A corrected laboratory report, or a revalidation of data already recorded, is a new sample whose `corrects` holds the id of the retracted sample, following object-schemas.md § `hydrodynamic_events[]` — Corrections (retracted samples stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning).
+A ledger: each entry is one collection of water from the well, with the results measured on it in the field and in the laboratory. Entries MAY be edited in place, but editing is NOT RECOMMENDED after the entry has been exported. A revalidation of data already recorded is an edit of `Result.validation` in place. A corrected laboratory report is best written as a new sample whose `corrects` holds the id of the retracted sample, following object-schemas.md § `hydrodynamic_events[]` — Corrections (retracted samples stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning).
 
 The block serves drinking-water compliance, environmental and mining monitoring under licence, and hydrochemistry, in any jurisdiction. It follows the rigor of audited monitoring (chain of custody, field QA/QC, filtration, lab flags, data validation) with almost every field optional. It is jurisdiction-neutral: limits, exceedances and national rules are never stored; see § Parameter vocabulary — Limit sets are not part of the file.
 

@@ -1,5 +1,7 @@
 # welldot-converter
 
+## Overview
+
 An [Agent Skill](https://agentskills.io) that converts water well reports into `.well` JSON
 (welldot spec v2). `SKILL.md` is the whole skill — there is no Claude-specific version and no
 per-vendor copy to keep in sync.
@@ -13,6 +15,15 @@ per-vendor copy to keep in sync.
 ```
 
 `.claude/skills/welldot-converter` is a symlink to this directory.
+
+This README explains why the skill lives in `.agents/skills/`, how to use it from ChatGPT or
+Gemini where Agent Skills are not supported, and how to edit it.
+
+## Table of contents
+
+- [Why it lives in `.agents/skills/`](#why-it-lives-in-agentsskills)
+- [Fallback: ChatGPT web/mobile and Gemini Gems](#fallback-chatgpt-webmobile-and-gemini-gems)
+- [Editing the skill](#editing-the-skill)
 
 ---
 
@@ -77,7 +88,7 @@ These rules are non-negotiable and apply even if you have not read the knowledge
    {"code": 607, "vocabulary": "fgdc"}. Prefer FGDC Series 600 and 700 codes.
 6. Every datetime in hydrodynamic_events, aquifer_analysis and history_logs is RFC 3339 WITH a
    UTC offset. Never emit a naked timestamp.
-7. Top level uses location {lat, lng, elevation?}, not flat lat/lng. Set "version": 2.
+7. Top level uses location {lat, lng, elevation?}, not flat lat/lng. Set "version": "2.4" (a string).
 8. well_depth is the CURRENT/USABLE depth and is usually absent. A report's single total-depth
    figure belongs in bore_hole[].to only — never copy it into both.
 

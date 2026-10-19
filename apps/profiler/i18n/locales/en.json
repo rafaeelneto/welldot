@@ -1045,6 +1045,12 @@
         "staticLevel": "SWL (m)",
         "staticLevelPrecision": "±Prec. SWL",
         "measurementMethod": "Measurement method",
+        "sensorDepth": "Sensor depth",
+        "interval": "Interval",
+        "barometricCompensation": "Barometric compensation",
+        "aggregation": "Aggregation",
+        "firstReading": "First reading",
+        "lastReading": "Last reading",
         "pumpingRate": "Estimated rate ({unit})",
         "pumpingDuration": "Estimated duration (min)",
         "steps": "Pumping Steps",
@@ -1085,6 +1091,93 @@
       "retractedInfo": "A later event corrects this one. It stays in the file but no longer counts.",
       "correction": "Correction",
       "correctionInfo": "This event corrects an earlier one.",
+      "logger": {
+        "addSeries": "Add logger series",
+        "editSeries": "Edit logger series",
+        "save": "Add series",
+        "start": "Start",
+        "startPlaceholder": "Empty = first reading (YYYY-MM-DD HH:mm:ss)",
+        "sensorDepth": "Sensor depth (m)",
+        "interval": "Interval (min)",
+        "readings": "Readings",
+        "summary": "{count} reading · {first} → {last} | {count} readings · {first} → {last}",
+        "summaryEmpty": "No readings yet",
+        "zone": "Times in {zone}",
+        "noTimezone": "The well has no time zone set, so times are read in your browser's zone ({zone}).",
+        "columns": {
+          "datetime": "Date / time",
+          "datetimeInfo": "Local time as YYYY-MM-DD HH:mm:ss in {zone}, or an RFC 3339 instant with offset.",
+          "depth": "Depth (m)",
+          "pressure": "Pressure (kPa)",
+          "depthMin": "Min depth (m)",
+          "depthMax": "Max depth (m)"
+        },
+        "validation": {
+          "field": "{field}: {message}",
+          "row": "Row {row} ({column}): {message}",
+          "noReadings": "Add at least one reading",
+          "required": "required",
+          "datetime": "use YYYY-MM-DD HH:mm:ss or an RFC 3339 instant",
+          "positive": "must be greater than 0"
+        },
+        "import": {
+          "button": "Import CSV",
+          "title": "Import readings from CSV",
+          "chooseFile": "Choose file",
+          "noFile": "No file chosen",
+          "help": {
+            "title": "What the file should look like",
+            "rows": "One reading per row, as exported by the logger software (CSV or plain text).",
+            "columns": "Needed columns: the date and time (one column, or a date column and a time column) and the level. A pressure column is optional. Other columns, such as temperature or conductivity, are ignored.",
+            "dates": "Pick the date format the file uses. A date that carries a UTC offset (2026-07-01T00:15:00-03:00) keeps it; otherwise the well time zone applies.",
+            "values": "Columns can be separated by comma, semicolon or tab, detected automatically. Values can use a decimal comma (23,58) or point (23.58). The level can be depth to water or the water column above the sensor, which pressure transducers usually report.",
+            "header": "Title or header lines at the top are fine: set how many to skip in \"Header rows\".",
+            "example": "Example (semicolon, decimal comma, two header lines):",
+            "exampleMapping": "Map it as: header rows 2, date column 1 (DD/MM/YYYY), time column 2, value column 3 as water column above the sensor, pressure column 4."
+          },
+          "file": "CSV or text file",
+          "paste": "…or paste the file's text here",
+          "column": "Column {n}",
+          "headerRows": "Header rows",
+          "dateColumn": "Date column",
+          "timeColumn": "Time column (optional)",
+          "dateFormat": "Date format",
+          "dateFormats": {
+            "iso": "YYYY-MM-DD",
+            "dmy": "DD/MM/YYYY",
+            "mdy": "MM/DD/YYYY",
+            "ymd": "YYYY/MM/DD"
+          },
+          "valueColumn": "Value column",
+          "valueKind": "Value is",
+          "valueKinds": {
+            "depth": "Depth to water",
+            "water_column": "Water column above the sensor"
+          },
+          "pressureColumn": "Pressure column (optional)",
+          "timeZone": "Time zone",
+          "noTimezone": "The well has no time zone set, so times are read with this UTC offset.",
+          "needSensorDepth": "Enter the sensor depth to convert water column to depth.",
+          "summary": "{count} reading · {first} → {last} | {count} readings · {first} → {last}",
+          "summaryEmpty": "No readings found with this mapping",
+          "skipped": "{count} rows skipped",
+          "skippedGroup": "{issue}: {count} (rows {rows})",
+          "issues": {
+            "invalid_date": "Invalid date or time",
+            "invalid_value": "Invalid value",
+            "missing_sensor_depth": "Sensor depth missing",
+            "missing_offset": "UTC offset missing or invalid"
+          },
+          "modes": {
+            "append": "Append (equal instants are replaced)",
+            "replace": "Replace the existing readings"
+          },
+          "replaceHeader": "Replace readings",
+          "replaceMessage": "This drops the {count} readings already in the series.",
+          "replaceAccept": "Replace",
+          "confirm": "Import"
+        }
+      },
       "charts": {
         "title": "Charts",
         "empty": "Not enough readings to draw charts.",
@@ -1093,6 +1186,17 @@
           "semilog": "Drawdown × log t",
           "recovery": "Recovery (Theis)",
           "stepTest": "Step test"
+        },
+        "logger": {
+          "depth": "Water level",
+          "depthMin": "Minimum",
+          "depthMax": "Maximum",
+          "sensor": "Sensor",
+          "axisTime": "Time ({zone})",
+          "axisDepth": "Depth to water (m)",
+          "tooltipDepth": "Depth",
+          "ariaLabel": "Logger series: depth × time",
+          "mixedLevels": "This well pumps, so the series can mix static and pumping levels. Read it together with production and pump installations."
         },
         "axes": {
           "time": "Time since start (min)",
@@ -1523,7 +1627,7 @@
           "supersedes_unresolved": "The superseded permit does not exist in this file.",
           "supersedes_cycle": "The supersedes chain loops back on itself.",
           "overlapping_validity": "Another permit of the same type overlaps this one.",
-          "daily_operating_time_out_of_range": "A daily operating time is outside 0–24 h.",
+          "daily_operating_time_normalized": "A daily operating time above 24 h was read as 24 h.",
           "monthly_above_max": "A monthly value is above the permit maximum.",
           "duplicate_month": "A month appears more than once in the schedule.",
           "duplicate_volume_period": "A volume period appears more than once.",
@@ -1535,7 +1639,7 @@
           "duplicate_history_id": "Two history steps share the same id.",
           "duplicate_fulfillment_id": "Two fulfillments of a condition share the same id.",
           "unmatched_fulfillment": "A condition fulfillment matches no deadline of this permit.",
-          "fulfillment_reference_unresolved": "A condition fulfillment links to an event or sample that does not exist."
+          "missing_timezone": "The well has no time zone; deadlines use the offset written on each date."
         }
       },
       "warnings": {
@@ -1558,7 +1662,10 @@
         "log_after_decommission": "This entry is dated after the well was decommissioned or abandoned.",
         "missing_maintenance_type": "This maintenance entry references data but has no maintenance type.",
         "missing_status": "This status change has no status.",
-        "analysis_uses_retracted_event": "This analysis uses an event that has been retracted."
+        "analysis_uses_retracted_event": "This analysis uses an event that has been retracted.",
+        "daily_operating_time_normalized": "A daily operating time above 24 h was read as 24 h.",
+        "analysis_uses_logger_series": "This analysis uses a logger series as a test.",
+        "logger_reading_below_sensor": "A logger reading is deeper than the sensor."
       }
     },
     "waterQuality": {

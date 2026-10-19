@@ -6,6 +6,7 @@ import {
   pointer,
   scaleLinear,
   scaleLog,
+  scaleTime,
   select,
   type ScaleLinear,
   type ScaleLogarithmic,
@@ -53,6 +54,8 @@ const props = withDefaults(
     /** Value formatters for the tooltip and the reference-line labels. */
     formatX?: (_x: number) => string;
     formatY?: (_y: number) => string;
+    /** Labels of the x ticks of a `time` axis (default: numeric). */
+    formatXTick?: (_x: number) => string;
     /** Show the legend (only drawn for 2+ series). */
     legend?: boolean;
     ariaLabel?: string;
@@ -74,6 +77,7 @@ const props = withDefaults(
     yName: 'y',
     formatX: undefined,
     formatY: undefined,
+    formatXTick: undefined,
     legend: true,
     ariaLabel: undefined,
   },
@@ -101,7 +105,7 @@ function autoDomain(
   include: number[],
 ): [number, number] {
   const all = [...values, ...include].filter(
-    v => Number.isFinite(v) && (kind === 'linear' || v > 0),
+    v => Number.isFinite(v) && (kind !== 'log' || v > 0),
   );
   if (!all.length) return kind === 'log' ? [1, 10] : [0, 1];
   let lo = Math.min(...all);
@@ -159,6 +163,7 @@ function buildAxis(
   range: [number, number],
   count: number,
   exact: boolean,
+  formatTick?: (_v: number) => string,
 ): Axis {
   if (kind === 'log') {
     const scale = scaleLog().domain(domain).range(range);
@@ -190,6 +195,14 @@ function buildAxis(
       minor,
       labels: ticks.map(v => formatNumber(v, { maximumFractionDigits: 3 })),
     };
+  }
+  if (kind === 'time' && formatTick) {
+    const scale = scaleLinear().domain(domain).range(range);
+    const ticks = scaleTime()
+      .domain(domain.map(v => new Date(v)))
+      .ticks(count)
+      .map(Number);
+    return { scale, ticks, minor: [], labels: ticks.map(v => formatTick(v)) };
   }
   const scale = scaleLinear().domain(domain).range(range);
   if (!exact) scale.nice(count);
@@ -243,6 +256,7 @@ const plot = computed(() => {
       props.xReversed ? [innerW, 0] : [0, innerW],
       Math.max(2, Math.floor(innerW / 72)),
       !!props.xDomain,
+      props.formatXTick,
     );
   // Tick labels are centred on their tick: leave room for half of the
   // label that sits on the right edge.
@@ -263,8 +277,8 @@ type Plot = NonNullable<typeof plot.value>;
 const valid = (p: ChartPoint) =>
   Number.isFinite(p.x) &&
   Number.isFinite(p.y) &&
-  (props.xScale === 'linear' || p.x > 0) &&
-  (props.yScale === 'linear' || p.y > 0);
+  (props.xScale !== 'log' || p.x > 0) &&
+  (props.yScale !== 'log' || p.y > 0);
 
 type Px = { px: number; py: number; p: ChartPoint };
 

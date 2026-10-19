@@ -1,10 +1,61 @@
-# `.well` Format Specification — Quick Reference (v2.3)
+# `.well` Format Specification — Quick Reference (v2.4)
 
 **Extension:** `.well` | **Encoding:** UTF-8 | **Base format:** JSON
 **MIME type:** `application/vnd.well+json`
 
+## Overview
+
 This is a condensed reference for extraction. The normative source is
 `packages/core/docs/spec/v2/{format-reference,object-schemas}.md` in the repo — when in doubt, that wins.
+
+It lists the units, the top-level structure and every block the converter writes: construction,
+lithology and textures (with the FGDC codes most used in well logs), fractures and caves,
+hydrodynamic events (including the v2.4 `logger_series`), aquifer analyses, history logs and the v2.3
+operational and water quality blocks. A complete example and common `aquifer_unit` values in Brazilian Portuguese close it.
+
+## Table of contents
+
+- [Units (all SI, no per-file declaration)](#units-all-si-no-per-file-declaration)
+- [Top-level structure](#top-level-structure)
+  - [`well_type` — open vocabulary (construction method only)](#well_type--open-vocabulary-construction-method-only)
+  - [`well_purpose` — open vocabulary, array (v2.1, optional)](#well_purpose--open-vocabulary-array-v21-optional)
+  - [Level sign convention](#level-sign-convention)
+  - [`well_depth` — current/usable depth, not the drilled depth](#well_depth--currentusable-depth-not-the-drilled-depth)
+- [Constructive objects](#constructive-objects)
+  - [`bore_hole[]`](#bore_hole)
+  - [`well_case[]`](#well_case)
+  - [`reduction[]`](#reduction)
+  - [`well_screen[]`](#well_screen)
+  - [`surface_case[]`](#surface_case)
+  - [`hole_fill[]`](#hole_fill)
+  - [`centralizers[]` (v2.1, optional — omit entirely if the report doesn't mention them)](#centralizers-v21-optional--omit-entirely-if-the-report-doesnt-mention-them)
+  - [`cement_pad` (single object, optional — omit entirely if not in the report)](#cement_pad-single-object-optional--omit-entirely-if-not-in-the-report)
+- [Free-text preservation rule (applies to every description-like field)](#free-text-preservation-rule-applies-to-every-description-like-field)
+- [`lithology[]` and `texture`](#lithology-and-texture)
+  - [`Texture` object](#texture-object)
+  - [FGDC Series 600 — Sedimentary Lithology (available, most common for well logging)](#fgdc-series-600--sedimentary-lithology-available-most-common-for-well-logging)
+  - [FGDC Series 700 — Metamorphic and Igneous Lithology (available)](#fgdc-series-700--metamorphic-and-igneous-lithology-available)
+- [`fractures[]` and `caves[]` (unchanged from v1)](#fractures-and-caves-unchanged-from-v1)
+  - [`fractures[]`](#fractures)
+  - [`caves[]`](#caves)
+- [`hydrodynamic_events[]`](#hydrodynamic_events)
+  - [Common fields (every event)](#common-fields-every-event)
+  - [Event types](#event-types)
+  - [Supporting objects](#supporting-objects)
+- [`aquifer_analysis[]`](#aquifer_analysis)
+- [`history_logs[]`](#history_logs)
+  - [`Attachment` (common type since v2.3)](#attachment-common-type-since-v23)
+- [`pump_installations[]` (v2.3, optional — omit entirely if the report has no pump data)](#pump_installations-v23-optional--omit-entirely-if-the-report-has-no-pump-data)
+- [`permits[]` (v2.3, optional — omit entirely if the report has no permit data)](#permits-v23-optional--omit-entirely-if-the-report-has-no-permit-data)
+- [`meters[]` (v2.3, optional — omit entirely if the report has no water meter)](#meters-v23-optional--omit-entirely-if-the-report-has-no-water-meter)
+- [`production[]` (v2.3, optional — omit entirely if the report has no readings or volumes)](#production-v23-optional--omit-entirely-if-the-report-has-no-readings-or-volumes)
+- [`operating_regime[]` (v2.3, optional — omit entirely if the report doesn't state how the well runs)](#operating_regime-v23-optional--omit-entirely-if-the-report-doesnt-state-how-the-well-runs)
+- [`water_samples[]` (v2.3, optional — omit entirely if the report has no water quality results)](#water_samples-v23-optional--omit-entirely-if-the-report-has-no-water-quality-results)
+  - [Import rules (laudos)](#import-rules-laudos)
+  - [Import checklist](#import-checklist)
+  - [Parameter vocabulary](#parameter-vocabulary)
+- [Complete example](#complete-example)
+- [Common `aquifer_unit` values (PT-BR)](#common-aquifer_unit-values-pt-br)
 
 ---
 
@@ -35,7 +86,7 @@ This is a condensed reference for extraction. The normative source is
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "well_purpose": ["production"],
   "name": "...",
@@ -47,7 +98,7 @@ This is a condensed reference for extraction. The normative source is
   "well_id": [ { "authority": "...", "id": "...", "primary": true } ],
   "location": {
     "lat": -1.4558, "lng": -48.5039, "elevation": 12.5,
-    "properties": { "elevation_datum": "wgs84_ellipsoid", "crs": "EPSG:4326" }
+    "properties": { "elevation_datum": "wgs84_ellipsoid", "crs": "EPSG:4326", "timezone": "America/Belem" }
   },
   "profiles": [],
 
@@ -64,6 +115,11 @@ This is a condensed reference for extraction. The normative source is
   "water_samples": [...]
 }
 ```
+
+`version` is the string `"M.m"` (`"2.4"`), never a number. `properties.timezone` (v2.4, optional) is the IANA
+zone of the well site (e.g. `America/Belem`, `America/Sao_Paulo`); set it from the well's state when the
+report gives a location, and always when `permits` carry condition fulfillments. **Never write `null`** in
+an optional field: omit it (a v2.4 file with `null` is malformed).
 
 `location` supersedes v1's flat top-level `lat`/`lng`/`elevation`. `elevation` is meters above the WGS84
 ellipsoid unless `properties.elevation_datum` says otherwise; only report an elevation if the document
@@ -378,17 +434,23 @@ equipment goes in `equipment`, interpretation method goes in `aquifer_analysis.m
 | `step_drawdown`    | Controlled pump test, ≥2 successive rates, ascending.                                        | ≥2, ascending | optional     | yes                                                                  |
 | `airlift`          | Air-lift development, historical yield estimate.                                             | ≥1            | optional     | **No — refuse if the user asks to reference an airlift event here.** |
 | `recovery_only`    | Recovery after a pumping event whose drawdown wasn't recorded.                               | none          | **required** | yes                                                                  |
+| `logger_series`    | (v2.4) Continuous level series from an installed datalogger. Not a test nor a static level.  | none          | no           | **No**                                                               |
 
 Extra fields per type: `spot_measurement` adds `static_level` (required), `static_level_precision`,
 `measurement_method` (recommended: `electric_probe`, `pressure_transducer`, `air_line`, `tape`).
 `constant_rate`/`step_drawdown` add optional `static_level`(+`_precision`). `recovery_only` adds optional
-`pumping_rate` (m³/h), `pumping_duration` (min).
+`pumping_rate` (m³/h), `pumping_duration` (min). `logger_series` (v2.4) takes `readings` (required, each with
+`datetime` and `depth`, never `elapsed`), `sensor_depth`, `interval` (min), `barometric_compensation`
+(`barologger`, `vented`, `none`) and `aggregation` (`none`, `hourly`, `daily`; the last two need
+`depth_min`/`depth_max` on every reading). Use it only for a datalogger export, never for a pumping test.
+Step counts in the table are recommendations (SHOULD); `steps` must still be valid `PumpingStep` entries.
 
 ### Supporting objects
 
 ```
 PumpingStep   { rate (m³/h, required), rate_precision, duration (min), readings: LevelReading[] }
-LevelReading  { elapsed (min, required), depth (m, required), depth_precision, pressure (kPa) }
+LevelReading  { elapsed (min, required except in logger_series), datetime (RFC 3339, logger_series only),
+                depth (m, required), depth_precision, pressure (kPa) }
 RecoveryPhase { readings: LevelReading[] (required) }
 ```
 
@@ -739,14 +801,19 @@ are in Bq/L.
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "name": "Poço PP-01",
   "well_driller": "Perfuradora XYZ",
   "construction_date": "2006-03-10",
   "obs": "Sem anomalias observadas durante a perfuração.",
 
-  "location": { "lat": -1.4558, "lng": -48.5039, "elevation": 12.5 },
+  "location": {
+    "lat": -1.4558,
+    "lng": -48.5039,
+    "elevation": 12.5,
+    "properties": { "timezone": "America/Belem" }
+  },
 
   "bore_hole": [
     { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }

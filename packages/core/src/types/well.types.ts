@@ -80,6 +80,8 @@ export type LocationProperties = {
   lng_precision?: number;
   elevation_precision?: number;
   original_crs?: string;
+  /** IANA time zone of the well site (e.g. `America/Belem`). Since v2.4. */
+  timezone?: string;
 };
 
 export type Location = {
@@ -264,6 +266,8 @@ export type Cave = {
 export type LevelReading = {
   /** Time since step start (or pump shutdown for recovery) in minutes. */
   elapsed: number;
+  /** RFC 3339 instant of the reading, with UTC offset. Since v2.4. */
+  datetime?: string;
   /** Depth to water surface from ground level in meters. */
   depth: number;
   /** One-sigma precision of `depth`. */
@@ -271,6 +275,34 @@ export type LevelReading = {
   /** Pressure transducer reading in kPa. */
   pressure?: number;
 };
+
+/**
+ * A reading of a `logger_series`: located by its `datetime`, never by
+ * `elapsed`. Since v2.4.
+ */
+export type LoggerReading = {
+  /** RFC 3339 instant of the reading, with UTC offset. */
+  datetime: string;
+  /**
+   * Depth to water surface from ground level in meters. In an aggregated
+   * series, the representative value of the interval.
+   */
+  depth: number;
+  /** One-sigma precision of `depth`. */
+  depth_precision?: number;
+  /** Pressure transducer reading in kPa. */
+  pressure?: number;
+  /** Shallowest depth in the interval. Required when the series is aggregated. */
+  depth_min?: number;
+  /** Deepest depth in the interval. Required when the series is aggregated. */
+  depth_max?: number;
+};
+
+/** `logger_series.barometric_compensation`. Since v2.4. */
+export type BarometricCompensation = 'barologger' | 'vented' | 'none';
+
+/** `logger_series.aggregation`. Since v2.4. */
+export type ReadingAggregation = 'none' | 'hourly' | 'daily';
 
 export type RecoveryPhase = {
   /** Time-series after pump shutdown. `elapsed` measured from shutdown. */
@@ -319,7 +351,10 @@ export type SpotMeasurementEvent = HydrodynamicEventBase & {
   static_level_precision?: number;
   /** Recommended values: {@link MEASUREMENT_METHODS}. */
   measurement_method?: OpenVocab<MeasurementMethod>;
-  /** At most one step — an informal brief pump observation, not a controlled test. */
+  /**
+   * SHOULD carry at most one step — an informal brief pump observation, not a
+   * controlled test. Another count is valid.
+   */
   steps?: PumpingStep[];
   recovery?: RecoveryPhase;
 };
@@ -328,8 +363,11 @@ export type ConstantRateEvent = HydrodynamicEventBase & {
   type: 'constant_rate';
   static_level?: number;
   static_level_precision?: number;
-  /** Exactly one entry if present. A second step would make this a step_drawdown. */
-  steps?: [PumpingStep];
+  /**
+   * SHOULD carry exactly one entry if present (a second step would make this a
+   * step_drawdown). Another count is valid.
+   */
+  steps?: PumpingStep[];
   recovery?: RecoveryPhase;
 };
 
@@ -354,12 +392,34 @@ export type RecoveryOnlyEvent = HydrodynamicEventBase & {
   recovery: RecoveryPhase;
 };
 
+/**
+ * Continuous level series recorded by an installed sensor (pressure
+ * transducer with datalogger). Not a controlled test and not a static level:
+ * it carries no steps or recovery and is not a valid analysis source. Pump
+ * state is not stored per reading. Since v2.4.
+ */
+export type LoggerSeriesEvent = HydrodynamicEventBase & {
+  type: 'logger_series';
+  /** Recommended values: {@link MEASUREMENT_METHODS}. */
+  measurement_method?: OpenVocab<MeasurementMethod>;
+  /** Sensor depth in meters from ground level. A level below it is an invalid reading. */
+  sensor_depth?: number;
+  /** Nominal interval between readings, in minutes. */
+  interval?: number;
+  barometric_compensation?: BarometricCompensation;
+  /** `none` (raw readings), `hourly` or `daily`. */
+  aggregation?: ReadingAggregation;
+  /** At least one reading. */
+  readings: LoggerReading[];
+};
+
 export type HydrodynamicEvent =
   | SpotMeasurementEvent
   | ConstantRateEvent
   | StepDrawdownEvent
   | AirliftEvent
   | RecoveryOnlyEvent
+  | LoggerSeriesEvent
   | (HydrodynamicEventBase & Record<string, unknown>);
 
 // ─── Aquifer analysis ─────────────────────────────────────────────────────────
@@ -383,7 +443,7 @@ export type AquiferAnalysis = {
   max_flow_rate_basis?: string;
   specific_capacity?: number;
   transmissivity?: number;
-  storativity?: number | null;
+  storativity?: number;
   hydraulic_conductivity?: number;
   aquifer_thickness?: number;
   jacob_b?: number;
@@ -472,7 +532,7 @@ export type MonthlyGrant = {
   month: number;
   /** Granted flow in m³/h. */
   flow_rate?: number;
-  /** Granted daily operating time in hours, 0–24. */
+  /** Granted daily operating time in hours. A value above 24 is stored as written; derivations read it as 24. */
   daily_operating_time?: number;
   /** Days of operation granted in the month. */
   days?: number;
@@ -614,7 +674,7 @@ export type Permit = {
   water_use?: OpenVocab<WaterUse>[];
   /** Maximum granted flow in m³/h. */
   flow_rate?: number;
-  /** Maximum granted daily operating time in hours, 0–24. */
+  /** Maximum granted daily operating time in hours. A value above 24 is stored as written; derivations read it as 24. */
   daily_operating_time?: number;
   /** Volumes stated in the document. */
   volume_limits?: VolumeLimit[];
@@ -725,11 +785,11 @@ export type ProductionEntry = MeterReading | EstimatedVolume;
 export type OperatingRegime = {
   /** Unique within `operating_regime`. UUID v4 recommended. */
   id: string;
-  /** RFC 3339 instant the regime takes effect. Unique within the block. */
+  /** RFC 3339 instant the regime takes effect. Duplicates are a warning. */
   effective_from: string;
   /** Flow in m³/h. */
   flow_rate?: number;
-  /** Daily operating time in hours, 0–24. */
+  /** Daily operating time in hours. A value above 24 is stored as written; derivations read it as 24. Negative is an error. */
   daily_operating_time?: number;
   /** Days of operation per week, 1–7. */
   days_per_week?: number;
@@ -962,7 +1022,8 @@ export type WaterSample = {
 
 /** Complete static record of a water well. All depths in meters, all diameters in millimeters. */
 export type Well = {
-  version: number;
+  /** Format version: `1`, `2` (v2.0 to v2.3, revision unknown) or `"M.m"` (since v2.4). */
+  version: number | string;
 
   // v2 identity
   '@context'?: string | unknown[] | Record<string, unknown>;

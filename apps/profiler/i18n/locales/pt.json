@@ -1045,6 +1045,12 @@
         "staticLevel": "NE (m)",
         "staticLevelPrecision": "±Prec. NE",
         "measurementMethod": "Método de medição",
+        "sensorDepth": "Profundidade do sensor",
+        "interval": "Intervalo",
+        "barometricCompensation": "Compensação barométrica",
+        "aggregation": "Agregação",
+        "firstReading": "Primeira leitura",
+        "lastReading": "Última leitura",
         "pumpingRate": "Vazão estimada ({unit})",
         "pumpingDuration": "Duração estimada (min)",
         "steps": "Degraus de Bombeamento",
@@ -1085,6 +1091,93 @@
       "retractedInfo": "Um evento posterior corrige este. Ele permanece no arquivo, mas não conta mais.",
       "correction": "Correção",
       "correctionInfo": "Este evento corrige um anterior.",
+      "logger": {
+        "addSeries": "Adicionar série de logger",
+        "editSeries": "Editar série de logger",
+        "save": "Adicionar série",
+        "start": "Início",
+        "startPlaceholder": "Vazio = primeira leitura (AAAA-MM-DD HH:mm:ss)",
+        "sensorDepth": "Profundidade do sensor (m)",
+        "interval": "Intervalo (min)",
+        "readings": "Leituras",
+        "summary": "{count} leitura · {first} → {last} | {count} leituras · {first} → {last}",
+        "summaryEmpty": "Nenhuma leitura ainda",
+        "zone": "Horários em {zone}",
+        "noTimezone": "O poço não tem fuso horário definido, então os horários são lidos no fuso do navegador ({zone}).",
+        "columns": {
+          "datetime": "Data / hora",
+          "datetimeInfo": "Hora local como AAAA-MM-DD HH:mm:ss em {zone}, ou um instante RFC 3339 com offset.",
+          "depth": "Prof. (m)",
+          "pressure": "Pressão (kPa)",
+          "depthMin": "Prof. mín. (m)",
+          "depthMax": "Prof. máx. (m)"
+        },
+        "validation": {
+          "field": "{field}: {message}",
+          "row": "Linha {row} ({column}): {message}",
+          "noReadings": "Adicione ao menos uma leitura",
+          "required": "obrigatório",
+          "datetime": "use AAAA-MM-DD HH:mm:ss ou um instante RFC 3339",
+          "positive": "deve ser maior que 0"
+        },
+        "import": {
+          "button": "Importar CSV",
+          "title": "Importar leituras de CSV",
+          "chooseFile": "Escolher arquivo",
+          "noFile": "Nenhum arquivo escolhido",
+          "help": {
+            "title": "Como o arquivo deve ser",
+            "rows": "Uma leitura por linha, como exportado pelo software do datalogger (CSV ou texto).",
+            "columns": "Colunas necessárias: data e hora (em uma coluna, ou uma coluna de data e outra de hora) e o nível. A coluna de pressão é opcional. Outras colunas, como temperatura ou condutividade, são ignoradas.",
+            "dates": "Escolha o formato de data usado no arquivo. Uma data com deslocamento UTC (2026-07-01T00:15:00-03:00) o mantém; nas demais vale o fuso horário do poço.",
+            "values": "As colunas podem ser separadas por vírgula, ponto e vírgula ou tabulação, detectados automaticamente. Os valores podem usar vírgula (23,58) ou ponto (23.58) decimal. O nível pode ser a profundidade do nível d'água ou a coluna d'água acima do sensor, que é o que os transdutores de pressão costumam registrar.",
+            "header": "Linhas de título ou cabeçalho no início não são problema: informe quantas pular em \"Linhas de cabeçalho\".",
+            "example": "Exemplo (ponto e vírgula, vírgula decimal, duas linhas de cabeçalho):",
+            "exampleMapping": "Mapeie assim: linhas de cabeçalho 2, coluna de data 1 (DD/MM/AAAA), coluna de hora 2, coluna do valor 3 como coluna d'água acima do sensor, coluna de pressão 4."
+          },
+          "file": "Arquivo CSV ou de texto",
+          "paste": "…ou cole aqui o texto do arquivo",
+          "column": "Coluna {n}",
+          "headerRows": "Linhas de cabeçalho",
+          "dateColumn": "Coluna de data",
+          "timeColumn": "Coluna de hora (opcional)",
+          "dateFormat": "Formato da data",
+          "dateFormats": {
+            "iso": "AAAA-MM-DD",
+            "dmy": "DD/MM/AAAA",
+            "mdy": "MM/DD/AAAA",
+            "ymd": "AAAA/MM/DD"
+          },
+          "valueColumn": "Coluna do valor",
+          "valueKind": "O valor é",
+          "valueKinds": {
+            "depth": "Profundidade do nível d'água",
+            "water_column": "Coluna d'água acima do sensor"
+          },
+          "pressureColumn": "Coluna de pressão (opcional)",
+          "timeZone": "Fuso horário",
+          "noTimezone": "O poço não tem fuso horário definido, então os horários são lidos com este deslocamento UTC.",
+          "needSensorDepth": "Informe a profundidade do sensor para converter a coluna d'água em profundidade.",
+          "summary": "{count} leitura · {first} → {last} | {count} leituras · {first} → {last}",
+          "summaryEmpty": "Nenhuma leitura encontrada com este mapeamento",
+          "skipped": "{count} linhas ignoradas",
+          "skippedGroup": "{issue}: {count} (linhas {rows})",
+          "issues": {
+            "invalid_date": "Data ou hora inválida",
+            "invalid_value": "Valor inválido",
+            "missing_sensor_depth": "Profundidade do sensor ausente",
+            "missing_offset": "Deslocamento UTC ausente ou inválido"
+          },
+          "modes": {
+            "append": "Acrescentar (instantes iguais são substituídos)",
+            "replace": "Substituir as leituras existentes"
+          },
+          "replaceHeader": "Substituir leituras",
+          "replaceMessage": "Isto descarta as {count} leituras já existentes na série.",
+          "replaceAccept": "Substituir",
+          "confirm": "Importar"
+        }
+      },
       "charts": {
         "title": "Gráficos",
         "empty": "Sem leituras suficientes para gerar gráficos.",
@@ -1093,6 +1186,17 @@
           "semilog": "Rebaixamento × log t",
           "recovery": "Recuperação (Theis)",
           "stepTest": "Teste escalonado"
+        },
+        "logger": {
+          "depth": "Nível d'água",
+          "depthMin": "Mínimo",
+          "depthMax": "Máximo",
+          "sensor": "Sensor",
+          "axisTime": "Tempo ({zone})",
+          "axisDepth": "Profundidade até a água (m)",
+          "tooltipDepth": "Profundidade",
+          "ariaLabel": "Série do logger: profundidade × tempo",
+          "mixedLevels": "Este poço é bombeado, então a série pode misturar níveis estáticos e dinâmicos. Interprete-a junto com a produção e as instalações de bomba."
         },
         "axes": {
           "time": "Tempo desde o início (min)",
@@ -1523,7 +1627,7 @@
           "supersedes_unresolved": "A outorga substituída não existe neste arquivo.",
           "supersedes_cycle": "A cadeia de substituições volta para si mesma.",
           "overlapping_validity": "Outra outorga do mesmo tipo tem vigência sobreposta.",
-          "daily_operating_time_out_of_range": "Um tempo diário de operação está fora de 0–24 h.",
+          "daily_operating_time_normalized": "Um tempo diário de operação acima de 24 h foi lido como 24 h.",
           "monthly_above_max": "Um valor mensal excede o máximo da outorga.",
           "duplicate_month": "Um mês aparece mais de uma vez no regime.",
           "duplicate_volume_period": "Um período de volume aparece mais de uma vez.",
@@ -1535,7 +1639,7 @@
           "duplicate_history_id": "Duas etapas do histórico têm o mesmo id.",
           "duplicate_fulfillment_id": "Dois cumprimentos de uma condicionante têm o mesmo id.",
           "unmatched_fulfillment": "Um cumprimento de condicionante não corresponde a nenhum prazo desta outorga.",
-          "fulfillment_reference_unresolved": "Um cumprimento de condicionante aponta para um evento ou amostra inexistente."
+          "missing_timezone": "O poço não tem fuso horário; os prazos usam o offset escrito em cada data."
         }
       },
       "warnings": {
@@ -1558,7 +1662,10 @@
         "log_after_decommission": "Esta entrada é posterior à desativação ou ao abandono do poço.",
         "missing_maintenance_type": "Esta manutenção referencia dados, mas não tem tipo de manutenção.",
         "missing_status": "Esta mudança de situação não tem situação.",
-        "analysis_uses_retracted_event": "Esta análise usa um evento anulado."
+        "analysis_uses_retracted_event": "Esta análise usa um evento anulado.",
+        "daily_operating_time_normalized": "Um tempo diário de operação acima de 24 h foi lido como 24 h.",
+        "analysis_uses_logger_series": "Esta análise usa uma série de datalogger como ensaio.",
+        "logger_reading_below_sensor": "Uma leitura do datalogger está abaixo do sensor."
       }
     },
     "waterQuality": {

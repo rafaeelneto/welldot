@@ -1,6 +1,27 @@
-# `.well` File Format Specification — Version 2.3: Interoperability
+# `.well` File Format Specification — Version 2.4: Interoperability
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [water-quality.md](./water-quality.md)
+
+## Overview
+
+This part of the `.well` v2.4 specification covers how `.well` connects to other standards and tools: the reserved JSON-LD `@context` and its publication plan, how the format maps onto the OGC GroundWaterML 2 (GWML2) model, and validating files against the published JSON Schema.
+
+## Table of contents
+
+- [JSON-LD Context (Reserved)](#json-ld-context-reserved)
+  - [v2.0 parser requirements](#v20-parser-requirements)
+  - [Recommended usage](#recommended-usage)
+  - [Context publication plan](#context-publication-plan)
+  - [Versioning and stability](#versioning-and-stability)
+  - [Optional fallback](#optional-fallback)
+- [Relationship to GWML2](#relationship-to-gwml2)
+  - [Authoritative references](#authoritative-references)
+  - [Scope correspondence](#scope-correspondence)
+  - [Conceptual alignment](#conceptual-alignment)
+  - [Class mapping (informative)](#class-mapping-informative)
+  - [Notes on the mapping](#notes-on-the-mapping)
+  - [Profiles for regulatory adoption](#profiles-for-regulatory-adoption)
+- [Schema Validation](#schema-validation)
 
 ---
 
@@ -158,7 +179,7 @@ A complete, normative mapping will be published as a separate document once the 
 ### Notes on the mapping
 
 - **Wells vs. boreholes in GWML2.** GWML2 distinguishes a `GW_Well` (the construction with hydrogeological purpose) from a `Borehole` (the physical hole). A single `.well` document conflates both since it describes one composite installation. A `.well → GWML2` converter must emit both features and link them; a `GWML2 → .well` converter must merge them.
-- **Aquifer tests in GWML2.** GWML2-AquiferTest uses TimeseriesML (OGC 15-042r2) for time-series readings and O&M's `OM_Observation` pattern for individual measurements. The `.well` event types (`spot_measurement`, `constant_rate`, `step_drawdown`, `airlift`, `recovery_only`) are pragmatic field-record categories with no direct GWML2 counterpart; a converter must decompose each into one or more `GW_AquiferTest` features with appropriate `OM_Observation` results.
+- **Aquifer tests in GWML2.** GWML2-AquiferTest uses TimeseriesML (OGC 15-042r2) for time-series readings and O&M's `OM_Observation` pattern for individual measurements. The `.well` event types (`spot_measurement`, `constant_rate`, `step_drawdown`, `airlift`, `recovery_only` and, since v2.4, `logger_series`) are pragmatic field-record categories with no direct GWML2 counterpart; a converter must decompose each into one or more `GW_AquiferTest` features with appropriate `OM_Observation` results. A `logger_series` is not a test: a converter maps it to a TimeseriesML series of `OM_Observation` results on the well, without a `GW_AquiferTest`.
 - **Hydrogeological units.** `.well` stores `lithology[].geologic_unit` and `aquifer_unit` as free-text strings. In GWML2 these resolve to references to `GW_HydrogeologicalUnit` features, which in real GWML2 deployments are typically catalogued in national registries (e.g. French BDLISA, Canadian GIN). A `.well → GWML2` converter SHOULD resolve these strings to authoritative unit URIs when a national vocabulary is available; absent that, it emits inline `GW_HydrogeologicalUnit` features with `gml:name` set to the string value.
 - **Water samples as specimens.** A `water_samples` entry corresponds to an O&M `SF_Specimen` taken from the well (the sampled feature), with `datetime` as the sampling time and `sampling_point` as the sampling location along the well. Each result is an `OM_Measurement` whose observed property is the parameter (a CAS or `welldot` term URI), whose result is the value in the code's canonical unit, and whose procedure is `method`. GWML2-Constituent describes the constituents of a fluid body rather than individual analyses, so a converter maps `.well` results to O&M observations on the specimen and derives constituent statements only when needed. Censoring (`qualifier`), detection and quantification limits, `lab_flags` and `validation` have no direct GWML2 counterpart and travel as result quality metadata or `x-` extensions. Field QA/QC links (`parent_sample_id`), purge data and chain of custody are outside GWML2 scope. Limits and exceedances are never part of the file and have no mapping.
 - **History logs are outside GWML2 scope.** GWML2 models the well as a static feature and its observations as a time-series. Maintenance interventions, incidents, status changes (`status_change`), permit condition fulfillment, and operational events are not represented. The same holds for the v2.3 operational blocks (`permits`, `meters`, `production`, `operating_regime`): metered production is an abstraction record, not an aquifer observation. A converter SHOULD preserve `.well` `history_logs` in a GeoSciML observation event sequence or as an `x-` extension on the GWML2 side, but full lossless round-trip is not guaranteed.
@@ -184,7 +205,7 @@ Files MAY include a `$schema` field referencing this URL:
 ```json
 {
   "$schema": "https://welldot.org/schema/v2/well.schema.json",
-  "version": 2,
+  "version": "2.4",
   ...
 }
 ```
@@ -193,4 +214,4 @@ The schema is generated from the Zod validators in `@welldot/core` to prevent dr
 
 ---
 
-_`.well` Format Specification v2.3_
+_`.well` Format Specification v2.4_

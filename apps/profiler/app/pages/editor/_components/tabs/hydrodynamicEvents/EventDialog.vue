@@ -16,7 +16,8 @@ import PumpingTestCharts from './charts/PumpingTestCharts.vue';
 const { t } = useI18n();
 const profileStore = useProfileStore();
 const { flowUnit } = useUnitFormat();
-const { typeOptions, measurementMethodOptions } = useHydrodynamicEventTypes();
+const { editableTypeOptions: typeOptions, measurementMethodOptions } =
+  useHydrodynamicEventTypes();
 
 // ─── Form types ───────────────────────────────────────────────────────────────
 

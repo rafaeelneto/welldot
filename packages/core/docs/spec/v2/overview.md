@@ -1,8 +1,90 @@
-# `.well` File Format Specification — Version 2.3: Overview
+# `.well` File Format Specification — Version 2.4: Overview
 
-**Version:** 2.3 **Extension:** `.well` **Encoding:** UTF-8 **Base format:** JSON **MIME type:** `application/vnd.well+json` **JSON Schema:** `https://welldot.org/schema/v2/well.schema.json` **JSON Schema draft:** 2020-12 **JSON-LD Context (optional):** `https://welldot.org/context/v2.jsonld` **Status:** v2.0 ratified — shipped in `@welldot/core` v0.2.0 · v2.1 shipped in `@welldot/core` v0.3.0 · v2.3 shipped in `@welldot/core` v0.4.0
+**Version:** 2.4 **Extension:** `.well` **Encoding:** UTF-8 **Base format:** JSON **MIME type:** `application/vnd.well+json` **JSON Schema:** `https://welldot.org/schema/v2/well.schema.json` **JSON Schema draft:** 2020-12 **JSON-LD Context (optional):** `https://welldot.org/context/v2.jsonld` **Status:** v2.0 ratified — shipped in `@welldot/core` v0.2.0 · v2.1 shipped in `@welldot/core` v0.3.0 · v2.3 shipped in `@welldot/core` v0.4.0 · v2.4 shipped in `@welldot/core` v0.5.0
 
 **See also:** [format-reference.md](./format-reference.md) · [object-schemas.md](./object-schemas.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
+
+## Overview
+
+The `.well` v2 specification is split into five documents. This one gives the context: what changed in each revision (v2.4, v2.3, v2.1 and from v1), why the format exists, the design principles the other parts follow, and the known limitations. The other four are:
+
+- [format-reference.md](./format-reference.md) — the top-level fields, versioning and deprecation, datetimes, recommended vocabularies, `well_id`, `location`, units, profiles, extensibility, cross-reference rules and precision.
+- [object-schemas.md](./object-schemas.md) — every object schema, the `hydrodynamic_events` ledger, `aquifer_analysis`, `history_logs`, the operational blocks (pumps, permits, meters, production, operating regime) and a complete example.
+- [water-quality.md](./water-quality.md) — water samples and results, their units, the parameter vocabulary and regulatory profiles.
+- [interoperability.md](./interoperability.md) — the JSON-LD context, the relationship to GWML2 and JSON Schema validation.
+
+## Table of contents
+
+- [Changes in v2.4](#changes-in-v24)
+  - [Deprecations](#deprecations)
+- [Changes in v2.3](#changes-in-v23)
+- [Changes in v2.1](#changes-in-v21)
+  - [Deprecations](#deprecations-1)
+- [Changes from v1](#changes-from-v1)
+- [Purpose](#purpose)
+- [Design Principles](#design-principles)
+- [Known Limitations of v2](#known-limitations-of-v2)
+
+---
+
+## Changes in v2.4
+
+v2.4 files write `"version": "2.4"`; parsers up to `@welldot/core` 0.4.0 reject them. Beyond that, v2.4 is an additive revision: every valid v2.3 document stays valid when its `version` is rewritten, and the integer `2` still means "v2.0 to v2.3, revision unknown".
+
+```
+v2.4 additions:
+- version is the string "M.m" (^\d+\.\d+$), compared as two integers,
+  never as text; patch levels are not allowed; readers accept 1, 2 and
+  "M.m"
+- location.properties.timezone (optional, IANA name): the local date of
+  an instant is its date converted to this zone; a missing timezone in
+  a file with condition fulfillments emits the warning missing_timezone
+- logger_series (hydrodynamic event type): a continuous level series
+  recorded by an installed sensor, with sensor_depth, interval,
+  barometric_compensation and aggregation (none, hourly, daily with
+  depth_min / depth_max); not a controlled test, not a static level
+- LevelReading.datetime: the instant of a reading, required in a
+  logger_series, where elapsed is absent
+- Offline packaging: an optional ZIP (.wellz) with the .well file at
+  the root and attachments at relative paths; relative uri allowed and
+  sha256 required only inside the package
+- Application extensions: x-<vendor>-<name> is RECOMMENDED
+  (e.g. x-welldot-custom)
+
+v2.4 clarifications:
+- A known hydrodynamic event type is validated against its own schema
+  and no longer falls back to the open x- rule; step counts per type
+  are SHOULD (a free count is valid), and steps must be valid
+  PumpingStep entries
+- An optional field without a value is omitted, never written as null
+  (storativity is no longer nullable); v2 integer files that still
+  carry it are tolerated on read
+- Ledgers MAY be edited in place; editing is NOT RECOMMENDED after a
+  record has been exported, and corrects remains the way to retract a
+  measurement. Result.validation is editable too
+- Repeated records (collective permits, campaign blanks) share the
+  same id and SHOULD have identical content; consumers MAY merge them
+  by id. A fulfillment event_id or sample_id resolves only in the file
+  of the well that produced it
+- Unresolved references MUST be preserved when a file is re-exported,
+  never silently removed
+- A duplicated operating_regime.effective_from and an
+  estimated_volume period_end not after period_start are warnings
+- daily_operating_time above 24 is normalized to 24 with a warning
+  (the stored value stays as written); a negative value is an error
+- Attachment.document_type condition_evidence is typically found in
+  permits[].conditions[].fulfillments
+- The attachment lists (id uniqueness, "root is not an aggregate",
+  where attachments are allowed) name the same set of records
+- history_logs updated_at may be earlier than datetime for a pre-dated
+  entry; neither ordering emits a warning
+- well_id: producers SHOULD mark exactly one entry primary: true; "the
+  first entry is canonical" is only the fallback
+```
+
+### Deprecations
+
+None.
 
 ---
 
@@ -28,13 +110,14 @@ v2.3 additions:
   its identifier and/or request_identifier (verbatim, any format), a
   closed administrative status (requested, granted, suspended,
   revoked, denied, withdrawn), an administrative history (filing,
-  process, notifications, fees, with done/due_date) and, on each
-  condition, a responsible and the fulfillments of its deadlines
-  (datetime, due_date, author, event_id, sample_id)
+  process, notifications, fees, with done/due_date and attachments)
+  and, on each condition, a responsible and the fulfillments of its
+  deadlines (datetime, due_date, author, event_id, sample_id,
+  attachments)
 - meters (optional Meter[]): totalizer (hidrômetro) installation
   history; device facts only (type, serial, nominal diameter,
   max_reading for rollover)
-- production (optional ProductionEntry[]): append-only ledger of
+- production (optional ProductionEntry[]): ledger of
   meter_reading entries (register values in m³) and estimated_volume
   entries (volumes estimated for a period without a meter); volumes
   are derived from consecutive readings, never stored as totals.
@@ -152,7 +235,7 @@ v2.0 additions:
 - well_id (array of authority-scoped identifiers)
 - profiles (JSON Schema URLs for regulatory and domain-specific constraints)
 - texture object (multi-vocabulary, replaces v1 fgdc_texture string)
-- hydrodynamic_events (append-only ledger of water-level observations)
+- hydrodynamic_events (ledger of water-level observations)
 - aquifer_analysis (interpreted aquifer parameter sets)
 - history_logs (operational log of interventions and incidents,
   with updated_at edit timestamp)
@@ -201,7 +284,7 @@ The `.well` format is an open standard for representing water well data. It is d
 - **Ground level as zero** — all depth values are measured from ground level (0); elevation above the WGS84 ellipsoid (or declared datum) is stored separately in `location.elevation`. Water levels above ground are negative.
 - **Geographic north** — all azimuth values are referenced to geographic north.
 - **Three block kinds** — every top-level array is one of three kinds, and the kind decides how records are corrected:
-  - **Ledger** (`hydrodynamic_events`, `production`, `water_samples`) — append-only. An error is corrected by appending a new entry whose `corrects` points to the retracted entry; existing entries are never edited in place. A retracted entry stays in the file but is excluded from every derivation. This is enforced by authoring tools in the welldot stack, not by the file format itself. The format provides `id`, `datetime`, `sequence` and `corrects` to support this discipline.
+  - **Ledger** (`hydrodynamic_events`, `production`, `water_samples`) — grows by appending. Entries MAY be edited in place, but editing is NOT RECOMMENDED after an entry has been exported. A measurement correction (a re-measurement, a revised laboratory report) is best written as a new entry whose `corrects` points to the retracted entry; a retracted entry stays in the file but is excluded from every derivation. The format provides `id`, `datetime`, `sequence` and `corrects` to support this discipline; it does not enforce it.
   - **Mutable record** (`history_logs`, `permits`, `operating_regime`) — edited in place; `updated_at` records the last edit.
   - **Installation** (`pump_installations`, `meters`) — equipment present in the well for a period (`installed_at` / `removed_at`); edited in place with `updated_at`.
 - **Derived values are never stored raw** — `s/Q`, `Q/s`, drawdown `s`, and any other value computable from stored fields must not appear as stored fields. Applications compute them on demand.
@@ -225,4 +308,4 @@ The following are recognized limitations of this version, reserved for future ve
 
 ---
 
-_`.well` Format Specification v2.3_
+_`.well` Format Specification v2.4_

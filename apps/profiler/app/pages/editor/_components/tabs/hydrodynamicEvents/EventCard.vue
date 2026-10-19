@@ -18,7 +18,12 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const profileStore = useProfileStore();
 const confirm = useConfirm();
-const { eventTypeLabel, eventTypeSeverity } = useHydrodynamicEventTypes();
+const { eventTypeLabel, eventTypeSeverity, loggerSeriesFacts } =
+  useHydrodynamicEventTypes();
+
+const loggerFacts = computed(() =>
+  isLoggerSeries(props.event) ? loggerSeriesFacts(props.event) : [],
+);
 
 /** Retracted by a later event's `corrects` — kept, but excluded from derivations. */
 const isRetracted = computed(() =>
@@ -65,10 +70,13 @@ const actions = computed<RecordAction[]>(() => [
     icon: 'ph:eye-duotone',
     onClick: () => emit('view', props.event.id),
   },
+  // The parent routes a logger series to its own dialog.
   {
     key: 'edit',
     label: t('editor.edit'),
-    ariaLabel: t('editor.hydrodynamicEvents.editEvent'),
+    ariaLabel: isLoggerSeries(props.event)
+      ? t('editor.hydrodynamicEvents.logger.editSeries')
+      : t('editor.hydrodynamicEvents.editEvent'),
     icon: 'ph:pencil-simple-duotone',
     onClick: () => emit('edit', props.event),
   },
@@ -112,6 +120,18 @@ const actions = computed<RecordAction[]>(() => [
     </template>
 
     <EventStats :event="event" />
+
+    <dl
+      v-if="loggerFacts.length"
+      class="m-0 flex flex-wrap gap-x-6 gap-y-2 text-xs"
+    >
+      <div v-for="f in loggerFacts" :key="f.label" class="flex flex-col">
+        <dt class="text-content-400">{{ f.label }}</dt>
+        <dd class="m-0 text-content-100" :class="{ 'font-mono': f.mono }">
+          {{ f.value }}
+        </dd>
+      </div>
+    </dl>
 
     <EventSparkline
       :event="event"

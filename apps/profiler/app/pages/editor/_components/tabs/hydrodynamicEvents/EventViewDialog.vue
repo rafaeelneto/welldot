@@ -7,6 +7,7 @@ import type {
 import { MAINTENANCE_TYPES } from '@welldot/core';
 import { getRetractedEventIds, pumpingTimeline } from '@welldot/utils';
 import AttachmentField from '~/components/attachments/AttachmentField.vue';
+import LoggerSeriesChart from './charts/LoggerSeriesChart.vue';
 import PumpingTestCharts from './charts/PumpingTestCharts.vue';
 import EventStats from './EventStats.vue';
 
@@ -34,6 +35,7 @@ const {
   eventTypeLabel,
   eventTypeSeverity,
   measurementMethodLabel,
+  loggerSeriesFacts,
 } = useHydrodynamicEventTypes();
 const { categoryIcon, categoryLabel } = useHistoryLogCategories();
 const { toFlow, flowUnit, toSpecificCapacity, specificCapacityUnit } =
@@ -105,6 +107,7 @@ const detailFacts = computed<Fact[]>(() => {
         ev.measurement_method as string | undefined,
       ),
     },
+    ...(isLoggerSeries(e) ? loggerSeriesFacts(e) : []),
   ]);
 });
 
@@ -354,6 +357,16 @@ const linkCount = computed(
                 {{ t('editor.hydrodynamicEvents.charts.title') }}
               </h3>
               <PumpingTestCharts :event="event" />
+            </section>
+
+            <section
+              v-else-if="isLoggerSeries(event) && event.readings.length"
+              class="flex flex-col gap-3"
+            >
+              <h3 class="view-heading">
+                {{ t('editor.hydrodynamicEvents.charts.title') }}
+              </h3>
+              <LoggerSeriesChart :event="event" />
             </section>
 
             <section class="flex flex-col gap-3">

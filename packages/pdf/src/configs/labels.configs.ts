@@ -141,6 +141,7 @@ export const PDF_LABELS = {
       flowRate: { en: 'FLOW RATE Q', pt: 'VAZÃO Q' },
       nd: { en: 'DWL', pt: 'ND' },
       ne: { en: 'SWL', pt: 'NE' },
+      readings: { en: 'readings', pt: 'leituras' },
     },
     title: { en: 'Hydrodynamic Events', pt: 'Eventos Hidrodinâmicos' },
   },

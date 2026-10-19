@@ -4,7 +4,29 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178c6.svg)](https://www.typescriptlang.org/)
 
+## Overview
+
 TypeScript types, Zod validators, and serialization utilities for the `.well` open format — a JSON-based standard for representing water well data.
+
+This README covers installation, a quick start, the API (types, validators, functions and unit conversion), the water quality and recommended vocabularies, the FGDC texture codes and a short tour of the format. The normative specification lives in [docs/spec/v2](./docs/spec/v2/overview.md).
+
+## Table of contents
+
+- [What is `.well`?](#what-is-well)
+  - [Example wells](#example-wells)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+  - [Types](#types)
+  - [Validators](#validators)
+  - [Functions](#functions)
+- [Water Quality Vocabulary and Limit Sets _(v2.3)_](#water-quality-vocabulary-and-limit-sets-v23)
+- [Recommended Vocabularies _(v2.3)_](#recommended-vocabularies-v23)
+  - [Closed vocabularies](#closed-vocabularies)
+- [FGDC Texture Patterns](#fgdc-texture-patterns)
+- [`.well` Format Overview](#well-format-overview)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## What is `.well`?
 
@@ -13,18 +35,18 @@ TypeScript types, Zod validators, and serialization utilities for the `.well` op
 - **Constructive data** — borehole geometry, casing strings, screens, reducers, gravel packs, centralizers, and cement pads
 - **Geologic data** — lithological column, discrete fractures, and cave zones
 - **Administrative metadata** — well identity, construction type and purpose (`well_type`, `well_purpose`), authority-scoped IDs (`well_id`), driller, construction date, and geographic coordinates with explicit CRS
-- **Hydrodynamic events** — append-only ledger of static level readings, pumping tests (constant-rate, step-drawdown, airlift), and recovery phases
+- **Hydrodynamic events** — ledger of static level readings, pumping tests (constant-rate, step-drawdown, airlift), and recovery phases
 - **Aquifer analysis** — interpreted parameter sets: transmissivity, specific capacity, storativity, and Jacob loss coefficients
 - **Operational history** — timestamped log of maintenance, inspections, incidents, status changes and permit condition fulfillment, with HTTPS attachment references
 - **Pump installations** — installation history of the well's pumps: nameplate data, intake depth, riser and electrical data (v2.3)
 - **Permits** — legal instruments governing abstraction (outorgas): validity, granted flow and daily operating time, volume limits, monthly schedule, and conditions (condicionantes) whose deadlines are derived from ISO 8601 date durations, with their fulfillments, an administrative status (requested, suspended…) and an administrative history (v2.3)
-- **Meters, production and operating regime** — totalizer (hidrômetro) installation history, an append-only production ledger of meter readings and declared volumes (volumes are derived, never stored as totals), and the declared operating regime in force from a given instant (v2.3)
+- **Meters, production and operating regime** — totalizer (hidrômetro) installation history, a production ledger of meter readings and declared volumes (volumes are derived, never stored as totals), and the declared operating regime in force from a given instant (v2.3)
 - **Water quality** — a `water_samples` ledger of samples, each with its field and laboratory results, sampling point and depth, purge and stabilization readings, laboratory and chain of custody, field QA/QC (duplicates, splits, blanks), per-result filtration, lab flags and data validation. Parameters are identified by `{ code, vocabulary }` against a versioned vocabulary of 98 `welldot` codes (plus CAS numbers and `x-` codes), and units come from the code. Limits are never stored in the file (v2.3)
-- **Attachments** — HTTPS-referenced files typed by `document_type`: a root-level `attachments` array for general files about the well (e.g. the drilling report), plus per-record attachments on pumps, events, analyses and log entries. The root array does not collect the per-record ones (v2.3)
+- **Attachments** — HTTPS-referenced files typed by `document_type`: a root-level `attachments` array for general files about the well (e.g. the drilling report), plus per-record attachments on log entries, permits (and their history steps and condition fulfillments), pumps, meters, events, analyses and water samples. The root array does not collect the per-record ones (v2.3)
 
 The format is designed for three use cases: visualization of technical well profiles, registration with regulatory bodies, and hydrogeological research.
 
-See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.3) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
+See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.4) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
 
 ### Example wells
 
@@ -111,6 +133,10 @@ All types are exported as TypeScript type-only exports (zero runtime cost).
 | `StepDrawdownEvent`               | A step-drawdown pumping test                                                                                                                 |
 | `AirliftEvent`                    | An air-lift development or test                                                                                                              |
 | `RecoveryOnlyEvent`               | Recovery measurements without drawdown data                                                                                                  |
+| `LoggerSeriesEvent`               | Continuous level series recorded by an installed sensor (v2.4)                                                                               |
+| `LoggerReading`                   | A `logger_series` reading, located by `datetime` (v2.4)                                                                                      |
+| `BarometricCompensation`          | `logger_series.barometric_compensation` values (v2.4)                                                                                        |
+| `ReadingAggregation`              | `logger_series.aggregation` values (v2.4)                                                                                                    |
 | `HydrodynamicEvent`               | Discriminated union of all event types + x- custom events                                                                                    |
 | `AquiferAnalysis`                 | An interpreted set of aquifer parameters                                                                                                     |
 | `Attachment`                      | An HTTPS-referenced document, typed by `document_type` (common type since v2.3)                                                              |
@@ -190,7 +216,9 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 | `StepDrawdownEventSchema`          | `StepDrawdownEvent`                                                                                                                                               |
 | `AirliftEventSchema`               | `AirliftEvent`                                                                                                                                                    |
 | `RecoveryOnlyEventSchema`          | `RecoveryOnlyEvent`                                                                                                                                               |
-| `HydrodynamicEventSchema`          | `HydrodynamicEvent` (discriminated union + x- passthrough)                                                                                                        |
+| `LoggerSeriesEventSchema`          | `LoggerSeriesEvent`                                                                                                                                               |
+| `LoggerReadingSchema`              | `LoggerReading`                                                                                                                                                   |
+| `HydrodynamicEventSchema`          | `HydrodynamicEvent` (discriminated union; only `x-` types pass through)                                                                                           |
 | `AquiferAnalysisSchema`            | `AquiferAnalysis`                                                                                                                                                 |
 | `AttachmentSchema`                 | `Attachment`                                                                                                                                                      |
 | `PumpInstallationSchema`           | `PumpInstallation`                                                                                                                                                |
@@ -207,7 +235,7 @@ Each schema validates its corresponding type at runtime. All schemas are Zod obj
 | `MeterReadingSchema`               | `MeterReading`                                                                                                                                                    |
 | `EstimatedVolumeSchema`            | `EstimatedVolume`                                                                                                                                                 |
 | `ProductionEntrySchema`            | `ProductionEntry` (discriminated union + x- passthrough; a known type missing required fields is rejected)                                                        |
-| `OperatingRegimeSchema`            | `OperatingRegime` (`daily_operating_time` 0–24, integer `days_per_week` 1–7)                                                                                      |
+| `OperatingRegimeSchema`            | `OperatingRegime` (non-negative `daily_operating_time`, integer `days_per_week` 1–7)                                                                              |
 | `HistoryLogEntrySchema`            | `HistoryLogEntry`                                                                                                                                                 |
 | `WaterSampleSchema`                | `WaterSample` (`results` must have at least one entry)                                                                                                            |
 | `SamplingPointSchema`              | `SamplingPoint` (`depth` and `from`/`to` are mutually exclusive)                                                                                                  |
@@ -229,19 +257,29 @@ Parses a raw JSON string and validates it against `WellSchema`. Throws a `ZodErr
 
 #### `serializeWell(well: Well): string`
 
-Serializes a `Well` object to a versioned `.well` JSON string (`"version": 2`). Emits `location` when set; does not emit deprecated flat `lat`/`lng`/`elevation` or other legacy v1 keys. Omits `undefined` optional fields. Root members the spec does not define (`x-` fields and blocks, foreign members) are written unchanged after the spec blocks, as the spec requires.
+Serializes a `Well` object to a versioned `.well` JSON string (`"version": "2.4"`, `WELL_FORMAT_VERSION`). Omits `null` members outside `x-` fields and `@context`. Emits `location` when set; does not emit deprecated flat `lat`/`lng`/`elevation` or other legacy v1 keys. Omits `undefined` optional fields. Root members the spec does not define (`x-` fields and blocks, foreign members) are written unchanged after the spec blocks, as the spec requires.
 
 #### `deserializeWell(jsonString: string): Well | null`
 
 Parses and normalizes a JSON string into a `Well`. Handles multiple formats:
 
-- v2 format (`"version": 2`) — passes v2-specific fields through directly
+- v2 format (`"version": 2` or `"2.x"`) — passes v2-specific fields through directly
 - v1 format (`"version": 1`) — applies v1→v2 normalizations: `fgdc_texture` → `texture`, `screen_slot_mm` → `screen_slot`, flat `lat/lng/elevation` → `location`
 - Legacy formats with `constructive` / `geologic` sub-objects
 - Legacy `diam_pol` inch diameters → `diameter` mm conversion (`× 25.4`)
 - Typo `bole_hole` → `bore_hole` compatibility
 
 Returns `null` if the parsed data is empty. Throws on unrecognized version numbers.
+
+#### Format version and time zone _(v2.4)_
+
+| Export                                | Description                                                                                                                       |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `WELL_FORMAT_VERSION`                 | The version `serializeWell` writes: `"2.4"`.                                                                                      |
+| `parseFormatVersion(value)`           | Parses `2` or `"M.m"` into a `FormatVersion` (`{ major, minor }`); `undefined` for `2.4`, `"2.4.1"`, `"v2.4"` and other values.   |
+| `compareFormatVersions(a, b)`         | Compares two `"M.m"` strings as two integers (`"2.10"` is after `"2.9"`); throws on malformed input.                              |
+| `isIanaTimeZone(value)`               | Whether `value` is an IANA time zone name (`America/Belem`), for `location.properties.timezone`. Offsets are not valid.           |
+| `LoggerSeriesEvent` / `LoggerReading` | Types of the `logger_series` hydrodynamic event and its readings; validated by `LoggerSeriesEventSchema` / `LoggerReadingSchema`. |
 
 #### `isWellEmpty(well: Well | null | undefined): boolean`
 
@@ -371,17 +409,19 @@ getVocabLabel(PERMIT_TYPES, 'x-special', 'pt'); // 'x-special'
 
 Fields whose values the schema fixes (no free text, no `x-`) ship in the same shape as the open vocabularies — `VocabEntry` lists with `en`/`pt` labels — so `getVocabLabel` labels any value without consumer translations. Each list is checked at compile time against its type, so it cannot drift from the schema. The `*_VALUES` lists are the bare values.
 
-| Vocabulary                                         | Field                                         |
-| -------------------------------------------------- | --------------------------------------------- |
-| `WELL_STATUSES` (`WELL_STATUS_VALUES`)             | `history_logs[].status` (`status_change`)     |
-| `PERMIT_ADMINISTRATIVE_STATUSES`                   | `permits[].status`                            |
-| `VOLUME_LIMIT_PERIODS`                             | `permits[].volume_limits[].period`            |
-| `PRODUCTION_ENTRY_TYPES`                           | `production[].type`                           |
-| `RESULT_QUALIFIERS` (`QUALIFIER_VALUES`)           | result `qualifier`                            |
-| `RESULT_FRACTIONS` (`FRACTION_VALUES`)             | result `fraction`                             |
-| `MEASUREMENT_LOCATIONS`                            | result `measured_in`, `filtration.location`   |
-| `VALIDATION_STATUSES` (`VALIDATION_STATUS_VALUES`) | result `validation.status`                    |
-| `PARAMETER_GROUPS` (`PARAMETER_GROUP_VALUES`)      | parameter vocabulary groups, in display order |
+| Vocabulary                                                    | Field                                         |
+| ------------------------------------------------------------- | --------------------------------------------- |
+| `WELL_STATUSES` (`WELL_STATUS_VALUES`)                        | `history_logs[].status` (`status_change`)     |
+| `PERMIT_ADMINISTRATIVE_STATUSES`                              | `permits[].status`                            |
+| `VOLUME_LIMIT_PERIODS`                                        | `permits[].volume_limits[].period`            |
+| `PRODUCTION_ENTRY_TYPES`                                      | `production[].type`                           |
+| `RESULT_QUALIFIERS` (`QUALIFIER_VALUES`)                      | result `qualifier`                            |
+| `RESULT_FRACTIONS` (`FRACTION_VALUES`)                        | result `fraction`                             |
+| `MEASUREMENT_LOCATIONS`                                       | result `measured_in`, `filtration.location`   |
+| `VALIDATION_STATUSES` (`VALIDATION_STATUS_VALUES`)            | result `validation.status`                    |
+| `PARAMETER_GROUPS` (`PARAMETER_GROUP_VALUES`)                 | parameter vocabulary groups, in display order |
+| `BAROMETRIC_COMPENSATIONS` (`BAROMETRIC_COMPENSATION_VALUES`) | `logger_series.barometric_compensation`       |
+| `READING_AGGREGATIONS` (`READING_AGGREGATION_VALUES`)         | `logger_series.aggregation`                   |
 
 Value rules without labels: `NUMERIC_QUALIFIERS`, `PARENT_SAMPLE_TYPES`, `BLANK_SAMPLE_TYPES`. Parameter names: `getParameterLabel(parameter, locale)` (CAS numbers resolve through the published equivalences; unknown codes are returned as-is).
 

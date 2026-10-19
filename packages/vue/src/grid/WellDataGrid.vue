@@ -41,6 +41,11 @@ const props = defineProps<{
   labels?: WellDataGridLabels;
   /** Part overrides: `addButton`, `deleteButton`, `dragHandle`. */
   components?: WellDataGridComponents;
+  /**
+   * Height cap in px. Taller content scrolls inside the grid, so RevoGrid
+   * renders only the visible rows. Without it the grid grows with its rows.
+   */
+  maxHeight?: number;
 }>();
 
 const emit = defineEmits<{
@@ -99,14 +104,15 @@ onMounted(() => {
 
 const gridSource = computed(() => props.rows.map(r => ({ ...r })));
 
-// ─── Height — auto-size based on row count ────────────────────────────────────
+// ─── Height — auto-size based on row count, up to `maxHeight` ─────────────────
 
 const HEADER_H = 38;
 const ROW_H = 30;
 
 const gridHeight = computed(() => {
   const contentH = Math.max(1, props.rows.length) * ROW_H;
-  return `${HEADER_H + contentH + 2}px`;
+  const height = HEADER_H + contentH + 2;
+  return `${props.maxHeight ? Math.min(height, props.maxHeight) : height}px`;
 });
 
 // ─── Event handlers ───────────────────────────────────────────────────────────

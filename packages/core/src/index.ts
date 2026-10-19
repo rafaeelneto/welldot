@@ -3,6 +3,7 @@ export type {
   AirliftEvent,
   AquiferAnalysis,
   Attachment,
+  BarometricCompensation,
   BoreHole,
   Cave,
   CementPad,
@@ -23,6 +24,8 @@ export type {
   Lithology,
   Location,
   LocationProperties,
+  LoggerReading,
+  LoggerSeriesEvent,
   Meter,
   MeterReading,
   MonthlyGrant,
@@ -39,6 +42,7 @@ export type {
   PumpingStep,
   Purge,
   PurgeReading,
+  ReadingAggregation,
   RecoveryOnlyEvent,
   RecoveryPhase,
   Reduction,
@@ -98,6 +102,8 @@ export {
   LithologySchema,
   LocationPropertiesSchema,
   LocationSchema,
+  LoggerReadingSchema,
+  LoggerSeriesEventSchema,
   MeterReadingSchema,
   MeterSchema,
   MonthlyGrantSchema,
@@ -137,6 +143,13 @@ export {
 } from './validators/well.validators';
 
 // Format utilities (serialise/deserialise .well format only)
+export { isIanaTimeZone } from './utils/timezone.utils';
+export {
+  WELL_FORMAT_VERSION,
+  compareFormatVersions,
+  parseFormatVersion,
+} from './utils/version.utils';
+export type { FormatVersion } from './utils/version.utils';
 export {
   SECTION_KEYS,
   VISIBILITY_LEAF_KEYS,
@@ -266,6 +279,8 @@ export type { OpenVocab, VocabEntry } from './vocab/vocab';
 
 // Closed vocabularies: schema-fixed values with en/pt labels (since v2.3)
 export {
+  BAROMETRIC_COMPENSATIONS,
+  BAROMETRIC_COMPENSATION_VALUES,
   BLANK_SAMPLE_TYPES,
   FILTRATION_LOCATION_VALUES,
   FRACTION_VALUES,
@@ -279,6 +294,8 @@ export {
   PERMIT_ADMINISTRATIVE_STATUS_VALUES,
   PRODUCTION_ENTRY_TYPES,
   QUALIFIER_VALUES,
+  READING_AGGREGATIONS,
+  READING_AGGREGATION_VALUES,
   RESULT_FRACTIONS,
   RESULT_QUALIFIERS,
   VALIDATION_STATUSES,

@@ -1,6 +1,85 @@
-# `.well` File Format Specification — Version 2.3: Object Schemas
+# `.well` File Format Specification — Version 2.4: Object Schemas
 
 **See also:** [overview.md](./overview.md) · [format-reference.md](./format-reference.md) · [interoperability.md](./interoperability.md) · [water-quality.md](./water-quality.md)
+
+## Overview
+
+This part of the `.well` v2.4 specification defines the records inside each top-level block: the common types (`Attachment`, date durations), the construction and geology objects, the `hydrodynamic_events` ledger and its supporting objects, `aquifer_analysis`, `history_logs`, and the operational blocks added in v2.3 (`pump_installations`, `permits`, `meters`, `production`, `operating_regime`). It ends with a complete example file. Water samples are specified in [water-quality.md](./water-quality.md); units and cross-reference rules in [format-reference.md](./format-reference.md).
+
+## Table of contents
+
+- [Common Types _(since v2.3)_](#common-types-since-v23)
+  - [`Attachment`](#attachment)
+  - [Date duration](#date-duration)
+- [Object Schemas](#object-schemas)
+  - [`BoreHole` — `bore_hole[]`](#borehole--bore_hole)
+  - [`WellCase` — `well_case[]`](#wellcase--well_case)
+  - [`Reduction` — `reduction[]`](#reduction--reduction)
+  - [`WellScreen` — `well_screen[]`](#wellscreen--well_screen)
+  - [`SurfaceCase` — `surface_case[]`](#surfacecase--surface_case)
+  - [`HoleFill` — `hole_fill[]`](#holefill--hole_fill)
+  - [`Centralizer` — `centralizers[]` _(since v2.1)_](#centralizer--centralizers-since-v21)
+  - [`CementPad` — `cement_pad`](#cementpad--cement_pad)
+  - [`Lithology` — `lithology[]`](#lithology--lithology)
+  - [`Texture`](#texture)
+  - [`Fracture` — `fractures[]`](#fracture--fractures)
+  - [`Cave` — `caves[]`](#cave--caves)
+- [`hydrodynamic_events[]`](#hydrodynamic_events)
+  - [Event types](#event-types)
+  - [Common fields (all event types)](#common-fields-all-event-types)
+  - [Corrections _(since v2.3)_](#corrections-since-v23)
+  - [`spot_measurement`](#spot_measurement)
+  - [`constant_rate`](#constant_rate)
+  - [`step_drawdown`](#step_drawdown)
+  - [`airlift`](#airlift)
+  - [`recovery_only`](#recovery_only)
+  - [`logger_series` _(since v2.4)_](#logger_series-since-v24)
+- [Supporting Object Schemas](#supporting-object-schemas)
+  - [`PumpingStep`](#pumpingstep)
+  - [`LevelReading`](#levelreading)
+  - [`RecoveryPhase`](#recoveryphase)
+- [`aquifer_analysis[]`](#aquifer_analysis)
+  - [`method` — Recommended values](#method--recommended-values)
+- [Derived Parameters — Computation Reference](#derived-parameters--computation-reference)
+- [Querying Current State](#querying-current-state)
+- [`history_logs[]`](#history_logs)
+  - [Categories](#categories)
+  - [`HistoryLogEntry`](#historylogentry)
+  - [`updated_at` semantics](#updated_at-semantics)
+  - [Data links _(since v2.3)_](#data-links-since-v23)
+  - [Category-specific fields _(since v2.3)_](#category-specific-fields-since-v23)
+- [`pump_installations[]` _(since v2.3)_](#pump_installations-since-v23)
+  - [`PumpInstallation`](#pumpinstallation)
+  - [`PumpElectrical`](#pumpelectrical)
+  - [Validation (warnings, never rejection)](#validation-warnings-never-rejection)
+  - [Derived values](#derived-values)
+  - [Rendering](#rendering)
+- [`permits[]` _(since v2.3)_](#permits-since-v23)
+  - [`Permit`](#permit)
+  - [`PermitHistoryEntry`](#permithistoryentry)
+  - [`VolumeLimit`](#volumelimit)
+  - [`MonthlyGrant`](#monthlygrant)
+  - [`PermitCondition`](#permitcondition)
+  - [Deadline generation (normative)](#deadline-generation-normative)
+  - [Condition fulfillment](#condition-fulfillment)
+  - [Permit status (derived)](#permit-status-derived)
+  - [Validation (warnings, never rejection)](#validation-warnings-never-rejection-1)
+- [`meters[]` _(since v2.3)_](#meters-since-v23)
+  - [`Meter`](#meter)
+  - [Validation (warnings, never rejection)](#validation-warnings-never-rejection-2)
+- [`production[]` _(since v2.3)_](#production-since-v23)
+  - [Common fields](#common-fields)
+  - [`meter_reading`](#meter_reading)
+  - [`estimated_volume`](#estimated_volume)
+  - [Volume derivation (normative)](#volume-derivation-normative)
+  - [Precedence](#precedence)
+  - [Derived values](#derived-values-1)
+  - [Validation (warnings, never rejection)](#validation-warnings-never-rejection-3)
+- [`operating_regime[]` _(since v2.3)_](#operating_regime-since-v23)
+  - [`OperatingRegime`](#operatingregime)
+  - [Validation (warnings, never rejection)](#validation-warnings-never-rejection-4)
+- [`water_samples[]` _(since v2.3)_](#water_samples-since-v23)
+- [Complete Example](#complete-example)
 
 ---
 
@@ -13,7 +92,7 @@ The `.well` format is not a file container. Attachments are referenced by URL. S
 | Field           | Type   | Required | Description                                                                                |
 | --------------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
 | `id`            | string | yes      | Unique within its owning `attachments` array. UUID v4 recommended.                         |
-| `uri`           | string | yes      | Full HTTPS URL. Relative paths are not permitted.                                          |
+| `uri`           | string | yes      | Full HTTPS URL. A relative path is valid only inside an offline package _(since v2.4)_.    |
 | `media_type`    | string | yes      | MIME type (e.g. `image/jpeg`, `application/pdf`).                                          |
 | `document_type` | string | no       | What the document is. See format-reference.md § `Attachment.document_type`. _(since v2.3)_ |
 | `filename`      | string | no       | Original filename for display.                                                             |
@@ -22,18 +101,20 @@ The `.well` format is not a file container. Attachments are referenced by URL. S
 
 #### Where attachments are allowed
 
-| Location                            | Purpose                                                                     |
-| ----------------------------------- | --------------------------------------------------------------------------- |
-| Root `attachments[]`                | Documents about the well as a whole, not tied to any record. _(since v2.3)_ |
-| `history_logs[].attachments`        | Supporting documents or photos of a log entry.                              |
-| `permits[].attachments`             | The legal document (portaria, certificate). _(since v2.3)_                  |
-| `pump_installations[].attachments`  | Pump curves, invoices, photos. _(since v2.3)_                               |
-| `meters[].attachments`              | Installation photos, invoices, certificates. _(since v2.3)_                 |
-| `hydrodynamic_events[].attachments` | Field sheets, logger exports. _(since v2.3)_                                |
-| `aquifer_analysis[].attachments`    | Interpretation reports. _(since v2.3)_                                      |
-| `water_samples[].attachments`       | Laboratory reports (`lab_report`), field sheets, photos. _(since v2.3)_     |
+| Location                                            | Purpose                                                                     |
+| --------------------------------------------------- | --------------------------------------------------------------------------- |
+| Root `attachments[]`                                | Documents about the well as a whole, not tied to any record. _(since v2.3)_ |
+| `history_logs[].attachments`                        | Supporting documents or photos of a log entry.                              |
+| `permits[].attachments`                             | The legal document (portaria, certificate). _(since v2.3)_                  |
+| `permits[].history[].attachments`                   | Notices, receipts, protocols of an administrative step. _(since v2.3)_      |
+| `permits[].conditions[].fulfillments[].attachments` | Proof of submission (`condition_evidence`). _(since v2.3)_                  |
+| `pump_installations[].attachments`                  | Pump curves, invoices, photos. _(since v2.3)_                               |
+| `meters[].attachments`                              | Installation photos, invoices, certificates. _(since v2.3)_                 |
+| `hydrodynamic_events[].attachments`                 | Field sheets, logger exports. _(since v2.3)_                                |
+| `aquifer_analysis[].attachments`                    | Interpretation reports. _(since v2.3)_                                      |
+| `water_samples[].attachments`                       | Laboratory reports (`lab_report`), field sheets, photos. _(since v2.3)_     |
 
-An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits`, `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries.
+An attachment belongs to the record it documents. A document that concerns several records is repeated on each; the repetition is one URI and one hash, and the hash guarantees both copies point to the same file. The root array is not a registry, and records do not reference root attachments by id. Nor is it an aggregate: it holds only general files about the well as a whole (e.g. the drilling report), never copies of the attachments of `history_logs`, `permits` (including their `history` entries and condition `fulfillments`), `pump_installations`, `meters`, `hydrodynamic_events`, `aquifer_analysis` or `water_samples` entries.
 
 `Attachment.id` is unique within its owning array: the root `attachments[]`, or the `attachments` array of one record. The same id may appear under different records.
 
@@ -262,19 +343,22 @@ A cavity or void zone.
 
 ## `hydrodynamic_events[]`
 
-A chronological, append-only ledger of all hydrodynamic observations. Events are ordered by `datetime` ascending (UTC-normalized instants); parsers MUST NOT assume order and SHOULD sort by `datetime` when querying. When two events share the same instant, an optional `sequence` integer breaks the tie.
+A chronological ledger of all hydrodynamic observations; it grows by appending. Events are ordered by `datetime` ascending (UTC-normalized instants); parsers MUST NOT assume order and SHOULD sort by `datetime` when querying. When two events share the same instant, an optional `sequence` integer breaks the tie.
 
-> **Note — interpretive contracts, not pumping methods.** Each `type` value identifies a _category of field record_ with a distinct semantic contract, not a pumping technique or equipment class. Equipment belongs in the `equipment` field; test-analysis method belongs in `method` on `aquifer_analysis`. The contract for each type specifies what data it reliably supplies, how many steps it may carry, whether recovery is permitted, and whether its event ID is valid input to `source_event_ids` on an `aquifer_analysis` entry.
+> **Note — interpretive contracts, not pumping methods.** Each `type` value identifies a _category of field record_ with a distinct semantic contract, not a pumping technique or equipment class. Equipment belongs in the `equipment` field; test-analysis method belongs in `method` on `aquifer_analysis`. The contract for each type specifies what data it reliably supplies, how many steps it should carry, whether recovery is permitted, and whether its event ID is valid input to `source_event_ids` on an `aquifer_analysis` entry.
 
 ### Event types
 
-| `type`             | Português (BR)            | What it records                                                                                                  | `steps` constraint | `recovery` | Valid in `source_event_ids`      |
-| ------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------ | ---------- | -------------------------------- |
-| `spot_measurement` | Medição pontual           | Static water level during a routine visit; optionally an informal brief pump observation. Not a controlled test. | 0 or 1             | Optional   | As `static_level_source_id` only |
-| `constant_rate`    | Teste de vazão constante  | Controlled pump test at exactly one fixed rate.                                                                  | Exactly 1          | Optional   | Yes                              |
-| `step_drawdown`    | Teste de vazão escalonada | Controlled pump test at two or more successive rates in ascending order.                                         | ≥ 2, ascending     | Optional   | Yes                              |
-| `airlift`          | Air-lift                  | Historical fact that air-lift development was performed and produced an estimated yield.                         | ≥ 1                | Optional   | No — see § airlift               |
-| `recovery_only`    | Apenas recuperação        | Recovery after a pumping event whose drawdown data was not recorded.                                             | None               | Required   | Yes                              |
+| `type`             | Português (BR)            | What it records                                                                                                   | `steps` constraint       | `recovery` | Valid in `source_event_ids`      |
+| ------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------ | ---------- | -------------------------------- |
+| `spot_measurement` | Medição pontual           | Static water level during a routine visit; optionally an informal brief pump observation. Not a controlled test.  | SHOULD be 0 or 1         | Optional   | As `static_level_source_id` only |
+| `constant_rate`    | Teste de vazão constante  | Controlled pump test at exactly one fixed rate.                                                                   | SHOULD be exactly 1      | Optional   | Yes                              |
+| `step_drawdown`    | Teste de vazão escalonada | Controlled pump test at two or more successive rates in ascending order.                                          | SHOULD be ≥ 2, ascending | Optional   | Yes                              |
+| `airlift`          | Air-lift                  | Historical fact that air-lift development was performed and produced an estimated yield.                          | SHOULD be ≥ 1            | Optional   | No — see § airlift               |
+| `recovery_only`    | Apenas recuperação        | Recovery after a pumping event whose drawdown data was not recorded.                                              | None                     | Required   | Yes                              |
+| `logger_series`    | Série de datalogger       | Continuous level series recorded by an installed sensor. Not a controlled test nor a static level. _(since v2.4)_ | None                     | No         | No — see § logger_series         |
+
+Each known `type` MUST satisfy its own schema: a malformed `constant_rate`, for example, is invalid rather than read as an unknown type. The step counts in the table are recommendations: `steps` MUST be an array of valid `PumpingStep` entries, but another count is valid. _(since v2.4)_
 
 The `type` field accepts any string. Non-canonical values SHOULD use the `x-` prefix.
 
@@ -296,7 +380,7 @@ Only `id`, `type`, and `datetime` are required. All others are optional for all 
 
 ### Corrections _(since v2.3)_
 
-`hydrodynamic_events` is a ledger: an erroneous event is never edited in place. The correction is a new event whose `corrects` holds the id of the retracted event.
+`hydrodynamic_events` is a ledger: events MAY be edited in place, but editing is NOT RECOMMENDED after the event has been exported. `corrects` remains the recommended mechanism for measurement corrections (a re-measurement): the correction is a new event whose `corrects` holds the id of the retracted event.
 
 - A retracted event stays in the file but is excluded from every derivation (current static level, analyses, charts).
 - Chains are allowed (C corrects B, which corrected A); only the last uncorrected entry counts.
@@ -307,24 +391,24 @@ Only `id`, `type`, and `datetime` are required. All others are optional for all 
 
 ### `spot_measurement`
 
-| Field                    | Type            | Required | Description                                                                                                                                   |
-| ------------------------ | --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `static_level`           | number          | yes      | Depth to water surface from ground level, in meters. Negative when the level is above ground (flowing artesian). See § Level sign convention. |
-| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                        |
-| `measurement_method`     | string          | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `hydrodynamic_events[].measurement_method`.                                 |
-| `steps`                  | `PumpingStep[]` | no       | At most one step. For an informal brief pump observation during the visit — not a controlled test. Use `constant_rate` for a formal test.     |
-| `recovery`               | `RecoveryPhase` | no       | Recovery after the optional pumping step.                                                                                                     |
+| Field                    | Type            | Required | Description                                                                                                                                                                    |
+| ------------------------ | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `static_level`           | number          | yes      | Depth to water surface from ground level, in meters. Negative when the level is above ground (flowing artesian). See § Level sign convention.                                  |
+| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                                                         |
+| `measurement_method`     | string          | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `hydrodynamic_events[].measurement_method`.                                                                  |
+| `steps`                  | `PumpingStep[]` | no       | SHOULD carry at most one step; another count is valid. For an informal brief pump observation during the visit — not a controlled test. Use `constant_rate` for a formal test. |
+| `recovery`               | `RecoveryPhase` | no       | Recovery after the optional pumping step.                                                                                                                                      |
 
 ---
 
 ### `constant_rate`
 
-| Field                    | Type            | Required | Description                                                                                                  |
-| ------------------------ | --------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| `static_level`           | number          | no       | Pre-test static level in meters. Omit if not measured.                                                       |
-| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                       |
-| `steps`                  | `PumpingStep[]` | no       | Exactly one entry. A second step would make this a `step_drawdown`. Omit if only recovery data is available. |
-| `recovery`               | `RecoveryPhase` | no       | Recovery measurements after pump shutdown.                                                                   |
+| Field                    | Type            | Required | Description                                                                                                                                       |
+| ------------------------ | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `static_level`           | number          | no       | Pre-test static level in meters. Omit if not measured.                                                                                            |
+| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                                                                            |
+| `steps`                  | `PumpingStep[]` | no       | SHOULD carry exactly one entry; another count is valid. A second step would make this a `step_drawdown`. Omit if only recovery data is available. |
+| `recovery`               | `RecoveryPhase` | no       | Recovery measurements after pump shutdown.                                                                                                        |
 
 ---
 
@@ -332,12 +416,12 @@ Only `id`, `type`, and `datetime` are required. All others are optional for all 
 
 Jacob's `B` and `C` are derived — store them in `aquifer_analysis`, never here.
 
-| Field                    | Type            | Required | Description                                        |
-| ------------------------ | --------------- | -------- | -------------------------------------------------- |
-| `static_level`           | number          | no       | Pre-test static level in meters.                   |
-| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.             |
-| `steps`                  | `PumpingStep[]` | yes      | Two or more steps in ascending order of flow rate. |
-| `recovery`               | `RecoveryPhase` | no       | Recovery after the final step.                     |
+| Field                    | Type            | Required | Description                                                                             |
+| ------------------------ | --------------- | -------- | --------------------------------------------------------------------------------------- |
+| `static_level`           | number          | no       | Pre-test static level in meters.                                                        |
+| `static_level_precision` | number          | no       | One-sigma precision of `static_level`.                                                  |
+| `steps`                  | `PumpingStep[]` | yes      | SHOULD carry two or more steps in ascending order of flow rate; another count is valid. |
+| `recovery`               | `RecoveryPhase` | no       | Recovery after the final step.                                                          |
 
 ---
 
@@ -347,10 +431,10 @@ This type exists to record the historical fact that air-lift development was per
 
 Static level is not reliably measurable during air-lift and SHOULD be omitted.
 
-| Field      | Type            | Required | Description                                                    |
-| ---------- | --------------- | -------- | -------------------------------------------------------------- |
-| `steps`    | `PumpingStep[]` | yes      | One or more steps. Each step may carry time-series `readings`. |
-| `recovery` | `RecoveryPhase` | no       | Recovery measurements after air-lift shutdown, if recorded.    |
+| Field      | Type            | Required | Description                                                                                         |
+| ---------- | --------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| `steps`    | `PumpingStep[]` | yes      | SHOULD carry one or more steps; another count is valid. Each step may carry time-series `readings`. |
+| `recovery` | `RecoveryPhase` | no       | Recovery measurements after air-lift shutdown, if recorded.                                         |
 
 ---
 
@@ -361,6 +445,64 @@ Static level is not reliably measurable during air-lift and SHOULD be omitted.
 | `pumping_rate`     | number          | no       | Estimated preceding flow rate in m³/h.           |
 | `pumping_duration` | number          | no       | Estimated preceding pumping duration in minutes. |
 | `recovery`         | `RecoveryPhase` | yes      | Recovery time-series.                            |
+
+---
+
+### `logger_series` _(since v2.4)_
+
+A continuous level series recorded by an installed sensor: a pressure transducer with a datalogger, as used in monitoring networks and in mining (dewatering, slope piezometers, permit conditions). It is neither a controlled test nor a static level.
+
+| Contract                          | Value                                                                                                                                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `steps`                           | None. `steps` MUST NOT be present.                                                                                                               |
+| `recovery`                        | No. `recovery` MUST NOT be present.                                                                                                              |
+| Valid in `source_event_ids`       | No.                                                                                                                                              |
+| Valid as `static_level_source_id` | No.                                                                                                                                              |
+| Inherited common fields           | `equipment`, `operator`, `attachments` (the raw logger export, with `sha256`), `corrects`, and the `history_logs[].hydrodynamic_event_ids` link. |
+
+| Field                     | Type             | Required | Description                                                                                                                                                                               |
+| ------------------------- | ---------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `measurement_method`      | string           | no       | Open vocabulary: see [format-reference.md](format-reference.md) § `hydrodynamic_events[].measurement_method`.                                                                             |
+| `sensor_depth`            | number           | no       | Sensor depth in meters from ground level. A level below it indicates an invalid reading.                                                                                                  |
+| `interval`                | number           | no       | Nominal interval between readings, in minutes. Greater than zero.                                                                                                                         |
+| `barometric_compensation` | string           | no       | Closed: `barologger` (Barologger / Barologger), `vented` (Vented cable / Cabo ventilado) or `none` (None / Nenhuma).                                                                      |
+| `aggregation`             | string           | no       | Closed: `none` (Raw readings / Leituras brutas), `hourly` (Hourly / Horária) or `daily` (Daily / Diária). When `hourly` or `daily`, every reading MUST carry `depth_min` and `depth_max`. |
+| `readings`                | `LevelReading[]` | yes      | One or more readings. Each reading MUST carry `datetime` and MUST NOT carry `elapsed`. See § LevelReading.                                                                                |
+
+A series MAY grow with new readings instead of becoming one event per download.
+
+> **Note — pump state is not stored per reading.** A series has no per-reading `pumping` flag. In a well that pumps, the series mixes static and dynamic levels; interpretation crosses the series with `production` and `pump_installations`.
+
+Validation (warnings, never rejection):
+
+- An `aquifer_analysis` whose `source_event_ids` or `static_level_source_id` points to a `logger_series` emits a warning naming both ids.
+- A reading whose `depth` is greater than `sensor_depth` (the level is below the sensor) emits a warning naming the event.
+
+```json
+{
+  "id": "8f2c1e4a-3b6d-4f0e-9a7c-5d1b2e3f4a5b",
+  "type": "logger_series",
+  "datetime": "2026-07-01T00:00:00-03:00",
+  "equipment": "Solinst Levelogger 5 LT, SN 2081234",
+  "measurement_method": "pressure_transducer",
+  "sensor_depth": 42.0,
+  "interval": 15,
+  "barometric_compensation": "barologger",
+  "aggregation": "none",
+  "readings": [
+    {
+      "datetime": "2026-07-01T00:00:00-03:00",
+      "depth": 18.42,
+      "pressure": 233.9
+    },
+    {
+      "datetime": "2026-07-01T00:15:00-03:00",
+      "depth": 18.44,
+      "pressure": 233.7
+    }
+  ]
+}
+```
 
 ---
 
@@ -377,12 +519,15 @@ Static level is not reliably measurable during air-lift and SHOULD be omitted.
 
 ### `LevelReading`
 
-| Field             | Type   | Required | Description                                                       |
-| ----------------- | ------ | -------- | ----------------------------------------------------------------- |
-| `elapsed`         | number | yes      | Time since step start (or pump shutdown for recovery) in minutes. |
-| `depth`           | number | yes      | Depth to water surface from ground level in meters.               |
-| `depth_precision` | number | no       | One-sigma precision of `depth`.                                   |
-| `pressure`        | number | no       | Pressure transducer reading in kPa.                               |
+| Field             | Type   | Required                        | Description                                                                                                                      |
+| ----------------- | ------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `elapsed`         | number | yes, except in `logger_series`  | Time since step start (or pump shutdown for recovery) in minutes. MUST NOT be present in `logger_series` readings.               |
+| `datetime`        | string | in `logger_series` only         | RFC 3339 instant of the reading, with UTC offset. Required in `logger_series`; optional elsewhere. _(since v2.4)_                |
+| `depth`           | number | yes                             | Depth to water surface from ground level in meters. In an aggregated `logger_series`, the representative value of the interval.  |
+| `depth_precision` | number | no                              | One-sigma precision of `depth`.                                                                                                  |
+| `pressure`        | number | no                              | Pressure transducer reading in kPa.                                                                                              |
+| `depth_min`       | number | aggregated `logger_series` only | Shallowest depth in the interval, in meters. Required when `aggregation` is `hourly` or `daily`; used only there. _(since v2.4)_ |
+| `depth_max`       | number | aggregated `logger_series` only | Deepest depth in the interval, in meters. Required when `aggregation` is `hourly` or `daily`; used only there. _(since v2.4)_    |
 
 ### `RecoveryPhase`
 
@@ -506,7 +651,7 @@ Vocabulary is open. Non-canonical values SHOULD use the `x-` prefix.
 
 ### `updated_at` semantics
 
-- `updated_at` MUST NOT be earlier than `datetime` only in the case of pre-dated logging — typically retroactive entry of historical events. There is no validation rule prohibiting `updated_at < datetime`; both orderings are legal.
+- `updated_at` is usually later than `datetime`. It MAY be earlier when an entry is pre-dated (retroactive entry of a historical event); both orderings are valid and neither emits a warning.
 - When a producer modifies the `description`, `category`, `severity`, `author`, or `attachments` of an existing entry, it SHOULD update `updated_at` to the current instant.
 - When a producer modifies only the `id` (e.g. during duplicate-resolution), it SHOULD NOT update `updated_at`, since the substantive content of the entry has not changed.
 - The `updated_at` field is not retroactive: parsers reading a v1 or early-v2.0 file without `updated_at` MUST NOT synthesize one.
@@ -627,29 +772,29 @@ A mutable record block: each entry transcribes one legal instrument governing ab
 
 ### `Permit`
 
-| Field                  | Type                   | Required | Unit | Description                                                                  |
-| ---------------------- | ---------------------- | -------- | ---- | ---------------------------------------------------------------------------- |
-| `id`                   | string                 | yes      |      | Unique within `permits`. UUID v4 recommended.                                |
-| `type`                 | string                 | yes      |      | See format-reference.md § `permits[].type`.                                  |
-| `authority`            | string                 | yes      |      | Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`. |
-| `identifier`           | string                 | no       |      | Identifier of the granted instrument (portaria, license code), verbatim.     |
-| `request_identifier`   | string                 | no       |      | Identifier of the request or administrative process (protocolo), verbatim.   |
-| `status`               | string (enum)          | no       |      | Administrative status. Closed vocabulary, see below. Absent means `granted`. |
-| `issued_at`            | string (date)          | no       |      | Issue date.                                                                  |
-| `valid_from`           | string (date)          | no       |      | Absent means valid from `issued_at`.                                         |
-| `valid_until`          | string (date)          | no       |      | Absent means no fixed expiry.                                                |
-| `renewal_requested_at` | string (date)          | no       |      | Date a renewal request was filed.                                            |
-| `water_use`            | string[]               | no       |      | See format-reference.md § `permits[].water_use`.                             |
-| `flow_rate`            | number                 | no       | m³/h | Maximum granted flow.                                                        |
-| `daily_operating_time` | number                 | no       | h    | Maximum granted daily operating time, 0–24.                                  |
-| `volume_limits`        | `VolumeLimit[]`        | no       |      | Only volumes stated in the document.                                         |
-| `monthly_schedule`     | `MonthlyGrant[]`       | no       |      | Month-by-month grant.                                                        |
-| `conditions`           | `PermitCondition[]`    | no       |      | Obligations (condicionantes).                                                |
-| `history`              | `PermitHistoryEntry[]` | no       |      | Administrative steps: filing, process, notifications, fees.                  |
-| `supersedes`           | string                 | no       |      | `permits[].id` of the instrument this one legally replaces.                  |
-| `notes`                | string                 | no       |      |                                                                              |
-| `updated_at`           | string (instant)       | no       |      | Last edit of this record.                                                    |
-| `attachments`          | `Attachment[]`         | no       |      | The legal document. See § Attachment.                                        |
+| Field                  | Type                   | Required | Unit | Description                                                                   |
+| ---------------------- | ---------------------- | -------- | ---- | ----------------------------------------------------------------------------- |
+| `id`                   | string                 | yes      |      | Unique within `permits`. UUID v4 recommended.                                 |
+| `type`                 | string                 | yes      |      | See format-reference.md § `permits[].type`.                                   |
+| `authority`            | string                 | yes      |      | Issuing body, e.g. `ANA`, `SEMAS-PA`. Same semantics as `well_id.authority`.  |
+| `identifier`           | string                 | no       |      | Identifier of the granted instrument (portaria, license code), verbatim.      |
+| `request_identifier`   | string                 | no       |      | Identifier of the request or administrative process (protocolo), verbatim.    |
+| `status`               | string (enum)          | no       |      | Administrative status. Closed vocabulary, see below. Absent means `granted`.  |
+| `issued_at`            | string (date)          | no       |      | Issue date.                                                                   |
+| `valid_from`           | string (date)          | no       |      | Absent means valid from `issued_at`.                                          |
+| `valid_until`          | string (date)          | no       |      | Absent means no fixed expiry.                                                 |
+| `renewal_requested_at` | string (date)          | no       |      | Date a renewal request was filed.                                             |
+| `water_use`            | string[]               | no       |      | See format-reference.md § `permits[].water_use`.                              |
+| `flow_rate`            | number                 | no       | m³/h | Maximum granted flow.                                                         |
+| `daily_operating_time` | number                 | no       | h    | Maximum granted daily operating time. Above 24 is read as 24, with a warning. |
+| `volume_limits`        | `VolumeLimit[]`        | no       |      | Only volumes stated in the document.                                          |
+| `monthly_schedule`     | `MonthlyGrant[]`       | no       |      | Month-by-month grant.                                                         |
+| `conditions`           | `PermitCondition[]`    | no       |      | Obligations (condicionantes).                                                 |
+| `history`              | `PermitHistoryEntry[]` | no       |      | Administrative steps: filing, process, notifications, fees.                   |
+| `supersedes`           | string                 | no       |      | `permits[].id` of the instrument this one legally replaces.                   |
+| `notes`                | string                 | no       |      |                                                                               |
+| `updated_at`           | string (instant)       | no       |      | Last edit of this record.                                                     |
+| `attachments`          | `Attachment[]`         | no       |      | The legal document. See § Attachment.                                         |
 
 `water_use` describes what the abstracted water is for. It is distinct from the top-level `well_purpose`, which describes the well's role.
 
@@ -702,7 +847,7 @@ Volumes implied by flow × time × days are derived and MUST NOT be stored here.
 | ---------------------- | ------- | -------- | ---- | --------------------------------------- |
 | `month`                | integer | yes      |      | 1–12, unique within the schedule.       |
 | `flow_rate`            | number  | no       | m³/h |                                         |
-| `daily_operating_time` | number  | no       | h    | 0–24.                                   |
+| `daily_operating_time` | number  | no       | h    | Above 24 is read as 24, with a warning. |
 | `days`                 | integer | no       |      | Days of operation granted in the month. |
 
 When `monthly_schedule` is present, a month absent from it has no abstraction granted. The top-level `flow_rate` and `daily_operating_time` hold the maximum across months; a monthly value above them emits a warning.
@@ -768,7 +913,7 @@ A water-quality `monitoring` condition is fulfilled by pointing to the sample wi
 
 Derived status of each deadline, evaluated on the local civil date at the well site:
 
-- **fulfilled** — a fulfillment has its `due_date`. **Fulfilled late** when that fulfillment's local date (the date part of its `datetime`, in the offset it carries) is after `due_date`.
+- **fulfilled** — a fulfillment has its `due_date`. **Fulfilled late** when that fulfillment's local date is after `due_date`. The local date is the `datetime` converted to `location.properties.timezone` _(since v2.4)_; without `timezone`, the date part of the string in the offset it carries.
 - **upcoming** — no match and today is on or before `due_date`.
 - **overdue** — no match and today is after `due_date`.
 
@@ -792,12 +937,13 @@ The lead time a renewal request requires varies by jurisdiction; it is evaluated
 - `valid_until` earlier than the start date.
 - A `supersedes` cycle, or a `supersedes` reference that does not resolve.
 - Two granted, non-superseded permits of the same `type` with overlapping validity.
-- A `daily_operating_time` outside 0–24, on the permit or in `monthly_schedule`.
+- A `daily_operating_time` above 24, on the permit or in `monthly_schedule`. It is read as 24 by every derivation; the stored value is not rewritten. A negative value is a schema error.
 - A `monthly_schedule` value above the permit's top-level maximum.
 - A duplicate `month`, `volume_limits` period, condition `id`, `history` `id` or fulfillment `id` within one permit.
 - A condition with both `first_due` and `due_after`.
 - A permit with neither `identifier` nor `request_identifier`, or a granted permit without `identifier`.
 - A condition fulfillment that matches no deadline, or whose `event_id` / `sample_id` does not resolve.
+- Permits with condition fulfillments in a file without `location.properties.timezone` _(since v2.4)_.
 
 A collective grant covering several wells is repeated in each well's file until cross-file references arrive in v3.
 
@@ -838,7 +984,7 @@ The register values at installation and removal are recorded as ordinary `meter_
 
 ## `production[]` _(since v2.3)_
 
-A ledger: the append-only record of water produced by the well. An erroneous entry is never edited in place; the correction is a new entry whose `corrects` holds the id of the retracted entry, following § `hydrodynamic_events[]` — Corrections (retracted entries stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning). Entries are discriminated by `type`. Volumes are always derived, never stored as totals.
+A ledger: the record of water produced by the well, which grows by appending. Entries MAY be edited in place, but editing is NOT RECOMMENDED after the entry has been exported. `corrects` remains the recommended mechanism for measurement corrections: the correction is a new entry whose `corrects` holds the id of the retracted entry, following § `hydrodynamic_events[]` — Corrections (retracted entries stay in the file and are excluded from every derivation; chains are allowed; a cycle emits a warning). Entries are discriminated by `type`. Volumes are always derived, never stored as totals.
 
 ### Common fields
 
@@ -870,7 +1016,7 @@ A volume produced in a period, estimated without a meter (e.g. before a meter wa
 | Field          | Type             | Required | Unit | Description                                                                              |
 | -------------- | ---------------- | -------- | ---- | ---------------------------------------------------------------------------------------- |
 | `period_start` | string (instant) | yes      |      | Start of the declared period.                                                            |
-| `period_end`   | string (instant) | yes      |      | End of the declared period. Later than `period_start`.                                   |
+| `period_end`   | string (instant) | yes      |      | End of the declared period. SHOULD be later than `period_start`; otherwise a warning.    |
 | `volume`       | number           | yes      | m³   | Volume produced in the period.                                                           |
 | `method`       | string           | no       |      | Basis of the estimate: `flow_time`, `energy`, `user_statement`, `x-…`. Descriptive only. |
 
@@ -909,22 +1055,23 @@ A mutable record block: each entry declares how the well is intended to run from
 
 ### `OperatingRegime`
 
-| Field                  | Type             | Required | Unit | Description                                            |
-| ---------------------- | ---------------- | -------- | ---- | ------------------------------------------------------ |
-| `id`                   | string           | yes      |      | Unique within `operating_regime`.                      |
-| `effective_from`       | string (instant) | yes      |      | When the regime takes effect. Unique within the block. |
-| `flow_rate`            | number           | no       | m³/h |                                                        |
-| `daily_operating_time` | number           | no       | h    | 0–24.                                                  |
-| `days_per_week`        | integer          | no       |      | 1–7.                                                   |
-| `notes`                | string           | no       |      |                                                        |
-| `updated_at`           | string (instant) | no       |      | Last edit of this record.                              |
+| Field                  | Type             | Required | Unit | Description                                             |
+| ---------------------- | ---------------- | -------- | ---- | ------------------------------------------------------- |
+| `id`                   | string           | yes      |      | Unique within `operating_regime`.                       |
+| `effective_from`       | string (instant) | yes      |      | When the regime takes effect. Duplicates are a warning. |
+| `flow_rate`            | number           | no       | m³/h |                                                         |
+| `daily_operating_time` | number           | no       | h    | Above 24 is read as 24, with a warning.                 |
+| `days_per_week`        | integer          | no       |      | 1–7.                                                    |
+| `notes`                | string           | no       |      |                                                         |
+| `updated_at`           | string (instant) | no       |      | Last edit of this record.                               |
 
 - An absent field means unknown, never zero.
 - A stopped well is recorded with a `history_logs` `status_change`, not a regime with `flow_rate: 0`.
-- `daily_operating_time` outside 0–24 and `days_per_week` outside 1–7 (or not an integer) are schema errors.
+- A `daily_operating_time` above 24 is stored as written, read as 24 by every derivation, and emits a warning. A negative `daily_operating_time` is a schema error, as is a `days_per_week` outside 1–7 (or not an integer).
 
 ### Validation (warnings, never rejection)
 
+- A `daily_operating_time` above 24.
 - Two entries with the same `effective_from`.
 - Regime values above those of the permit active at `effective_from` (`flow_rate`, `daily_operating_time`).
 
@@ -942,7 +1089,7 @@ A ledger of water samples, each with its field and laboratory results. The full 
 {
   "$schema": "https://welldot.org/schema/v2/well.schema.json",
   "@context": "https://welldot.org/context/v2.jsonld",
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "well_purpose": ["production"],
   "name": "Poço PP-01",
@@ -960,6 +1107,7 @@ A ledger of water samples, each with its field and laboratory results. The full 
     "lng": -48.5039,
     "elevation": 12.5,
     "properties": {
+      "timezone": "America/Belem",
       "elevation_datum": "wgs84_ellipsoid",
       "crs": "EPSG:4326",
       "elevation_precision": 0.5
@@ -1012,7 +1160,7 @@ A ledger of water samples, each with its field and laboratory results. The full 
     }
   ],
   "cement_pad": {
-    "type": "square",
+    "type": "concrete",
     "width": 1.0,
     "thickness": 0.15,
     "length": 1.0
@@ -1131,7 +1279,6 @@ A ledger of water samples, each with its field and laboratory results. The full 
       "flow_rate": 340.0,
       "specific_capacity": 21.17,
       "transmissivity": 4.2e-4,
-      "storativity": null,
       "notes": "Cooper-Jacob straight-line fit, t=10min to t=1440min. S not determinable — no observation well."
     }
   ],
@@ -1555,4 +1702,4 @@ A ledger of water samples, each with its field and laboratory results. The full 
 
 ---
 
-_`.well` Format Specification v2.3_
+_`.well` Format Specification v2.4_

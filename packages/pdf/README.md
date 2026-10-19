@@ -1,8 +1,45 @@
 # @welldot/pdf
 
+## Overview
+
 Customizable PDF reports for `.well` water well profiles, built on [pdfmake](https://pdfmake.github.io/docs/). Part of the [welldot](https://github.com/rafaeelneto/welldot) open-source ecosystem.
 
 One call turns a well into a paginated report: lithology/construction profile, legend, general information, construction tables, hydrodynamic tests, history log, pumps, meters, operating regimes, production, permits and water quality. Labels ship in English and Portuguese. Branding, watermark, page layout, theme, sections and every label can be customized.
+
+This README covers installation, a quick start, every customization option, and the API reference for the document builders, measurement helpers and configs.
+
+## Table of contents
+
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Customization](#customization)
+  - [Content](#content)
+  - [Branding](#branding)
+  - [Watermark](#watermark)
+  - [Page](#page)
+  - [Theme](#theme)
+  - [Header and footer](#header-and-footer)
+  - [Profile format](#profile-format)
+  - [Legend](#legend)
+  - [Sections](#sections)
+  - [Dates and labels](#dates-and-labels)
+  - [Fonts](#fonts)
+  - [Profile and pdfmake hooks](#profile-and-pdfmake-hooks)
+- [API](#api)
+  - [`createWellPdf(well, options?)`](#createwellpdfwell-options)
+  - [`buildDocDefinition(well, svgs, legend, options?, extras?)`](#builddocdefinitionwell-svgs-legend-options-extras)
+  - [`buildSvgProfiles(well, container, ctx, { firstPageRemaining?, startPage?, drawingHeight? })`](#buildsvgprofileswell-container-ctx--firstpageremaining-startpage-drawingheight-)
+  - [`measureProfileStart(well, options, pdfMake)`](#measureprofilestartwell-options-pdfmake)
+  - [`measureLegendBreak(well, svgs, legend, options, pdfMake, extras?)`](#measurelegendbreakwell-svgs-legend-options-pdfmake-extras)
+  - [`measureCompactSideSplit(well, svgs, legend, options, pdfMake, extras?)`](#measurecompactsidesplitwell-svgs-legend-options-pdfmake-extras)
+  - [`measureCompactContentHeight(well, options, pdfMake)`](#measurecompactcontentheightwell-options-pdfmake)
+  - [`resolvePdfContext(options?)`](#resolvepdfcontextoptions)
+  - [Section builders](#section-builders)
+  - [Layout helpers](#layout-helpers)
+  - [Runtime](#runtime)
+  - [Configs](#configs)
+- [Data format](#data-format)
+- [License](#license)
 
 ---
 

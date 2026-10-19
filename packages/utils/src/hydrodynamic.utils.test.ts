@@ -15,6 +15,7 @@ import {
   stepTestSeries,
   theisRecoverySeries,
 } from './hydrodynamic.utils';
+import { getLatestStaticLevel } from './profile.utils';
 
 const stepped = {
   id: 'e1',
@@ -87,7 +88,13 @@ const stepTest = {
         { elapsed: 110, depth: 47 },
       ],
     },
-    { rate: 90, readings: [{ elapsed: 30, depth: 50 }, { elapsed: 100, depth: 52 }] },
+    {
+      rate: 90,
+      readings: [
+        { elapsed: 30, depth: 50 },
+        { elapsed: 100, depth: 52 },
+      ],
+    },
     { rate: 120, duration: 60, readings: [{ elapsed: 60, depth: 60 }] },
   ],
   recovery: {
@@ -175,5 +182,45 @@ describe('pumping test series', () => {
     ]);
     expect(availablePumpingCharts(stepped)).toEqual(['hydrograph']);
     expect(availablePumpingCharts(spot)).toEqual([]);
+  });
+});
+
+describe('logger_series (v2.4)', () => {
+  const series = {
+    id: 'ls-1',
+    type: 'logger_series',
+    datetime: '2026-07-01T00:00:00-03:00',
+    sensor_depth: 42,
+    readings: [
+      { datetime: '2026-07-01T00:00:00-03:00', depth: 18.42 },
+      { datetime: '2026-07-01T00:15:00-03:00', depth: 18.44 },
+    ],
+  } as HydrodynamicEvent;
+
+  it('logger_series does not feed static level or pumping derivations', () => {
+    const well = {
+      version: '2.4',
+      bore_hole: [],
+      well_case: [],
+      reduction: [],
+      well_screen: [],
+      surface_case: [],
+      hole_fill: [],
+      lithology: [],
+      fractures: [],
+      caves: [],
+      hydrodynamic_events: [series],
+    } as unknown as Parameters<typeof getLatestStaticLevel>[0];
+    expect(getLatestStaticLevel(well)).toBeUndefined();
+    expect(() => pumpingTimeline(series)).not.toThrow();
+    expect(pumpingTimeline(series)).toEqual({
+      staticLevel: null,
+      steps: [],
+      pumpingEnd: null,
+      recovery: null,
+    });
+    expect(lastReading(series)).toBeNull();
+    expect(allStepReadings(series)).toEqual([]);
+    expect(availablePumpingCharts(series)).toEqual([]);
   });
 });
