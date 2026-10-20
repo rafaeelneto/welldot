@@ -47,7 +47,7 @@ import {
 } from './waterSample.vocab';
 
 const docs = (file: string) =>
-  readFileSync(new URL(`../../docs/spec/v2/${file}`, import.meta.url), 'utf8');
+  readFileSync(new URL(`../../../../spec/v2/${file}`, import.meta.url), 'utf8');
 
 /**
  * Each vocabulary with the spec heading that documents it. The heading is

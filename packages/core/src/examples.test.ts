@@ -70,7 +70,7 @@ describe('examples', () => {
 
   it('the Complete Example in object-schemas.md parses as v2.4', () => {
     const doc = readFileSync(
-      join(__dirname, '..', 'docs', 'spec', 'v2', 'object-schemas.md'),
+      join(__dirname, '..', '..', '..', 'spec', 'v2', 'object-schemas.md'),
       'utf-8',
     );
     const after = doc.slice(doc.indexOf('## Complete Example'));

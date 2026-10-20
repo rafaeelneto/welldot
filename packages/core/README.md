@@ -263,7 +263,7 @@ Serializes a `Well` object to a versioned `.well` JSON string (`"version": "2.4"
 
 Parses and normalizes a JSON string into a `Well`. Handles multiple formats:
 
-- v2 format (`"version": 2` or `"2.x"`) — passes v2-specific fields through directly
+- v2 format (`"version": "2.x"`, or the integer `2` written before v2.4) — passes v2-specific fields through directly
 - v1 format (`"version": 1`) — applies v1→v2 normalizations: `fgdc_texture` → `texture`, `screen_slot_mm` → `screen_slot`, flat `lat/lng/elevation` → `location`
 - Legacy formats with `constructive` / `geologic` sub-objects
 - Legacy `diam_pol` inch diameters → `diameter` mm conversion (`× 25.4`)
@@ -462,24 +462,27 @@ See [fgdc-textures.md](./docs/reference/fgdc-textures.md) for the complete annot
 
 All depths are in **meters** from ground level (0 = surface). All diameters are in **millimeters**. Geographic coordinates use WGS84 decimal degrees. The MIME type is `application/vnd.well+json`.
 
-A minimal v2 `.well` document:
+A minimal v2.4 `.well` document:
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "name": "PP-01",
   "location": { "lat": -1.4558, "lng": -48.5039, "elevation": 12.5 },
   "bore_hole": [
     { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
   ],
-  "well_case": [{ "from": 0, "to": 60, "type": "steel", "diameter": 200 }],
+  "well_case": [
+    { "from": 0, "to": 60, "type": "carbon_steel", "diameter": 200 }
+  ],
   "reduction": [],
   "well_screen": [
     {
       "from": 60,
       "to": 80,
-      "type": "wire_wound",
+      "type": "stainless_steel",
+      "slot_type": "continuous_slot",
       "diameter": 150,
       "screen_slot": 0.5
     }
@@ -495,7 +498,7 @@ A minimal v2 `.well` document:
     }
   ],
   "cement_pad": {
-    "type": "square",
+    "type": "concrete",
     "width": 1.0,
     "thickness": 0.15,
     "length": 1.0
