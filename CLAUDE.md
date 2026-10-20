@@ -81,6 +81,10 @@ apps/well-profiler     ← Next.js 15 web app (deprecated, migration in progress
 
 **`apps/well-profiler`** — **Deprecated.** Legacy Next.js 15 app being replaced by `apps/profiler`. See [apps/well-profiler/CLAUDE.md](apps/well-profiler/CLAUDE.md).
 
+### Specification
+
+**`spec/`** — the normative `.well` specification (plain Markdown, versioned folders `v1/`, `v2/`) and the generated JSON Schema in `spec/schema/`, served at `https://welldot.org/schema/v2/well.schema.json` (its `$id`). It is canonical: `@welldot/core` and every other implementation follow it. Keep it plain GitHub-readable Markdown. When to update each file is described in [packages/core/CLAUDE.md](packages/core/CLAUDE.md); see also [spec/README.md](spec/README.md).
+
 ### Build outputs
 
 Libraries output ESM (`dist/index.js`), CJS (`dist/index.cjs`), and TypeScript declarations (tsup). The exception is `@welldot/vue`: Vite library mode, ESM only, `preserveModules`, plus `dist/{tailwind,grid,style}.css`. The app produces standard Next.js artifacts. Turbo caches `dist/**` and `.next/**`.

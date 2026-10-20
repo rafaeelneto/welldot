@@ -6,7 +6,7 @@
 ## Overview
 
 This is a condensed reference for extraction. The normative source is
-`packages/core/docs/spec/v2/{format-reference,object-schemas}.md` in the repo — when in doubt, that wins.
+`spec/v2/{format-reference,object-schemas}.md` in the repo — when in doubt, that wins.
 
 It lists the units, the top-level structure and every block the converter writes: construction,
 lithology and textures (with the FGDC codes most used in well logs), fractures and caves,

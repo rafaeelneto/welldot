@@ -8,7 +8,7 @@
 
 TypeScript types, Zod validators, and serialization utilities for the `.well` open format — a JSON-based standard for representing water well data.
 
-This README covers installation, a quick start, the API (types, validators, functions and unit conversion), the water quality and recommended vocabularies, the FGDC texture codes and a short tour of the format. The normative specification lives in [docs/spec/v2](./docs/spec/v2/overview.md).
+This README covers installation, a quick start, the API (types, validators, functions and unit conversion), the water quality and recommended vocabularies, the FGDC texture codes and a short tour of the format. The normative specification lives in [spec/v2](../../spec/v2/overview.md).
 
 ## Table of contents
 
@@ -46,7 +46,9 @@ This README covers installation, a quick start, the API (types, validators, func
 
 The format is designed for three use cases: visualization of technical well profiles, registration with regulatory bodies, and hydrogeological research.
 
-See the [v2 format specification](./docs/spec/v2/overview.md) (current revision: v2.4) for the complete schema reference and design rationale. The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
+See the [v2 format specification](../../spec/v2/overview.md) (current revision: v2.4) for the complete schema reference and design rationale. The [v1 spec](../../spec/v1/well-format.md) remains available for reference.
+
+The JSON Schema ships with the package as `@welldot/core/well.schema.json` and is published at `https://welldot.org/schema/v2/well.schema.json`.
 
 ### Example wells
 
@@ -456,7 +458,7 @@ Codes are grouped by series:
 | 600    | Sedimentary lithology _(most useful for well logging)_ |
 | 700    | Metamorphic and igneous lithology                      |
 
-See [fgdc-textures.md](./docs/reference/fgdc-textures.md) for the complete annotated list of all 284 codes.
+See [fgdc-textures.md](../../spec/reference/fgdc-textures.md) for the complete annotated list of all 284 codes.
 
 ## `.well` Format Overview
 
@@ -509,7 +511,7 @@ A minimal v2.4 `.well` document:
 }
 ```
 
-For the complete schema reference, field vocabulary, and design rationale see the [`.well` v2 format specification](./docs/spec/v2/overview.md). The [v1 spec](./docs/spec/v1/well-format.md) remains available for reference.
+For the complete schema reference, field vocabulary, and design rationale see the [`.well` v2 format specification](../../spec/v2/overview.md). The [v1 spec](../../spec/v1/well-format.md) remains available for reference.
 
 ## Contributing
 

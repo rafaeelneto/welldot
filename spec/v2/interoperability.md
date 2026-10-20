@@ -210,7 +210,7 @@ Files MAY include a `$schema` field referencing this URL:
 }
 ```
 
-The schema is generated from the Zod validators in `@welldot/core` to prevent drift between runtime validation and published schema. The generated file lives at [`docs/schema/v2/well.schema.json`](../../schema/v2/well.schema.json) in this package. Profile schemas SHOULD extend this canonical schema via `allOf` + `$ref`.
+The schema is generated from the Zod validators in `@welldot/core` to prevent drift between runtime validation and published schema. The generated file lives at [`spec/schema/v2/well.schema.json`](../schema/v2/well.schema.json) in the repository root, is published at `https://welldot.org/schema/v2/well.schema.json` and ships in `@welldot/core` as `@welldot/core/well.schema.json`. Profile schemas SHOULD extend this canonical schema via `allOf` + `$ref`.
 
 ---
 

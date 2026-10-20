@@ -158,7 +158,7 @@ The format captures:
 | General attachments | `attachments[]`                                                                            | Root-level files about the well as a whole, e.g. the drilling report (v2.3)                           |
 | Water quality       | `water_samples[]`                                                                          | Ledger of water samples with field and lab results, sampling point, purge, lab and QA/QC data (v2.3)  |
 
-All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`packages/core/docs/spec/v2/`](packages/core/docs/spec/v2/).
+All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`spec/v2/`](spec/v2/).
 
 The format is open. You are welcome to implement parsers, exporters, converters, or viewers in any language. Contributions to the specification are welcome via issues and pull requests.
 
