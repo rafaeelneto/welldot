@@ -12,12 +12,12 @@ The `.well` format is designed for three use cases: **visualization** — accura
 
 ## The `.well` format
 
-- [Format overview (v2)](https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/overview.md): Purpose, design principles, and changes from v1.
-- [Format reference (v2)](https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/format-reference.md): Top-level fields, units, precision, location/CRS, extensibility rules.
-- [Object schemas (v2)](https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/object-schemas.md): Full schema for every object type (borehole, casing, screen, lithology, hydrodynamic events, aquifer analysis, etc.) with a complete example file.
-- [Interoperability (v2)](https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/interoperability.md): JSON-LD context and GWML2 relationship.
-- [JSON Schema (v2)](https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/schema/v2/well.schema.json): Machine-readable schema, generated from the Zod validators.
-- [FGDC texture reference](https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/reference/fgdc-textures.md): Lithology texture codes used in the `texture` field.
+- [Format overview (v2)](https://github.com/rafaeelneto/welldot/blob/main/spec/v2/overview.md): Purpose, design principles, and changes from v1.
+- [Format reference (v2)](https://github.com/rafaeelneto/welldot/blob/main/spec/v2/format-reference.md): Top-level fields, units, precision, location/CRS, extensibility rules.
+- [Object schemas (v2)](https://github.com/rafaeelneto/welldot/blob/main/spec/v2/object-schemas.md): Full schema for every object type (borehole, casing, screen, lithology, hydrodynamic events, aquifer analysis, etc.) with a complete example file.
+- [Interoperability (v2)](https://github.com/rafaeelneto/welldot/blob/main/spec/v2/interoperability.md): JSON-LD context and GWML2 relationship.
+- [JSON Schema (v2)](https://welldot.org/schema/v2/well.schema.json): Machine-readable schema, generated from the Zod validators.
+- [FGDC texture reference](https://github.com/rafaeelneto/welldot/blob/main/spec/reference/fgdc-textures.md): Lithology texture codes used in the `texture` field.
 
 ## Packages
 
