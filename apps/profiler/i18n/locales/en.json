@@ -266,6 +266,11 @@
         "num": "§ 7.4",
         "title": "Water quality assessment",
         "body": "Interpreted judgments such as water class, hydrochemical facies and fitness for use, stored next to the samples they come from."
+      },
+      {
+        "num": "§ 7.5",
+        "title": "Offline packages (.wellz)",
+        "body": "One ZIP with the .well file and its attachments — reports, photos, permit scans — at relative paths, each checked by its sha256, to carry a whole well to the field or archive it without links. Already defined in v2.4; coming to the editor."
       }
     ]
   },

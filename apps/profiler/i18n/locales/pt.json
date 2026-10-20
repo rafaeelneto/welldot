@@ -266,6 +266,11 @@
         "num": "§ 7.4",
         "title": "Avaliação da qualidade da água",
         "body": "Julgamentos interpretados como classe da água, fácies hidroquímica e aptidão de uso, guardados junto às amostras de onde vêm."
+      },
+      {
+        "num": "§ 7.5",
+        "title": "Pacotes offline (.wellz)",
+        "body": "Um ZIP com o arquivo .well e seus anexos — relatórios, fotos, outorgas digitalizadas — em caminhos relativos, cada um conferido pelo sha256, para levar o poço inteiro a campo ou arquivá-lo sem links. Já definido na v2.4; em breve no editor."
       }
     ]
   },

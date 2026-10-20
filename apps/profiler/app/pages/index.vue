@@ -885,10 +885,14 @@ const toolCards = computed(() =>
       </p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <LandingPropCard
-          v-for="prop in horizonProps"
+          v-for="(prop, i) in horizonProps"
           :key="prop.num"
           :num="prop.num"
           :title="prop.title"
+          :class="{
+            'sm:col-span-2':
+              i === horizonProps.length - 1 && horizonProps.length % 2 === 1,
+          }"
         >
           {{ prop.body }}
         </LandingPropCard>
