@@ -201,7 +201,7 @@ const incompleteStages = computed(() =>
 
 const incompleteJson = computed(() => {
   const oldReport = {
-    version: 2,
+    version: '2.4',
     name: 'Poço 03',
     well_type: 'tubular',
     well_depth: 84,
@@ -258,7 +258,7 @@ const incompleteRules = computed(() =>
 // stage only adds keys at the end, where the viewer scrolls on change.
 
 const EXT_BASE = {
-  version: 2,
+  version: '2.4',
   name: 'Poço 03',
   well_type: 'tubular',
   well_depth: 84,
@@ -414,7 +414,7 @@ const toolCards = computed(() =>
             <Button
               :label="t('hero.ctaSecondary')"
               as="a"
-              href="https://github.com/rafaeelneto/welldot/tree/main/packages/core"
+              href="https://github.com/rafaeelneto/welldot/tree/main/spec"
               target="_blank"
               variant="outlined"
               severity="secondary"
@@ -424,7 +424,7 @@ const toolCards = computed(() =>
             class="flex flex-wrap gap-5.5 pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
           >
             <span
-              ><b class="text-content-0 font-medium">v2.3</b>
+              ><b class="text-content-0 font-medium">v2.4</b>
               {{ t('hero.badgeSpec') }}</span
             >
             <span

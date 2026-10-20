@@ -5,7 +5,7 @@
     "featureList": [
       "Create, visualize and export geological and construction well profiles",
       "Pumping tests with semi-log, Theis recovery and step-test charts",
-      "Operation, production, permits and water quality (.well v2.3)",
+      "Operation, production, permits, water quality and continuous level loggers (.well v2.4)",
       "Customizable PDF reports",
       "Open, versioned .well JSON file format",
       "Accepts incomplete field and legacy records — a missing value means unknown, never zero",
@@ -33,8 +33,8 @@
     }
   },
   "footer": {
-    "version": "welldot · v2.3",
-    "spec": ".well spec v2.3",
+    "version": "welldot · v2.4",
+    "spec": ".well spec v2.4",
     "license": "Open · Apache 2.0"
   },
   "hero": {
@@ -87,7 +87,7 @@
       {
         "num": "§ 1.6",
         "title": "Operation & history",
-        "body": "Installed pumps, meters, produced volumes and operating regime, water-use permits with their conditions, water-quality samples, and a log of maintenance and incidents across the well's working life."
+        "body": "Installed pumps, meters, produced volumes and operating regime, water-use permits with their conditions, water-quality samples, continuous water-level series from installed loggers, and a log of maintenance and incidents across the well's working life."
       }
     ]
   },
@@ -245,7 +245,7 @@
     "headline1": "The",
     "headlineEm": "future",
     "headline2": ".",
-    "intro": "v2.3 covers geological, construction and hydrodynamic profiles — pump tests, aquifer analysis, pump installations, meters, production and operating regime, water-use permits and their conditions, water quality, general attachments and operational history. The specification evolves openly, and these are the gaps already mapped for the next versions.",
+    "intro": "v2.4 covers geological, construction and hydrodynamic profiles — pump tests, aquifer analysis, continuous level logger series, pump installations, meters, production and operating regime, water-use permits and their conditions, water quality, general attachments and operational history. The specification evolves openly, and these are the gaps already mapped for the next versions.",
     "props": [
       {
         "num": "§ 7.1",

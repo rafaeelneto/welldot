@@ -5,7 +5,7 @@
     "featureList": [
       "Crie, visualize e exporte perfis geológicos e construtivos de poços",
       "Testes de bombeamento com gráficos semilog, de recuperação de Theis e de teste escalonado",
-      "Operação, produção, outorgas e qualidade da água (.well v2.3)",
+      "Operação, produção, outorgas, qualidade da água e séries contínuas de nível (.well v2.4)",
       "Relatórios PDF personalizáveis",
       "Formato de arquivo .well aberto e versionado",
       "Aceita registros de campo e legados incompletos — valor ausente significa desconhecido, nunca zero",
@@ -33,8 +33,8 @@
     }
   },
   "footer": {
-    "version": "welldot · v2.3",
-    "spec": ".well spec v2.3",
+    "version": "welldot · v2.4",
+    "spec": ".well spec v2.4",
     "license": "Aberto · Apache 2.0"
   },
   "hero": {
@@ -87,7 +87,7 @@
       {
         "num": "§ 1.6",
         "title": "Operação e histórico",
-        "body": "Bombas instaladas, hidrômetros, volumes produzidos e regime de operação, outorgas com suas condicionantes, amostras de qualidade da água e um log de manutenções e incidentes ao longo da vida útil do poço."
+        "body": "Bombas instaladas, hidrômetros, volumes produzidos e regime de operação, outorgas com suas condicionantes, amostras de qualidade da água, séries contínuas de nível de dataloggers instalados e um log de manutenções e incidentes ao longo da vida útil do poço."
       }
     ]
   },
@@ -245,7 +245,7 @@
     "headline1": "O",
     "headlineEm": "futuro",
     "headline2": ".",
-    "intro": "A v2.3 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero, instalações de bomba, hidrômetros, produção e regime de operação, outorgas e suas condicionantes, qualidade da água, anexos gerais e histórico operacional. A especificação evolui de forma aberta, e estas são as lacunas já mapeadas para as próximas versões.",
+    "intro": "A v2.4 cobre perfis geológicos, construtivos e hidrodinâmicos — testes de bombeamento, análise de aquífero, séries contínuas de nível de dataloggers, instalações de bomba, hidrômetros, produção e regime de operação, outorgas e suas condicionantes, qualidade da água, anexos gerais e histórico operacional. A especificação evolui de forma aberta, e estas são as lacunas já mapeadas para as próximas versões.",
     "props": [
       {
         "num": "§ 7.1",
