@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/rafaeelneto/welldot/main/packages/core/docs/schema/v2/well.schema.json",
+  "$id": "https://welldot.org/schema/v2/well.schema.json",
   "title": "well",
   "description": "The .well open format — a JSON standard for water well data. Depths in meters, diameters in millimeters, measured from ground level.",
   "type": "object",

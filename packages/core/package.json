@@ -45,13 +45,13 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./well.schema.json": "./dist/well.schema.json",
     "./examples/*": "./examples/*"
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE",
-    "docs",
     "examples"
   ],
   "scripts": {

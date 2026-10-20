@@ -6,6 +6,7 @@ on:
       - preview
     paths:
       - 'packages/core/**'
+      - 'spec/**'
       - 'pnpm-lock.yaml'
     tags:
       - '@welldot/core@*'
@@ -64,7 +65,7 @@ jobs:
       - name: Check JSON Schema is in sync with the Zod source
         run: |
           pnpm --filter=@welldot/core generate:schema
-          git diff --exit-code -- packages/core/docs/schema/ \
+          git diff --exit-code -- spec/schema/ \
             || { echo "::error::well.schema.json is stale — run 'pnpm --filter=@welldot/core generate:schema' and commit the result."; exit 1; }
 
       - name: Check CHANGELOG entry for the release (tag)
