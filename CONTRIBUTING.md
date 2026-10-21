@@ -86,8 +86,8 @@ The format is a published standard with independent implementations, so **open a
 Once the change is agreed, it touches four places and all four must land together:
 
 1. **`packages/core/src/validators/well.validators.ts`** — the Zod schema. This is the single source of truth; everything else derives from it.
-2. **`pnpm --filter=@welldot/core generate:schema`** — regenerates `packages/core/docs/schema/v2/well.schema.json`. Commit the result. CI fails if this file drifts from the validators.
-3. **`packages/core/docs/spec/v2/`** — the prose spec. `format-reference.md` for a top-level field, `object-schemas.md` for a nested object, plus `overview.md` if the change is conceptual.
+2. **`pnpm --filter=@welldot/core generate:schema`** — regenerates `spec/schema/v2/well.schema.json`. Commit the result. CI fails if this file drifts from the validators.
+3. **`spec/v2/`** — the prose spec. `format-reference.md` for a top-level field, `object-schemas.md` for a nested object, plus `overview.md` if the change is conceptual.
 4. **Tests** in `packages/core/src/utils/well.utils.test.ts`, covering round-trip serialization and the absent/empty cases.
 
 ### Compatibility rules
@@ -139,13 +139,13 @@ Versions, CHANGELOGs and GitHub Releases are managed with [Changesets](https://g
 2. A release runs `pnpm version-packages`, which bumps the versions, writes each package's `CHANGELOG.md` and refreshes the lockfile. Review the result and merge it.
 3. Then `pnpm release:tag` creates the `@welldot/<pkg>@<version>` tags and `git push --follow-tags` pushes them. The tags trigger the publish workflows, which fail if the CHANGELOG has no entry for the version, publish to npm and create the GitHub Release from that CHANGELOG section.
 
-Changes to the format spec also get a "Changes in v2.x" section in [`overview.md`](packages/core/docs/spec/v2/overview.md), which is the format's changelog. The core changeset links to it.
+Changes to the format spec also get a "Changes in v2.x" section in [`overview.md`](spec/v2/overview.md), which is the format's changelog. The core changeset links to it.
 
 ---
 
 ## Building a tool that reads or writes `.well`
 
-You don't need permission, and you don't need to use our libraries — the format is open and the spec is complete enough to implement from scratch. Start with [`packages/core/docs/spec/v2/overview.md`](packages/core/docs/spec/v2/overview.md) and the [JSON Schema](packages/core/docs/schema/v2/well.schema.json).
+You don't need permission, and you don't need to use our libraries — the format is open and the spec is complete enough to implement from scratch. Start with [`spec/v2/overview.md`](spec/v2/overview.md) and the [JSON Schema](https://welldot.org/schema/v2/well.schema.json).
 
 If you build something, please open an issue to tell us. We want to keep a list of compatible implementations, and we'd rather learn about interoperability problems from you than from your users.
 

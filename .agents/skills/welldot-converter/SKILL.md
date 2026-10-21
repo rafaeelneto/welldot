@@ -98,14 +98,14 @@ evolve; anything in this SKILL.md is secondary to the live spec.
 This skill targets **spec version 2.4** — write `"version": "2.4"` (a string). welldot.org / `@welldot/core`
 do not accept `version: 1` files for new conversions, and `@welldot/core` up to 0.4.0 rejects `"2.4"` files.
 
-| Doc              | URL                                                                                             |
-| ---------------- | ----------------------------------------------------------------------------------------------- |
-| Overview         | https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/overview.md         |
-| Format reference | https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/format-reference.md |
-| Object schemas   | https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/object-schemas.md   |
-| Water quality    | https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/water-quality.md    |
-| Interoperability | https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/spec/v2/interoperability.md |
-| FGDC textures    | https://github.com/rafaeelneto/welldot/blob/main/packages/core/docs/reference/fgdc-textures.md  |
+| Doc              | URL                                                                              |
+| ---------------- | -------------------------------------------------------------------------------- |
+| Overview         | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/overview.md             |
+| Format reference | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/format-reference.md     |
+| Object schemas   | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/object-schemas.md       |
+| Water quality    | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/water-quality.md        |
+| Interoperability | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/interoperability.md     |
+| FGDC textures    | https://github.com/rafaeelneto/welldot/blob/main/spec/reference/fgdc-textures.md |
 
 Fetch these if you can browse. **If you cannot browse**, `references/well-spec.md` — bundled
 alongside this file, and uploaded with it into a ChatGPT Project or Gemini Gem — is a full

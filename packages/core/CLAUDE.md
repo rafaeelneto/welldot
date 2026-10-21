@@ -45,7 +45,7 @@ src/
 
 - **`Well`** — root type; contains `geologic` (lithology, fractures, caves) and `constructive` (bore_hole, casing, screen, gravel pack, etc.) sections plus metadata, the event/analysis/log blocks, and (since v2.3) root `attachments`, `pump_installations`, `permits`, `meters`, `production`, `operating_regime` and `water_samples`.
 - **Block kinds** (v2.3) — `hydrodynamic_events`, `production` and `water_samples` are ledgers (entries MAY be edited in place, NOT RECOMMENDED after export; `corrects` is the recommended mechanism for measurement corrections); `history_logs`, `permits` (incl. their `history` and condition `fulfillments`) and `operating_regime` are mutable records; `Permit.status` is a closed administrative vocabulary (absent = `granted`) and `identifier`/`request_identifier` are optional verbatim strings; `pump_installations` and `meters` are installation blocks (`installed_at`/`removed_at`). Permit dates are calendar dates (`YYYY-MM-DD`) and condition offsets are ISO 8601 date durations (`P90D`); everything else is an RFC 3339 instant. `production` is a discriminated union (`meter_reading` | `estimated_volume`, `x-` types pass through); register values and volumes are m³ and totals are never stored; `estimated_volume.method` is descriptive only, and volumes declared to a regulator are not production data (they belong in the permit's condition fulfillments). `history_logs` category-specific fields are flat optional fields on `HistoryLogEntry`: `maintenance` (`maintenance_type`, `pump_installation_id`, `meter_id`), `status_change` (`status`); `hydrodynamic_event_ids` / `sample_ids` are data links valid on every category; permit condition fulfillment is not a log category, it lives in `permits[].conditions[].fulfillments`. Derivations that honor these rules (current pump, retracted events/production, permit status, condition deadlines, meter volumes, current regime, current well status, operation warnings) live in `@welldot/utils`.
-- **Water quality** (v2.3) — `water_samples` is a ledger (corrected via `corrects`) of `WaterSample`s, each with ≥1 `WaterQualityResult`. A result has exactly one of `value`/`presence`/`text` (none only with `qualifier: 'not_detected'`); parameters are `{ code, vocabulary }` with `welldot` | `cas` | `x-…`, and `unit` exists only for `x-` codes (the unit of `welldot`/`cas` codes comes from the vocabulary; substances are always mg/L). `depth` is exclusive with `from`/`to`; `*_resolution` is the literal `'day'`. The vocabulary (`src/vocab/waterQuality.vocab.ts`) is versioned data — bump `WATER_QUALITY_VOCABULARY_VERSION` when codes change and update the vocabulary table in `docs/spec/v2/water-quality.md`. Limit sets (`src/vocab/waterQuality.limits.ts`) are display-time data, never written to files; their values must be verified against the official sources. `HistoryLogEntry.sample_ids` (any category) and `ConditionFulfillment.sample_id` link to samples. `SectionKey` includes `'water_quality'` (redacted by `redactWell`). Derivations (ion balance, RPD, holding times, exceedances, warnings) live in `@welldot/utils`.
+- **Water quality** (v2.3) — `water_samples` is a ledger (corrected via `corrects`) of `WaterSample`s, each with ≥1 `WaterQualityResult`. A result has exactly one of `value`/`presence`/`text` (none only with `qualifier: 'not_detected'`); parameters are `{ code, vocabulary }` with `welldot` | `cas` | `x-…`, and `unit` exists only for `x-` codes (the unit of `welldot`/`cas` codes comes from the vocabulary; substances are always mg/L). `depth` is exclusive with `from`/`to`; `*_resolution` is the literal `'day'`. The vocabulary (`src/vocab/waterQuality.vocab.ts`) is versioned data — bump `WATER_QUALITY_VOCABULARY_VERSION` when codes change and update the vocabulary table in `spec/v2/water-quality.md`. Limit sets (`src/vocab/waterQuality.limits.ts`) are display-time data, never written to files; their values must be verified against the official sources. `HistoryLogEntry.sample_ids` (any category) and `ConditionFulfillment.sample_id` link to samples. `SectionKey` includes `'water_quality'` (redacted by `redactWell`). Derivations (ion balance, RPD, holding times, exceedances, warnings) live in `@welldot/utils`.
 - **Open vocabularies** — free-text fields with recommended values are typed `OpenVocab<T>` (`T | (string & {})`) and their values + `en`/`pt` labels live in `src/vocab/*.vocab.ts` (`as const satisfies readonly VocabEntry[]`). Zod stays `z.string()`. The vocabularies are the single source of labels for every consumer (the profiler has no i18n keys for them). Closed vocabularies (`closed.vocab.ts`) follow the same shape, built with `closedVocab<T>()` so a missing value is a compile error. Every library ships its own labels: never make a consumer translate a value the format defines. `vocab.test.ts` checks each vocabulary against its table in the spec docs — adding or changing a value means updating the matching `format-reference.md` / `water-quality.md` table.
 - **New top-level blocks** must be mapped explicitly in `decodeV2Well`, `serializeWell` and `redactWell`. `serializeWell` writes the spec blocks in a fixed order and then every root member not in `WellSchema.shape` (`x-` fields/blocks, foreign members), except the legacy v1 keys in `LEGACY_ROOT_KEYS`; `redactWell` drops those unknown root members whenever anything is hidden. `parseWell` restores nested unknown members stripped by Zod (`mergeParsed`, merged by array index).
 - **`Profile`** — backward-compat alias for `Well`; used in the legacy Next.js app.
@@ -68,36 +68,39 @@ pnpm lint       # eslint
 
 ### Doc layout
 
+The specification lives in `spec/` at the **repository root**, not in this package: it defines the format, and this package implements it. Files there stay plain GitHub-readable Markdown. `packages/core/docs/` only holds "Moved" stubs for old links.
+
 ```
-docs/
-  spec/
-    v1/
-      well-format.md        ← v1 format spec (stable; update only for corrections)
-    v2/
-      overview.md           ← Changes from v1, Purpose, Design Principles, Known Limitations
-      format-reference.md   ← Top-level fields, Datetime, Units, Precision, CRS/location/well_id/profiles,
-                               Extensibility, Cross-reference & uniqueness rules
-      object-schemas.md     ← All object schemas + hydrodynamic_events + aquifer_analysis +
-                               history_logs + Complete Example JSON
-      water-quality.md      ← water_samples schemas, result rules, recommended values, unit rules,
-                               parameter vocabulary table, regulatory profiles (since v2.3)
-      interoperability.md   ← JSON-LD Context, GWML2 relationship, Schema Validation
+spec/                       ← repo root
+  v1/
+    well-format.md        ← v1 format spec (stable; update only for corrections)
+  v2/
+    overview.md           ← Changes from v1, Purpose, Design Principles, Known Limitations
+    format-reference.md   ← Top-level fields, Datetime, Units, Precision, CRS/location/well_id/profiles,
+                             Extensibility, Cross-reference & uniqueness rules
+    object-schemas.md     ← All object schemas + hydrodynamic_events + aquifer_analysis +
+                             history_logs + Complete Example JSON
+    water-quality.md      ← water_samples schemas, result rules, recommended values, unit rules,
+                             parameter vocabulary table, regulatory profiles (since v2.3)
+    interoperability.md   ← JSON-LD Context, GWML2 relationship, Schema Validation
   schema/
     v1/                     ← stub; v1 schema TBD
     v2/
-      well.schema.json      ← generated from src/validators/well.validators.ts via zod-to-json-schema;
-                               mirrors welldot.org/schema/v2/well.schema.json — DO NOT hand-edit
+      well.schema.json      ← generated from src/validators/well.validators.ts via zod-to-json-schema
+                               by `generate:schema`, copied to dist/ by the build (export
+                               `@welldot/core/well.schema.json`), served by apps/profiler at
+                               welldot.org/schema/v2/ ($id) — DO NOT hand-edit
       profiles/             ← stub for profile schemas (e.g. brazil-ana/v1/schema.json)
   reference/
     fgdc-textures.md        ← FGDC texture code reference (code → label, pending status)
   profiles/                 ← stub for future profile spec docs
 ```
 
-### `docs/spec/v1/well-format.md`
+### `spec/v1/well-format.md`
 
 Update only for corrections (factual errors, broken examples). This spec is stable and shipped; no additive changes belong here.
 
-### `docs/spec/v2/overview.md`
+### `spec/v2/overview.md`
 
 Update when:
 
@@ -105,7 +108,7 @@ Update when:
 - A design principle is revised during the ratification process.
 - A minor revision ships: add a "Changes in v2.x" section at the top (latest first), with additions, clarifications and deprecations (see v2.3, v2.1).
 
-### `docs/spec/v2/format-reference.md`
+### `spec/v2/format-reference.md`
 
 Update when:
 
@@ -117,7 +120,7 @@ Update when:
 
 What to update: the relevant field table, the field-to-unit binding list if the field has a length/diameter/flow/time unit, and version notes if the change is breaking.
 
-### `docs/spec/v2/object-schemas.md`
+### `spec/v2/object-schemas.md`
 
 Update when:
 
@@ -127,7 +130,7 @@ Update when:
 
 What to update: the field table for the changed type and the Complete Example JSON if the change affects it.
 
-### `docs/spec/v2/water-quality.md`
+### `spec/v2/water-quality.md`
 
 Update when:
 
@@ -137,7 +140,7 @@ Update when:
 
 Cross-cutting rows (datetime, canonical units, cross-references, precision) stay in `format-reference.md`; the Complete Example stays in `object-schemas.md`.
 
-### `docs/schema/v2/well.schema.json`
+### `spec/schema/v2/well.schema.json`
 
 Regenerate (do not hand-edit) after any change to `src/validators/well.validators.ts`. CI (`publish-core.yml`) fails when the committed schema is stale:
 
@@ -145,7 +148,7 @@ Regenerate (do not hand-edit) after any change to `src/validators/well.validator
 pnpm generate:schema
 ```
 
-### `docs/reference/fgdc-textures.md`
+### `spec/reference/fgdc-textures.md`
 
 Update when:
 

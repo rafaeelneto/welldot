@@ -5,12 +5,12 @@ import { WellSchema } from '../src/validators/well.validators';
 const SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema';
 
 /**
- * Canonical location of this schema. Third-party implementations `$ref` it, so
- * it must stay stable across releases — version the *format* via the `version`
- * field inside a `.well` file and the `v2/` path segment, not this URL.
+ * Canonical location of this schema, served by apps/profiler from spec/schema/.
+ * Third-party implementations `$ref` it, so it must stay stable across
+ * releases — version the *format* via the `version` field inside a `.well`
+ * file and the `v2/` path segment, not this URL.
  */
-const SCHEMA_ID =
-  'https://raw.githubusercontent.com/rafaeelneto/welldot/main/packages/core/docs/schema/v2/well.schema.json';
+const SCHEMA_ID = 'https://welldot.org/schema/v2/well.schema.json';
 
 const schema = zodToJsonSchema(WellSchema, {
   $schemaUrl: SCHEMA_DIALECT,
@@ -92,6 +92,6 @@ const document = {
 };
 
 writeFileSync(
-  new URL('../docs/schema/v2/well.schema.json', import.meta.url),
+  new URL('../../../spec/schema/v2/well.schema.json', import.meta.url),
   `${JSON.stringify(document, null, 2)}\n`,
 );

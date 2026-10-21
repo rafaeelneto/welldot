@@ -204,6 +204,16 @@ export default defineNuxtConfig({
     },
   },
 
+  // Validators and editors fetch the schema cross-origin by its `$id`.
+  routeRules: {
+    '/schema/**': {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+    },
+  },
+
   nitro: {
     preset: 'cloudflare-module',
     // Example wells from @welldot/core, served as static files at /examples/*
@@ -214,6 +224,13 @@ export default defineNuxtConfig({
           new URL('../../packages/core/examples', import.meta.url),
         ),
         baseURL: '/examples',
+        maxAge: 60 * 60 * 24,
+      },
+      // The .well JSON Schema from spec/schema/, whose `$id` is
+      // https://welldot.org/schema/v2/well.schema.json.
+      {
+        dir: fileURLToPath(new URL('../../spec/schema', import.meta.url)),
+        baseURL: '/schema',
         maxAge: 60 * 60 * 24,
       },
     ],
