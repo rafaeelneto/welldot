@@ -23,7 +23,8 @@ export function useSharedProfileLoader() {
   }
 
   function loadShared(well: Well) {
-    profileStore.loadWell(JSON.stringify(well));
+    if (profileStore.loadWell(JSON.stringify(well)))
+      trackEvent('well_open', { source: 'share' });
   }
 
   watch(

@@ -13,6 +13,7 @@ const d3 = { ...d3module, tip: d3tip };
 
 import {
   isWellEmpty,
+  parseFormatVersion,
   type Constructive,
   type Lithology,
   type Units,
@@ -431,7 +432,7 @@ export class WellRenderer {
       return;
     }
 
-    if (profile.version !== 2) {
+    if (parseFormatVersion(profile.version)?.major !== 2) {
       console.warn(
         `[WellRenderer] Received a .well file with version ${profile.version ?? 'unknown'}. ` +
           `Only v2 is supported. Normalize with deserializeWell() from @welldot/core before rendering.`,

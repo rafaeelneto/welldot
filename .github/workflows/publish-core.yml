@@ -6,6 +6,7 @@ on:
       - preview
     paths:
       - 'packages/core/**'
+      - 'spec/**'
       - 'pnpm-lock.yaml'
     tags:
       - '@welldot/core@*'
@@ -25,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: read
+      contents: write
       id-token: write
 
     steps:
@@ -64,12 +65,24 @@ jobs:
       - name: Check JSON Schema is in sync with the Zod source
         run: |
           pnpm --filter=@welldot/core generate:schema
-          git diff --exit-code -- packages/core/docs/schema/ \
+          git diff --exit-code -- spec/schema/ \
             || { echo "::error::well.schema.json is stale — run 'pnpm --filter=@welldot/core generate:schema' and commit the result."; exit 1; }
+
+      - name: Check CHANGELOG entry for the release (tag)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION="${GITHUB_REF_NAME##*@}"
+          node scripts/release-notes.mjs packages/core "$VERSION" > "$RUNNER_TEMP/notes.md"
 
       - name: Publish stable to npm (tag)
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         run: pnpm publish --filter=@welldot/core --no-git-checks --access public
+
+      - name: Create GitHub Release (tag)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag
 
       - name: Publish next to npm (preview branch)
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')

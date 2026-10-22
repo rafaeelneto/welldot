@@ -72,10 +72,20 @@ afterAll(() => {
   Element.prototype.getBoundingClientRect = originalRect;
 });
 
+/**
+ * RevoGrid's sorting plugin debounces by 50 ms and then dispatches a
+ * CustomEvent. Waiting past that after each test keeps the timer from firing
+ * once jsdom is torn down, which CI reports as an unhandled error.
+ */
+const REVOGRID_SORT_DEBOUNCE_MS = 50;
+
 const wrappers: VueWrapper[] = [];
-afterEach(() => {
+afterEach(async () => {
   while (wrappers.length) wrappers.pop()?.unmount();
   document.body.innerHTML = '';
+  await new Promise(resolve =>
+    setTimeout(resolve, REVOGRID_SORT_DEBOUNCE_MS * 3),
+  );
 });
 
 /** Waits until RevoGrid (lazy-loaded, async render) shows `selector`. */
@@ -271,6 +281,13 @@ describe('WellDataGrid', () => {
     wrapper.unmount();
     await flushPromises();
     expect(live).toBe(0);
+  });
+
+  it('sizes itself from its rows', async () => {
+    mountGrid({ maxHeight: 420 });
+    const [grid] = await waitFor('revo-grid.well-data-grid');
+    // header 38 + 2 rows × 30 + 2, under the cap
+    expect(grid!.style.height).toBe('100px');
   });
 
   it('renders the add button with a label, or icon-only without one', async () => {

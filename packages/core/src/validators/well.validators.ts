@@ -1,6 +1,13 @@
 import { createDefu } from 'defu';
 import { z } from 'zod';
 import type { Well } from '../types/well.types';
+import { isIanaTimeZone } from '../utils/timezone.utils';
+import { parseFormatVersion } from '../utils/version.utils';
+import {
+  BAROMETRIC_COMPENSATION_VALUES,
+  READING_AGGREGATION_VALUES,
+} from '../vocab/closed.vocab';
+import { HYDRODYNAMIC_EVENT_TYPES } from '../vocab/hydrodynamic.vocab';
 
 // ─── defu custom merger ───────────────────────────────────────────────────────
 // In createDefu callbacks: obj = defaults object, key = key, value = source value.
@@ -84,6 +91,10 @@ export const LocationPropertiesSchema = z.object({
   lng_precision: z.number().optional(),
   elevation_precision: z.number().optional(),
   original_crs: z.string().optional(),
+  timezone: z
+    .string()
+    .refine(isIanaTimeZone, 'timezone must be an IANA time zone name')
+    .optional(),
 });
 
 export const LocationSchema = z.object({
@@ -194,6 +205,7 @@ export const CaveSchema = z.object({
 
 export const LevelReadingSchema = z.object({
   elapsed: z.number(),
+  datetime: rfc3339().optional(),
   depth: z.number(),
   depth_precision: z.number().optional(),
   pressure: z.number().optional(),
@@ -227,7 +239,8 @@ export const SpotMeasurementEventSchema = HydrodynamicEventBaseSchema.extend({
   static_level: z.number(),
   static_level_precision: z.number().optional(),
   measurement_method: z.string().optional(),
-  steps: z.array(PumpingStepSchema).max(1).optional(),
+  // SHOULD carry at most one step; another count is valid (v2.4).
+  steps: z.array(PumpingStepSchema).optional(),
   recovery: RecoveryPhaseSchema.optional(),
 });
 
@@ -235,7 +248,8 @@ export const ConstantRateEventSchema = HydrodynamicEventBaseSchema.extend({
   type: z.literal('constant_rate'),
   static_level: z.number().optional(),
   static_level_precision: z.number().optional(),
-  steps: z.tuple([PumpingStepSchema]).optional(),
+  // SHOULD carry exactly one step; another count is valid (v2.4).
+  steps: z.array(PumpingStepSchema).optional(),
   recovery: RecoveryPhaseSchema.optional(),
 });
 
@@ -260,6 +274,44 @@ export const RecoveryOnlyEventSchema = HydrodynamicEventBaseSchema.extend({
   recovery: RecoveryPhaseSchema,
 });
 
+// A logger reading is located by its instant, never by `elapsed` (v2.4).
+export const LoggerReadingSchema = z.object({
+  datetime: rfc3339(),
+  elapsed: z
+    .undefined({ message: 'logger_series readings use datetime, not elapsed' })
+    .optional(),
+  depth: z.number(),
+  depth_precision: z.number().optional(),
+  pressure: z.number().optional(),
+  depth_min: z.number().optional(),
+  depth_max: z.number().optional(),
+});
+
+const closedEnum = <T extends string>(values: readonly T[]) =>
+  z.enum(values as [T, ...T[]]);
+
+export const LoggerSeriesEventSchema = HydrodynamicEventBaseSchema.extend({
+  type: z.literal('logger_series'),
+  measurement_method: z.string().optional(),
+  sensor_depth: z.number().optional(),
+  interval: z.number().positive().optional(),
+  barometric_compensation: closedEnum(
+    BAROMETRIC_COMPENSATION_VALUES,
+  ).optional(),
+  aggregation: closedEnum(READING_AGGREGATION_VALUES).optional(),
+  readings: z.array(LoggerReadingSchema).min(1),
+  steps: z.undefined({ message: 'logger_series carries no steps' }).optional(),
+  recovery: z
+    .undefined({ message: 'logger_series carries no recovery' })
+    .optional(),
+});
+
+const HYDRODYNAMIC_TYPES: readonly string[] = HYDRODYNAMIC_EVENT_TYPES.map(
+  t => t.value,
+);
+
+// Unknown (`x-`) event types fall back to the base schema with passthrough;
+// known types must satisfy their own schema (v2.4).
 export const HydrodynamicEventSchema = z
   .discriminatedUnion('type', [
     SpotMeasurementEventSchema,
@@ -267,8 +319,33 @@ export const HydrodynamicEventSchema = z
     StepDrawdownEventSchema,
     AirliftEventSchema,
     RecoveryOnlyEventSchema,
+    LoggerSeriesEventSchema,
   ])
-  .or(HydrodynamicEventBaseSchema.passthrough());
+  .or(
+    HydrodynamicEventBaseSchema.passthrough().refine(
+      e => !HYDRODYNAMIC_TYPES.includes(e.type),
+      { message: 'malformed hydrodynamic event' },
+    ),
+  )
+  .superRefine((e, ctx) => {
+    // Aggregated logger readings carry the interval's range.
+    if (e.type !== 'logger_series') return;
+    const series = e as z.infer<typeof LoggerSeriesEventSchema>;
+    if (series.aggregation !== 'hourly' && series.aggregation !== 'daily') {
+      return;
+    }
+    series.readings.forEach((r, i) => {
+      for (const key of ['depth_min', 'depth_max'] as const) {
+        if (r[key] === undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['readings', i, key],
+            message: `${key} is required in an aggregated logger_series`,
+          });
+        }
+      }
+    });
+  });
 
 // ─── Aquifer analysis + history log schemas ───────────────────────────────────
 
@@ -315,7 +392,7 @@ export const AquiferAnalysisSchema = z.object({
   max_flow_rate_basis: z.string().optional(),
   specific_capacity: z.number().optional(),
   transmissivity: z.number().optional(),
-  storativity: z.number().nullable().optional(),
+  storativity: z.number().optional(),
   hydraulic_conductivity: z.number().optional(),
   aquifer_thickness: z.number().optional(),
   jacob_b: z.number().optional(),
@@ -498,7 +575,7 @@ export const OperatingRegimeSchema = z.object({
   id: z.string(),
   effective_from: rfc3339(),
   flow_rate: z.number().nonnegative().optional(),
-  daily_operating_time: z.number().min(0).max(24).optional(),
+  daily_operating_time: z.number().nonnegative().optional(),
   days_per_week: z.number().int().min(1).max(7).optional(),
   notes: z.string().optional(),
   updated_at: rfc3339().optional(),
@@ -661,7 +738,10 @@ export const WaterSampleSchema = z.object({
 
 export const WellSchema = z
   .object({
-    version: z.number().int(),
+    version: z.union([
+      z.number().int().nonnegative(),
+      z.string().regex(/^\d+\.\d+$/, 'version must be "M.m"'),
+    ]),
     '@context': z
       .union([z.string(), z.array(z.unknown()), z.record(z.unknown())])
       .optional(),
@@ -795,26 +875,41 @@ function normalizeV1Fields(
 
 export function parseWell(json: string): Well {
   const raw = JSON.parse(json) as Record<string, unknown>;
-  const version = raw.version;
 
-  if (version !== undefined && typeof version === 'number') {
-    if (version !== 1 && version !== 2) {
-      throw new Error(`Unsupported .well format version: ${version}`);
+  if (raw.version === undefined) {
+    // version absent — normalize to v2
+    raw.version = 2;
+  } else {
+    const parsed = parseFormatVersion(raw.version);
+    if (!parsed) {
+      throw new Error(
+        `Malformed .well format version: ${JSON.stringify(raw.version)}`,
+      );
     }
-    if (version === 1) {
+    if (parsed.major === 1) {
       const normalized = normalizeV1Fields(raw);
       return mergeParsed(
         WellSchema.parse(normalized) as Well,
         normalized,
       ) as Well;
     }
-  } else if (version !== undefined) {
-    throw new Error(`Unsupported .well format version: ${String(version)}`);
-  } else {
-    // version absent — normalize to v2
-    raw.version = 2;
+    if (parsed.major !== 2) {
+      throw new Error(
+        `Unsupported .well format version: ${JSON.stringify(raw.version)}`,
+      );
+    }
   }
 
-  // version === 2 (explicit or normalized from absent)
+  // v2.0–v2.3 files (integer `version: 2`, or absent) may carry
+  // `storativity: null`; read it as absent. "2.4" files must omit it.
+  if (raw.version === 2 && Array.isArray(raw.aquifer_analysis)) {
+    for (const item of raw.aquifer_analysis) {
+      if (isPlainObject(item) && item.storativity === null) {
+        delete item.storativity;
+      }
+    }
+  }
+
+  // major 2, any minor (explicit or normalized from absent)
   return mergeParsed(WellSchema.parse(raw) as Well, raw) as Well;
 }

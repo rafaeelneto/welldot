@@ -2,6 +2,7 @@ export { checkIfProfileIsEmpty } from '@welldot/core';
 export * from './coords.utils';
 export * from './date.utils';
 export * from './hydrodynamic.utils';
+export * from './logger.utils';
 export * from './number.utils';
 export * from './operation.utils';
 export * from './permit.utils';

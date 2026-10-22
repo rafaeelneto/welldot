@@ -201,7 +201,7 @@ const incompleteStages = computed(() =>
 
 const incompleteJson = computed(() => {
   const oldReport = {
-    version: 2,
+    version: '2.4',
     name: 'Poço 03',
     well_type: 'tubular',
     well_depth: 84,
@@ -258,7 +258,7 @@ const incompleteRules = computed(() =>
 // stage only adds keys at the end, where the viewer scrolls on change.
 
 const EXT_BASE = {
-  version: 2,
+  version: '2.4',
   name: 'Poço 03',
   well_type: 'tubular',
   well_depth: 84,
@@ -344,7 +344,7 @@ const toolCards = computed(() =>
     title: rt(card.title),
     body: rt(card.body),
     path: TOOL_PATHS[i]!,
-    href: `https://github.com/rafaeelneto/welldot/tree/main/${TOOL_PATHS[i]}`,
+    href: `https://github.com/welldothq/welldot/tree/main/${TOOL_PATHS[i]}`,
   })),
 );
 </script>
@@ -414,7 +414,7 @@ const toolCards = computed(() =>
             <Button
               :label="t('hero.ctaSecondary')"
               as="a"
-              href="https://github.com/rafaeelneto/welldot/tree/main/packages/core"
+              href="https://github.com/welldothq/welldot/tree/main/spec"
               target="_blank"
               variant="outlined"
               severity="secondary"
@@ -424,7 +424,7 @@ const toolCards = computed(() =>
             class="flex flex-wrap gap-5.5 pt-5 border-t border-surface-200 font-mono text-[11px] text-content-500 tracking-[0.04em]"
           >
             <span
-              ><b class="text-content-0 font-medium">v2.3</b>
+              ><b class="text-content-0 font-medium">v2.4</b>
               {{ t('hero.badgeSpec') }}</span
             >
             <span
@@ -668,7 +668,7 @@ const toolCards = computed(() =>
             <template #repo>
               <code
                 class="font-mono text-[0.92em] bg-black/[0.04] px-1.5 py-0.5 rounded"
-                >github.com/rafaeelneto/welldot</code
+                >github.com/welldothq/welldot</code
               >
             </template>
           </i18n-t>
@@ -816,13 +816,13 @@ const toolCards = computed(() =>
           <Button
             :label="t('extensible.ctaContribute')"
             as="a"
-            href="https://github.com/rafaeelneto/welldot/blob/main/CONTRIBUTING.md"
+            href="https://github.com/welldothq/welldot/blob/main/CONTRIBUTING.md"
             target="_blank"
           />
           <Button
             :label="t('extensible.ctaPropose')"
             as="a"
-            href="https://github.com/rafaeelneto/welldot/issues/new"
+            href="https://github.com/welldothq/welldot/issues/new"
             target="_blank"
             variant="outlined"
             severity="secondary"
@@ -885,10 +885,14 @@ const toolCards = computed(() =>
       </p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <LandingPropCard
-          v-for="prop in horizonProps"
+          v-for="(prop, i) in horizonProps"
           :key="prop.num"
           :num="prop.num"
           :title="prop.title"
+          :class="{
+            'sm:col-span-2':
+              i === horizonProps.length - 1 && horizonProps.length % 2 === 1,
+          }"
         >
           {{ prop.body }}
         </LandingPropCard>
@@ -974,7 +978,7 @@ const toolCards = computed(() =>
         <Button
           :label="t('cta.secondary')"
           as="a"
-          href="https://github.com/rafaeelneto/welldot"
+          href="https://github.com/welldothq/welldot"
           target="_blank"
           variant="outlined"
           severity="secondary"

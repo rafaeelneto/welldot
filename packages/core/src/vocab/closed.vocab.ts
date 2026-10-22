@@ -3,8 +3,10 @@
 // carries en/pt labels — so `getVocabLabel` works for both. The `*_VALUES`
 // lists are the bare values, derived from the entries.
 import type {
+  BarometricCompensation,
   PermitAdministrativeStatus,
   ProductionEntry,
+  ReadingAggregation,
   ResultQualifier,
   ResultValidation,
   VolumeLimit,
@@ -129,6 +131,20 @@ export const PARAMETER_GROUPS = closedVocab<ParameterGroup>()([
   },
 ]);
 
+/** `logger_series.barometric_compensation` (since v2.4). */
+export const BAROMETRIC_COMPENSATIONS = closedVocab<BarometricCompensation>()([
+  { value: 'barologger', label: { en: 'Barologger', pt: 'Barologger' } },
+  { value: 'vented', label: { en: 'Vented cable', pt: 'Cabo ventilado' } },
+  { value: 'none', label: { en: 'None', pt: 'Nenhuma' } },
+]);
+
+/** `logger_series.aggregation` (since v2.4). */
+export const READING_AGGREGATIONS = closedVocab<ReadingAggregation>()([
+  { value: 'none', label: { en: 'Raw readings', pt: 'Leituras brutas' } },
+  { value: 'hourly', label: { en: 'Hourly', pt: 'Horária' } },
+  { value: 'daily', label: { en: 'Daily', pt: 'Diária' } },
+]);
+
 // ─── Bare value lists ────────────────────────────────────────────────────────
 
 export const WELL_STATUS_VALUES = valuesOf(WELL_STATUSES);
@@ -141,6 +157,10 @@ export const MEASURED_IN_VALUES = valuesOf(MEASUREMENT_LOCATIONS);
 export const FILTRATION_LOCATION_VALUES = valuesOf(MEASUREMENT_LOCATIONS);
 export const VALIDATION_STATUS_VALUES = valuesOf(VALIDATION_STATUSES);
 export const PARAMETER_GROUP_VALUES = valuesOf(PARAMETER_GROUPS);
+export const BAROMETRIC_COMPENSATION_VALUES = valuesOf(
+  BAROMETRIC_COMPENSATIONS,
+);
+export const READING_AGGREGATION_VALUES = valuesOf(READING_AGGREGATIONS);
 
 // ─── Value rules ─────────────────────────────────────────────────────────────
 

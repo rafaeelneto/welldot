@@ -1,6 +1,6 @@
 {
   "$schema": "https://welldot.org/schema/v2/well.schema.json",
-  "version": 2,
+  "version": "2.4",
   "x-welldot-example": {
     "illustrative": true,
     "based_on": "https://siagasweb.sgb.gov.br/layout/detalhe.php?ponto=3100003115"
@@ -32,6 +32,7 @@
     "lat": -19.63972,
     "lng": -43.90083,
     "properties": {
+      "timezone": "America/Sao_Paulo",
       "crs": "EPSG:4326",
       "lat_precision": 0.0003,
       "lng_precision": 0.0003,
@@ -437,7 +438,6 @@
       "flow_rate": 110,
       "specific_capacity": 35.48,
       "transmissivity": 0.00621,
-      "storativity": null,
       "notes": "Transmissividade alta, controlada pelo conduto. O nível estático caiu 4,3 m desde 1987, acompanhando o rebaixamento regional."
     }
   ],

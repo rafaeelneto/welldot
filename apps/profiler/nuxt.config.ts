@@ -138,6 +138,12 @@ export default defineNuxtConfig({
         'd3-tip',
         'textures',
         'sanitize-html',
+        // Reached only through the linked @welldot/vue dist, so the startup
+        // scan can miss them. A mid-session re-optimize leaves RevoGrid's lazy
+        // `*.entry.js` imports on stale hashes and the grid renders empty.
+        '@revolist/vue3-datagrid',
+        'vue-color',
+        'leaflet',
         // CJS browser build lazy-loaded by @welldot/pdf.
         '@welldot/pdf > pdfmake/build/pdfmake',
       ],
@@ -198,6 +204,16 @@ export default defineNuxtConfig({
     },
   },
 
+  // Validators and editors fetch the schema cross-origin by its `$id`.
+  routeRules: {
+    '/schema/**': {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+    },
+  },
+
   nitro: {
     preset: 'cloudflare-module',
     // Example wells from @welldot/core, served as static files at /examples/*
@@ -208,6 +224,13 @@ export default defineNuxtConfig({
           new URL('../../packages/core/examples', import.meta.url),
         ),
         baseURL: '/examples',
+        maxAge: 60 * 60 * 24,
+      },
+      // The .well JSON Schema from spec/schema/, whose `$id` is
+      // https://welldot.org/schema/v2/well.schema.json.
+      {
+        dir: fileURLToPath(new URL('../../spec/schema', import.meta.url)),
+        baseURL: '/schema',
         maxAge: 60 * 60 * 24,
       },
     ],

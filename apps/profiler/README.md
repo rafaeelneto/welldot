@@ -1,6 +1,20 @@
 # apps/profiler — Welldot
 
+## Overview
+
 Nuxt 4 web application for geological well log visualization, deployed at [welldot.org](https://welldot.org).
+
+This README is for contributors to the app: how to run it locally, the color tokens that keep light and dark mode working, and how to use and customize PrimeVue components. The architecture, directory layout and server routes are described in [CLAUDE.md](./CLAUDE.md).
+
+## Table of contents
+
+- [Setup](#setup)
+- [Color System](#color-system)
+  - [Pairing rule](#pairing-rule)
+  - [Scale guidance](#scale-guidance)
+  - [Available Tailwind utilities](#available-tailwind-utilities)
+- [PrimeVue components](#primevue-components)
+  - [Anti-patterns](#anti-patterns)
 
 ## Setup
 

@@ -1,6 +1,6 @@
 {
   "name": "@welldot/render",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "D3-based SVG visualization library for rendering geological well profiles",
   "license": "Apache-2.0",
   "keywords": [
@@ -16,14 +16,14 @@
     "name": "Rafael Neto",
     "email": "rafaelneto.g@gmail.com"
   },
-  "homepage": "https://github.com/rafaeelneto/welldot#readme",
+  "homepage": "https://github.com/welldothq/welldot#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rafaeelneto/welldot.git",
+    "url": "git+https://github.com/welldothq/welldot.git",
     "directory": "packages/render"
   },
   "bugs": {
-    "url": "https://github.com/rafaeelneto/welldot/issues"
+    "url": "https://github.com/welldothq/welldot/issues"
   },
   "sideEffects": false,
   "type": "module",

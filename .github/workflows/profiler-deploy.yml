@@ -8,6 +8,7 @@ on:
     paths:
       - 'apps/profiler/**'
       - 'packages/**'
+      - 'spec/**'
       - 'pnpm-workspace.yaml'
       - 'turbo.json'
       - 'package.json'

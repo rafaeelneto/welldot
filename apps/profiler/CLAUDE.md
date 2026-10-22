@@ -14,6 +14,7 @@
 - **Fonts:** Space Grotesk, IBM Plex Serif, JetBrains Mono (via `@nuxt/fonts`)
 - **Icons:** Phosphor (`ph:`) via `@nuxt/icon` — **preferred**. Heroicons (`heroicons:`) remain as secondary usange when there is no phosphor good icon or is explicit said. Custom SVG icons in `app/assets/icons/` (prefix `welldot:`)
 - **Onboarding tips:** `driver.js` — startup tips that highlight a UI element (`app/composables/useStartupTips.ts`)
+- **Analytics:** first party, no cookies or identifiers. `trackEvent()` (`app/utils/analytics.ts`) beacons product events to `POST /api/events`, which stores them in Supabase `app_events` (see Server routes). In dev it only logs to `console.debug`. Events: `well_new`, `well_open` (`source`: file/drop/paste/siagas/example/share), `well_save` (`method`), `siagas_import` (`status`), `pdf_download`, `pdf_print`, `share_link`. A new event needs its name in `ANALYTICS_EVENTS` (`shared/utils/analytics.ts`) first; the route drops anything else. Never put well data or personal data in params
 - **Deploy:** Cloudflare Workers (Nitro `cloudflare-module` preset, static assets binding); preview via `wrangler dev`
 
 ## Directory layout
@@ -43,7 +44,34 @@ app/                      ← srcDir
                              `useHydrodynamicEventView()` and the hash `#hydrodynamic/<id>`,
                              also opened from the Summary latest-event card; pumping-test
                              charts in hydrodynamicEvents/charts/, shared by the view and
-                             the edit dialog's preview, series from @welldot/utils).
+                             the edit dialog's preview, series from @welldot/utils). A `logger_series`
+                             (v2.4) never opens in EventDialog (`editableTypeOptions` leaves it out):
+                             card and view show its facts, and their edit action (routed by the
+                             tab) and the tab's "Add logger series" button open LoggerSeriesDialog
+                             (fields; start and readings `WellDataGrid` (`max-height`, virtualized)
+                             with instants shown/typed as local `YYYY-MM-DD HH:mm:ss` in the well
+                             time zone, else the browser's; validated with core
+                             `LoggerSeriesEventSchema` plus the aggregated `depth_min`/`depth_max`
+                             rule, debounced while editing and synchronously on save; readings are
+                             read raw and tracked by `readingsVersion`, which every change to
+                             `form.readings` must bump). Its "Import CSV" button opens
+                             LoggerImportDialog (file/paste, column mapping, live summary from
+                             `buildLoggerReadings`), which emits `import`; the dialog merges with
+                             `mergeImportedReadings` and bumps `readingsVersion`. Its form model and round trip live in
+                             loggerSeriesForm.ts (`toLoggerForm` / `fromLoggerForm`: readings
+                             sorted by instant, empty fields omitted, members the form does not
+                             own carried over)). LoggerSeriesChart (charts/, series in
+                             charts/loggerChart.ts: bad rows dropped, then
+                             `downsampleLoggerReadings` to 2000 points, muted dashed
+                             `depth_min`/`depth_max` when aggregated, "Sensor" line, markers
+                             up to 40 points, a note on mixed static/pumping levels when the
+                             well has pump_installations or production) is shown in
+                             EventViewDialog and, as a compact preview rebuilt with a debounce
+                             from `readingsVersion`/sensor depth/aggregation, in
+                             LoggerSeriesDialog. It uses ChartFrame's `xScale="time"` (x in
+                             epoch ms, calendar-aligned ticks labelled by `formatXTick`; the
+                             default stays linear), with times in the well time zone, else
+                             the browser's.
                              Operation (.well v2.3) = pump_installations, meters,
                              operating_regime and the production ledger (volumes shown
                              in the volume display unit setting); Permits (.well v2.3)
@@ -132,6 +160,9 @@ app/                      ← srcDir
   assets/
     styles/main.css       ← imports tailwindcss, tailwindcss-primeui, @welldot/vue/tailwind.css
     icons/                ← custom SVG icon set (welldot: prefix)
+shared/
+  utils/analytics.ts      ← `ANALYTICS_EVENTS` + param validation, auto-imported by both the
+                             app (`trackEvent`) and the server (`/api/events`)
 i18n/
   locales/en.json
   locales/pt.json
@@ -164,6 +195,7 @@ pnpm lint       # eslint
 
 - `server/api/` — Nitro API routes. Profile sharing (`share.post.ts`, `share/[id].get.ts`) hashes/stores well JSON in Supabase via `server/utils/supabase.ts` (service-role key, server-only — never exposed to the client). Shares are capped at `MAX_SHARE_BYTES` and expire after `SHARE_TTL_DAYS` (`server/utils/shareConfig.ts`); the GET route edge-caches successful lookups via the Workers Cache API.
 - `server/api/siagas/[code].get.ts` imports a well with `importSiagasWell` (`@welldot/utils/siagas`) — the SGB pages have no CORS, so the fetch runs here. Query `rimas` (`none`/`monthly`/`all`) and `media` (`0` to skip). Rate limited by the optional `SIAGAS_RATE_LIMITER` binding (`wrangler.json`) and edge-cached for a day per code + options; `SiagasError.kind` maps to 400/404/502/500, a timeout to 504.
+- `server/api/events.post.ts` stores one `trackEvent()` event in Supabase `app_events` (`server/db/app_events.sql`, with example queries): name, params, `cf-ipcountry` country and host. No IP, cookie or user id. Unknown names and params outside `ANALYTICS_LIMITS` get 400. Rate limited by the optional `EVENTS_RATE_LIMITER` binding (`wrangler.json`).
 - `server/tasks/` — Nitro scheduled tasks (`experimental.tasks` in `nuxt.config.ts`). `shares:cleanup` (`server/tasks/shares/cleanup.ts`) purges expired `well_shares` rows. Wiring a task requires **both**: a `nitro.scheduledTasks` entry in `nuxt.config.ts` mapping a cron string to the task name, **and** the identical cron string in `wrangler.json`'s `triggers.crons` — Cloudflare only invokes `scheduled()` for crons declared there, and Nitro only runs a task if its cron matches an entry in `scheduledTasks`.
 - `getRuntimeEnv`/`getSupabaseClient` (`server/utils/env.ts`, `supabase.ts`) accept a structural `RuntimeEnvSource`, not `H3Event`, specifically so scheduled tasks (which get a Nitro `TaskEvent`, not an `H3Event`) can reuse them.
 

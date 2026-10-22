@@ -1,11 +1,27 @@
 # Contributing to welldot
 
+## Overview
+
 Thanks for your interest. This project has two distinct kinds of contribution, and they work differently:
 
 - **The `.well` format** — an open specification other people implement. Changes here affect every tool that reads or writes `.well` files, so they go through discussion first.
 - **The code** — the three libraries and the web app. Ordinary pull requests.
 
 Both are welcome. Bug reports and questions are too — open an issue.
+
+This guide covers setting up the repository, its layout, how changes to the `.well` format are proposed, how code contributions are made, and where to start if you are building your own tool that reads or writes `.well` files.
+
+## Table of contents
+
+- [Getting set up](#getting-set-up)
+- [Repository layout](#repository-layout)
+- [Proposing a change to the `.well` format](#proposing-a-change-to-the-well-format)
+  - [Compatibility rules](#compatibility-rules)
+  - [Conventions](#conventions)
+- [Code contributions](#code-contributions)
+- [Releasing](#releasing)
+- [Building a tool that reads or writes `.well`](#building-a-tool-that-reads-or-writes-well)
+- [License](#license)
 
 ---
 
@@ -14,7 +30,7 @@ Both are welcome. Bug reports and questions are too — open an issue.
 Requirements: **Node ≥ 18** and **pnpm 10.22.0** (the version is pinned in `packageManager`; `corepack enable` will pick it up automatically).
 
 ```bash
-git clone https://github.com/rafaeelneto/welldot.git
+git clone https://github.com/welldothq/welldot.git
 cd welldot
 pnpm install
 pnpm dev
@@ -70,8 +86,8 @@ The format is a published standard with independent implementations, so **open a
 Once the change is agreed, it touches four places and all four must land together:
 
 1. **`packages/core/src/validators/well.validators.ts`** — the Zod schema. This is the single source of truth; everything else derives from it.
-2. **`pnpm --filter=@welldot/core generate:schema`** — regenerates `packages/core/docs/schema/v2/well.schema.json`. Commit the result. CI fails if this file drifts from the validators.
-3. **`packages/core/docs/spec/v2/`** — the prose spec. `format-reference.md` for a top-level field, `object-schemas.md` for a nested object, plus `overview.md` if the change is conceptual.
+2. **`pnpm --filter=@welldot/core generate:schema`** — regenerates `spec/schema/v2/well.schema.json`. Commit the result. CI fails if this file drifts from the validators.
+3. **`spec/v2/`** — the prose spec. `format-reference.md` for a top-level field, `object-schemas.md` for a nested object, plus `overview.md` if the change is conceptual.
 4. **Tests** in `packages/core/src/utils/well.utils.test.ts`, covering round-trip serialization and the absent/empty cases.
 
 ### Compatibility rules
@@ -85,7 +101,7 @@ Within a major version (`"version": 2`), changes must be **additive and optional
 - ❌ Making an optional field required
 - ❌ Changing a field's type or unit
 
-Anything in the ❌ list requires a new format version, which is a deliberate, coordinated release — raise it in an issue.
+Anything in the ❌ list requires a new format version, which is a deliberate, coordinated release — raise it in an issue. v2.4 changed the representation of `version` (the integer `2` became the string `"2.4"`), which is the one documented exception; any further change to how a file is represented needs a new major.
 
 ### Conventions
 
@@ -115,9 +131,21 @@ chore(lint): turn off no-plusplus
 
 ---
 
+## Releasing
+
+Versions, CHANGELOGs and GitHub Releases are managed with [Changesets](https://github.com/changesets/changesets).
+
+1. Every PR that changes a published package (`@welldot/core`, `utils`, `render`, `pdf`, `vue`) runs `pnpm changeset` and commits the generated file in `.changeset/`. Apps are private and never get changesets.
+2. A release runs `pnpm version-packages`, which bumps the versions, writes each package's `CHANGELOG.md` and refreshes the lockfile. Review the result and merge it.
+3. Then `pnpm release:tag` creates the `@welldot/<pkg>@<version>` tags and `git push --follow-tags` pushes them. The tags trigger the publish workflows, which fail if the CHANGELOG has no entry for the version, publish to npm and create the GitHub Release from that CHANGELOG section.
+
+Changes to the format spec also get a "Changes in v2.x" section in [`overview.md`](spec/v2/overview.md), which is the format's changelog. The core changeset links to it.
+
+---
+
 ## Building a tool that reads or writes `.well`
 
-You don't need permission, and you don't need to use our libraries — the format is open and the spec is complete enough to implement from scratch. Start with [`packages/core/docs/spec/v2/overview.md`](packages/core/docs/spec/v2/overview.md) and the [JSON Schema](packages/core/docs/schema/v2/well.schema.json).
+You don't need permission, and you don't need to use our libraries — the format is open and the spec is complete enough to implement from scratch. Start with [`spec/v2/overview.md`](spec/v2/overview.md) and the [JSON Schema](https://welldot.org/schema/v2/well.schema.json).
 
 If you build something, please open an issue to tell us. We want to keep a list of compatible implementations, and we'd rather learn about interoperability problems from you than from your users.
 

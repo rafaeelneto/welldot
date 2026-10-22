@@ -1,8 +1,20 @@
 # `.well` example wells
 
+## Overview
+
 Nineteen complete `.well` v2.3 files that serve as a reference for the format. Each one stays valid and covers a different situation. The profiler offers them in its "New well" dialog, which opens when the editor starts empty, and serves them at `https://welldot.org/examples/<file>`. They also ship with `@welldot/core` (`@welldot/core/examples/<file>`).
 
 `src/examples.test.ts` checks that every file passes `WellSchema`, round-trips through `deserializeWell` / `serializeWell`, and matches `index.json`, and that every category lists at least three examples.
+
+This README covers where the data comes from, the list of examples, how the thumbnails are generated, the rules used to map SIAGAS records onto the physical base, and how to add an example.
+
+## Table of contents
+
+- [Data provenance](#data-provenance)
+- [The examples](#the-examples)
+- [Thumbnails](#thumbnails)
+- [Mapping rules used for the physical base](#mapping-rules-used-for-the-physical-base)
+- [Adding an example](#adding-an-example)
 
 ## Data provenance
 

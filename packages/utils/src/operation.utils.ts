@@ -1,6 +1,7 @@
 import type {
   EstimatedVolume,
   HistoryLogEntry,
+  LoggerSeriesEvent,
   Meter,
   MeterReading,
   OperatingRegime,
@@ -15,8 +16,10 @@ import { formatDate } from './date.utils';
 import { getPermitStatus, todayCalendarDate } from './permit.utils';
 import {
   getRetractedIds,
+  getWellTimeZone,
   instantLocalDate,
   instantOffset,
+  normalizeDailyOperatingTime,
 } from './shared.utils';
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
@@ -509,13 +512,16 @@ export type OperationWarningCode =
   | 'estimated_overlaps_meter'
   | 'duplicate_regime_id'
   | 'regime_duplicate_effective_from'
+  | 'daily_operating_time_normalized'
   | 'regime_exceeds_permit'
   | 'log_category_field_mismatch'
   | 'log_reference_unresolved'
   | 'log_after_decommission'
   | 'missing_maintenance_type'
   | 'missing_status'
-  | 'analysis_uses_retracted_event';
+  | 'analysis_uses_retracted_event'
+  | 'analysis_uses_logger_series'
+  | 'logger_reading_below_sensor';
 
 export type OperationWarning = {
   code: OperationWarningCode;
@@ -539,9 +545,10 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
 /**
  * Returns the validation warnings of the `meters`, `production` and
  * `operating_regime` blocks, of the v2.3 `history_logs` categories and of
- * `aquifer_analysis` references (.well v2.3). Warnings never make a file
- * invalid. `today` (local calendar date) selects the active permit and the
- * regime in force for `regime_exceeds_permit`.
+ * `aquifer_analysis` references (.well v2.3) and of `logger_series` events
+ * (.well v2.4). Warnings never make a file invalid. `today` (local calendar
+ * date) selects the active permit and the regime in force for
+ * `regime_exceeds_permit`.
  *
  * Meters:
  * - `meter_removed_before_installed` — `removed_at` not after `installed_at`. ids: [meter].
@@ -567,6 +574,8 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
  * Operating regime:
  * - `duplicate_regime_id` — ids: [regime id].
  * - `regime_duplicate_effective_from` — same instant. ids: every regime sharing it.
+ * - `daily_operating_time_normalized` — a regime `daily_operating_time` above
+ *   24, read as 24 (v2.4). ids: [regime].
  * - `regime_exceeds_permit` — the regime in force on `today` (latest whose
  *   `effective_from` local date is on or before `today`) has `flow_rate` or
  *   `daily_operating_time` above an `active` / `active_pending_renewal`
@@ -589,6 +598,14 @@ function hasField(log: HistoryLogEntry, field: keyof HistoryLogEntry): boolean {
  * Aquifer analysis:
  * - `analysis_uses_retracted_event` — `source_event_ids` or
  *   `static_level_source_id` points to a retracted event. ids: [analysis, event].
+ * - `analysis_uses_logger_series` — `source_event_ids` or
+ *   `static_level_source_id` points to an effective `logger_series`, which is
+ *   not a valid analysis source (v2.4). ids: [analysis, event].
+ *
+ * Logger series (effective events only, v2.4):
+ * - `logger_reading_below_sensor` — a reading whose `depth` is greater than
+ *   `sensor_depth` (the level is below the sensor, so the reading is
+ *   invalid). Once per event. ids: [event].
  */
 export function getOperationWarnings(
   well: Well,
@@ -706,9 +723,15 @@ export function getOperationWarnings(
     if (ids.length > 1) push('regime_duplicate_effective_from', ids);
   }
 
+  for (const r of regimes) {
+    if (r.daily_operating_time !== undefined && r.daily_operating_time > 24) {
+      push('daily_operating_time_normalized', [r.id]);
+    }
+  }
+
   const regime = latestRegime(
     regimes,
-    r => instantLocalDate(r.effective_from) <= today,
+    r => instantLocalDate(r.effective_from, getWellTimeZone(well)) <= today,
   );
   if (regime) {
     for (const permit of well.permits ?? []) {
@@ -720,7 +743,8 @@ export function getOperationWarnings(
           regime.flow_rate > permit.flow_rate) ||
         (regime.daily_operating_time !== undefined &&
           permit.daily_operating_time !== undefined &&
-          regime.daily_operating_time > permit.daily_operating_time);
+          normalizeDailyOperatingTime(regime.daily_operating_time) >
+            normalizeDailyOperatingTime(permit.daily_operating_time));
       if (exceeds) push('regime_exceeds_permit', [regime.id, permit.id]);
     }
   }
@@ -770,18 +794,33 @@ export function getOperationWarnings(
   }
 
   // ── Aquifer analysis ──
-  const retractedEvents = getRetractedIds(well.hydrodynamic_events ?? []);
-  if (retractedEvents.size > 0) {
-    for (const a of well.aquifer_analysis ?? []) {
-      const refs = [...(a.source_event_ids ?? []), a.static_level_source_id];
-      const flagged = new Set<string>();
-      for (const id of refs) {
-        if (id === undefined || flagged.has(id) || !retractedEvents.has(id)) {
-          continue;
-        }
-        flagged.add(id);
+  const events = well.hydrodynamic_events ?? [];
+  const retractedEvents = getRetractedIds(events);
+  const loggerSeries = events.filter(
+    (e): e is LoggerSeriesEvent =>
+      e.type === 'logger_series' && !retractedEvents.has(e.id),
+  );
+  const loggerIds = new Set(loggerSeries.map(e => e.id));
+  for (const a of well.aquifer_analysis ?? []) {
+    const refs = [
+      ...new Set([...(a.source_event_ids ?? []), a.static_level_source_id]),
+    ];
+    for (const id of refs) {
+      if (id === undefined) continue;
+      if (retractedEvents.has(id)) {
         push('analysis_uses_retracted_event', [a.id, id]);
+      } else if (loggerIds.has(id)) {
+        push('analysis_uses_logger_series', [a.id, id]);
       }
+    }
+  }
+
+  // ── Logger series ──
+  for (const e of loggerSeries) {
+    const sensor = e.sensor_depth;
+    if (typeof sensor !== 'number') continue;
+    if ((e.readings ?? []).some(r => r.depth > sensor)) {
+      push('logger_reading_below_sensor', [e.id]);
     }
   }
 

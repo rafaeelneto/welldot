@@ -75,8 +75,19 @@ async function runImport() {
       { query: { rimas: rimas.value, media: media.value ? '1' : '0' } },
     );
     result.value = { ...res, well: JSON.parse(res.json) as Well };
+    trackEvent('siagas_import', { status: 'ok', rimas: rimas.value });
   } catch (e) {
     error.value = errorMessage(e);
+    // The code is a public SIAGAS registry id: enough to reproduce the failure.
+    const fetchError = e as { statusCode?: number; statusMessage?: string };
+    trackEvent('siagas_import', {
+      status: 'error',
+      code: normalized.value,
+      rimas: rimas.value,
+      media: media.value,
+      http_status: fetchError?.statusCode ?? 0,
+      message: (fetchError?.statusMessage ?? '').slice(0, 64),
+    });
   } finally {
     loading.value = false;
   }
@@ -136,7 +147,7 @@ async function openWell() {
   opening.value = true;
   try {
     // Loading closes the dialog (`profileStore.wellSession`).
-    const ok = await openText(result.value.json);
+    const ok = await openText(result.value.json, 'siagas');
     if (ok === false) {
       error.value = store.errors.root ?? t('editor.newWell.loadError');
     }

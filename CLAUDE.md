@@ -30,6 +30,9 @@ pnpm test         # Run Vitest across all packages
 pnpm lint         # ESLint across all packages
 pnpm lint:fix     # Auto-fix ESLint issues
 pnpm format       # Prettier formatting
+pnpm changeset         # Author a changeset for a published-package change
+pnpm version-packages  # Bump versions, write CHANGELOGs, refresh the lockfile
+pnpm release:tag       # Create @welldot/<pkg>@<version> tags (then git push --follow-tags)
 ```
 
 To work on a single package (e.g., `render`):
@@ -77,6 +80,10 @@ apps/well-profiler     ← Next.js 15 web app (deprecated, migration in progress
 **`apps/profiler`** — **Active app.** Nuxt 4 + Vue 3, deployed to Cloudflare Pages at welldot.org. PrimeVue UI, Tailwind CSS 4, Pinia, i18n (EN/PT). See [apps/profiler/CLAUDE.md](apps/profiler/CLAUDE.md).
 
 **`apps/well-profiler`** — **Deprecated.** Legacy Next.js 15 app being replaced by `apps/profiler`. See [apps/well-profiler/CLAUDE.md](apps/well-profiler/CLAUDE.md).
+
+### Specification
+
+**`spec/`** — the normative `.well` specification (plain Markdown, versioned folders `v1/`, `v2/`) and the generated JSON Schema in `spec/schema/`, served at `https://welldot.org/schema/v2/well.schema.json` (its `$id`). It is canonical: `@welldot/core` and every other implementation follow it. Keep it plain GitHub-readable Markdown. When to update each file is described in [packages/core/CLAUDE.md](packages/core/CLAUDE.md); see also [spec/README.md](spec/README.md).
 
 ### Build outputs
 

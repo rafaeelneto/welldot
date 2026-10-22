@@ -1,12 +1,35 @@
 # Welldot (fka Well Profiler)
 
+## Overview
+
 Most software for documenting and visualizing water well profiles is proprietary, expensive, and not interoperable. Well Profiler exists to change that.
 
 This repository started as **Well Profiler**, a tool focused on drawing well diagrams. It has since grown into **welldot**, a broader open-source ecosystem for geological well log visualization and profiling, designed for hydrogeologists, engineers, and researchers — spanning not just drawing, but also structured data recording and research. It consists of a web application and a set of reusable TypeScript libraries built around the **`.well` open file format**.
 
 The core tools — the Well Profiler app, the `.well` format, and the libraries — are free and open source under the Apache 2.0 license.
 
-You can try the app at [welldot.org](https://welldot.org). The source lives at [github.com/rafaeelneto/welldot](https://github.com/rafaeelneto/welldot).
+You can try the app at [welldot.org](https://welldot.org). The source lives at [github.com/welldothq/welldot](https://github.com/welldothq/welldot).
+
+This README covers the `.well` format at a glance, the published packages, the app's features, how to run the repository locally, the tech stack and the roadmap.
+
+## Table of contents
+
+- [The `.well` File Format](#the-well-file-format)
+- [Packages](#packages)
+  - [`@welldot/core`](#welldotcore)
+  - [`@welldot/render`](#welldotrender)
+  - [`@welldot/utils`](#welldotutils)
+- [App Features](#app-features)
+- [Getting Started](#getting-started)
+- [Tech Stack](#tech-stack)
+- [Geologic Symbolization](#geologic-symbolization)
+- [Roadmap](#roadmap)
+  - [`.well` format — v2 shipped](#well-format--v2-shipped)
+  - [`.well` format — future versions](#well-format--future-versions)
+  - [Ecosystem](#ecosystem)
+- [Claude Code Skill — `welldot-converter`](#claude-code-skill--welldot-converter)
+- [Contributing](#contributing)
+- [Licensing](#licensing)
 
 ---
 
@@ -22,11 +45,11 @@ The `.well` format is designed to serve three purposes:
 
 The format is human-readable JSON with full, descriptive key names. It is easy to inspect, diff, and version-control without tooling.
 
-**Example `.well` file (v2):**
+**Example `.well` file (v2.4):**
 
 ```json
 {
-  "version": 2,
+  "version": "2.4",
   "well_type": "tubular",
   "name": "Poço PP-01",
   "well_driller": "Perfuradora XYZ",
@@ -35,21 +58,24 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
   "bore_hole": [
     { "from": 0, "to": 80, "diameter": 250, "drilling_method": "rotary" }
   ],
-  "well_case": [{ "from": 0, "to": 60, "type": "steel", "diameter": 200 }],
+  "well_case": [
+    { "from": 0, "to": 60, "type": "carbon_steel", "diameter": 200 }
+  ],
   "reduction": [
     {
       "from": 58,
       "to": 60,
       "diam_from": 200,
       "diam_to": 150,
-      "type": "conical"
+      "type": "carbon_steel"
     }
   ],
   "well_screen": [
     {
       "from": 60,
       "to": 80,
-      "type": "wire_wound",
+      "type": "stainless_steel",
+      "slot_type": "continuous_slot",
       "diameter": 150,
       "screen_slot": 0.5
     }
@@ -65,7 +91,7 @@ The format is human-readable JSON with full, descriptive key names. It is easy t
     }
   ],
   "cement_pad": {
-    "type": "square",
+    "type": "concrete",
     "width": 1.0,
     "thickness": 0.15,
     "length": 1.0
@@ -127,12 +153,12 @@ The format captures:
 | Pump installations  | `pump_installations[]`                                                                     | Pump history with nameplate, intake depth, riser and electrical data (v2.3)                           |
 | Permits             | `permits[]`                                                                                | Outorgas with validity, granted flow and volumes, and conditions with derived deadlines (v2.3)        |
 | Meters              | `meters[]`                                                                                 | Totalizer (hidrômetro) installation history: type, serial, nominal diameter, register capacity (v2.3) |
-| Production          | `production[]`                                                                             | Append-only ledger of meter readings and declared volumes; volumes are derived, never stored (v2.3)   |
+| Production          | `production[]`                                                                             | Ledger of readings and volumes, editable, corrected via `corrects`; volumes derived (v2.3)            |
 | Operating regime    | `operating_regime[]`                                                                       | Declared flow rate, daily operating time and days per week, in force from a given instant (v2.3)      |
 | General attachments | `attachments[]`                                                                            | Root-level files about the well as a whole, e.g. the drilling report (v2.3)                           |
 | Water quality       | `water_samples[]`                                                                          | Ledger of water samples with field and lab results, sampling point, purge, lab and QA/QC data (v2.3)  |
 
-All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`packages/core/docs/spec/v2/`](packages/core/docs/spec/v2/).
+All depths are in **meters**, all diameters in **millimeters**, measured from ground level. The full specification is in [`spec/v2/`](spec/v2/).
 
 The format is open. You are welcome to implement parsers, exporters, converters, or viewers in any language. Contributions to the specification are welcome via issues and pull requests.
 
@@ -236,12 +262,20 @@ The v2.3 revision (shipped in `@welldot/core` v0.4.0) adds the operational block
 
 - **Pump installations** — installation history with nameplate, intake depth, riser and electrical data; the current pump is drawn on the profile
 - **Permits** — outorgas with validity, granted flow, daily operating time and volumes, and conditions (condicionantes) whose deadlines are derived from ISO 8601 date durations and whose fulfillments are recorded on the condition; an administrative status (requested, suspended, revoked…) and an administrative history (filing, notifications, fees)
-- **Meters and production** — totalizer installation history plus an append-only production ledger of meter readings and declared volumes; volumes are derived with rollover handling and are never stored as totals
+- **Meters and production** — totalizer installation history plus a production ledger of meter readings and declared volumes; volumes are derived with rollover handling and are never stored as totals
 - **Operating regime** — declared flow rate, daily operating time and days per week, each entry in force from `effective_from`
 - **Structured history logs** — `maintenance` entries reference the pump, meter or event they concern (`maintenance_type`, `pump_installation_id`, `meter_id`, `event_id`); the new `status_change` category records the well's operating status
-- **Attachments** — a root-level `attachments` array for general files about the well (e.g. the drilling report), plus `document_type` and per-record attachments on pumps, hydrodynamic events and aquifer analyses. The root array does not collect the per-record attachments
+- **Attachments** — a root-level `attachments` array for general files about the well (e.g. the drilling report), plus `document_type` and per-record attachments on log entries, permits (and their history steps and condition fulfillments), pumps, meters, hydrodynamic events, aquifer analyses and water samples. The root array does not collect the per-record attachments
 - **Water quality** — a `water_samples` ledger: each sample carries its field and laboratory results, sampling point and depth, purge and stabilization readings, laboratory and chain of custody, field QA/QC (duplicates, splits, blanks), filtration, lab flags and data validation. Parameters use a versioned vocabulary of 98 `welldot` codes plus CAS numbers, with units fixed by code. Limits stay out of the file: WHO, EU and Brazilian limit sets ship as data in `@welldot/core`
 - **Ledger corrections** — `hydrodynamic_events[].corrects`, `production[].corrects` and `water_samples[].corrects` retract an erroneous entry without editing it
+
+The v2.4 revision (shipped in `@welldot/core` v0.5.0) changes how a file declares its version and adds continuous level series. Parsers up to `@welldot/core` 0.4.0 reject v2.4 files:
+
+- **Version as a string** — files write `"version": "2.4"`; readers also accept the integer `1` and `2`
+- **Time zone** — `location.properties.timezone` (IANA) fixes the local date of an instant, so permit deadlines no longer change with the offset a tool writes
+- **Logger series** — the `logger_series` event type for datalogger exports, with `LevelReading.datetime`
+- **Offline packaging** — an optional `.wellz` ZIP with the `.well` file and its attachments, for regulators and archiving
+- **Clearer rules** — optional fields are omitted, never `null`; ledgers may be edited in place; repeated records merge by `id`; unresolved references survive re-export; known event types are validated against their own schema
 
 ### `.well` format — future versions
 

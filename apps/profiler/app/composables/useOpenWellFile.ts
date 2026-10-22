@@ -53,27 +53,39 @@ export function useOpenWellFile() {
     return true;
   }
 
+  /** Records a successful load under the way the well came in. */
+  function _tracked(loaded: boolean | null, source: string) {
+    if (loaded) trackEvent('well_open', { source });
+    return loaded;
+  }
+
   /** Pick a file and load it. */
   async function openFile(): Promise<boolean | null> {
     if (!(await confirmDiscard())) return null;
     if (persistence.hasFileSystemAccess) {
       const text = await persistence.open();
-      return text === null ? null : store.loadWell(text);
+      return _tracked(text === null ? null : store.loadWell(text), 'file');
     }
     const file = await pickFile();
-    return file === null ? null : _loadUnbound(await file.text());
+    return _tracked(
+      file === null ? null : _loadUnbound(await file.text()),
+      'file',
+    );
   }
 
   /** Load a file dropped on the page. */
   async function openDroppedFile(file: File): Promise<boolean | null> {
     if (!(await confirmDiscard())) return null;
-    return _loadUnbound(await file.text());
+    return _tracked(_loadUnbound(await file.text()), 'drop');
   }
 
-  /** Load pasted `.well` text. */
-  async function openText(text: string): Promise<boolean | null> {
+  /** Load `.well` text: pasted, or another source named by `source`. */
+  async function openText(
+    text: string,
+    source: 'paste' | 'siagas' = 'paste',
+  ): Promise<boolean | null> {
     if (!(await confirmDiscard())) return null;
-    return _loadUnbound(text);
+    return _tracked(_loadUnbound(text), source);
   }
 
   return { openFile, openDroppedFile, openText };

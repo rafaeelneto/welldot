@@ -10,6 +10,7 @@ import type {
   ProductionEntry,
   Well,
 } from '@welldot/core';
+import { parseWell, serializeWell } from '@welldot/core';
 
 import {
   getCurrentMeters,
@@ -886,6 +887,36 @@ describe('getOperationWarnings', () => {
       ).toEqual([{ code: 'regime_exceeds_permit', ids: ['now', 'pmt-01'] }]);
     });
 
+    it('compares normalized daily_operating_time values', () => {
+      const well = makeWell({
+        permits: [{ ...permit, daily_operating_time: 24 }],
+        operating_regime: [
+          {
+            id: 'r26',
+            effective_from: '2026-01-01T00:00:00-03:00',
+            daily_operating_time: 26,
+          },
+        ],
+      });
+      const warnings = getOperationWarnings(well, TODAY);
+      expect(warnings.map(w => w.code)).not.toContain('regime_exceeds_permit');
+      expect(warnings).toContainEqual({
+        code: 'daily_operating_time_normalized',
+        ids: ['r26'],
+      });
+    });
+
+    it('duplicate effective_from stays a warning and the file parses', () => {
+      const well = makeWell({
+        operating_regime: [
+          { id: 'a', effective_from: '2026-01-01T00:00:00-03:00' },
+          { id: 'b', effective_from: '2026-01-01T00:00:00-03:00' },
+        ],
+      });
+      expect(codes(well)).toContain('regime_duplicate_effective_from');
+      expect(() => parseWell(serializeWell(well))).not.toThrow();
+    });
+
     it('ignores expired permits and regimes within limits', () => {
       const regime: OperatingRegime = {
         id: 'r',
@@ -1158,5 +1189,114 @@ describe('getOperationWarnings', () => {
         w => w.code === 'analysis_uses_retracted_event',
       ),
     ).toEqual([{ code: 'analysis_uses_retracted_event', ids: ['an-1', 'e1'] }]);
+  });
+});
+
+describe('getOperationWarnings — logger_series (v2.4)', () => {
+  const series = (patch: Record<string, unknown> = {}) =>
+    ({
+      id: 'ls-1',
+      type: 'logger_series',
+      datetime: '2026-07-01T00:00:00-03:00',
+      readings: [{ datetime: '2026-07-01T00:00:00-03:00', depth: 18.42 }],
+      ...patch,
+    }) as HydrodynamicEvent;
+  const codes = (well: Well, code: OperationWarningCode) =>
+    getOperationWarnings(well, TODAY).filter(w => w.code === code);
+
+  it('warns when an analysis uses a logger_series', () => {
+    const well = makeWell({
+      hydrodynamic_events: [
+        series(),
+        {
+          id: 'e1',
+          type: 'constant_rate',
+          datetime: '2026-07-02T00:00:00-03:00',
+        } as HydrodynamicEvent,
+      ],
+      aquifer_analysis: [
+        {
+          id: 'an-1',
+          datetime: '2026-08-01T00:00:00Z',
+          source_event_ids: ['ls-1', 'e1'],
+        } as AquiferAnalysis,
+        {
+          id: 'an-2',
+          datetime: '2026-08-01T00:00:00Z',
+          source_event_ids: ['e1'],
+          static_level_source_id: 'ls-1',
+        } as AquiferAnalysis,
+      ],
+    });
+    expect(codes(well, 'analysis_uses_logger_series')).toEqual([
+      { code: 'analysis_uses_logger_series', ids: ['an-1', 'ls-1'] },
+      { code: 'analysis_uses_logger_series', ids: ['an-2', 'ls-1'] },
+    ]);
+  });
+
+  it('flags a logger_series used twice by one analysis once', () => {
+    const well = makeWell({
+      hydrodynamic_events: [series()],
+      aquifer_analysis: [
+        {
+          id: 'an-1',
+          datetime: '2026-08-01T00:00:00Z',
+          source_event_ids: ['ls-1'],
+          static_level_source_id: 'ls-1',
+        } as AquiferAnalysis,
+      ],
+    });
+    expect(codes(well, 'analysis_uses_logger_series')).toHaveLength(1);
+  });
+
+  it('warns on a logger reading deeper than sensor_depth', () => {
+    const deep = makeWell({
+      hydrodynamic_events: [
+        series({
+          sensor_depth: 42,
+          readings: [
+            { datetime: '2026-07-01T00:00:00-03:00', depth: 41.9 },
+            { datetime: '2026-07-01T00:15:00-03:00', depth: 42.5 },
+            { datetime: '2026-07-01T00:30:00-03:00', depth: 43 },
+          ],
+        }),
+      ],
+    });
+    expect(codes(deep, 'logger_reading_below_sensor')).toEqual([
+      { code: 'logger_reading_below_sensor', ids: ['ls-1'] },
+    ]);
+
+    const noSensor = makeWell({
+      hydrodynamic_events: [
+        series({
+          readings: [{ datetime: '2026-07-01T00:00:00-03:00', depth: 99 }],
+        }),
+      ],
+    });
+    expect(codes(noSensor, 'logger_reading_below_sensor')).toEqual([]);
+  });
+
+  it('ignores retracted logger_series', () => {
+    const well = makeWell({
+      hydrodynamic_events: [
+        series({
+          sensor_depth: 42,
+          readings: [{ datetime: '2026-07-01T00:00:00-03:00', depth: 50 }],
+        }),
+        series({ id: 'ls-2', corrects: 'ls-1' }),
+      ],
+      aquifer_analysis: [
+        {
+          id: 'an-1',
+          datetime: '2026-08-01T00:00:00Z',
+          source_event_ids: ['ls-1'],
+        } as AquiferAnalysis,
+      ],
+    });
+    expect(codes(well, 'logger_reading_below_sensor')).toEqual([]);
+    expect(codes(well, 'analysis_uses_logger_series')).toEqual([]);
+    expect(codes(well, 'analysis_uses_retracted_event')).toEqual([
+      { code: 'analysis_uses_retracted_event', ids: ['an-1', 'ls-1'] },
+    ]);
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@welldot/pdf",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Customizable PDF report export for .well water well profiles, built on pdfmake",
   "license": "Apache-2.0",
   "keywords": [
@@ -16,14 +16,14 @@
     "name": "Rafael Neto",
     "email": "rafaelneto.g@gmail.com"
   },
-  "homepage": "https://github.com/rafaeelneto/welldot#readme",
+  "homepage": "https://github.com/welldothq/welldot#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rafaeelneto/welldot.git",
+    "url": "git+https://github.com/welldothq/welldot.git",
     "directory": "packages/pdf"
   },
   "bugs": {
-    "url": "https://github.com/rafaeelneto/welldot/issues"
+    "url": "https://github.com/welldothq/welldot/issues"
   },
   "engines": {
     "node": ">=18"

@@ -74,7 +74,7 @@ const localeBtnClass =
             <span :class="previewPillClass">{{ t('nav.preview') }}</span>
           </NuxtLink>
           <NuxtLink
-            to="https://github.com/rafaeelneto/welldot"
+            to="https://github.com/welldothq/welldot"
             target="_blank"
             class="text-content-400 hover:text-content-0 font-medium transition-colors no-underline"
           >
@@ -182,7 +182,7 @@ const localeBtnClass =
           }}</span>
         </NuxtLink>
         <NuxtLink
-          to="https://github.com/rafaeelneto/welldot"
+          to="https://github.com/welldothq/welldot"
           target="_blank"
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-content-200 hover:text-content-0 hover:bg-surface-100 transition-colors no-underline"
           @click="drawerOpen = false"

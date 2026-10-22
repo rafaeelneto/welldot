@@ -1,8 +1,44 @@
 # @welldot/vue
 
-Vue 3 + PrimeVue base components, theme and composables for `.well` water well editors, with a Nuxt module. Part of the [welldot](https://github.com/rafaeelneto/welldot) open-source ecosystem.
+## Overview
+
+Vue 3 + PrimeVue base components, theme and composables for `.well` water well editors, with a Nuxt module. Part of the [welldot](https://github.com/welldothq/welldot) open-source ecosystem.
 
 Labeled fields, chips, tag selects, info popovers, number and unit inputs, an FGDC texture picker, a spreadsheet-style data grid and a map-based location picker, all sharing one PrimeVue theme and Tailwind tokens. No i18n library and no store: text props accept a plain string or a `LanguageText` (`{ en, pt, … }`), and app-wide settings come from one `createWelldot` plugin.
+
+This README covers installation, Vue and Nuxt setup, the Tailwind tokens, `createWelldot` configuration, text and i18n, swappable parts, each component, the data grid and location subpaths, the composables and the theme.
+
+## Table of contents
+
+- [Install](#install)
+- [Quick start](#quick-start)
+  - [Vue](#vue)
+  - [Nuxt](#nuxt)
+- [Tailwind setup](#tailwind-setup)
+  - [Overriding the tokens](#overriding-the-tokens)
+- [Configuration](#configuration)
+  - [Layering](#layering)
+- [Text and i18n](#text-and-i18n)
+- [Swappable parts](#swappable-parts)
+- [Components](#components)
+  - [`WellLabeledField`](#welllabeledfield)
+  - [`WellChip`](#wellchip)
+  - [`WellTagSelect`](#welltagselect)
+  - [`WellComboSelect`](#wellcomboselect)
+  - [`WellInfoPopover`](#wellinfopopover)
+  - [`WellInputNumber`](#wellinputnumber)
+  - [`WellUnitInput`](#wellunitinput)
+  - [`WellTextureSelect`](#welltextureselect)
+  - [`WellTextureThumbnail`](#welltexturethumbnail)
+- [Data grid (`@welldot/vue/grid`)](#data-grid-welldotvuegrid)
+- [Location (`@welldot/vue/location`)](#location-welldotvuelocation)
+  - [`WellCoordinateInput`](#wellcoordinateinput)
+  - [`WellLocationMap`](#welllocationmap)
+  - [`WellLocationPicker`](#welllocationpicker)
+- [Composables](#composables)
+- [Theme](#theme)
+  - [Overriding the theme](#overriding-the-theme)
+- [License](#license)
 
 ---
 
@@ -393,6 +429,7 @@ const columns: WellGridColumn[] = [
 | `deleteLabel` | `LanguageTextInput`         | Accessible label of each delete button                                 |
 | `labels`      | `WellDataGridLabels`        | `texturePlaceholder`, `showPendingTextures`, `columnInfo`, `comboHint` |
 | `components`  | `WellDataGridComponents`    | `addButton`, `deleteButton`, `dragHandle`                              |
+| `maxHeight`   | `number`                    | Height cap in px; taller content scrolls (virtualized) inside the grid |
 
 | Event     | Payload                                       |
 | --------- | --------------------------------------------- |

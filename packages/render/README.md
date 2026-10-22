@@ -1,6 +1,26 @@
 # @welldot/render
 
-D3-based SVG renderer for `.well` geological well profiles. Part of the [welldot](https://github.com/rafaeelneto/welldot) open-source ecosystem.
+## Overview
+
+D3-based SVG renderer for `.well` geological well profiles. Part of the [welldot](https://github.com/welldothq/welldot) open-source ecosystem.
+
+`WellRenderer` draws a well's lithology column, construction (borehole, casings, screens, hole fills, centralizers, cement pad), the current pump, fractures, caves and labels into one or more SVG panels, with zoom, pan and tooltips. This README covers installation, a quick start, what each layer draws, the API, theming and the data format the renderer accepts.
+
+## Table of contents
+
+- [Install](#install)
+- [Quick start](#quick-start)
+- [What it renders](#what-it-renders)
+- [API](#api)
+  - [`WellRenderer`](#wellrenderer)
+  - [`drawWellLegend`](#drawwelllegend)
+  - [`getWellLegendItems` / `drawWellLegendSymbol`](#getwelllegenditems--drawwelllegendsymbol)
+  - [Config presets](#config-presets)
+  - [Format utilities](#format-utilities)
+  - [Locale](#locale)
+- [Theming](#theming)
+- [Data format](#data-format)
+- [License](#license)
 
 ## Install
 

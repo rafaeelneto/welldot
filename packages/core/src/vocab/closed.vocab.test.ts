@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { WellSchema } from '../validators/well.validators';
 import {
+  BAROMETRIC_COMPENSATIONS,
+  BAROMETRIC_COMPENSATION_VALUES,
   FRACTION_VALUES,
   MEASURED_IN_VALUES,
   MEASUREMENT_LOCATIONS,
@@ -11,6 +13,8 @@ import {
   PERMIT_ADMINISTRATIVE_STATUS_VALUES,
   PRODUCTION_ENTRY_TYPES,
   QUALIFIER_VALUES,
+  READING_AGGREGATIONS,
+  READING_AGGREGATION_VALUES,
   RESULT_FRACTIONS,
   RESULT_QUALIFIERS,
   VALIDATION_STATUSES,
@@ -29,6 +33,8 @@ describe('closed vocabularies', () => {
       QUALIFIER_VALUES,
       FRACTION_VALUES,
       VALIDATION_STATUS_VALUES,
+      BAROMETRIC_COMPENSATION_VALUES,
+      READING_AGGREGATION_VALUES,
     ]) {
       expect(new Set(list).size).toBe(list.length);
     }
@@ -68,6 +74,41 @@ describe('closed vocabularies', () => {
       expect(parsed.success).toBe(true);
     }
   });
+
+  it('matches what the schema accepts for a logger_series', () => {
+    const base = {
+      version: '2.4',
+      bore_hole: [],
+      well_case: [],
+      reduction: [],
+      well_screen: [],
+      surface_case: [],
+      hole_fill: [],
+      lithology: [],
+      fractures: [],
+      caves: [],
+    };
+    const datetime = '2026-07-01T00:00:00-03:00';
+    const reading = { datetime, depth: 18, depth_min: 17, depth_max: 19 };
+    for (const barometric_compensation of BAROMETRIC_COMPENSATION_VALUES) {
+      for (const aggregation of READING_AGGREGATION_VALUES) {
+        const parsed = WellSchema.safeParse({
+          ...base,
+          hydrodynamic_events: [
+            {
+              id: 'ls',
+              type: 'logger_series',
+              datetime,
+              barometric_compensation,
+              aggregation,
+              readings: [reading],
+            },
+          ],
+        });
+        expect(parsed.success).toBe(true);
+      }
+    }
+  });
 });
 
 describe('closed vocabulary labels', () => {
@@ -82,6 +123,8 @@ describe('closed vocabulary labels', () => {
       VALIDATION_STATUSES,
       PARAMETER_GROUPS,
       VOLUME_LIMIT_PERIODS,
+      BAROMETRIC_COMPENSATIONS,
+      READING_AGGREGATIONS,
     ]) {
       for (const entry of vocab) {
         expect(entry.label.en).toBeTruthy();
@@ -101,5 +144,20 @@ describe('closed vocabulary labels', () => {
   it('derives the bare value lists from the entries', () => {
     expect(WELL_STATUS_VALUES).toEqual(WELL_STATUSES.map(e => e.value));
     expect(MEASURED_IN_VALUES).toEqual(['field', 'lab']);
+    expect(BAROMETRIC_COMPENSATION_VALUES).toEqual([
+      'barologger',
+      'vented',
+      'none',
+    ]);
+    expect(READING_AGGREGATION_VALUES).toEqual(['none', 'hourly', 'daily']);
+  });
+
+  it('labels the logger_series vocabularies', () => {
+    expect(getVocabLabel(BAROMETRIC_COMPENSATIONS, 'vented', 'pt')).toBe(
+      'Cabo ventilado',
+    );
+    expect(getVocabLabel(READING_AGGREGATIONS, 'none', 'en')).toBe(
+      'Raw readings',
+    );
   });
 });
