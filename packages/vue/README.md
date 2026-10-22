@@ -2,7 +2,7 @@
 
 ## Overview
 
-Vue 3 + PrimeVue base components, theme and composables for `.well` water well editors, with a Nuxt module. Part of the [welldot](https://github.com/rafaeelneto/welldot) open-source ecosystem.
+Vue 3 + PrimeVue base components, theme and composables for `.well` water well editors, with a Nuxt module. Part of the [welldot](https://github.com/welldothq/welldot) open-source ecosystem.
 
 Labeled fields, chips, tag selects, info popovers, number and unit inputs, an FGDC texture picker, a spreadsheet-style data grid and a map-based location picker, all sharing one PrimeVue theme and Tailwind tokens. No i18n library and no store: text props accept a plain string or a `LanguageText` (`{ en, pt, … }`), and app-wide settings come from one `createWelldot` plugin.
 

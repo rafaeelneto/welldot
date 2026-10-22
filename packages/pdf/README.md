@@ -2,7 +2,7 @@
 
 ## Overview
 
-Customizable PDF reports for `.well` water well profiles, built on [pdfmake](https://pdfmake.github.io/docs/). Part of the [welldot](https://github.com/rafaeelneto/welldot) open-source ecosystem.
+Customizable PDF reports for `.well` water well profiles, built on [pdfmake](https://pdfmake.github.io/docs/). Part of the [welldot](https://github.com/welldothq/welldot) open-source ecosystem.
 
 One call turns a well into a paginated report: lithology/construction profile, legend, general information, construction tables, hydrodynamic tests, history log, pumps, meters, operating regimes, production, permits and water quality. Labels ship in English and Portuguese. Branding, watermark, page layout, theme, sections and every label can be customized.
 

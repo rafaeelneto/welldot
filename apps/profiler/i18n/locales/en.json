@@ -168,7 +168,7 @@
       },
       {
         "title": "welldot.skill",
-        "meta": "github.com/rafaeelneto/welldot"
+        "meta": "github.com/welldothq/welldot"
       }
     ]
   },
@@ -320,7 +320,7 @@
     "headline2": ".",
     "subtitle": "Free to use. Free to implement. Open forever.",
     "primary": "Open well editor",
-    "secondary": "github.com/rafaeelneto/welldot"
+    "secondary": "github.com/welldothq/welldot"
   },
   "heroVisual": {
     "liveTitle": "live preview",

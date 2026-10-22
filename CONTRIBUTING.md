@@ -30,7 +30,7 @@ This guide covers setting up the repository, its layout, how changes to the `.we
 Requirements: **Node ≥ 18** and **pnpm 10.22.0** (the version is pinned in `packageManager`; `corepack enable` will pick it up automatically).
 
 ```bash
-git clone https://github.com/rafaeelneto/welldot.git
+git clone https://github.com/welldothq/welldot.git
 cd welldot
 pnpm install
 pnpm dev
