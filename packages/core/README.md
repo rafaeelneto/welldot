@@ -515,10 +515,10 @@ For the complete schema reference, field vocabulary, and design rationale see th
 
 ## Contributing
 
-Issues and pull requests are welcome. The source lives in `packages/core` within the [well-profiler monorepo](https://github.com/rafaeelneto/welldot).
+Issues and pull requests are welcome. The source lives in `packages/core` within the [well-profiler monorepo](https://github.com/welldothq/welldot).
 
 ```bash
-git clone https://github.com/rafaeelneto/welldot.git
+git clone https://github.com/welldothq/welldot.git
 cd well-profiler
 pnpm install
 cd packages/core

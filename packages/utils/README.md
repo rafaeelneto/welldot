@@ -2,7 +2,7 @@
 
 ## Overview
 
-Profile analysis utilities for the [`.well` open format](https://github.com/rafaeelneto/welldot) — depth and diameter summaries, cylindrical and annular volumes, gravel pack estimates, and aquifer hydraulics. Part of the [welldot](https://github.com/rafaeelneto/welldot) open-source ecosystem.
+Profile analysis utilities for the [`.well` open format](https://github.com/welldothq/welldot) — depth and diameter summaries, cylindrical and annular volumes, gravel pack estimates, and aquifer hydraulics. Part of the [welldot](https://github.com/welldothq/welldot) open-source ecosystem.
 
 These are pure functions over a parsed `Well` object. No DOM, no network, no side effects.
 
@@ -259,7 +259,7 @@ The conversion is faithful: nothing is invented, exact duplicate rows are droppe
 
 ## Contributing
 
-Issues and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/rafaeelneto/welldot/blob/main/CONTRIBUTING.md). The source lives in `packages/utils` within the [welldot monorepo](https://github.com/rafaeelneto/welldot).
+Issues and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/welldothq/welldot/blob/main/CONTRIBUTING.md). The source lives in `packages/utils` within the [welldot monorepo](https://github.com/welldothq/welldot).
 
 ## License
 

@@ -23,7 +23,7 @@ description: >
 ## Overview
 
 Extracts data from a water well report (any format) and produces a valid `.well` JSON file
-per the **welldot** spec (https://github.com/rafaeelneto/welldot) for upload to **welldot.org**
+per the **welldot** spec (https://github.com/welldothq/welldot) for upload to **welldot.org**
 or use with `@welldot/core`.
 
 **You are the extractor.** Read the document yourself and write the JSON yourself — do not
@@ -100,12 +100,12 @@ do not accept `version: 1` files for new conversions, and `@welldot/core` up to 
 
 | Doc              | URL                                                                              |
 | ---------------- | -------------------------------------------------------------------------------- |
-| Overview         | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/overview.md             |
-| Format reference | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/format-reference.md     |
-| Object schemas   | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/object-schemas.md       |
-| Water quality    | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/water-quality.md        |
-| Interoperability | https://github.com/rafaeelneto/welldot/blob/main/spec/v2/interoperability.md     |
-| FGDC textures    | https://github.com/rafaeelneto/welldot/blob/main/spec/reference/fgdc-textures.md |
+| Overview         | https://github.com/welldothq/welldot/blob/main/spec/v2/overview.md             |
+| Format reference | https://github.com/welldothq/welldot/blob/main/spec/v2/format-reference.md     |
+| Object schemas   | https://github.com/welldothq/welldot/blob/main/spec/v2/object-schemas.md       |
+| Water quality    | https://github.com/welldothq/welldot/blob/main/spec/v2/water-quality.md        |
+| Interoperability | https://github.com/welldothq/welldot/blob/main/spec/v2/interoperability.md     |
+| FGDC textures    | https://github.com/welldothq/welldot/blob/main/spec/reference/fgdc-textures.md |
 
 Fetch these if you can browse. **If you cannot browse**, `references/well-spec.md` — bundled
 alongside this file, and uploaded with it into a ChatGPT Project or Gemini Gem — is a full

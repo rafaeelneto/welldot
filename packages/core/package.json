@@ -20,14 +20,14 @@
     "email": "rafaelneto.g@gmail.com"
   },
   "license": "Apache-2.0",
-  "homepage": "https://github.com/rafaeelneto/welldot#readme",
+  "homepage": "https://github.com/welldothq/welldot#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rafaeelneto/welldot.git",
+    "url": "git+https://github.com/welldothq/welldot.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/rafaeelneto/welldot/issues"
+    "url": "https://github.com/welldothq/welldot/issues"
   },
   "publishConfig": {
     "access": "public"

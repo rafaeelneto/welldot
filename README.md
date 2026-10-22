@@ -8,7 +8,7 @@ This repository started as **Well Profiler**, a tool focused on drawing well dia
 
 The core tools — the Well Profiler app, the `.well` format, and the libraries — are free and open source under the Apache 2.0 license.
 
-You can try the app at [welldot.org](https://welldot.org). The source lives at [github.com/rafaeelneto/welldot](https://github.com/rafaeelneto/welldot).
+You can try the app at [welldot.org](https://welldot.org). The source lives at [github.com/welldothq/welldot](https://github.com/welldothq/welldot).
 
 This README covers the `.well` format at a glance, the published packages, the app's features, how to run the repository locally, the tech stack and the roadmap.
 

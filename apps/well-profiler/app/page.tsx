@@ -102,7 +102,7 @@ function Home() {
 
             <NextLink
               className={styles.socialBtn}
-              href="https://github.com/rafaeelneto/welldot"
+              href="https://github.com/welldothq/welldot"
               target="_blank"
             >
               <Github />

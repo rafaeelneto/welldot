@@ -344,7 +344,7 @@ const toolCards = computed(() =>
     title: rt(card.title),
     body: rt(card.body),
     path: TOOL_PATHS[i]!,
-    href: `https://github.com/rafaeelneto/welldot/tree/main/${TOOL_PATHS[i]}`,
+    href: `https://github.com/welldothq/welldot/tree/main/${TOOL_PATHS[i]}`,
   })),
 );
 </script>
@@ -414,7 +414,7 @@ const toolCards = computed(() =>
             <Button
               :label="t('hero.ctaSecondary')"
               as="a"
-              href="https://github.com/rafaeelneto/welldot/tree/main/spec"
+              href="https://github.com/welldothq/welldot/tree/main/spec"
               target="_blank"
               variant="outlined"
               severity="secondary"
@@ -668,7 +668,7 @@ const toolCards = computed(() =>
             <template #repo>
               <code
                 class="font-mono text-[0.92em] bg-black/[0.04] px-1.5 py-0.5 rounded"
-                >github.com/rafaeelneto/welldot</code
+                >github.com/welldothq/welldot</code
               >
             </template>
           </i18n-t>
@@ -816,13 +816,13 @@ const toolCards = computed(() =>
           <Button
             :label="t('extensible.ctaContribute')"
             as="a"
-            href="https://github.com/rafaeelneto/welldot/blob/main/CONTRIBUTING.md"
+            href="https://github.com/welldothq/welldot/blob/main/CONTRIBUTING.md"
             target="_blank"
           />
           <Button
             :label="t('extensible.ctaPropose')"
             as="a"
-            href="https://github.com/rafaeelneto/welldot/issues/new"
+            href="https://github.com/welldothq/welldot/issues/new"
             target="_blank"
             variant="outlined"
             severity="secondary"
@@ -978,7 +978,7 @@ const toolCards = computed(() =>
         <Button
           :label="t('cta.secondary')"
           as="a"
-          href="https://github.com/rafaeelneto/welldot"
+          href="https://github.com/welldothq/welldot"
           target="_blank"
           variant="outlined"
           severity="secondary"

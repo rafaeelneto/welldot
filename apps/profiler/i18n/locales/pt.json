@@ -168,7 +168,7 @@
       },
       {
         "title": "welldot.skill",
-        "meta": "github.com/rafaeelneto/welldot"
+        "meta": "github.com/welldothq/welldot"
       }
     ]
   },
@@ -320,7 +320,7 @@
     "headline2": ".",
     "subtitle": "Livre para usar. Livre para implementar. Aberto para sempre.",
     "primary": "Abrir editor de poços",
-    "secondary": "github.com/rafaeelneto/welldot"
+    "secondary": "github.com/welldothq/welldot"
   },
   "heroVisual": {
     "liveTitle": "live preview",

@@ -117,7 +117,3 @@ Spec constraints worth remembering: `name` must match the directory name, `descr
 1024 characters, `metadata` values must be strings, and the `SKILL.md` body should stay under
 500 lines — push detailed reference material into `references/` instead, where agents load it
 only on demand.
-
-> **Note on the spec URLs in `SKILL.md`:** they point at `github.com/rafaeelneto/welldot`, while
-> the git remote is `rafaeelneto/well-profiler`. They resolve today only through GitHub's rename
-> redirect — that stops working if a repo named `welldot` is ever created under the account.
